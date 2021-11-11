@@ -9,32 +9,28 @@ namespace Flagrum.Console
     {
         public static void CreateBinMod()
         {
-            var root = "C:\\Testing\\Archiver\\mod_folder";
+            var root = "C:\\Testing\\Archiver\\noctis_custom";
             var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
-            var outputPath = "C:\\Testing\\Archiver\\output.ffxvbinmod";
+            var outputPath = "C:\\Testing\\Archiver\\d090b917-d422-41ed-a641-0047de5fea48.ffxvbinmod";
 
-            var archive = new Archive(root);
-            AddFilesRecursively(archive, root);
+            var packer = new Packer(root);
+            packer.AddFile("data://$mod/temp.ebex");
+            AddFilesRecursively(packer, root);
 
             var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
             foreach (var shader in shaders)
             {
-                archive.AddFile(shader.Path);
+                packer.AddFile(shader.Path);
             }
 
-            archive.AddFile("data://$mod/temp.ebex");
-
-            var fileStream = File.Open(outputPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
-            var archiveStream = archive.Pack();
-            archiveStream.CopyTo(fileStream);
-            fileStream.Close();
+            packer.WriteToFile(outputPath);
         }
 
-        private static void AddFilesRecursively(Archive archive, string dir)
+        private static void AddFilesRecursively(Packer packer, string dir)
         {
             foreach (var directory in Directory.EnumerateDirectories(dir))
             {
-                AddFilesRecursively(archive, directory);
+                AddFilesRecursively(packer, directory);
             }
 
             foreach (var file in Directory.EnumerateFiles(dir))
@@ -51,7 +47,7 @@ namespace Flagrum.Console
 
                 if (!shouldAdd) continue;
 
-                archive.AddFile(file);
+                packer.AddFile(file);
             }
         }
     }

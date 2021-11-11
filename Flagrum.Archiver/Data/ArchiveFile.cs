@@ -3,10 +3,10 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace Flagrum.Archiver.Models
+namespace Flagrum.Archiver.Data
 {
     [Flags]
-    public enum ArchiveFlag : uint
+    public enum ArchiveFileFlag : uint
     {
         None = 0,
         Autoload = 1,
@@ -20,6 +20,8 @@ namespace Flagrum.Archiver.Models
 
     public class ArchiveFile
     {
+        public const uint HeaderSize = 40;
+        public const ulong HeaderHash = 14695981039346656037;
         public const byte LocalizationType = 0;
         public const byte Locale = 0;
 
@@ -56,25 +58,16 @@ namespace Flagrum.Archiver.Models
                 _path = path;
                 var directory = "mod/" + archiveRoot.Split('\\', '/').Last() + "/";
                 RelativePath = directory + path.Substring(archiveRoot.Length).Trim('\\', '/').Replace('\\', '/');
-                Uri = InferUri(RelativePath);
-            }
-
-            var lastIndex = path.LastIndexOf("$$");
-            if (lastIndex >= 0)
-            {
-                path = path.Substring(lastIndex + 2);
+                Uri = InferUri();
             }
 
             var tokens = _path.Split('\\', '/');
             var fileName = tokens.Last();
             var index = fileName.IndexOf('.');
-            var name = index < 0 ? fileName : fileName.Substring(0, index);
             var type = index < 0 ? "" : fileName.Substring(index + 1);
 
-            var encoding = new Encoding();
-            NameHash = encoding.Hash(name);
-            UriHash = encoding.Hash(Uri);
-            TypeHash = encoding.Hash(type);
+            UriHash = Cryptography.Hash(Uri);
+            TypeHash = Cryptography.Hash(type);
 
             UriAndTypeHash = (ulong)((long)UriHash & 17592186044415L | (long)TypeHash << 44 & -17592186044416L);
         }
@@ -85,7 +78,7 @@ namespace Flagrum.Archiver.Models
             {
                 if (_size == 0)
                 {
-                    throw new InvalidOperationException($"Size cannot be calculated before reading the file. Call {nameof(GetFileData)} first.");
+                    throw new InvalidOperationException($"Size cannot be calculated before reading the file. Call {nameof(GetData)} first.");
                 }
 
                 return _size;
@@ -98,14 +91,14 @@ namespace Flagrum.Archiver.Models
             {
                 if (_processedSize == 0)
                 {
-                    throw new InvalidOperationException($"ProcessedSize cannot be calculated before reading the file. Call {nameof(GetFileData)} first.");
+                    throw new InvalidOperationException($"ProcessedSize cannot be calculated before reading the file. Call {nameof(GetData)} first.");
                 }
 
                 return _processedSize;
             }
         }
 
-        public ArchiveFlag Flags
+        public ArchiveFileFlag Flags
         {
             get
             {
@@ -114,15 +107,15 @@ namespace Flagrum.Archiver.Models
                     throw new InvalidOperationException($"Flags must be calculated after setting {nameof(_path)}.");
                 }
 
-                var flags = ArchiveFlag.Autoload;
+                var flags = ArchiveFileFlag.Autoload;
 
                 if (_path.EndsWith(".modmeta") || _path.EndsWith(".bin"))
                 {
-                    flags |= ArchiveFlag.MaskProtected;
+                    flags |= ArchiveFileFlag.MaskProtected;
                 }
                 else
                 {
-                    flags |= ArchiveFlag.Encrypted;
+                    flags |= ArchiveFileFlag.Encrypted;
                 }
 
                 return flags;
@@ -146,14 +139,14 @@ namespace Flagrum.Archiver.Models
             }
         }
 
-        public byte[] GetFileData(Encoding encoding)
+        public byte[] GetData()
         {
             var data = File.ReadAllBytes(_path);
             _size = (uint)data.Length;
 
-            if (Flags.HasFlag(ArchiveFlag.Encrypted))
+            if (Flags.HasFlag(ArchiveFileFlag.Encrypted))
             {
-                var encryptedData = encoding.Encrypt(data);
+                var encryptedData = Cryptography.Encrypt(data);
                 _processedSize = (uint)encryptedData.Length;
                 return encryptedData;
             }
@@ -164,7 +157,7 @@ namespace Flagrum.Archiver.Models
             }
         }
 
-        private string InferUri(string relativePath)
+        private string InferUri()
         {
             var uri = Path.Combine("data://", RelativePath).Replace('\\', '/').ToLower();
             

@@ -1,62 +1,65 @@
-﻿using Flagrum.Archiver.Models;
+﻿using Flagrum.Archiver.Data;
 using Flagrum.Archiver.Utilities;
 using Flagrum.Core.Services.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Flagrum.Archiver
 {
-    public class Archive
+    public class Packer
     {
         public const uint PointerSize = 8;
         public const uint BlockSize = 512;
-        public const ulong FileHeaderHash = 14695981039346656037;
 
-        private readonly ArchiveHeader _header = new();
-        private List<ArchiveFile> _files = new();
+        private readonly Logger _logger;
+        private readonly string _archiveDirectory;
+        private readonly ArchiveHeader _header;
+        private readonly List<ArchiveFile> _files;
 
-        private readonly Logger _logger = new ConsoleLogger();
-        private readonly Encoding _encoding = new();
-
-        private string _root;
-
-        public Archive(string root) => _root = root;
+        public Packer(string archiveDirectory)
+        {
+            _logger = new ConsoleLogger();
+            _archiveDirectory = archiveDirectory;
+            _header = new ArchiveHeader();
+            _files = new List<ArchiveFile>();
+        }
 
         public void AddFile(string path)
         {
-            _files.Add(new ArchiveFile(_root, path));
+            _files.Add(new ArchiveFile(_archiveDirectory, path));
         }
 
-        public Stream Pack()
+        public void WriteToFile(string path)
         {
             var archiveStream = new MemoryStream();
+
             _logger.LogInformation("Packing archive...");
 
-            _files = _files
-                .OrderBy(f => f.TypeHash)
-                .ThenBy(f => f.UriHash)
-                .ToList();
+            // Sort files by TypeHash, then UriHash
+            _files.Sort((first, second) =>
+            {
+                var difference = first.TypeHash.CompareTo(second.TypeHash);
+                return difference == 0 ? first.UriHash.CompareTo(second.UriHash) : difference;
+            });
 
-            _header.UriListOffset = (uint)(ArchiveHeader.Size + Serialization.GetPadding((uint)_files.Count * ArchiveHeader.ListingItemSize, PointerSize));
+            _header.UriListOffset = (uint)(ArchiveHeader.Size + Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize, PointerSize));
 
             var endOfUriList = SerializeUriList(out Stream uriListStream);
             archiveStream.Seek(_header.UriListOffset, SeekOrigin.Begin);
             uriListStream.CopyTo(archiveStream);
 
-            _header.PathListOffset = (uint)(Serialization.GetPadding((uint)(_header.UriListOffset + endOfUriList), PointerSize));
+            _header.PathListOffset = (uint)(Serialization.GetAlignment((uint)(_header.UriListOffset + endOfUriList), PointerSize));
 
             var endOfPathList = SerializePathList(out Stream pathListStream);
             archiveStream.Seek(_header.PathListOffset, SeekOrigin.Begin);
             pathListStream.CopyTo(archiveStream);
 
-            _header.DataOffset = (uint)Serialization.GetPadding(_header.PathListOffset + (uint)endOfPathList, BlockSize);
+            _header.DataOffset = (uint)Serialization.GetAlignment(_header.PathListOffset + (uint)endOfPathList, BlockSize);
 
+            var dataStream = SerializeFileData();
             archiveStream.Seek(_header.DataOffset, SeekOrigin.Begin);
-            var dataStream = SerializeData(archiveStream);
-            //archiveStream.Seek(_header.DataOffset, SeekOrigin.Begin);
-            //dataStream.CopyTo(archiveStream);
+            dataStream.CopyTo(archiveStream);
 
             var headerStream = SerializeHeader();
             archiveStream.Seek(0, SeekOrigin.Begin);
@@ -64,11 +67,9 @@ namespace Flagrum.Archiver
 
             var fileHeaderStream = SerializeFileHeaders();
             archiveStream.Seek(ArchiveHeader.Size, SeekOrigin.Begin);
-            Console.WriteLine(fileHeaderStream.Length + " / " + _files.Count * ArchiveHeader.ListingItemSize);
             fileHeaderStream.CopyTo(archiveStream);
 
-            archiveStream.Seek(0, SeekOrigin.Begin);
-            return archiveStream;
+            File.WriteAllBytes(path, archiveStream.ToArray());
         }
 
         private Stream SerializeHeader()
@@ -77,7 +78,7 @@ namespace Flagrum.Archiver
 
             var stream = new MemoryStream();
 
-            stream.Write(_header.Tag);
+            stream.Write(ArchiveHeader.Tag);
             stream.Write(BitConverter.GetBytes(_header.Version));
             stream.Write(BitConverter.GetBytes((uint)_files.Count));
             stream.Write(BitConverter.GetBytes(BlockSize));
@@ -86,7 +87,7 @@ namespace Flagrum.Archiver
             stream.Write(BitConverter.GetBytes(_header.PathListOffset));
             stream.Write(BitConverter.GetBytes(_header.DataOffset));
             stream.Write(BitConverter.GetBytes((uint)0));                   // Flags are always zero
-            stream.Write(BitConverter.GetBytes(_header.ChunkSize));
+            stream.Write(BitConverter.GetBytes(ArchiveHeader.ChunkSize));
 
             // Archive hash must be zero before the whole header is hashed
             stream.Write(BitConverter.GetBytes((ulong)0));
@@ -94,11 +95,11 @@ namespace Flagrum.Archiver
             // Constant padding
             stream.Write(new byte[16]);
 
-            _header.Hash = _encoding.Base64Hash(stream.ToArray());
+            _header.Hash = Cryptography.Base64Hash(stream.ToArray());
 
             stream = new MemoryStream();
 
-            stream.Write(_header.Tag);
+            stream.Write(ArchiveHeader.Tag);
             stream.Write(BitConverter.GetBytes(_header.Version));
             stream.Write(BitConverter.GetBytes((uint)_files.Count));
             stream.Write(BitConverter.GetBytes(BlockSize));
@@ -107,7 +108,7 @@ namespace Flagrum.Archiver
             stream.Write(BitConverter.GetBytes(_header.PathListOffset));
             stream.Write(BitConverter.GetBytes(_header.DataOffset));
             stream.Write(BitConverter.GetBytes((uint)0));
-            stream.Write(BitConverter.GetBytes(_header.ChunkSize));
+            stream.Write(BitConverter.GetBytes(ArchiveHeader.ChunkSize));
             stream.Write(BitConverter.GetBytes(_header.Hash));
 
             // Constant padding
@@ -122,7 +123,7 @@ namespace Flagrum.Archiver
             _logger.LogInformation("Serializing File Headers");
 
             var stream = new MemoryStream();
-            var hash = FileHeaderHash ^ _header.Hash;
+            var hash = ArchiveFile.HeaderHash ^ _header.Hash;
 
             foreach (var file in _files)
             {
@@ -131,13 +132,13 @@ namespace Flagrum.Archiver
                 var dataOffset = file.DataOffset;
                 ushort key = 0;
 
-                if (!file.Flags.HasFlag(ArchiveFlag.MaskProtected))
+                if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected))
                 {
                     key = file.Key;
-                    hash = _encoding.MergeHashes(hash, file.UriAndTypeHash);
+                    hash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
                     size ^= (uint)(hash >> 32);
                     processedSize ^= (uint)hash;
-                    hash = _encoding.MergeHashes(hash, ~file.UriAndTypeHash);
+                    hash = Cryptography.MergeHashes(hash, ~file.UriAndTypeHash);
                     dataOffset ^= hash;
                 }
 
@@ -170,7 +171,7 @@ namespace Flagrum.Archiver
                 file.UriOffset = _header.UriListOffset + (uint)currentUriOffset;
                 uriListStream.Seek(currentUriOffset, SeekOrigin.Begin);
                 uriListStream.Write(bytes, 0, size);
-                currentUriOffset += (int)Serialization.GetPadding((uint)size, PointerSize);
+                currentUriOffset += (int)Serialization.GetAlignment((uint)size, PointerSize);
             }
 
             uriListStream.Seek(0, SeekOrigin.Begin);
@@ -190,34 +191,29 @@ namespace Flagrum.Archiver
                 file.RelativePathOffset = _header.PathListOffset + (uint)currentPathOffset;
                 pathListStream.Seek(currentPathOffset, SeekOrigin.Begin);
                 pathListStream.Write(bytes, 0, size);
-                currentPathOffset += (int)Serialization.GetPadding((uint)size, PointerSize);
+                currentPathOffset += (int)Serialization.GetAlignment((uint)size, PointerSize);
             }
 
             pathListStream.Seek(0, SeekOrigin.Begin);
             return currentPathOffset;
         }
 
-        private Stream SerializeData(Stream stream)
+        private Stream SerializeFileData()
         {
             _logger.LogInformation("Serializing File Data");
 
-            //var stream = new MemoryStream();
-            var currentDataOffset = 0L;
+            var stream = new MemoryStream();
             var rng = new Random((int)_header.Hash);
+            var currentDataOffset = 0L;
 
             foreach (var file in _files)
             {
                 file.DataOffset = _header.DataOffset + (uint)currentDataOffset;
 
-                if (file.Uri.Contains("temp"))
-                {
-                    bool x = true;
-                }
-
-                var fileData = file.GetFileData(_encoding);
+                var fileData = file.GetData();
                 stream.Write(fileData, 0, fileData.Length);
 
-                var finalSize = Serialization.GetPadding(file.ProcessedSize, BlockSize);
+                var finalSize = Serialization.GetAlignment(file.ProcessedSize, BlockSize);
                 var paddingSize = finalSize - file.ProcessedSize;
                 var padding = new byte[paddingSize];
                 rng.NextBytes(padding);
@@ -226,7 +222,7 @@ namespace Flagrum.Archiver
                 currentDataOffset += (long)finalSize;
             }
 
-            //stream.Seek(0, SeekOrigin.Begin);
+            stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
     }
