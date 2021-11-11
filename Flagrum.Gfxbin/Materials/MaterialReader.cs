@@ -11,18 +11,18 @@ namespace Flagrum.Gfxbin.Materials
     public class MaterialReader
     {
         private readonly Logger _logger;
-        private readonly GfxbinHeader _header;
+        private readonly Material _material;
         private readonly BinaryReader _reader;
 
-        private Material _material;
         private byte[] _stringBuffer;
 
         public MaterialReader(string path)
         {
             _logger = new ConsoleLogger();
-            _header = new GfxbinHeader();
             _reader = new BinaryReader(path, out uint version);
-            _header.Version = version;
+
+            _material = new Material();
+            _material.Header.Version = version;
 
             if (version < 20150713 || version > 20160705)
             {
@@ -36,8 +36,6 @@ namespace Flagrum.Gfxbin.Materials
 
         public Material Read()
         {
-            _material = new Material();
-
             ReadHeader();
             ReadMaterialData();
 
@@ -45,7 +43,8 @@ namespace Flagrum.Gfxbin.Materials
             _material.Interfaces = ReadInterfaces();
             _material.Textures = ReadTextures();
             _material.Samplers = ReadSamplers();
-            _material.Shaders = ReadShaders();
+            _material.ShaderBinaries = ReadShaderBinaries();
+            _material.ShaderPrograms = ReadShaderPrograms();
 
             ReadInterfaceInputParameters();
             ReadStrings();
@@ -59,7 +58,7 @@ namespace Flagrum.Gfxbin.Materials
 
             for (var _ = 0; _ < dependencyCount; _++)
             {
-                _header.Dependencies.Add(new DependencyPath
+                _material.Header.Dependencies.Add(new DependencyPath
                 {
                     PathHash = _reader.ReadString(),
                     Path = _reader.ReadStr8()
@@ -70,7 +69,7 @@ namespace Flagrum.Gfxbin.Materials
 
             for (var _ = 0; _ < hashesCount; _++)
             {
-                _header.Hashes.Add(_reader.ReadUint64());
+                _material.Header.Hashes.Add(_reader.ReadUint64());
             }
         }
 
@@ -108,13 +107,19 @@ namespace Flagrum.Gfxbin.Materials
             _material.RenderStateBits = renderStateBits;
             _material.SkinVsMaxBoneCount = skinVsMaxBoneCount;
             _material.BrdfType = brdfType;
-            _material.InterfaceCount = totalBufferCount;
-            _material.InterfaceInputCount = totalUniformCount;
-            _material.SamplerCount = totalSamplerCount;
-            _material.TextureCount = totalTextureCount;
-            _material.ShaderCount = shaderBinaryCount;
+            _material.InterfaceInputCount = matUniformCount;
+            _material.InterfaceCount = matBufferCount;
+            _material.TextureCount = matTextureCount;
+            _material.SamplerCount = matSamplerCount;
+            _material.TotalInterfaceCount = totalBufferCount;
+            _material.TotalInterfaceInputCount = totalUniformCount;
+            _material.TotalSamplerCount = totalSamplerCount;
+            _material.TotalTextureCount = totalTextureCount;
+            _material.ShaderBinaryCount = shaderBinaryCount;
+            _material.ShaderProgramCount = shaderProgramCount;
+            _material.InputsBufferSize = gpuDataSize;
 
-            if (_header.Version >= 20150403)
+            if (_material.Header.Version >= 20150403)
             {
                 _reader.UnpackUInt16(out ushort highTexturePackAssetOffset);
                 _material.HighTexturePackAssetOffset = highTexturePackAssetOffset;
@@ -125,7 +130,7 @@ namespace Flagrum.Gfxbin.Materials
         {
             var inputs = new List<MaterialInterfaceInput>();
 
-            for (var _ = 0; _ < _material.InterfaceInputCount; _++)
+            for (var _ = 0; _ < _material.TotalInterfaceInputCount; _++)
             {
                 _reader.UnpackUInt64(out ulong nameOffset);
                 _reader.UnpackUInt64(out ulong shaderGenNameOffset);
@@ -158,7 +163,7 @@ namespace Flagrum.Gfxbin.Materials
         {
             var interfaces = new List<MaterialInterface>();
 
-            for (var _ = 0; _ < _material.InterfaceCount; _++)
+            for (var _ = 0; _ < _material.TotalInterfaceCount; _++)
             {
                 _reader.UnpackUInt64(out ulong name);
                 _reader.UnpackUInt64(out ulong shaderGenName);
@@ -193,7 +198,7 @@ namespace Flagrum.Gfxbin.Materials
         {
             var textures = new List<MaterialTexture>();
 
-            for (var _ = 0; _ < _material.TextureCount; _++)
+            for (var _ = 0; _ < _material.TotalTextureCount; _++)
             {
                 sbyte highTextureStreamingLevels = -1;
                 _reader.UnpackUInt64(out ulong resourceFileHash);
@@ -207,7 +212,7 @@ namespace Flagrum.Gfxbin.Materials
                 _reader.UnpackUInt32(out uint hashPath);
                 _reader.UnpackUInt32(out uint flags);
 
-                if (_header.Version > 20150508)
+                if (_material.Header.Version > 20150508)
                 {
                     _reader.UnpackInt8(out highTextureStreamingLevels);
                 }
@@ -235,7 +240,7 @@ namespace Flagrum.Gfxbin.Materials
         {
             var samplers = new List<MaterialSampler>();
 
-            for (var _ = 0; _ < _material.SamplerCount; _++)
+            for (var _ = 0; _ < _material.TotalSamplerCount; _++)
             {
                 _reader.UnpackUInt64(out ulong reflectionSamplerName);
                 _reader.UnpackUInt64(out ulong reflectionSamplerShaderGenName);
@@ -299,23 +304,30 @@ namespace Flagrum.Gfxbin.Materials
             return samplers;
         }
 
-        private List<MaterialShader> ReadShaders()
+        private List<MaterialShaderBinary> ReadShaderBinaries()
         {
-            var shaders = new List<MaterialShader>();
+            var shaderBinaries = new List<MaterialShaderBinary>();
 
-            for (var _ = 0; _ < _material.ShaderCount; _++)
+            for (var _ = 0; _ < _material.ShaderBinaryCount; _++)
             {
                 _reader.UnpackUInt64(out ulong resourceFileHash);
                 _reader.UnpackUInt64(out ulong path);
 
-                shaders.Add(new MaterialShader
+                shaderBinaries.Add(new MaterialShaderBinary
                 {
                     ResourceFileHash = resourceFileHash,
                     PathOffset = path
                 });
             }
 
-            foreach (var shader in shaders)
+            return shaderBinaries;
+        }
+
+        private List<MaterialShaderProgram> ReadShaderPrograms()
+        {
+            var shaderPrograms = new List<MaterialShaderProgram>();
+
+            for (var _ = 0; _ < _material.ShaderProgramCount; _++)
             {
                 _reader.UnpackUInt16(out ushort lowKey);
                 _reader.UnpackUInt16(out ushort highKey);
@@ -326,17 +338,20 @@ namespace Flagrum.Gfxbin.Materials
                 _reader.UnpackUInt16(out ushort gsBinaryIndex);
                 _reader.UnpackUInt16(out ushort psBinaryIndex);
 
-                shader.LowKey = lowKey;
-                shader.HighKey = highKey;
-                shader.CsBinaryIndex = csBinaryIndex;
-                shader.VsBinaryIndex = vsBinaryIndex;
-                shader.HsBinaryIndex = hsBinaryIndex;
-                shader.DsBinaryIndex = dsBinaryIndex;
-                shader.GsBinaryIndex = gsBinaryIndex;
-                shader.PsBinaryIndex = psBinaryIndex;
+                shaderPrograms.Add(new MaterialShaderProgram
+                {
+                    LowKey = lowKey,
+                    HighKey = highKey,
+                    CsBinaryIndex = csBinaryIndex,
+                    VsBinaryIndex = vsBinaryIndex,
+                    HsBinaryIndex = hsBinaryIndex,
+                    DsBinaryIndex = dsBinaryIndex,
+                    GsBinaryIndex = gsBinaryIndex,
+                    PsBinaryIndex = psBinaryIndex
+                });
             }
 
-            return shaders;
+            return shaderPrograms;
         }
 
         private void ReadInterfaceInputParameters()
@@ -392,7 +407,7 @@ namespace Flagrum.Gfxbin.Materials
                 sampler.ShaderGenName = GetStringFromBuffer(sampler.ShaderGenNameOffset);
             }
 
-            foreach (var shader in _material.Shaders)
+            foreach (var shader in _material.ShaderBinaries)
             {
                 shader.Path = GetStringFromBuffer(shader.PathOffset);
             }
