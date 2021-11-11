@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Flagrum.Archiver\Flagrum.Archiver.csproj" />
     <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
+    <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj" />
   </ItemGroup>
 
 </Project>
