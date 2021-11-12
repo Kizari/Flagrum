@@ -39,7 +39,7 @@ namespace Flagrum.Archiver.Data
         public uint RelativePathOffset { get; set; }
         public ulong DataOffset { get; set; }
 
-        public ArchiveFile(string archiveRoot, string path)
+        public ArchiveFile(string archiveRoot, string path, string overrideDataPath = null)
         {
             if (path.StartsWith("data://shader"))
             {
@@ -70,6 +70,12 @@ namespace Flagrum.Archiver.Data
             TypeHash = Cryptography.Hash(type);
 
             UriAndTypeHash = (ulong)((long)UriHash & 17592186044415L | (long)TypeHash << 44 & -17592186044416L);
+
+            // Everything is generated above so this path will only be used for reading the bytes from file
+            if (overrideDataPath != null)
+            {
+                _path = overrideDataPath;
+            }
         }
 
         public uint Size

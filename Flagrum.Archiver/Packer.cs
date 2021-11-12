@@ -25,9 +25,9 @@ namespace Flagrum.Archiver
             _files = new List<ArchiveFile>();
         }
 
-        public void AddFile(string path)
+        public void AddFile(string path, string overridePath = null)
         {
-            _files.Add(new ArchiveFile(_archiveDirectory, path));
+            _files.Add(new ArchiveFile(_archiveDirectory, path, overridePath));
         }
 
         public void WriteToFile(string path)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 
 namespace Flagrum.Gfxbin.Serialization
@@ -11,9 +10,9 @@ namespace Flagrum.Gfxbin.Serialization
         public uint Version { get; }
         public int Position { get; set; }
 
-        public BinaryReader(string path, out uint version)
+        public BinaryReader(byte[] data, out uint version)
         {
-            _buffer = File.ReadAllBytes(path);
+            _buffer = data;
             version = (uint)Read();
             Version = version;
         }

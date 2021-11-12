@@ -1,13 +1,87 @@
 ﻿using Flagrum.Archiver;
+using Flagrum.Gfxbin.Materials;
+using Flagrum.Gfxbin.Materials.Data;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Flagrum.Console
 {
     public class ArchiverTests
     {
-        public static void CreateBinMod()
+        public static void ReplaceMaterialAndRepack()
+        {
+            var replacements = new Dictionary<string, string>
+            {
+                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif", "data://mod/noctis_custom/arm_b.png" },
+                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_n.tif", "data://mod/noctis_custom/arm_n.png" },
+                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_mrs.tif", "data://mod/noctis_custom/arm_mrs.png" },
+                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_o.tif", "data://mod/noctis_custom/arm_o.png" }
+            };
+
+            var reader = new MaterialReader("C:\\Testing\\Archiver\\mouth_material_original.gmtl.gfxbin");
+            var baseMaterial = reader.Read();
+
+            reader = new MaterialReader("C:\\Testing\\Archiver\\noctis_custom\\clean.fbxgmtl\\arm.gmtl.gfxbin");
+            var modMaterial = reader.Read();
+
+            baseMaterial.Name = modMaterial.Name;
+            baseMaterial.NameHash = modMaterial.NameHash;
+
+            foreach (var replacement in replacements)
+            {
+                var originalDependency = baseMaterial.Header.Dependencies.FirstOrDefault(d => d.Path == replacement.Key);
+                if (originalDependency != null)
+                {
+                    originalDependency.Path = replacement.Value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("BAD");
+                }
+
+                var texture = baseMaterial.Textures.FirstOrDefault(t => t.Path == replacement.Key);
+                if (texture != null)
+                {
+                    texture.Path = replacement.Value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("BAD");
+                }
+            }
+
+            SetInputValues(baseMaterial, "Occlusion1_Power", 1);
+            SetInputValues(baseMaterial, "Occlusion0_Power", 0);
+            SetInputValues(baseMaterial, "MagicDamages_UVScale", 4, 4);
+            SetInputValues(baseMaterial, "DirtTextureColor", 1.5f, 1.5f, 1.5f);
+            SetInputValues(baseMaterial, "IceColorAdd", 0.0289f, 0.0503639f, 0.1f);
+            SetInputValues(baseMaterial, "DirtTextureUVScale", 4.2f, 6);
+            SetInputValues(baseMaterial, "VertexColor_MaskControl", 0.8f);
+            SetInputValues(baseMaterial, "StoneMap_UVScale", 2, 2);
+            SetInputValues(baseMaterial, "Normal0_Power", 1.3f);
+            SetInputValues(baseMaterial, "Roughness0_Power", 1);
+            SetInputValues(baseMaterial, "BloodTextureColor", 2, 2, 2);
+            SetInputValues(baseMaterial, "BloodTextureUVScale", 2, 4);
+            SetInputValues(baseMaterial, "MagicDamageAmount", 0.3f);
+            SetInputValues(baseMaterial, "BaseColor0", 0.8f, 0.8f, 0.8f);
+            SetInputValues(baseMaterial, "MagicDamageMask", 0.25f);
+
+            var writer = new MaterialWriter(baseMaterial);
+            var data = writer.Write();
+            File.WriteAllBytes("C:\\Testing\\Archiver\\arm_material_modified.gmtl.gfxbin", data);
+
+            replacements = new Dictionary<string, string>
+            {
+                { "C:\\Testing\\Archiver\\noctis_custom\\clean.fbxgmtl\\arm.gmtl.gfxbin", "C:\\Testing\\Archiver\\arm_material_modified.gmtl.gfxbin" }
+            };
+
+            CreateBinMod(replacements);
+        }
+
+        public static void CreateBinMod(Dictionary<string, string> replacements)
         {
             var root = "C:\\Testing\\Archiver\\noctis_custom";
             var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
@@ -15,7 +89,7 @@ namespace Flagrum.Console
 
             var packer = new Packer(root);
             packer.AddFile("data://$mod/temp.ebex");
-            AddFilesRecursively(packer, root);
+            AddFilesRecursively(packer, root, replacements);
 
             var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
             foreach (var shader in shaders)
@@ -26,11 +100,11 @@ namespace Flagrum.Console
             packer.WriteToFile(outputPath);
         }
 
-        private static void AddFilesRecursively(Packer packer, string dir)
+        private static void AddFilesRecursively(Packer packer, string dir, Dictionary<string, string> replacements)
         {
             foreach (var directory in Directory.EnumerateDirectories(dir))
             {
-                AddFilesRecursively(packer, directory);
+                AddFilesRecursively(packer, directory, replacements);
             }
 
             foreach (var file in Directory.EnumerateFiles(dir))
@@ -47,7 +121,27 @@ namespace Flagrum.Console
 
                 if (!shouldAdd) continue;
 
-                packer.AddFile(file);
+                if (replacements.TryGetValue(file, out string replacement))
+                {
+                    packer.AddFile(file, replacement);
+                }
+                else
+                {
+                    packer.AddFile(file);
+                }
+            }
+        }
+
+        private static void SetInputValues(Material material, string inputName, params float[] values)
+        {
+            var match = material.InterfaceInputs.FirstOrDefault(u => u.ShaderGenName.ToLower() == inputName.ToLower() && u.InterfaceIndex == 0);
+            if (match == null)
+            {
+                throw new ArgumentException($"Input {inputName} was not found in material {material.Name}.");
+            }
+            else
+            {
+                match.Values = values;
             }
         }
     }

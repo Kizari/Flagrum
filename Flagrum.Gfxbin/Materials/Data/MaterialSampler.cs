@@ -5,11 +5,9 @@ namespace Flagrum.Gfxbin.Materials.Data
     public class MaterialSampler
     {
         public string Name { get; set; }
-        public uint NameHash { get; set; }
         public ulong NameOffset { get; set; }
 
         public string ShaderGenName { get; set; }
-        public uint ShaderGenNameHash { get; set; }
         public ulong ShaderGenNameOffset { get; set; }
 
         public uint Flags { get; set; }
@@ -26,7 +24,6 @@ namespace Flagrum.Gfxbin.Materials.Data
         public sbyte MinFilter { get; set; }
         public sbyte MagFilter { get; set; }
         public sbyte MipFilter { get; set; }
-        public sbyte TextureFlag { get; set; }
         public sbyte Unknown1 { get; set; }
         public sbyte Unknown2 { get; set; }
         public sbyte Unknown3 { get; set; }

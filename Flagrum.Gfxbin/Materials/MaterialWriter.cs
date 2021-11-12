@@ -1,6 +1,8 @@
 ﻿using Flagrum.Gfxbin.Materials.Data;
 using Flagrum.Gfxbin.Serialization;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Flagrum.Gfxbin.Materials
 {
@@ -58,40 +60,46 @@ namespace Flagrum.Gfxbin.Materials
         private byte[] CreateStringBuffer()
         {
             var stringBuffer = new StringBuffer();
+            var tuples = new List<(object, PropertyInfo, string)>();
 
-            _material.NameOffset = stringBuffer.Put(_material.Name);
+            tuples.Add((_material, typeof(Material).GetProperty(nameof(Material.NameOffset)), _material.Name));
 
             foreach (var input in _material.InterfaceInputs)
             {
-                input.NameOffset = stringBuffer.Put(input.Name);
-                input.ShaderGenNameOffset = stringBuffer.Put(input.ShaderGenName);
+                tuples.Add((input, typeof(MaterialInterfaceInput).GetProperty(nameof(MaterialInterfaceInput.NameOffset)), input.Name));
+                tuples.Add((input, typeof(MaterialInterfaceInput).GetProperty(nameof(MaterialInterfaceInput.ShaderGenNameOffset)), input.ShaderGenName));
             }
 
             foreach (var @interface in _material.Interfaces)
             {
-                @interface.NameOffset = stringBuffer.Put(@interface.Name);
-                @interface.ShaderGenNameOffset = stringBuffer.Put(@interface.ShaderGenName);
+                tuples.Add((@interface, typeof(MaterialInterface).GetProperty(nameof(MaterialInterface.NameOffset)), @interface.Name));
+                tuples.Add((@interface, typeof(MaterialInterface).GetProperty(nameof(MaterialInterface.ShaderGenNameOffset)), @interface.ShaderGenName));
             }
 
             foreach (var texture in _material.Textures)
             {
-                texture.NameOffset = stringBuffer.Put(texture.Name);
-                texture.ShaderGenNameOffset = stringBuffer.Put(texture.ShaderGenName);
-                texture.PathOffset = stringBuffer.Put(texture.Path);
+                tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.NameOffset)), texture.Name));
+                tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.ShaderGenNameOffset)), texture.ShaderGenName));
+                tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.PathOffset)), texture.Path));
             }
 
             foreach (var sampler in _material.Samplers)
             {
-                sampler.NameOffset = stringBuffer.Put(sampler.Name);
-                sampler.ShaderGenNameOffset = stringBuffer.Put(sampler.ShaderGenName);
+                tuples.Add((sampler, typeof(MaterialSampler).GetProperty(nameof(MaterialSampler.NameOffset)), sampler.Name));
+                tuples.Add((sampler, typeof(MaterialSampler).GetProperty(nameof(MaterialSampler.ShaderGenNameOffset)), sampler.ShaderGenName));
             }
 
             foreach (var shader in _material.ShaderBinaries)
             {
-                shader.PathOffset = stringBuffer.Put(shader.Path);
+                tuples.Add((shader, typeof(MaterialShaderBinary).GetProperty(nameof(MaterialShaderBinary.PathOffset)), shader.Path));
             }
 
-            _material.HighTexturePackAssetOffset = stringBuffer.Put(_material.HighTexturePackAsset);
+            tuples.Add((_material, typeof(Material).GetProperty(nameof(Material.HighTexturePackAssetOffset)), _material.HighTexturePackAsset));
+
+            foreach (var record in tuples.OrderBy(d => d.Item3.Length))
+            {
+                record.Item2.SetValue(record.Item1, stringBuffer.Put(record.Item3));
+            }
 
             return stringBuffer.ToArray();
         }
@@ -125,8 +133,8 @@ namespace Flagrum.Gfxbin.Materials
             _writer.WriteInt((ushort)_material.ShaderBinaries.Count);
             _writer.WriteInt((ushort)_material.ShaderPrograms.Count);
 
-            _writer.WriteInt((ushort)inputBufferSize);
-            _writer.WriteInt((ushort)stringBufferSize);
+            _writer.WriteInt((ulong)inputBufferSize);
+            _writer.WriteInt((ulong)stringBufferSize);
             _writer.WriteInt(_material.NameHash);
 
             _writer.WriteInt(_material.BlendType);

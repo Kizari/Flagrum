@@ -16,10 +16,12 @@ namespace Flagrum.Gfxbin.Materials
 
         private byte[] _stringBuffer;
 
-        public MaterialReader(string path)
+        public MaterialReader(string filePath) : this(System.IO.File.ReadAllBytes(filePath)) { }
+
+        public MaterialReader(byte[] materialData)
         {
             _logger = new ConsoleLogger();
-            _reader = new BinaryReader(path, out uint version);
+            _reader = new BinaryReader(materialData, out uint version);
 
             _material = new Material();
             _material.Header.Version = version;
@@ -283,10 +285,7 @@ namespace Flagrum.Gfxbin.Materials
                     MipFilter = samplerStateMipFilter,
                     MipmapLodBias = mipmapLodBias,
                     NameOffset = reflectionSamplerName,
-                    NameHash = 0,
                     ShaderGenNameOffset = reflectionSamplerShaderGenName,
-                    ShaderGenNameHash = 0,
-                    TextureFlag = 0,
                     WrapS = samplerStateWrapS,
                     WrapT = samplerStateWrapT,
                     WrapR = samplerStateWrapR,
