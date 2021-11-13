@@ -1,21 +1,21 @@
-﻿namespace Flagrum.Gfxbin.Materials.Data
+﻿namespace Flagrum.Gfxbin.Gmtl.Data
 {
-    public class MaterialInterfaceInput
+    public class MaterialInterface
     {
         public string Name { get; set; }
         public uint NameHash { get; set; }
         public ulong NameOffset { get; set; }
-        
+
         public string ShaderGenName { get; set; }
         public uint ShaderGenNameHash { get; set; }
         public ulong ShaderGenNameOffset { get; set; }
 
-        public ushort Type { get; set; }
-        public ushort InterfaceIndex { get; set; }
-        public ushort GpuOffset { get; set; }
+        public uint GpuOffset { get; set; }
         public ushort Size { get; set; }
-        public uint Flags { get; set; }
+        public ushort InputCount { get; set; }
 
-        public float[] Values { get; set; }
+        public uint Flags { get; set; }
+        public ulong Unknown1 { get; set; }
+        public uint Unknown2 { get; set; }
     }
 }

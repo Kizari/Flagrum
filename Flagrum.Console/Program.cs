@@ -4,7 +4,8 @@
     {
         public static void Main(string[] args)
         {
-            ArchiverTests.ReplaceMaterialAndRepack();
+            GfxbinTests.ImportThenExportMaterial();
+            GfxbinTests.ImportThenExportModel();
         }
     }
 }

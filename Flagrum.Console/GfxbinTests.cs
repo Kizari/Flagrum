@@ -1,11 +1,29 @@
-﻿using Flagrum.Gfxbin.Materials;
+﻿using System.IO;
+using Flagrum.Gfxbin.Gmdl;
+using Flagrum.Gfxbin.Gmtl;
 using Newtonsoft.Json;
-using System.IO;
 
 namespace Flagrum.Console
 {
     public static class GfxbinTests
     {
+        public static void ImportThenExportModel()
+        {
+            const string gfxbin = "C:\\Testing\\Gfxbin\\original.gmdl.gfxbin";
+            const string gpubin = "C:\\Testing\\Gfxbin\\original.gpubin";
+            const string output = "C:\\Testing\\Gfxbin\\export.gmdl.gfxbin";
+
+            var gfxbinBuffer = File.ReadAllBytes(gfxbin);
+            var gpubinBuffer = File.ReadAllBytes(gpubin);
+
+            var reader = new ModelReader(gfxbinBuffer, gpubinBuffer);
+            var model = reader.Read();
+
+            var writer = new ModelWriter(model, gpubinBuffer);
+            var data = writer.Write();
+            File.WriteAllBytes(output, data);
+        }
+
         public static void ImportThenExportMaterial()
         {
             var input = "C:\\Testing\\Gfxbin\\material.gmtl.gfxbin";

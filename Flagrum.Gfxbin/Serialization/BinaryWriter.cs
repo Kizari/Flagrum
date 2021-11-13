@@ -2,18 +2,29 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Services.Logging;
+using Flagrum.Gfxbin.Gmdl.Data;
 
 namespace Flagrum.Gfxbin.Serialization
 {
     public class BinaryWriter
     {
-        private MemoryStream _stream = new MemoryStream();
+        private readonly Logger _logger = new ConsoleLogger();
+        private readonly MemoryStream _stream = new();
 
-        public byte[] ToArray() => _stream.ToArray();
+        public byte[] ToArray()
+        {
+            return _stream.ToArray();
+        }
 
         public void WriteMapCount(uint count)
         {
-            if (count <= ushort.MaxValue)
+            if (count <= 0x0F)
+            {
+                var b = (byte)(count | 0x80);
+                _stream.WriteByte(b);
+            }
+            else if (count <= ushort.MaxValue)
             {
                 _stream.WriteByte((byte)TypeFormat.Map16);
                 _stream.Write(BitConverter.GetBytes((ushort)count));
@@ -27,7 +38,12 @@ namespace Flagrum.Gfxbin.Serialization
 
         public void WriteArraySize(uint size)
         {
-            if (size <= ushort.MaxValue)
+            if (size <= 0x0F)
+            {
+                var b = (byte)(size | 0x90);
+                _stream.WriteByte(b);
+            }
+            else if (size <= ushort.MaxValue)
             {
                 _stream.WriteByte((byte)TypeFormat.Array16);
                 _stream.Write(BitConverter.GetBytes((ushort)size));
@@ -39,37 +55,40 @@ namespace Flagrum.Gfxbin.Serialization
             }
         }
 
+        public void WriteByte(byte b)
+        {
+            _stream.WriteByte(b);
+        }
+
         public void WriteFloat(float value)
         {
             _stream.WriteByte((byte)TypeFormat.Float32);
             _stream.Write(BitConverter.GetBytes(value));
         }
 
-        public void WriteInt(ulong number)
+        public void WriteUInt(ulong number)
         {
-            if (number <= 0x7F)
+            switch (number)
             {
-                _stream.WriteByte((byte)number);
-            }
-            else if (number <= byte.MaxValue)
-            {
-                _stream.WriteByte((byte)TypeFormat.Uint8);
-                _stream.WriteByte((byte)number);
-            }
-            else if (number <= ushort.MaxValue)
-            {
-                _stream.WriteByte((byte)TypeFormat.Uint16);
-                _stream.Write(BitConverter.GetBytes((ushort)number));
-            }
-            else if (number <= uint.MaxValue)
-            {
-                _stream.WriteByte((byte)TypeFormat.Uint32);
-                _stream.Write(BitConverter.GetBytes((uint)number));
-            }
-            else if (number <= ulong.MaxValue)
-            {
-                _stream.WriteByte((byte)TypeFormat.Uint64);
-                _stream.Write(BitConverter.GetBytes((ulong)number));
+                case <= 0x7F:
+                    _stream.WriteByte((byte)number);
+                    break;
+                case <= byte.MaxValue:
+                    _stream.WriteByte((byte)TypeFormat.Uint8);
+                    _stream.WriteByte((byte)number);
+                    break;
+                case <= ushort.MaxValue:
+                    _stream.WriteByte((byte)TypeFormat.Uint16);
+                    _stream.Write(BitConverter.GetBytes((ushort)number));
+                    break;
+                case <= uint.MaxValue:
+                    _stream.WriteByte((byte)TypeFormat.Uint32);
+                    _stream.Write(BitConverter.GetBytes((uint)number));
+                    break;
+                case <= ulong.MaxValue:
+                    _stream.WriteByte((byte)TypeFormat.Uint64);
+                    _stream.Write(BitConverter.GetBytes(number));
+                    break;
             }
         }
 
@@ -130,12 +149,10 @@ namespace Flagrum.Gfxbin.Serialization
                 if (b)
                 {
                     _stream.WriteByte((byte)TypeFormat.True);
-                    _stream.Write(BitConverter.GetBytes(b));
                 }
                 else
                 {
                     _stream.WriteByte((byte)TypeFormat.False);
-                    _stream.Write(BitConverter.GetBytes(b));
                 }
             }
             else
@@ -151,9 +168,9 @@ namespace Flagrum.Gfxbin.Serialization
             byteList.Add(0x00);
             var bytes = byteList.ToArray();
 
-            // This only works if starting at byte.MaxValue and iterating backwards
-            // No idea why it works, but seems to always produce the correct result
-            byte format = byte.MaxValue;
+            // FIXME: This only works if starting at byte.MaxValue and iterating backwards
+            // No idea why it works, but seems to always produce the correct result so far
+            var format = byte.MaxValue;
             while ((format & 95) != bytes.Length)
             {
                 format--;
@@ -171,6 +188,64 @@ namespace Flagrum.Gfxbin.Serialization
             _stream.WriteByte((byte)TypeFormat.Str8);
             _stream.WriteByte((byte)bytes.Length);
             _stream.Write(bytes);
+        }
+
+        public void WriteVector3(Vector3 vector)
+        {
+            WriteFloat(vector.X);
+            WriteFloat(vector.Y);
+            WriteFloat(vector.Z);
+        }
+
+        public void WriteMatrix(Matrix matrix)
+        {
+            foreach (var i in Enumerable.Range(0, 4))
+            {
+                WriteVector3(matrix.Rows[i]);
+            }
+        }
+
+        public void WriteString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                // NOTE: Unsure if this is safe in all cases
+                _stream.WriteByte(0xA0);
+                return;
+            }
+
+            var stringBytes = Encoding.ASCII.GetBytes(value);
+            var stringBuffer = new byte[stringBytes.Length + 1];
+            Array.Copy(stringBytes, stringBuffer, stringBytes.Length);
+
+            if (stringBuffer.Length <= 0x7F)
+            {
+                // FIXME: This only works if starting at byte.MaxValue and iterating backwards
+                // No idea why it works, but seems to always produce the correct result so far
+                var format = byte.MaxValue;
+                while ((format & 95) != stringBuffer.Length)
+                {
+                    format--;
+                }
+
+                WriteByte(format);
+            }
+            else if (stringBuffer.Length <= byte.MaxValue)
+            {
+                WriteByte((byte)stringBuffer.Length);
+            }
+            else if (stringBuffer.Length <= ushort.MaxValue)
+            {
+                WriteByte((byte)TypeFormat.Str16);
+                WriteUInt((ushort)stringBuffer.Length);
+            }
+            else
+            {
+                WriteByte((byte)TypeFormat.Str32);
+                WriteUInt((uint)stringBuffer.Length);
+            }
+
+            _stream.Write(stringBuffer);
         }
     }
 }

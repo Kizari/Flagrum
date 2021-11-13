@@ -1,11 +1,11 @@
-﻿using Flagrum.Gfxbin.Data;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Flagrum.Gfxbin.Data;
 
-namespace Flagrum.Gfxbin.Materials.Data
+namespace Flagrum.Gfxbin.Gmtl.Data
 {
     public class Material
     {
-        public GfxbinHeader Header { get; } = new GfxbinHeader();
+        public GfxbinHeader Header { get; } = new();
 
         public string Name { get; set; }
         public uint NameHash { get; set; }

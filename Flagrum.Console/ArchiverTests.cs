@@ -1,11 +1,11 @@
-﻿using Flagrum.Archiver;
-using Flagrum.Gfxbin.Materials;
-using Flagrum.Gfxbin.Materials.Data;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Archiver;
+using Flagrum.Gfxbin.Gmtl;
+using Flagrum.Gfxbin.Gmtl.Data;
+using Newtonsoft.Json;
 
 namespace Flagrum.Console
 {
@@ -15,10 +15,22 @@ namespace Flagrum.Console
         {
             var replacements = new Dictionary<string, string>
             {
-                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif", "data://mod/noctis_custom/arm_b.png" },
-                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_n.tif", "data://mod/noctis_custom/arm_n.png" },
-                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_mrs.tif", "data://mod/noctis_custom/arm_mrs.png" },
-                { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_o.tif", "data://mod/noctis_custom/arm_o.png" }
+                {
+                    "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif",
+                    "data://mod/noctis_custom/arm_b.png"
+                },
+                {
+                    "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_n.tif",
+                    "data://mod/noctis_custom/arm_n.png"
+                },
+                {
+                    "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_mrs.tif",
+                    "data://mod/noctis_custom/arm_mrs.png"
+                },
+                {
+                    "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_o.tif",
+                    "data://mod/noctis_custom/arm_o.png"
+                }
             };
 
             var reader = new MaterialReader("C:\\Testing\\Archiver\\mouth_material_original.gmtl.gfxbin");
@@ -32,7 +44,8 @@ namespace Flagrum.Console
 
             foreach (var replacement in replacements)
             {
-                var originalDependency = baseMaterial.Header.Dependencies.FirstOrDefault(d => d.Path == replacement.Key);
+                var originalDependency =
+                    baseMaterial.Header.Dependencies.FirstOrDefault(d => d.Path == replacement.Key);
                 if (originalDependency != null)
                 {
                     originalDependency.Path = replacement.Value;
@@ -75,7 +88,10 @@ namespace Flagrum.Console
 
             replacements = new Dictionary<string, string>
             {
-                { "C:\\Testing\\Archiver\\noctis_custom\\clean.fbxgmtl\\arm.gmtl.gfxbin", "C:\\Testing\\Archiver\\arm_material_modified.gmtl.gfxbin" }
+                {
+                    "C:\\Testing\\Archiver\\noctis_custom\\clean.fbxgmtl\\arm.gmtl.gfxbin",
+                    "C:\\Testing\\Archiver\\arm_material_modified.gmtl.gfxbin"
+                }
             };
 
             CreateBinMod(replacements);
@@ -110,7 +126,7 @@ namespace Flagrum.Console
             foreach (var file in Directory.EnumerateFiles(dir))
             {
                 var shouldAdd = true;
-                var extensions = new string[] { ".clsmk", ".clsmk.dep", ".clsx" };
+                var extensions = new[] {".clsmk", ".clsmk.dep", ".clsx"};
                 foreach (var extension in extensions)
                 {
                     if (file.EndsWith(extension))
@@ -119,9 +135,12 @@ namespace Flagrum.Console
                     }
                 }
 
-                if (!shouldAdd) continue;
+                if (!shouldAdd)
+                {
+                    continue;
+                }
 
-                if (replacements.TryGetValue(file, out string replacement))
+                if (replacements.TryGetValue(file, out var replacement))
                 {
                     packer.AddFile(file, replacement);
                 }
@@ -134,15 +153,14 @@ namespace Flagrum.Console
 
         private static void SetInputValues(Material material, string inputName, params float[] values)
         {
-            var match = material.InterfaceInputs.FirstOrDefault(u => u.ShaderGenName.ToLower() == inputName.ToLower() && u.InterfaceIndex == 0);
+            var match = material.InterfaceInputs.FirstOrDefault(u =>
+                u.ShaderGenName.ToLower() == inputName.ToLower() && u.InterfaceIndex == 0);
             if (match == null)
             {
                 throw new ArgumentException($"Input {inputName} was not found in material {material.Name}.");
             }
-            else
-            {
-                match.Values = values;
-            }
+
+            match.Values = values;
         }
     }
 

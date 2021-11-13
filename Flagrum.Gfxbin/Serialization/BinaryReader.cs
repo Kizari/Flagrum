@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Text;
+using Flagrum.Gfxbin.Gmdl.Data;
 
 namespace Flagrum.Gfxbin.Serialization
 {
     public class BinaryReader
     {
-        private byte[] _buffer;
+        private readonly byte[] _buffer;
 
-        public uint Version { get; }
-        public int Position { get; set; }
+        private int _position;
 
-        public BinaryReader(byte[] data, out uint version)
+        public BinaryReader(byte[] data)
         {
             _buffer = data;
-            version = (uint)Read();
-            Version = version;
         }
 
         public bool UnpackBlob(out byte[] data, out uint size)
@@ -25,119 +23,119 @@ namespace Flagrum.Gfxbin.Serialization
                 size = 0;
                 return true;
             }
-            else if (UnpackBin8(TypeFormat.Bin8, out data, out size))
+
+            if (UnpackBin8(TypeFormat.Bin8, out data, out size))
             {
                 return true;
             }
-            else if (UnpackBin16(TypeFormat.Bin16, out data, out size))
+
+            if (UnpackBin16(TypeFormat.Bin16, out data, out size))
             {
                 return true;
             }
-            else
-            {
-                return UnpackString(TypeFormat.Bin32, out data, out size);
-            }
+
+            return UnpackString(TypeFormat.Bin32, out data, out size);
         }
 
         private bool UnpackBin8(TypeFormat format, out byte[] data, out uint size)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 data = default;
                 size = 0;
                 return false;
             }
 
-            this.Position++;
-            size = this._buffer[this.Position];
-            this.Position++;
+            _position++;
+            size = _buffer[_position];
+            _position++;
 
             data = new byte[(int)size];
-            Array.Copy(this._buffer, this.Position, data, 0, (int)size);
-            this.Position += (int)size;
+            Array.Copy(_buffer, _position, data, 0, (int)size);
+            _position += (int)size;
 
             return true;
         }
 
         private bool UnpackBin16(TypeFormat format, out byte[] data, out uint size)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 data = default;
                 size = 0;
                 return false;
             }
 
-            this.Position++;
-            size = BitConverter.ToUInt16(this._buffer, this.Position);
-            this.Position += 2;
+            _position++;
+            size = BitConverter.ToUInt16(_buffer, _position);
+            _position += 2;
 
             data = new byte[(int)size];
-            Array.Copy(this._buffer, this.Position, data, 0, (int)size);
-            this.Position += (int)size;
+            Array.Copy(_buffer, _position, data, 0, (int)size);
+            _position += (int)size;
 
             return true;
         }
 
         private bool UnpackString(TypeFormat format, out byte[] data, out uint size)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 data = default;
                 size = 0;
                 return false;
             }
 
-            this.Position++;
-            size = BitConverter.ToUInt32(this._buffer, this.Position);
-            this.Position += 4;
+            _position++;
+            size = BitConverter.ToUInt32(_buffer, _position);
+            _position += 4;
 
             data = new byte[(int)size];
-            Array.Copy(this._buffer, this.Position, data, 0, (int)size);
-            this.Position += (int)size;
+            Array.Copy(_buffer, _position, data, 0, (int)size);
+            _position += (int)size;
 
             return true;
         }
 
         public bool UnpackFloat32(out float value)
         {
-            if (this._buffer[this.Position] != (byte)TypeFormat.Float32)
+            if (_buffer[_position] != (byte)TypeFormat.Float32)
             {
                 value = default;
                 return false;
             }
 
-            this.Position++;
-            value = BitConverter.ToSingle(this._buffer, this.Position);
-            this.Position += sizeof(float);
+            _position++;
+            value = BitConverter.ToSingle(_buffer, _position);
+            _position += sizeof(float);
 
             return true;
         }
 
         public bool UnpackUInt64(out ulong value)
         {
-            if (this.UnpackUInt16(out ushort ushortValue))
+            if (UnpackUInt16(out var ushortValue))
             {
                 value = ushortValue;
                 return true;
             }
 
-            if (this._buffer[this.Position] != (byte)TypeFormat.Uint32)
+            if (_buffer[_position] != (byte)TypeFormat.Uint32)
             {
                 return UnpackPrimitiveUInt64(TypeFormat.Uint64, out value);
             }
 
-            this.Position++;
-            value = BitConverter.ToUInt32(this._buffer, this.Position);
-            this.Position += 4;
+            _position++;
+            value = BitConverter.ToUInt32(_buffer, _position);
+            _position += 4;
             return true;
         }
 
         public bool UnpackUInt32(out uint value)
         {
-            if (this.UnpackUInt16(out ushort ushortValue))
+            if (UnpackUInt16(out var ushortValue))
             {
-                value = (uint)ushortValue;
+                value = ushortValue;
                 return true;
             }
 
@@ -146,142 +144,138 @@ namespace Flagrum.Gfxbin.Serialization
 
         public bool UnpackUInt16(out ushort value)
         {
-            var val = this._buffer[this.Position];
-            if (this._buffer[this.Position] > (byte)TypeFormat.PositiveFixIntEnd)
+            var val = _buffer[_position];
+            if (_buffer[_position] > (byte)TypeFormat.PositiveFixIntEnd)
             {
-                if (UnpackPrimitiveUInt8(TypeFormat.Uint8, out byte byteValue))
+                if (UnpackPrimitiveUInt8(TypeFormat.Uint8, out var byteValue))
                 {
-                    value = (ushort)byteValue;
+                    value = byteValue;
                     return true;
                 }
-                else
-                {
-                    return UnpackContainerUInt16(TypeFormat.Uint16, out value);
-                }
+
+                return UnpackContainerUInt16(TypeFormat.Uint16, out value);
             }
-            else
-            {
-                value = this._buffer[this.Position];
-                this.Position++;
-                return true;
-            }
+
+            value = _buffer[_position];
+            _position++;
+            return true;
         }
 
 
         public bool UnpackInt8(out sbyte value)
         {
-            if (this.UnpackNegativeFixNum(out value))
+            if (UnpackNegativeFixNum(out value))
             {
                 return true;
             }
 
-            if (this._buffer[this.Position] > (byte)TypeFormat.PositiveFixIntEnd)
+            if (_buffer[_position] > (byte)TypeFormat.PositiveFixIntEnd)
             {
                 return UnpackPrimitiveInt8(TypeFormat.Int8, out value);
             }
 
-            value = unchecked((sbyte)this._buffer[this.Position]);
-            this.Position++;
+            value = unchecked((sbyte)_buffer[_position]);
+            _position++;
             return true;
         }
 
         private bool UnpackContainerUInt32(TypeFormat format, out uint value)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 value = default;
                 return false;
             }
 
-            this.Position++;
-            value = BitConverter.ToUInt32(this._buffer, this.Position);
-            this.Position += sizeof(uint);
+            _position++;
+            value = BitConverter.ToUInt32(_buffer, _position);
+            _position += sizeof(uint);
 
             return true;
         }
 
         private bool UnpackContainerUInt16(TypeFormat format, out ushort value)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 value = default;
                 return false;
             }
 
-            this.Position++;
-            value = BitConverter.ToUInt16(this._buffer, this.Position);
-            this.Position += sizeof(ushort);
+            _position++;
+            value = BitConverter.ToUInt16(_buffer, _position);
+            _position += sizeof(ushort);
 
             return true;
         }
 
         private bool UnpackPrimitiveUInt64(TypeFormat format, out ulong value)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 value = default;
                 return false;
             }
 
-            this.Position++;
-            value = BitConverter.ToUInt64(this._buffer, this.Position);
-            this.Position += 8;
+            _position++;
+            value = BitConverter.ToUInt64(_buffer, _position);
+            _position += 8;
 
             return true;
         }
 
         private bool UnpackPrimitiveUInt8(TypeFormat format, out byte value)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 value = default;
                 return false;
             }
 
-            this.Position++;
-            value = this._buffer[this.Position];
-            this.Position++;
+            _position++;
+            value = _buffer[_position];
+            _position++;
 
             return true;
         }
 
         private bool UnpackPrimitiveInt8(TypeFormat format, out sbyte value)
         {
-            if (this._buffer[this.Position] != (byte)format)
+            if (_buffer[_position] != (byte)format)
             {
                 value = default;
                 return false;
             }
 
-            this.Position++;
-            value = unchecked((sbyte)this._buffer[this.Position]);
-            this.Position++;
+            _position++;
+            value = unchecked((sbyte)_buffer[_position]);
+            _position++;
 
             return true;
         }
 
         private bool UnpackNegativeFixNum(out sbyte value)
         {
-            if (this._buffer[this.Position] < (byte)TypeFormat.NegativeFixIntStart)
+            if (_buffer[_position] < (byte)TypeFormat.NegativeFixIntStart)
             {
                 value = default;
                 return false;
             }
 
-            value = unchecked((sbyte)this._buffer[this.Position]);
-            this.Position++;
+            value = unchecked((sbyte)_buffer[_position]);
+            _position++;
 
             return true;
         }
 
         private bool UnpackNil()
         {
-            if (this._buffer[this.Position] != (byte)TypeFormat.Nil)
+            if (_buffer[_position] != (byte)TypeFormat.Nil)
             {
                 return false;
             }
 
-            this.Position++;
+            _position++;
             return true;
         }
 
@@ -289,34 +283,34 @@ namespace Flagrum.Gfxbin.Serialization
         public object Read()
         {
             object result = 0;
-            var val = this._buffer[this.Position];
+            var val = _buffer[_position];
 
-            int size = 1;
-            switch ((TypeFormat)(val))
+            var size = 1;
+            switch ((TypeFormat)val)
             {
                 case TypeFormat.Uint64:
-                    result = BitConverter.ToUInt64(this._buffer, this.Position + 1);
+                    result = BitConverter.ToUInt64(_buffer, _position + 1);
                     size += sizeof(ulong);
                     break;
                 case TypeFormat.Uint32:
-                    result = BitConverter.ToUInt32(this._buffer, this.Position + 1);
+                    result = BitConverter.ToUInt32(_buffer, _position + 1);
                     size += sizeof(uint);
                     break;
                 case TypeFormat.Uint16:
-                    result = BitConverter.ToUInt16(this._buffer, this.Position + 1);
+                    result = BitConverter.ToUInt16(_buffer, _position + 1);
                     size += sizeof(ushort);
                     break;
                 case TypeFormat.Uint8:
-                    result = this._buffer[this.Position + 1];
+                    result = _buffer[_position + 1];
                     size += sizeof(byte);
                     break;
                 case TypeFormat.Float32:
-                    result = BitConverter.ToSingle(this._buffer, this.Position + 1);
+                    result = BitConverter.ToSingle(_buffer, _position + 1);
                     size += sizeof(float);
                     break;
                 case TypeFormat.Map16:
                 case TypeFormat.Array16:
-                    result = BitConverter.ToUInt16(this._buffer, this.Position + 1);
+                    result = BitConverter.ToUInt16(_buffer, _position + 1);
                     size += sizeof(ushort);
                     break;
                 case TypeFormat.True:
@@ -335,32 +329,36 @@ namespace Flagrum.Gfxbin.Serialization
                     break;
             }
 
-            this.Position += size;
+            _position += size;
             return result;
         }
 
         public uint ReadUint()
         {
-            var rawValue = this.Read();
+            var rawValue = Read();
             if (rawValue is uint)
             {
                 return (uint)rawValue;
             }
-            else if (rawValue is int)
+
+            if (rawValue is int)
             {
                 return (uint)(int)rawValue;
             }
-            else if (rawValue is ushort)
+
+            if (rawValue is ushort)
             {
-                return (uint)(ushort)rawValue;
+                return (ushort)rawValue;
             }
-            else if (rawValue is short)
+
+            if (rawValue is short)
             {
                 return (uint)(short)rawValue;
             }
-            else if (rawValue is byte)
+
+            if (rawValue is byte)
             {
-                return (uint)(byte)rawValue;
+                return (byte)rawValue;
             }
 
             return (uint)rawValue;
@@ -368,26 +366,30 @@ namespace Flagrum.Gfxbin.Serialization
 
         public int ReadInt()
         {
-            var rawValue = this.Read();
-            if (rawValue is int)
+            var rawValue = Read();
+            if (rawValue is int value)
             {
-                return (int)rawValue;
+                return value;
             }
-            else if (rawValue is uint)
+
+            if (rawValue is uint)
             {
                 return (int)(uint)rawValue;
             }
-            else if (rawValue is short)
+
+            if (rawValue is short)
             {
                 return (short)rawValue;
             }
-            else if (rawValue is ushort)
+
+            if (rawValue is ushort)
             {
                 return (short)(ushort)rawValue;
             }
-            else if (rawValue is byte)
+
+            if (rawValue is byte)
             {
-                return (short)(byte)rawValue;
+                return (byte)rawValue;
             }
 
             return (short)rawValue;
@@ -395,18 +397,20 @@ namespace Flagrum.Gfxbin.Serialization
 
         public ushort ReadUInt16()
         {
-            var rawValue = this.Read();
+            var rawValue = Read();
             if (rawValue is short)
             {
                 return (ushort)rawValue;
             }
-            else if (rawValue is ushort)
+
+            if (rawValue is ushort)
             {
                 return (ushort)rawValue;
             }
-            else if (rawValue is byte)
+
+            if (rawValue is byte)
             {
-                return (ushort)(byte)rawValue;
+                return (byte)rawValue;
             }
 
             return (ushort)rawValue;
@@ -414,12 +418,13 @@ namespace Flagrum.Gfxbin.Serialization
 
         public ulong ReadUint64()
         {
-            var rawValue = this.Read();
+            var rawValue = Read();
             if (rawValue is ulong x)
             {
                 return x;
             }
-            else if (rawValue is long x2)
+
+            if (rawValue is long x2)
             {
                 return (uint)x2;
             }
@@ -429,50 +434,51 @@ namespace Flagrum.Gfxbin.Serialization
 
         public bool ReadBool()
         {
-            var rawValue = this.Read();
+            var rawValue = Read();
             return (bool)rawValue;
         }
 
         public float ReadFloat()
         {
-            var rawValue = this.Read();
+            var rawValue = Read();
             return (float)rawValue;
         }
 
         public uint ReadMapCount()
         {
-            var rawValue = this.ReadByte();
-            uint result = rawValue & 111u;
+            var rawValue = ReadByte();
+            var result = rawValue & 111u;
 
             var size = 0;
             if (rawValue == (byte)TypeFormat.Map16)
             {
-                result = (uint)BitConverter.ToUInt16(this._buffer, this.Position);
+                result = BitConverter.ToUInt16(_buffer, _position);
                 size += sizeof(ushort);
             }
             else if (rawValue == (byte)TypeFormat.Map32)
             {
-                result = BitConverter.ToUInt32(this._buffer, this.Position);
+                result = BitConverter.ToUInt32(_buffer, _position);
                 size += sizeof(uint);
             }
 
-            this.Position += size;
+            _position += size;
             return result;
         }
 
         public bool UnpackArraySize(out int size)
         {
-            var format = this.ReadByte();
+            var format = ReadByte();
             if (format == (byte)TypeFormat.Array16)
             {
-                size = BitConverter.ToUInt16(this._buffer, this.Position);
-                this.Position += sizeof(ushort);
+                size = BitConverter.ToUInt16(_buffer, _position);
+                _position += sizeof(ushort);
                 return true;
             }
-            else if (format == (byte)TypeFormat.Array32)
+
+            if (format == (byte)TypeFormat.Array32)
             {
-                size = (int)BitConverter.ToUInt32(this._buffer, this.Position);
-                this.Position += sizeof(uint);
+                size = (int)BitConverter.ToUInt32(_buffer, _position);
+                _position += sizeof(uint);
                 return true;
             }
 
@@ -482,33 +488,33 @@ namespace Flagrum.Gfxbin.Serialization
 
         public string ReadString()
         {
-            var format = this._buffer[this.Position];
+            var format = _buffer[_position];
             var length = (int)format;
             if (format < 0xA0 || format > 0xBf)
             {
                 if ((TypeFormat)format == TypeFormat.Str8)
                 {
-                    this.Position++;
-                    length = this._buffer[this.Position];
-                    this.Position++;
+                    _position++;
+                    length = _buffer[_position];
+                    _position++;
                 }
                 else if ((TypeFormat)format == TypeFormat.Str16)
                 {
-                    this.Position++;
-                    length = this._buffer[this.Position];
-                    this.Position++;
+                    _position++;
+                    length = _buffer[_position];
+                    _position++;
                 }
                 else if ((TypeFormat)format == TypeFormat.Str32)
                 {
-                    this.Position++;
-                    length = this._buffer[this.Position];
-                    this.Position++;
+                    _position++;
+                    length = _buffer[_position];
+                    _position++;
                 }
             }
             else
             {
                 length = format & 95;
-                this.Position++;
+                _position++;
             }
 
             //var length = this.ReadData[this.Position] & 95;
@@ -518,32 +524,37 @@ namespace Flagrum.Gfxbin.Serialization
                 return string.Empty;
             }
 
-            var result = Encoding.ASCII.GetString(this._buffer, this.Position, length - 1);
+            var result = Encoding.ASCII.GetString(_buffer, _position, length - 1);
 
-            this.Position += length;
+            _position += length;
             return result;
         }
 
         public string ReadStr8()
         {
-            var pathFormat = (TypeFormat)(byte)this.Read();
-            var length = this._buffer[this.Position];
-            var result = Encoding.ASCII.GetString(this._buffer, this.Position + 1, length - 1);
+            var pathFormat = (TypeFormat)(byte)Read();
+            var length = _buffer[_position];
+            var result = Encoding.ASCII.GetString(_buffer, _position + 1, length - 1);
 
-            this.Position += length + 1;
+            _position += length + 1;
             return result;
         }
 
         public byte ReadByte()
         {
-            var result = this._buffer[this.Position];
-            this.Position++;
+            var result = _buffer[_position];
+            _position++;
             return result;
         }
 
-        public void Skip(int bytes)
+        public Vector3 ReadVector3()
         {
-            this.Position += bytes;
+            return new Vector3(ReadFloat(), ReadFloat(), ReadFloat());
+        }
+
+        public Matrix ReadMatrix()
+        {
+            return new Matrix(ReadVector3(), ReadVector3(), ReadVector3(), ReadVector3());
         }
     }
 }

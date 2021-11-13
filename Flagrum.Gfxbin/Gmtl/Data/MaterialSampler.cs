@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Flagrum.Gfxbin.Materials.Data
+﻿namespace Flagrum.Gfxbin.Gmtl.Data
 {
     public class MaterialSampler
     {
