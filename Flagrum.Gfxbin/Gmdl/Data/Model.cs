@@ -6,6 +6,7 @@ namespace Flagrum.Gfxbin.Gmdl.Data
     public class Model
     {
         public GfxbinHeader Header { get; } = new();
+        public Gpubin Gpubin { get; set; }
 
         public string Name { get; set; }
         public ulong AssetHash { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace Flagrum.Gfxbin.Gmdl.Data
 {
-    public class Vector3
+    public struct Vector3
     {
         public Vector3(float x, float y, float z)
         {
@@ -9,8 +9,8 @@
             Z = z;
         }
 
-        public float X { get; }
-        public float Y { get; }
-        public float Z { get; }
+        public float X;
+        public float Y;
+        public float Z;
     }
 }

@@ -48,7 +48,6 @@ namespace Flagrum.Gfxbin.Gmdl
                 _writer.WriteString(part.Name);
                 _writer.WriteUInt(part.Id);
                 _writer.WriteString(part.Unknown);
-                Console.WriteLine(part.Name);
                 _writer.Write(part.Flags);
             }
 
@@ -112,10 +111,10 @@ namespace Flagrum.Gfxbin.Gmdl
                     _writer.WriteVector3(mesh.OrientedBB.ZHalfExtent);
 
                     _writer.WriteByte((byte)mesh.PrimitiveType);
-                    _writer.WriteUInt(mesh.IndexCount);
-                    _writer.WriteByte((byte)mesh.IndexType);
-                    _writer.WriteUInt(mesh.IndexBufferOffset);
-                    _writer.WriteUInt(mesh.IndexBufferSize);
+                    _writer.WriteUInt(mesh.FaceIndicesCount);
+                    _writer.WriteByte((byte)mesh.FaceIndicesType);
+                    _writer.WriteUInt(mesh.FaceIndicesBufferOffset);
+                    _writer.WriteUInt(mesh.FaceIndicesBufferSize);
 
                     _writer.WriteUInt(mesh.VertexCount);
                     _writer.WriteArraySize((uint)mesh.VertexStreamDescriptions.Count());
@@ -175,11 +174,6 @@ namespace Flagrum.Gfxbin.Gmdl
 
                     foreach (var part in mesh.MeshParts)
                     {
-                        Console.WriteLine($"{part.PartsId} - {part.PartsId}");
-                        Console.WriteLine($"{part.StartIndex} - {part.StartIndex}");
-                        Console.WriteLine($"{part.IndexCount} - {part.IndexCount}");
-                        Console.WriteLine("");
-
                         _writer.WriteUInt(part.PartsId);
                         _writer.WriteUInt(part.StartIndex);
                         _writer.WriteUInt(part.IndexCount);

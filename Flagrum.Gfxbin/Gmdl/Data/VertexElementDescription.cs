@@ -53,6 +53,33 @@
 
     public class VertexElementDescription
     {
+        public const string Position0 = "POSITION0";
+        public const string Normal0 = "NORMAL0";
+        public const string Binormal0 = "BINORMAL0";
+        public const string Binormal1 = "BINORMAL1";
+        public const string Normal2Factors = "NORMAL2FACTORS0";
+        public const string Normal4Factors = "NORMAL4FACTORS0";
+        public const string Tangent0 = "TANGENT0";
+        public const string Tangent1 = "TANGENT1";
+        public const string Color0 = "COLOR0";
+        public const string Color1 = "COLOR1";
+        public const string Color2 = "COLOR2";
+        public const string Color3 = "COLOR3";
+        public const string FogCoord0 = "FOGCOORD0";
+        public const string PSize0 = "PSIZE0";
+        public const string BlendWeight0 = "BLENDWEIGHT0";
+        public const string BlendWeight1 = "BLENDWEIGHT1";
+        public const string BlendIndices0 = "BLENDINDICES0";
+        public const string BlendIndices1 = "BLENDINDICES1";
+        public const string TexCoord0 = "TEXCOORD0";
+        public const string TexCoord1 = "TEXCOORD1";
+        public const string TexCoord2 = "TEXCOORD2";
+        public const string TexCoord3 = "TEXCOORD3";
+        public const string TexCoord4 = "TEXCOORD4";
+        public const string TexCoord5 = "TEXCOORD5";
+        public const string TexCoord6 = "TEXCOORD6";
+        public const string TexCoord7 = "TEXCOORD7";
+
         public uint Offset { get; set; }
         public string Semantic { get; set; }
         public VertexElementFormat Format { get; set; }

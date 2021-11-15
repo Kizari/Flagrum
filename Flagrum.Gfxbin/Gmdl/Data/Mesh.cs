@@ -78,11 +78,11 @@ namespace Flagrum.Gfxbin.Gmdl.Data
         public OrientedBB OrientedBB { get; set; }
         public PrimitiveType PrimitiveType { get; set; }
 
-        public uint IndexCount { get; set; }
-        public IndexType IndexType { get; set; }
-        public uint IndexBufferOffset { get; set; }
-        public int[] IndexBuffer { get; set; }
-        public uint IndexBufferSize { get; set; }
+        public uint FaceIndicesCount { get; set; }
+        public IndexType FaceIndicesType { get; set; }
+        public uint FaceIndicesBufferOffset { get; set; }
+        public int[] FaceIndicesBuffer { get; set; }
+        public uint FaceIndicesBufferSize { get; set; }
 
         public uint VertexCount { get; set; }
         public IEnumerable<VertexStreamDescription> VertexStreamDescriptions { get; set; }
