@@ -64,13 +64,13 @@ class Gpubin:
     BoneTable: dict[int, str]
 
 
-class ArmatureData():
+class ArmatureData:
     def __init__(self):
         self.parent_IDs = []
         self.bones = []
 
 
-class BoneData():
+class BoneData:
     def __init__(self):
         self.id = 0
         self.name = ""

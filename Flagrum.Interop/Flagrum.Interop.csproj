@@ -31,4 +31,10 @@
         <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="..\Flagrum.Blender\*.py" LinkBase="..\">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

@@ -3,70 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Flagrum.Gfxbin.Gmdl;
+using Flagrum.Gfxbin.Gmdl.Data;
 using Newtonsoft.Json;
 
 namespace Flagrum.Interop;
 
 public static class Gfxbin
 {
-    private const string CDeclarations = @"
-            struct Color4
-            {
-                unsigned char R;
-                unsigned char G;
-                unsigned char B;
-                unsigned char A;
-            };
-
-            struct Vector4
-            {
-                signed char X;
-                signed char Y;
-                signed char Z;
-                signed char W;
-            };
-
-            struct ColorMap
-            {
-                struct Color4* Color;
-            };
-
-            struct WeightMap
-            {
-                struct VertexWeights* VertexWeights;
-            };
-
-            struct VertexWeights
-            {
-                struct VertexWeight* VertexWeight;
-            };
-
-            struct VertexWeight
-            {
-                int BoneIndex;
-                float Weight;
-            };
-
-            struct Vector2
-            {
-                float X;
-                float Y;
-            };
-
-            struct UVMap
-            {
-                struct Vector2* Coords;
-            };
-
-            struct Gpubin
-            {
-                struct Vector3* VertexPositions;
-                struct Vector4* Normals;
-                struct ColorMap* ColorMaps;
-                struct WeightMap* WeightMaps;
-                struct UVMap* UVMaps;
-            };";
-
     [UnmanagedCallersOnly]
     public static IntPtr Import(IntPtr pathPointer)
     {
@@ -84,5 +27,25 @@ public static class Gfxbin
 
         var pointer = Marshal.StringToHGlobalAnsi(temp);
         return pointer;
+    }
+
+    [UnmanagedCallersOnly]
+    public static void Export(IntPtr pathPointer)
+    {
+        var jsonPath = Marshal.PtrToStringUni(pathPointer);
+        var exportPath = jsonPath.Replace(".json", "");
+
+        var json = File.ReadAllText(jsonPath);
+        File.Delete(jsonPath);
+
+        var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
+        var model = new Model
+        {
+            Gpubin = gpubin
+        };
+
+        var writer = new ModelWriter(model, new byte[1]);
+        var data = writer.Write();
+        File.WriteAllBytes(exportPath, data);
     }
 }
