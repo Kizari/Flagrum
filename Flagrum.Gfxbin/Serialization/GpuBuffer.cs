@@ -10,7 +10,7 @@ public class GpuBuffer
 {
     private readonly Dictionary<VertexElementFormat, Type> _formatTypes;
     private readonly byte[] _gpuBuffer;
-    public readonly Dictionary<string, MeshBuffer> _meshBuffers;
+    private readonly Dictionary<string, MeshBuffer> _meshBuffers;
     private readonly Dictionary<Type, Func<object>> _typeFunctions;
 
     /// <summary>
@@ -362,35 +362,55 @@ public class GpuBuffer
                     or VertexElementDescription.Color3)
                 .Select(d => (IList<byte>)d.Value);
 
-            var weights = meshBuffer.Value.Data
+            var weights0 = meshBuffer.Value.Data
                 .OrderBy(d => d.Key)
                 .Where(d => d.Key is VertexElementDescription.BlendWeight0)
-                //or VertexElementDescription.BlendWeight1)
                 .Select(d => (IList<byte>)d.Value)
                 .ToList();
 
-            var weightIndices = meshBuffer.Value.Data
+            var weightIndices0 = meshBuffer.Value.Data
                 .OrderBy(d => d.Key)
                 .Where(d => d.Key is VertexElementDescription.BlendIndices0)
-                //or VertexElementDescription.BlendIndices1)
+                .Select(d => (IList<ushort>)d.Value)
+                .ToList();
+
+            var weights1 = meshBuffer.Value.Data
+                .OrderBy(d => d.Key)
+                .Where(d => d.Key is VertexElementDescription.BlendWeight1)
+                .Select(d => (IList<byte>)d.Value)
+                .ToList();
+
+            var weightIndices1 = meshBuffer.Value.Data
+                .OrderBy(d => d.Key)
+                .Where(d => d.Key is VertexElementDescription.BlendIndices1)
                 .Select(d => (IList<ushort>)d.Value)
                 .ToList();
 
             var weightDictionaries = new List<List<VertexWeight>>();
-            for (var i = 0; i < weights.Count; i++)
+            for (var i = 0; i < weights0.Count; i++)
             {
                 var vertexIndex = 0;
                 var vertexCounter = 0;
 
                 var dictionary = new List<VertexWeight>();
-                for (var j = 0; j < weights[i].Count; j++)
+                for (var j = 0; j < weights0[i].Count; j++)
                 {
                     dictionary.Add(new VertexWeight
                     {
                         VertexIndex = vertexIndex,
-                        BoneIndex = weightIndices[i][j],
-                        Weight = weights[i][j]
+                        BoneIndex = weightIndices0[i][j],
+                        Weight = weights0[i][j]
                     });
+
+                    if (weights1.Any())
+                    {
+                        dictionary.Add(new VertexWeight
+                        {
+                            VertexIndex = vertexIndex,
+                            BoneIndex = weightIndices1[i][j],
+                            Weight = weights1[i][j]
+                        });
+                    }
 
                     vertexCounter++;
                     if (vertexCounter > 3)
@@ -433,8 +453,9 @@ public class GpuBuffer
                 };
             }
 
-            mesh.ColorMaps = new ColorMap[colors.Count()];
-            for (var colorMapIndex = 0; colorMapIndex < colors.Count(); colorMapIndex++)
+            var colorMapsCount = colors.Count();
+            mesh.ColorMaps = new ColorMap[colorMapsCount];
+            for (var colorMapIndex = 0; colorMapIndex < colorMapsCount; colorMapIndex++)
             {
                 var colorList = colors.ElementAt(colorMapIndex);
                 mesh.ColorMaps[colorMapIndex] = new ColorMap

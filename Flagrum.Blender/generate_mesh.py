@@ -18,8 +18,8 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
         vertices.append(correction_matrix @ Vector([vertex.X, vertex.Y, vertex.Z]))
 
     # Reverse the winding order of the faces so the normals face the right direction
-    for i in range(len(mesh_data.Faces)):
-        mesh_data.Faces[i] = reversed(mesh_data.Faces[i])
+    for face in mesh_data.Faces:
+        face[0], face[2] = face[2], face[0]
 
     # Create the mesh
     mesh = bpy.data.meshes.new(mesh_data.Name)

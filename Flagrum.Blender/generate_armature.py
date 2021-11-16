@@ -158,6 +158,8 @@ def createBone(bone, armature, parent=None, per=[1, 2, 0, 3]):
         preferred = transform.translation + Vector([0, 0.01, 0])
     new_bone.tail = preferred
     new_bone.matrix = transform
+    if new_bone.length < 0.0001:
+        new_bone.tail = new_bone.head + Vector([0, 0.01, 0])
     for child in bone.children:
         createBone(child, armature, new_bone, per)
 
@@ -168,7 +170,7 @@ def generate_armature(context, armature_data):
     armature_object = bpy.data.objects.new(armature_name, armature)
     armature_object.data.name = "Armature"
     bpy.context.scene.collection.children.link(context.collection)
-    context.collection.objects.link(armature_object);
+    context.collection.objects.link(armature_object)
     bpy.context.view_layer.objects.active = armature_object
     bpy.ops.object.mode_set(mode='EDIT')
 

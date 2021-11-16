@@ -99,9 +99,10 @@ def _pack_faces(mesh: Object):
     faces: list[list[int]] = []
     mesh_data: Mesh = mesh.data
 
-    for face in mesh_data.polygons:
+    for poly in mesh_data.polygons:
         # Reverse winding order so normals face correct way in-game
-        faces.append(reversed(face.vertices))
+        face = [poly.vertices[2], poly.vertices[1], poly.vertices[0]]
+        faces.append(face)
 
     return faces
 

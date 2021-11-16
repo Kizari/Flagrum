@@ -121,11 +121,6 @@ public class ModelReader
                 ClusterName = _reader.ReadString()
             };
 
-            Console.WriteLine("\n");
-            Console.WriteLine(meshObject.Name);
-            Console.WriteLine(meshObject.ClusterName);
-            Console.WriteLine(meshObject.ClusterCount);
-
             var meshCount = _reader.ReadUint();
 
             foreach (var x in Enumerable.Range(0, (int)meshCount))
@@ -339,12 +334,6 @@ public class ModelReader
                     mesh.Unknown4 = _reader.ReadUint();
                     mesh.Unknown5 = _reader.ReadUint();
                 }
-
-                Console.WriteLine("\t" + mesh.Name);
-                Console.WriteLine("\t\t" + mesh.LodNear);
-                Console.WriteLine("\t\t" + mesh.LodFar);
-                Console.WriteLine("\t\t" + mesh.LodFade);
-                Console.WriteLine("\t\t" + mesh.LowLodShadowCascadeNo);
 
                 meshObject.Meshes.Add(mesh);
             }

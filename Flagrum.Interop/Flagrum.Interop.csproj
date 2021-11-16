@@ -24,17 +24,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DNNE" Version="1.0.26" />
+        <PackageReference Include="DNNE" Version="1.0.26"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj" />
+        <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="..\Flagrum.Blender\*.py" LinkBase="..\">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+    <PropertyGroup>
+        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+        <PythonScriptsDir>$([System.IO.Path]::GetDirectoryName($(PublishDir)))</PythonScriptsDir>
+    </PropertyGroup>
 
+    <Target Name="CopyDependencies" AfterTargets="Publish">
+        <ItemGroup>
+            <Blender Include="$(SolutionDir)\Flagrum.Blender\*.py"/>
+        </ItemGroup>
+        <Copy SourceFiles="$(OutputPath)\Flagrum.InteropNE.dll" DestinationFolder="$(PublishDir)"/>
+        <Copy SourceFiles="@(Blender)" DestinationFolder="$(PythonScriptsDir)"/>
+    </Target>
 </Project>
