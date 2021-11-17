@@ -1,6 +1,7 @@
 import bpy
+from bpy.utils import register_class, unregister_class
 
-from .menu import ImportOperator
+from .menu import ImportOperator, ExportOperator
 
 bl_info = {
     "name": "GFXBIN format",
@@ -11,22 +12,35 @@ bl_info = {
     "category": "Import-Export",
 }
 
+classes = (
+    ImportOperator,
+    ExportOperator
+)
 
-def menu_func_import(self, context):
+
+def import_menu_item(self, context):
     self.layout.operator(ImportOperator.bl_idname,
                          text="Luminous Engine (.gfxbin)")
 
 
+def export_menu_item(self, context):
+    self.layout.operator(ExportOperator.bl_idname,
+                         text="Luminous Engine (.gfxbin)")
+
+
 def register():
-    bpy.utils.register_class(ImportOperator)
-    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+    for cls in classes:
+        register_class(cls)
+    bpy.types.TOPBAR_MT_file_import.append(import_menu_item)
+    bpy.types.TOPBAR_MT_file_export.append(export_menu_item)
 
 
 def unregister():
-    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
-    bpy.utils.unregister_class(ImportOperator)
+    bpy.types.TOPBAR_MT_file_import.remove(export_menu_item)
+    bpy.types.TOPBAR_MT_file_import.remove(import_menu_item)
+    for cls in reversed(classes):
+        unregister_class(cls)
 
 
 if __name__ == "__main__":
     register()
-    bpy.ops.import_test.some_data('INVOKE_DEFAULT')

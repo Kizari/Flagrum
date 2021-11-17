@@ -13,7 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj"/>
+        <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
     </ItemGroup>
 
 </Project>

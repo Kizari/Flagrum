@@ -1,9 +1,11 @@
 ﻿using Flagrum.Archiver.Data;
-using Flagrum.Archiver.Utilities;
 using Flagrum.Core.Services.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using Flagrum.Archiver.Utilities;
+using Serialization = Flagrum.Core.Utilities.Serialization;
 
 namespace Flagrum.Archiver
 {
@@ -167,7 +169,7 @@ namespace Flagrum.Archiver
 
             foreach (var file in _files)
             {
-                var size = Serialization.EncodeString(file.Uri, out byte[] bytes);
+                var size = EncodeString(file.Uri, out byte[] bytes);
                 file.UriOffset = _header.UriListOffset + (uint)currentUriOffset;
                 uriListStream.Seek(currentUriOffset, SeekOrigin.Begin);
                 uriListStream.Write(bytes, 0, size);
@@ -187,7 +189,7 @@ namespace Flagrum.Archiver
 
             foreach (var file in _files)
             {
-                var size = Serialization.EncodeString(file.RelativePath, out byte[] bytes);
+                var size = EncodeString(file.RelativePath, out byte[] bytes);
                 file.RelativePathOffset = _header.PathListOffset + (uint)currentPathOffset;
                 pathListStream.Seek(currentPathOffset, SeekOrigin.Begin);
                 pathListStream.Write(bytes, 0, size);
@@ -224,6 +226,24 @@ namespace Flagrum.Archiver
 
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
+        }
+        
+        private int EncodeString(string value, out byte[] bytes)
+        {
+            var stringBufferSize = value.Length + 1 > 256 ? value.Length + 1 : 256;
+
+            var stringBuffer = new char[stringBufferSize];
+            bytes = new byte[stringBufferSize * 4];
+
+            uint i;
+            for (i = 0; i < value.Length; ++i)
+            {
+                stringBuffer[i] = value[(int)i];
+            }
+
+            stringBuffer[i] = char.MinValue;
+
+            return Encoding.UTF8.GetEncoder().GetBytes(stringBuffer, 0, value.Length, bytes, 0, true);
         }
     }
 }

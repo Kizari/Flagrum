@@ -30,13 +30,14 @@ public static class Gfxbin
     }
 
     [UnmanagedCallersOnly]
-    public static void Export(IntPtr pathPointer)
+    public static IntPtr Export(IntPtr pathPointer)
     {
         var jsonPath = Marshal.PtrToStringUni(pathPointer);
-        var exportPath = jsonPath.Replace(".json", "");
+        Console.WriteLine(jsonPath);
+
+        //var exportPath = jsonPath.Replace(".json", "");
 
         var json = File.ReadAllText(jsonPath);
-        File.Delete(jsonPath);
 
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
         var model = new Model
@@ -44,8 +45,11 @@ public static class Gfxbin
             Gpubin = gpubin
         };
 
-        var writer = new ModelWriter(model, new byte[1]);
-        var data = writer.Write();
-        File.WriteAllBytes(exportPath, data);
+        //var writer = new ModelWriter(model, new byte[1]);
+        //var data = writer.Write();
+        //File.WriteAllBytes(exportPath, data);
+
+        var pointer = Marshal.StringToHGlobalAnsi("Success!");
+        return pointer;
     }
 }

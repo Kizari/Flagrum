@@ -1,71 +1,72 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Flagrum.Core.Services.Logging;
 using Flagrum.Gfxbin.Serialization;
 
-namespace Flagrum.Gfxbin.Data
+namespace Flagrum.Gfxbin.Data;
+
+public class GfxbinHeader
 {
-    public class GfxbinHeader
+    private readonly Logger _logger;
+
+    public GfxbinHeader()
     {
-        private readonly Logger _logger;
+        _logger = new ConsoleLogger();
+    }
 
-        public GfxbinHeader()
+    public uint Version { get; private set; }
+    public List<DependencyPath> Dependencies { get; } = new();
+    public List<ulong> Hashes { get; } = new();
+
+    public void Read(BinaryReader reader)
+    {
+        Version = (uint)reader.Read();
+
+        if (Version is < 20150713 or > 20160705)
         {
-            _logger = new ConsoleLogger();
+            _logger.LogWarning($"Gfxbin Version {Version}");
+        }
+        else
+        {
+            _logger.LogInformation($"Gfxbin Version {Version}");
         }
 
-        public uint Version { get; private set; }
-        public List<DependencyPath> Dependencies { get; } = new();
-        public List<ulong> Hashes { get; } = new();
+        var dependencyCount = reader.ReadMapCount();
 
-        public void Read(BinaryReader reader)
+        for (var _ = 0; _ < dependencyCount; _++)
         {
-            Version = (uint)reader.Read();
-
-            if (Version is < 20150713 or > 20160705)
+            Dependencies.Add(new DependencyPath
             {
-                _logger.LogWarning($"Gfxbin Version {Version}");
-            }
-            else
-            {
-                _logger.LogInformation($"Gfxbin Version {Version}");
-            }
-
-            var dependencyCount = reader.ReadMapCount();
-
-            for (var _ = 0; _ < dependencyCount; _++)
-            {
-                Dependencies.Add(new DependencyPath
-                {
-                    PathHash = reader.ReadString(),
-                    Path = reader.ReadStr8()
-                });
-            }
-
-            reader.UnpackArraySize(out var hashesCount);
-
-            for (var _ = 0; _ < hashesCount; _++)
-            {
-                Hashes.Add(reader.ReadUint64());
-            }
+                PathHash = reader.ReadString(),
+                Path = reader.ReadString()
+            });
         }
 
-        public void Write(BinaryWriter writer)
+        reader.UnpackArraySize(out var hashesCount);
+        Console.WriteLine(hashesCount);
+
+        for (var _ = 0; _ < hashesCount; _++)
         {
-            writer.Write(Version);
-            writer.WriteMapCount((uint)Dependencies.Count);
+            Hashes.Add(reader.ReadUint64());
+        }
+    }
 
-            foreach (var dependency in Dependencies)
-            {
-                writer.WriteStringX(dependency.PathHash);
-                writer.WriteString8(dependency.Path);
-            }
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(Version);
+        writer.WriteMapCount((uint)Dependencies.Count);
 
-            writer.WriteArraySize((uint)Hashes.Count);
+        foreach (var dependency in Dependencies)
+        {
+            writer.WriteStringX(dependency.PathHash);
+            writer.WriteString8(dependency.Path);
+        }
 
-            foreach (var hash in Hashes)
-            {
-                writer.WriteUInt(hash);
-            }
+        writer.WriteArraySize((uint)Hashes.Count);
+
+        foreach (var hash in Hashes)
+        {
+            writer.WriteUInt(hash);
         }
     }
 }

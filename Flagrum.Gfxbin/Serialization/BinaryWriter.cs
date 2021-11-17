@@ -193,8 +193,18 @@ public class BinaryWriter
         var byteList = Encoding.ASCII.GetBytes(value).ToList();
         byteList.Add(0x00);
         var bytes = byteList.ToArray();
-        _stream.WriteByte((byte)TypeFormat.Str8);
-        _stream.WriteByte((byte)bytes.Length);
+
+        if (bytes.Length <= 32)
+        {
+            var format = (byte)(bytes.Length | 0xB0);
+            _stream.WriteByte(format);
+        }
+        else
+        {
+            _stream.WriteByte((byte)TypeFormat.Str8);
+            _stream.WriteByte((byte)bytes.Length);
+        }
+
         _stream.Write(bytes);
     }
 
@@ -226,16 +236,12 @@ public class BinaryWriter
         var stringBuffer = new byte[stringBytes.Length + 1];
         Array.Copy(stringBytes, stringBuffer, stringBytes.Length);
 
-        if (stringBuffer.Length <= 0x7F)
+        // NOTE: Unsure what the correct threshold is for this lower bound
+        // Unsure if it matters if the engine will read the value correctly anyway?
+        //if (stringBuffer.Length <= 0x7F)
+        if (stringBuffer.Length <= 0xBF)
         {
-            // FIXME: This only works if starting at byte.MaxValue and iterating backwards
-            // No idea why it works, but seems to always produce the correct result so far
-            var format = byte.MaxValue;
-            while ((format & 95) != stringBuffer.Length)
-            {
-                format--;
-            }
-
+            var format = (byte)(stringBuffer.Length | 0xA0);
             WriteByte(format);
         }
         else if (stringBuffer.Length <= byte.MaxValue)

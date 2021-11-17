@@ -34,19 +34,17 @@ def _pack_bone_table():
     return bone_table
 
 
-def _pack_weight_maps(mesh: Object, bone_table):
+def _pack_weight_maps(mesh: Object):
     weight_maps: list[list[VertexWeight]] = []
     mesh_data: Mesh = mesh.data
 
     for i in range(len(mesh_data.vertices)):
         vertex_weights: list[VertexWeight] = []
         for group in mesh_data.vertices[i].groups:
-            bone_name = mesh.vertex_groups[group.group].name
-            bone_index = bone_table[bone_name]
             vertex_weight = VertexWeight()
             vertex_weight.VertexIndex = i
-            vertex_weight.BoneIndex = bone_index
-            vertex_weight.Weight = group.weight
+            vertex_weight.BoneIndex = group.group
+            vertex_weight.Weight = int(group.weight * 255)
             vertex_weights.append(vertex_weight)
         weight_maps.append(vertex_weights)
 
@@ -61,15 +59,12 @@ def _pack_color_maps(mesh: Object):
         color_map = ColorMap()
         color_map.Colors = []
         for loop in color_layer.data:
-            for i in range(len(loop.color)):
-                if (i + 1) % 4 == 0:
-                    continue
-                color = Color4()
-                color.R = loop.color[i] * 255
-                color.G = loop.color[i + 1] * 255
-                color.B = loop.color[i + 2] * 255
-                color.A = loop.color[i + 3] * 255
-                color_map.Colors.append(color)
+            color = Color4()
+            color.R = int(loop.color[0] * 255)
+            color.G = int(loop.color[1] * 255)
+            color.B = int(loop.color[2] * 255)
+            color.A = int(loop.color[3] * 255)
+            color_map.Colors.append(color)
         color_maps.append(color_map)
 
     return color_maps
