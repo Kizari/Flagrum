@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 
-namespace Flagrum.Gfxbin.Gmdl.Data;
+namespace Flagrum.Gfxbin.Gmdl.Buffering;
 
-public class FaceBuffer<TIndex> where TIndex : struct
+public class FaceIndexPacker<TIndex> where TIndex : struct
 {
     private readonly Action<IEnumerable<int>> _putValues;
     private readonly MemoryStream _stream = new();
 
-    public FaceBuffer()
+    public FaceIndexPacker()
     {
         if (typeof(TIndex) == typeof(int))
         {

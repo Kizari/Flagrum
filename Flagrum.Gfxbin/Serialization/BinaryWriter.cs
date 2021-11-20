@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Flagrum.Core.Services.Logging;
-using Flagrum.Gfxbin.Gmdl.Data;
+using Flagrum.Gfxbin.Gmdl.Constructs;
 
 namespace Flagrum.Gfxbin.Serialization;
 

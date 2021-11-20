@@ -1,7 +1,7 @@
-﻿using Flagrum.Archiver.Utilities;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
+using Flagrum.Archiver.Utilities;
 
 namespace Flagrum.Archiver.Data
 {
@@ -24,32 +24,25 @@ namespace Flagrum.Archiver.Data
         public const ulong HeaderHash = 14695981039346656037;
         public const byte LocalizationType = 0;
         public const byte Locale = 0;
+        private string _path;
+        private uint _processedSize;
 
         private uint _size;
-        private uint _processedSize;
-        private string _path;
-
-        public ulong NameHash { get; }
-        public ulong TypeHash { get; }
-        public ulong UriAndTypeHash { get; }
-        public string Uri { get; }
-        public ulong UriHash { get; }
-        public uint UriOffset { get; set; }
-        public string RelativePath { get; }
-        public uint RelativePathOffset { get; set; }
-        public ulong DataOffset { get; set; }
 
         public ArchiveFile(string archiveRoot, string path, string overrideDataPath = null)
         {
             if (path.StartsWith("data://shader"))
             {
-                _path = path.Replace("data://", "C:/Users/Kieran/AppData/Local/SquareEnix/FFXVMODTool/LuminousStudio/bin/rt2/pc/").Replace(".tif", ".btex").Replace(".tga", ".btex");
+                _path = path
+                    .Replace("data://",
+                        "C:/Users/Kieran/AppData/Local/SquareEnix/FFXVMODTool/LuminousStudio/bin/rt2/pc/")
+                    .Replace(".tif", ".btex").Replace(".tga", ".btex");
                 RelativePath = path.Replace("data://", "").Replace(".tif", ".btex").Replace(".tga", ".btex");
                 Uri = path;
             }
             else if (path.EndsWith(".ebex"))
             {
-                _path = "C:\\Users\\Kieran\\AppData\\Local\\SquareEnix\\FFXVMODTool\\LuminousStudio\\bin\\rt2\\pc\\$mod\\temp.exml";
+                _path = "C:\\Testing\\Gfxbin\\$mod\\temp.exml";
                 RelativePath = path.Replace("data://", "").Replace(".ebex", ".exml");
                 Uri = path;
             }
@@ -69,7 +62,7 @@ namespace Flagrum.Archiver.Data
             UriHash = Cryptography.Hash(Uri);
             TypeHash = Cryptography.Hash(type);
 
-            UriAndTypeHash = (ulong)((long)UriHash & 17592186044415L | (long)TypeHash << 44 & -17592186044416L);
+            UriAndTypeHash = (ulong)(((long)UriHash & 17592186044415L) | (((long)TypeHash << 44) & -17592186044416L));
 
             // Everything is generated above so this path will only be used for reading the bytes from file
             if (overrideDataPath != null)
@@ -78,13 +71,24 @@ namespace Flagrum.Archiver.Data
             }
         }
 
+        public ulong NameHash { get; }
+        public ulong TypeHash { get; }
+        public ulong UriAndTypeHash { get; }
+        public string Uri { get; }
+        public ulong UriHash { get; }
+        public uint UriOffset { get; set; }
+        public string RelativePath { get; }
+        public uint RelativePathOffset { get; set; }
+        public ulong DataOffset { get; set; }
+
         public uint Size
         {
             get
             {
                 if (_size == 0)
                 {
-                    throw new InvalidOperationException($"Size cannot be calculated before reading the file. Call {nameof(GetData)} first.");
+                    throw new InvalidOperationException(
+                        $"Size cannot be calculated before reading the file. Call {nameof(GetData)} first.");
                 }
 
                 return _size;
@@ -97,7 +101,8 @@ namespace Flagrum.Archiver.Data
             {
                 if (_processedSize == 0)
                 {
-                    throw new InvalidOperationException($"ProcessedSize cannot be calculated before reading the file. Call {nameof(GetData)} first.");
+                    throw new InvalidOperationException(
+                        $"ProcessedSize cannot be calculated before reading the file. Call {nameof(GetData)} first.");
                 }
 
                 return _processedSize;
@@ -135,13 +140,11 @@ namespace Flagrum.Archiver.Data
                 if (_path.EndsWith(".modmeta") || _path.EndsWith(".bin"))
                 {
                     var hash = Uri.GetHashCode();
-                    var key = hash >> 16 ^ hash;
+                    var key = (hash >> 16) ^ hash;
                     return (ushort)(key == 0 ? 57005 : key);
                 }
-                else
-                {
-                    return 0;
-                }
+
+                return 0;
             }
         }
 
@@ -156,22 +159,20 @@ namespace Flagrum.Archiver.Data
                 _processedSize = (uint)encryptedData.Length;
                 return encryptedData;
             }
-            else
-            {
-                _processedSize = _size;
-                return data;
-            }
+
+            _processedSize = _size;
+            return data;
         }
 
         private string InferUri()
         {
             var uri = Path.Combine("data://", RelativePath).Replace('\\', '/').ToLower();
-            
+
             if (uri.EndsWith(".gmtl.gfxbin"))
             {
                 return uri.Replace(".gmtl.gfxbin", ".gmtl");
             }
-            
+
             if (uri.EndsWith(".gmdl.gfxbin"))
             {
                 return uri.Replace(".gmdl.gfxbin", ".fbx");

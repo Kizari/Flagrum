@@ -1,20 +1,21 @@
-﻿using System;
-using System.Linq;
-using Flagrum.Gfxbin.Gmdl.Data;
+﻿using System.Linq;
+using Flagrum.Gfxbin.Gmdl.Buffering;
+using Flagrum.Gfxbin.Gmdl.Components;
+using Flagrum.Gfxbin.Gmdl.Constructs;
 using Flagrum.Gfxbin.Serialization;
 
 namespace Flagrum.Gfxbin.Gmdl;
 
 public class ModelReader
 {
-    private readonly byte[] _gpuBuffer;
     private readonly Model _model = new();
     private readonly BinaryReader _reader;
+    private readonly GpubinUnpacker _unpacker;
 
     public ModelReader(byte[] gfxbinData, byte[] gpubinData)
     {
         _reader = new BinaryReader(gfxbinData);
-        _gpuBuffer = gpubinData;
+        _unpacker = new GpubinUnpacker(gpubinData);
     }
 
     public Model Read()
@@ -64,8 +65,6 @@ public class ModelReader
                 .ToList();
         }
 
-        ProcessGpubin();
-
         return _model;
     }
 
@@ -112,7 +111,7 @@ public class ModelReader
     private void ReadMeshData()
     {
         var meshObjectCount = (int)_reader.Read();
-        for (var _ = 0; _ < meshObjectCount; _++)
+        for (var i = 0; i < meshObjectCount; i++)
         {
             var meshObject = new MeshObject
             {
@@ -165,29 +164,17 @@ public class ModelReader
                 }
 
                 mesh.PrimitiveType = (PrimitiveType)_reader.ReadByte();
-                mesh.FaceIndicesCount = _reader.ReadUint();
-                mesh.FaceIndicesType = (IndexType)_reader.ReadByte();
-                mesh.FaceIndicesBufferOffset = _reader.ReadUint();
-                mesh.FaceIndicesBufferSize = _reader.ReadUint();
-                mesh.FaceIndicesBuffer = new int[mesh.FaceIndicesCount];
+                var faceIndicesCount = _reader.ReadUint();
+                mesh.FaceIndexType = (IndexType)_reader.ReadByte();
+                mesh.FaceIndexBufferOffset = _reader.ReadUint();
+                mesh.FaceIndices = _unpacker.UnpackFaceIndices(
+                    (int)mesh.FaceIndexBufferOffset,
+                    (int)faceIndicesCount,
+                    mesh.FaceIndexType);
 
-                foreach (var i in Enumerable.Range(0, (int)mesh.FaceIndicesCount))
-                {
-                    switch (mesh.FaceIndicesType)
-                    {
-                        case IndexType.IndexType32:
-                            mesh.FaceIndicesBuffer[i] =
-                                BitConverter.ToInt32(_gpuBuffer, (int)mesh.FaceIndicesBufferOffset + 4 * i);
-                            break;
-                        case IndexType.IndexType16:
-                            mesh.FaceIndicesBuffer[i] =
-                                BitConverter.ToInt16(_gpuBuffer, (int)mesh.FaceIndicesBufferOffset + 2 * i);
-                            break;
-                        default:
-                            throw new InvalidOperationException(
-                                $"Provided {nameof(mesh.FaceIndicesType)} not supported.");
-                    }
-                }
+                // Size of the face indices buffer for this mesh
+                // No point storing it as it is derived from the type and count
+                _ = _reader.ReadUint();
 
                 mesh.VertexCount = _reader.ReadUint();
                 mesh.VertexStreamDescriptions = Enumerable.Range(0, (int)_reader.ReadUint())
@@ -209,10 +196,8 @@ public class ModelReader
                     .ToList();
 
                 mesh.VertexBufferOffset = _reader.ReadUint();
-                mesh.VertexBufferSize = _reader.ReadUint();
-                mesh.VertexBuffer = new byte[mesh.VertexBufferSize];
-
-                Array.Copy(_gpuBuffer, mesh.VertexBufferOffset, mesh.VertexBuffer, 0, mesh.VertexBufferSize);
+                var vertexBufferSize = _reader.ReadUint();
+                _unpacker.UnpackVertexStreams(mesh, vertexBufferSize);
 
                 if (_model.Header.Version >= 20150413)
                 {
@@ -340,61 +325,5 @@ public class ModelReader
 
             _model.MeshObjects.Add(meshObject);
         }
-    }
-
-    private void ProcessGpubin()
-    {
-        var gpuBuffer = new GpuBuffer(_gpuBuffer);
-
-        foreach (var meshObject in _model.MeshObjects)
-        {
-            foreach (var mesh in meshObject.Meshes.Where(m => m.LodNear == 0.0))
-            {
-                var faces = new int[mesh.FaceIndicesBuffer.Length / 3, 3];
-                for (var f = 0; f < mesh.FaceIndicesBuffer.Length; f += 3)
-                {
-                    faces[f / 3, 0] = mesh.FaceIndicesBuffer[f];
-                    faces[f / 3, 1] = mesh.FaceIndicesBuffer[f + 1];
-                    faces[f / 3, 2] = mesh.FaceIndicesBuffer[f + 2];
-                }
-
-                gpuBuffer.SetBuffer(mesh.Name, faces, (int)mesh.VertexBufferOffset, (int)mesh.VertexBufferSize);
-
-                foreach (var vertexStream in mesh.VertexStreamDescriptions)
-                {
-                    gpuBuffer.Position = (int)vertexStream.StartOffset;
-
-                    for (var i = 0; i < mesh.VertexCount; i++)
-                    {
-                        foreach (var element in vertexStream.VertexElementDescriptions)
-                        {
-                            gpuBuffer.ReadVertexElement(element.Semantic, element.Format);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Used for checking which semantics are present in the model when uncommented
-
-        // var buffers = gpuBuffer._meshBuffers
-        //     .Select(m => m.Value);
-        //
-        // foreach (var buffer in buffers)
-        // {
-        //     if (buffer.Data.TryGetValue(VertexElementDescription.Binormal0, out var list))
-        //     {
-        //         foreach (var value in list)
-        //         {
-        //             Console.WriteLine(value);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         Console.WriteLine("List does not exist.");
-        //     }
-        // }
-
-        _model.Gpubin = gpuBuffer.ToGpubin();
     }
 }

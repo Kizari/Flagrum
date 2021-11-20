@@ -1,11 +1,11 @@
-﻿using Flagrum.Archiver.Data;
-using Flagrum.Core.Services.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Flagrum.Archiver.Data;
 using Flagrum.Archiver.Utilities;
-using Serialization = Flagrum.Core.Utilities.Serialization;
+using Flagrum.Core.Services.Logging;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Archiver
 {
@@ -13,11 +13,11 @@ namespace Flagrum.Archiver
     {
         public const uint PointerSize = 8;
         public const uint BlockSize = 512;
+        private readonly string _archiveDirectory;
+        private readonly List<ArchiveFile> _files;
+        private readonly ArchiveHeader _header;
 
         private readonly Logger _logger;
-        private readonly string _archiveDirectory;
-        private readonly ArchiveHeader _header;
-        private readonly List<ArchiveFile> _files;
 
         public Packer(string archiveDirectory)
         {
@@ -45,19 +45,22 @@ namespace Flagrum.Archiver
                 return difference == 0 ? first.UriHash.CompareTo(second.UriHash) : difference;
             });
 
-            _header.UriListOffset = (uint)(ArchiveHeader.Size + Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize, PointerSize));
+            _header.UriListOffset = ArchiveHeader.Size +
+                                    Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,
+                                        PointerSize);
 
-            var endOfUriList = SerializeUriList(out Stream uriListStream);
+            var endOfUriList = SerializeUriList(out var uriListStream);
             archiveStream.Seek(_header.UriListOffset, SeekOrigin.Begin);
             uriListStream.CopyTo(archiveStream);
 
-            _header.PathListOffset = (uint)(Serialization.GetAlignment((uint)(_header.UriListOffset + endOfUriList), PointerSize));
+            _header.PathListOffset =
+                Serialization.GetAlignment((uint)(_header.UriListOffset + endOfUriList), PointerSize);
 
-            var endOfPathList = SerializePathList(out Stream pathListStream);
+            var endOfPathList = SerializePathList(out var pathListStream);
             archiveStream.Seek(_header.PathListOffset, SeekOrigin.Begin);
             pathListStream.CopyTo(archiveStream);
 
-            _header.DataOffset = (uint)Serialization.GetAlignment(_header.PathListOffset + (uint)endOfPathList, BlockSize);
+            _header.DataOffset = Serialization.GetAlignment(_header.PathListOffset + (uint)endOfPathList, BlockSize);
 
             var dataStream = SerializeFileData();
             archiveStream.Seek(_header.DataOffset, SeekOrigin.Begin);
@@ -88,7 +91,7 @@ namespace Flagrum.Archiver
             stream.Write(BitConverter.GetBytes(_header.UriListOffset));
             stream.Write(BitConverter.GetBytes(_header.PathListOffset));
             stream.Write(BitConverter.GetBytes(_header.DataOffset));
-            stream.Write(BitConverter.GetBytes((uint)0));                   // Flags are always zero
+            stream.Write(BitConverter.GetBytes((uint)0)); // Flags are always zero
             stream.Write(BitConverter.GetBytes(ArchiveHeader.ChunkSize));
 
             // Archive hash must be zero before the whole header is hashed
@@ -169,7 +172,7 @@ namespace Flagrum.Archiver
 
             foreach (var file in _files)
             {
-                var size = EncodeString(file.Uri, out byte[] bytes);
+                var size = EncodeString(file.Uri, out var bytes);
                 file.UriOffset = _header.UriListOffset + (uint)currentUriOffset;
                 uriListStream.Seek(currentUriOffset, SeekOrigin.Begin);
                 uriListStream.Write(bytes, 0, size);
@@ -189,7 +192,7 @@ namespace Flagrum.Archiver
 
             foreach (var file in _files)
             {
-                var size = EncodeString(file.RelativePath, out byte[] bytes);
+                var size = EncodeString(file.RelativePath, out var bytes);
                 file.RelativePathOffset = _header.PathListOffset + (uint)currentPathOffset;
                 pathListStream.Seek(currentPathOffset, SeekOrigin.Begin);
                 pathListStream.Write(bytes, 0, size);
@@ -221,13 +224,13 @@ namespace Flagrum.Archiver
                 rng.NextBytes(padding);
                 stream.Write(padding, 0, (int)paddingSize);
 
-                currentDataOffset += (long)finalSize;
+                currentDataOffset += finalSize;
             }
 
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
-        
+
         private int EncodeString(string value, out byte[] bytes)
         {
             var stringBufferSize = value.Length + 1 > 256 ? value.Length + 1 : 256;

@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 
 @dataclass(init=False)
-class Vector2:
-    X: int
-    Y: int
+class UV:
+    U: float
+    V: float
 
 
 @dataclass(init=False)
@@ -15,7 +15,7 @@ class Vector3:
 
 
 @dataclass(init=False)
-class Vector4:
+class Normal:
     X: int
     Y: int
     Z: int
@@ -44,17 +44,18 @@ class ColorMap:
 
 @dataclass(init=False)
 class UVMap:
-    Coords: list[Vector2]
+    UVs: list[UV]
 
 
 @dataclass(init=False)
 class MeshData:
     Name: str
     VertexPositions: list[Vector3]
-    Faces: list[list[int]]
-    Normals: list[Vector4]
-    ColorMaps: list[ColorMap]
-    WeightMaps: list[list[VertexWeight]]
+    FaceIndices: list[list[int]]
+    Normals: list[Normal]
+    # ColorMaps: list[ColorMap]
+    WeightIndices: list[list[list[int]]]
+    WeightValues: list[list[list[float]]]
     UVMaps: list[UVMap]
 
 

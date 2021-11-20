@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Flagrum.Gfxbin.Gmdl.Data;
+namespace Flagrum.Gfxbin.Gmdl.Buffering;
 
-public class VertexBuffer
+public class VertexStreamPacker
 {
     private readonly Dictionary<Type, Func<object, byte[]>> _getBytes = new()
     {
@@ -20,8 +20,8 @@ public class VertexBuffer
 
     private readonly MemoryStream _stream = new();
 
-    public uint Put<TValue>(params TValue[] values)
-        where TValue : struct, IComparable, IFormattable, IConvertible, IComparable<TValue>, IEquatable<TValue>
+    public uint Put<TValue>(IEnumerable<TValue> values)
+        where TValue : struct, IComparable, IFormattable, IComparable<TValue>, IEquatable<TValue>
     {
         var offset = _stream.Position;
         foreach (var v in values)
@@ -30,5 +30,10 @@ public class VertexBuffer
         }
 
         return (uint)offset;
+    }
+
+    public Stream ToStream()
+    {
+        return _stream;
     }
 }

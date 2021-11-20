@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Flagrum.Gfxbin.Gmdl.Data;
+using Flagrum.Gfxbin.Gmdl.Constructs;
 
 namespace Flagrum.Gfxbin.Serialization;
 
