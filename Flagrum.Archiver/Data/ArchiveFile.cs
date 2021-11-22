@@ -42,7 +42,7 @@ namespace Flagrum.Archiver.Data
             }
             else if (path.EndsWith(".ebex"))
             {
-                _path = "C:\\Testing\\Gfxbin\\$mod\\temp.exml";
+                _path = $"C:\\Testing\\Gfxbin\\$mod\\{archiveRoot.Split('\\', '/').Last()}\\temp.exml";
                 RelativePath = path.Replace("data://", "").Replace(".ebex", ".exml");
                 Uri = path;
             }

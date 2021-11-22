@@ -6,7 +6,11 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        //GfxbinTests.Export();
-        ArchiverTests.CreateBinMod(new Dictionary<string, string>());
+        //GfxbinTests.PrintData();
+        //MaterialTests.BuildSkinMaterial();
+        //GfxbinTests.Export1();
+        GfxbinTests.Compare();
+        //ArchiverTests.CreateBinMod1(new Dictionary<string, string>());
+        //GfxbinTests.Import();
     }
 }

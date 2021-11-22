@@ -29,6 +29,7 @@ class ImportOperator(Operator, ImportHelper):
         generate_armature(import_context, armature_data)
 
         mesh_data = Interop.import_mesh(import_context.gfxbin_path)
+
         for mesh in mesh_data.Meshes:
             generate_mesh(import_context, mesh, mesh_data.BoneTable.__dict__)
 

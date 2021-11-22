@@ -211,33 +211,59 @@ public class ModelWriter
         return values;
     }
 
+    /// <summary>
+    ///     The first vertex stream is the vertex positions and weight data
+    /// </summary>
     private void WriteVertexStream1(Stream vertexBufferStream, Mesh mesh)
     {
+        uint stride = 0;
         var vertexStream = new MemoryStream();
-        var elements = new List<VertexElementDescription>
+        var elements = new List<VertexElementDescription>();
+
+        elements.Add(new VertexElementDescription
         {
-            new()
-            {
-                Format = VertexElementFormat.XYZ32_Float,
-                Semantic = VertexElementDescription.Position0,
-                Offset = 0
-                //Offset = (uint)vertexStream.Position
-            },
-            new()
-            {
-                Format = VertexElementFormat.XYZW16_Uint,
-                Semantic = VertexElementDescription.BlendIndices0,
-                Offset = 12
-                //Offset = (uint)vertexStream.Position
-            },
-            new()
-            {
-                Format = VertexElementFormat.XYZW8_UintN,
-                Semantic = VertexElementDescription.BlendWeight0,
-                Offset = 20
-                //Offset = (uint)vertexStream.Position
-            }
-        };
+            Format = VertexElementFormat.XYZ32_Float,
+            Semantic = VertexElementDescription.Position0,
+            Offset = stride
+        });
+
+        stride += 12;
+
+        elements.Add(new VertexElementDescription
+        {
+            Format = VertexElementFormat.XYZW16_Uint,
+            Semantic = VertexElementDescription.BlendIndices0,
+            Offset = stride
+        });
+
+        stride += 8;
+
+        // elements.Add(new VertexElementDescription
+        // {
+        //     Format = VertexElementFormat.XYZW16_Uint,
+        //     Semantic = VertexElementDescription.BlendIndices1,
+        //     Offset = stride
+        // });
+        //
+        // stride += 8;
+
+        elements.Add(new VertexElementDescription
+        {
+            Format = VertexElementFormat.XYZW8_UintN,
+            Semantic = VertexElementDescription.BlendWeight0,
+            Offset = stride
+        });
+
+        stride += 4;
+
+        // elements.Add(new VertexElementDescription
+        // {
+        //     Format = VertexElementFormat.XYZW8_UintN,
+        //     Semantic = VertexElementDescription.BlendWeight1,
+        //     Offset = stride
+        // });
+        //
+        // stride += 4;
 
         for (var i = 0; i < mesh.VertexCount; i++)
         {
@@ -246,17 +272,25 @@ public class ModelWriter
             vertexStream.Write(BitConverter.GetBytes(position.Y));
             vertexStream.Write(BitConverter.GetBytes(position.Z));
 
-            var index = FixArraySize(mesh.WeightIndices[0][i], 4);
-            vertexStream.Write(BitConverter.GetBytes(index[0]));
-            vertexStream.Write(BitConverter.GetBytes(index[1]));
-            vertexStream.Write(BitConverter.GetBytes(index[2]));
-            vertexStream.Write(BitConverter.GetBytes(index[3]));
+            foreach (var index in mesh.WeightIndices
+                         .Take(1)
+                         .Select(weightIndicesMap => FixArraySize(weightIndicesMap[i], 4)))
+            {
+                vertexStream.Write(BitConverter.GetBytes(index[0]));
+                vertexStream.Write(BitConverter.GetBytes(index[1]));
+                vertexStream.Write(BitConverter.GetBytes(index[2]));
+                vertexStream.Write(BitConverter.GetBytes(index[3]));
+            }
 
-            var weight = FixArraySize(mesh.WeightValues[0][i], 4);
-            vertexStream.WriteByte(weight[0]);
-            vertexStream.WriteByte(weight[1]);
-            vertexStream.WriteByte(weight[2]);
-            vertexStream.WriteByte(weight[3]);
+            foreach (var weight in mesh.WeightValues
+                         .Take(1)
+                         .Select(weightValuesMap => FixArraySize(weightValuesMap[i], 4)))
+            {
+                vertexStream.WriteByte(weight[0]);
+                vertexStream.WriteByte(weight[1]);
+                vertexStream.WriteByte(weight[2]);
+                vertexStream.WriteByte(weight[3]);
+            }
         }
 
         // Write the stream description
@@ -264,7 +298,7 @@ public class ModelWriter
         {
             Slot = VertexStreamSlot.Slot_0,
             Type = VertexStreamType.Vertex,
-            Stride = 24u,
+            Stride = stride,
             StartOffset = (uint)vertexBufferStream.Position,
             VertexElementDescriptions = elements
         };
@@ -274,8 +308,12 @@ public class ModelWriter
         WriteVertexStream(description);
     }
 
+    /// <summary>
+    ///     The second vertex stream is everything not in the first
+    /// </summary>
     private void WriteVertexStream2(Stream vertexBufferStream, Mesh mesh)
     {
+        uint stride = 0;
         var vertexStream = new MemoryStream();
         var elements = new List<VertexElementDescription>();
 
@@ -283,28 +321,39 @@ public class ModelWriter
         {
             Format = VertexElementFormat.XYZW8_SintN,
             Semantic = VertexElementDescription.Normal0,
-            Offset = 0
-            //Offset = (uint)vertexStream.Position
+            Offset = stride
         });
+
+        stride += 4;
 
         elements.Add(new VertexElementDescription
         {
             Format = VertexElementFormat.XYZW8_SintN,
             Semantic = VertexElementDescription.Tangent0,
-            Offset = 4
-            //Offset = (uint)vertexStream.Position
+            Offset = stride
         });
 
-        elements.Add(new VertexElementDescription
+        stride += 4;
+
+        var count = 0;
+        foreach (var uvMap in mesh.UVMaps.Take(2))
         {
-            Format = VertexElementFormat.XY16_Float,
-            Semantic = VertexElementDescription.TexCoord0,
-            Offset = 8
-            //Offset = (uint)vertexStream.Position
-        });
+            elements.Add(new VertexElementDescription
+            {
+                Format = VertexElementFormat.XY16_Float,
+                Semantic = $"TEXCOORD{count}",
+                Offset = stride
+            });
 
-        // TODO: Rewrite to ensure there is one record per vertex per semantic
-        // Use blank records if the data isn't there as it's required by the file
+            stride += 4;
+            count++;
+
+            // Luminous only supports up to TEXCOORD7
+            if (count > 7)
+            {
+                break;
+            }
+        }
 
         for (var i = 0; i < mesh.VertexCount; i++)
         {
@@ -320,9 +369,12 @@ public class ModelWriter
             vertexStream.WriteByte((byte)tangent.Z);
             vertexStream.WriteByte((byte)tangent.W);
 
-            var uv = mesh.UVMaps[0].UVs[i];
-            vertexStream.Write(BitConverter.GetBytes(uv.U));
-            vertexStream.Write(BitConverter.GetBytes(uv.V));
+            foreach (var uvMap in mesh.UVMaps.Take(2))
+            {
+                var uv = uvMap.UVs[i];
+                vertexStream.Write(BitConverter.GetBytes(uv.U));
+                vertexStream.Write(BitConverter.GetBytes(uv.V));
+            }
         }
 
         // Write the stream description
@@ -330,7 +382,7 @@ public class ModelWriter
         {
             Slot = VertexStreamSlot.Slot_1,
             Type = VertexStreamType.Vertex,
-            Stride = 12u,
+            Stride = stride,
             StartOffset = (uint)vertexBufferStream.Position,
             VertexElementDescriptions = elements
         };

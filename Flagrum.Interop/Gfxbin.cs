@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -20,11 +21,23 @@ public static class Gfxbin
         var reader = new ModelReader(gfxbin, gpubin);
         var model = reader.Read();
 
-        var key = 0;
+        Dictionary<int, string> boneTable;
+        if (model.BoneHeaders.Count(b => b.UniqueIndex == ushort.MaxValue) > 1)
+        {
+            // Probably a broken MO gfxbin with all IDs set to this value
+            var arbitraryIndex = 0;
+            boneTable = model.BoneHeaders.ToDictionary(b => arbitraryIndex++, b => b.Name);
+        }
+        else
+        {
+            boneTable = model.BoneHeaders.ToDictionary(b => (int)b.UniqueIndex, b => b.Name);
+        }
+
         var meshData = new Gpubin
         {
-            BoneTable = model.BoneHeaders.ToDictionary(b => key++, b => b.Name),
+            BoneTable = boneTable,
             Meshes = model.MeshObjects.SelectMany(o => o.Meshes
+                .Where(m => m.LodNear == 0)
                 .Select(m => new GpubinMesh
                 {
                     Name = m.Name,

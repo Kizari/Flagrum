@@ -84,23 +84,45 @@ def _pack_bone_table():
     return bone_table, reverse_bone_table
 
 
+def _take_value(element):
+    return element[1]
+
+
 def _pack_weight_maps(mesh: Object, bone_table):
-    weight_indices: list[list[list[int]]] = [[]]
-    weight_values: list[list[list[float]]] = [[]]
+    weight_indices: list[list[list[int]]] = [[], []]
+    weight_values: list[list[list[float]]] = [[], []]
 
     mesh_data: Mesh = mesh.data
 
     for i in range(len(mesh_data.vertices)):
         weight_indices[0].append([])
         weight_values[0].append([])
+        weight_indices[1].append([])
+        weight_values[1].append([])
         counter = 0
+        current = []
         for group in mesh_data.vertices[i].groups:
+            subgroup = []
             bone_name = mesh.vertex_groups[group.group].name
-            weight_indices[0][i].append(bone_table[bone_name])
-            weight_values[0][i].append(int(group.weight * 255.0))
+            if counter < 8:
+                subgroup.append(bone_table[bone_name])
+                subgroup.append(int(group.weight * 255.0))
+            else:
+                break  # Luminous can only handle up to 8 weights per vertex
             counter += 1
-            if counter > 3:
+            current.append(subgroup)
+        record_counter = 0
+        current.sort(key=_take_value, reverse=True)
+        for record in current:
+            if record_counter < 4:
+                weight_indices[0][i].append(record[0])
+                weight_values[0][i].append(record[1])
+            elif record_counter < 8:
+                weight_indices[1][i].append(record[0])
+                weight_values[1][i].append(record[1])
+            else:
                 break
+            record_counter += 1
 
     return weight_indices, weight_values
 
@@ -127,34 +149,23 @@ def _pack_color_maps(mesh: Object):
 def _pack_uv_maps(mesh: Object):
     uv_maps: list[UVMap] = []
     mesh_data: Mesh = mesh.data
+    coords = []
+    counter = 0
 
-    # for uv_layer in mesh_data.uv_layers:
-    #     uv_map = UVMap()
-    #     uv_map.UVs = []
-    #     for loop in uv_layer.data:
-    #         for i in range(len(loop.uv)):
-    #             if (i + 1) % 2 == 0:
-    #                 continue
-    #             uv = UV()
-    #             uv.U = loop.uv[i]
-    #             uv.V = 1 - loop.uv[i + 1]  # Flip V for FBX coord system
-    #             uv_map.UVs.append(uv)
-    #     uv_maps.append(uv_map)
-
-    coords = {}
-    layer = mesh_data.uv_layers["map1"]
-    for loop in mesh_data.loops:
-        uv = UV()
-        temp = layer.data[loop.index].uv
-        uv.U = temp[0]
-        uv.V = 1 - temp[1]
-        coords[loop.vertex_index] = uv
-
-    uv_map = UVMap()
-    uv_map.UVs = []
-    for i in range(len(mesh_data.vertices)):
-        uv_map.UVs.append(coords[i])
-    uv_maps.append(uv_map)
+    for layer in mesh_data.uv_layers:
+        coords.append({})
+        for loop in mesh_data.loops:
+            uv = UV()
+            temp = layer.data[loop.index].uv
+            uv.U = temp[0]
+            uv.V = 1 - temp[1]
+            coords[counter][loop.vertex_index] = uv
+        uv_map = UVMap()
+        uv_map.UVs = []
+        for i in range(len(mesh_data.vertices)):
+            uv_map.UVs.append(coords[counter][i])
+        uv_maps.append(uv_map)
+        counter += 1
 
     return uv_maps
 
@@ -163,8 +174,17 @@ def _pack_faces(mesh: Object):
     faces: list[list[int]] = []
     mesh_data: Mesh = mesh.data
 
+    # # Need to triangulate the faces as Luminous only deals with tris
+    # mesh_copy = bmesh.new()
+    # mesh_copy.from_mesh(mesh_data)
+    # bmesh.ops.triangulate(mesh_copy, faces=mesh_copy.faces)
+    # 
+    # for tri in mesh_copy.faces:
+    #     # Reverse winding order as the game handles them this way
+    #     face = [tri.verts[2].index, tri.verts[1].index, tri.verts[0].index]
+    #     faces.append(face)
+
     for poly in mesh_data.polygons:
-        # Reverse winding order so normals face correct way in-game
         face = [poly.vertices[2], poly.vertices[1], poly.vertices[0]]
         faces.append(face)
 

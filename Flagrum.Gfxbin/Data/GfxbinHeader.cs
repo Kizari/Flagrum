@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Flagrum.Core.Services.Logging;
 using Flagrum.Gfxbin.Serialization;
 
@@ -43,7 +42,6 @@ public class GfxbinHeader
         }
 
         reader.UnpackArraySize(out var hashesCount);
-        Console.WriteLine(hashesCount);
 
         for (var _ = 0; _ < hashesCount; _++)
         {

@@ -97,11 +97,32 @@ public class ArchiverTests
         CreateBinMod(replacements);
     }
 
+    public static void CreateBinMod1(Dictionary<string, string> replacements)
+    {
+        var root = "C:\\Testing\\Gfxbin\\mod\\noctis_custom";
+        var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
+        var outputPath = "C:\\Testing\\Gfxbin\\d090b917-d422-41ed-a641-0047de5fea48.ffxvbinmod";
+
+        var packer = new Packer(root);
+        packer.AddFile("data://$mod/temp.ebex");
+        AddFilesRecursively(packer, root, replacements);
+
+        var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
+        foreach (var shader in shaders)
+        {
+            packer.AddFile(shader.Path);
+        }
+
+        packer.WriteToFile(outputPath);
+    }
+
     public static void CreateBinMod(Dictionary<string, string> replacements)
     {
         var root = "C:\\Testing\\Gfxbin\\mod\\noctis_custom_2";
+        //var root = "C:\\Testing\\Gfxbin\\mod\\magic_cube";
         var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
         var outputPath = "C:\\Testing\\Gfxbin\\de81d8a4-53d8-4ca9-bcf0-f9397e82db81.ffxvbinmod";
+        //var outputPath = "C:\\Testing\\Gfxbin\\7e96495e-8336-4cbb-bc44-4ab826591644.ffxvbinmod";
 
         var packer = new Packer(root);
         packer.AddFile("data://$mod/temp.ebex");
