@@ -165,12 +165,12 @@ public class ModelReader
 
                 mesh.PrimitiveType = (PrimitiveType)_reader.ReadByte();
                 var faceIndicesCount = _reader.ReadUint();
-                mesh.FaceIndexType = (IndexType)_reader.ReadByte();
+                var faceIndexType = (IndexType)_reader.ReadByte();
                 mesh.FaceIndexBufferOffset = _reader.ReadUint();
                 mesh.FaceIndices = _unpacker.UnpackFaceIndices(
                     (int)mesh.FaceIndexBufferOffset,
                     (int)faceIndicesCount,
-                    mesh.FaceIndexType);
+                    faceIndexType);
 
                 // Size of the face indices buffer for this mesh
                 // No point storing it as it is derived from the type and count

@@ -34,6 +34,8 @@ public class ModelReplacer
                 var weightValues = match.WeightValues
                     .Select(m => m.Select(n => n.Select(o => (byte)o).ToArray()).ToList()).ToList();
 
+                // This normalises weights to 255 over both weight maps
+                // ffxvbinmods don't seem to support the second weight map, so we disable it
                 // for (var i = 0; i < mesh.VertexCount; i++)
                 // {
                 //     var sum = weightValues[0][i].Sum(s => s) + weightValues[1][i].Sum(s => s);
@@ -90,6 +92,7 @@ public class ModelReplacer
                 //     }
                 // }
 
+                // This normalises weights to 255 over the first weight map only
                 for (var i = 0; i < mesh.VertexCount; i++)
                 {
                     for (var j = 0; j < 2; j++)
@@ -99,34 +102,34 @@ public class ModelReplacer
                         {
                             var difference = 255 - sum;
                             var counter = 0;
-                            
+
                             while (difference > 0)
                             {
                                 var weight = weightValues[j][i];
-                                
+
                                 if (weight[counter] > 0 && weight[counter] < 255)
                                 {
                                     weight[counter]++;
                                     difference--;
                                 }
-                
+
                                 counter++;
                                 if (counter == weight.Length)
                                 {
                                     counter = 0;
                                 }
                             }
-                            
+
                             while (difference < 0)
                             {
                                 var weight = weightValues[j][i];
-                                
+
                                 if (weight[counter] > 0)
                                 {
                                     weight[counter]--;
                                     difference++;
                                 }
-                
+
                                 counter++;
                                 if (counter == weight.Length)
                                 {
@@ -136,17 +139,6 @@ public class ModelReplacer
                         }
                     }
                 }
-
-                //Console.WriteLine($"Vertices: {match.VertexPositions.Count}, Weight Values: {match.WeightValues[0].Count}");
-
-                // for (var i = 0; i < mesh.VertexCount; i++)
-                // {
-                //     var sum = weightValues[0][i].Sum(s => s) + weightValues[1][i].Sum(s => s);
-                //     if (sum != 0 && sum != 255)
-                //     {
-                //         Console.WriteLine(sum);
-                //     }
-                // }
 
                 // Replace model data with the imported data
                 mesh.Normals = match.Normals;

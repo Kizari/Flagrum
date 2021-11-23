@@ -114,16 +114,21 @@ public class ModelWriter
 
                 _writer.WriteByte((byte)mesh.PrimitiveType);
                 _writer.WriteUInt((uint)mesh.FaceIndices.Length);
-                _writer.WriteByte((byte)mesh.FaceIndexType);
+
+                var indexType = mesh.VertexCount > ushort.MaxValue
+                    ? IndexType.IndexType32
+                    : IndexType.IndexType16;
+
+                _writer.WriteByte((byte)indexType);
 
                 var (faceIndexBufferOffset, faceIndexBufferSize) =
-                    _packer.PackFaceIndices(mesh.FaceIndices, mesh.FaceIndexType);
+                    _packer.PackFaceIndices(mesh.FaceIndices, indexType);
 
                 _writer.WriteUInt(faceIndexBufferOffset);
                 _writer.WriteUInt(faceIndexBufferSize);
 
                 _writer.WriteUInt((uint)mesh.VertexPositions.Count);
-                _writer.WriteArraySize((uint)mesh.VertexStreamDescriptions.Count);
+                _writer.WriteArraySize(2);
 
                 var vertexBufferStream = new MemoryStream();
 
@@ -238,6 +243,7 @@ public class ModelWriter
 
         stride += 8;
 
+        // ffxvbinmods don't seem to support the second weight map, so we disable it
         // elements.Add(new VertexElementDescription
         // {
         //     Format = VertexElementFormat.XYZW16_Uint,
@@ -256,6 +262,7 @@ public class ModelWriter
 
         stride += 4;
 
+        // ffxvbinmods don't seem to support the second weight map, so we disable it
         // elements.Add(new VertexElementDescription
         // {
         //     Format = VertexElementFormat.XYZW8_UintN,

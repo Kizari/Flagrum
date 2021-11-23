@@ -6,7 +6,7 @@ namespace Flagrum.Gfxbin.Gmdl.Components;
 
 public class Model
 {
-    public GfxbinHeader Header { get; } = new();
+    public GfxbinHeader Header { get; set; } = new();
 
     public string Name { get; set; }
     public ulong AssetHash { get; set; }
@@ -20,8 +20,8 @@ public class Model
     public byte ChildClassFormat { get; set; }
 
     public List<BoneHeader> BoneHeaders { get; set; } = new();
-    public List<NodeInformation> NodeTable { get; } = new();
-    public List<MeshObject> MeshObjects { get; } = new();
+    public List<NodeInformation> NodeTable { get; set; } = new();
+    public List<MeshObject> MeshObjects { get; set; } = new();
     public IEnumerable<ModelPart> Parts { get; set; }
 
     public bool HasPsdPath { get; set; }

@@ -13,9 +13,9 @@ public class GfxbinHeader
         _logger = new ConsoleLogger();
     }
 
-    public uint Version { get; private set; }
-    public List<DependencyPath> Dependencies { get; } = new();
-    public List<ulong> Hashes { get; } = new();
+    public uint Version { get; set; }
+    public List<DependencyPath> Dependencies { get; set; } = new();
+    public List<ulong> Hashes { get; set; } = new();
 
     public void Read(BinaryReader reader)
     {

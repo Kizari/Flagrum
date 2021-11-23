@@ -15,10 +15,22 @@ public class MaterialTests
 
         var replacements = new Dictionary<string, string>
         {
-            { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif", "data://mod/noctis_custom/arm_b.png" },
-            { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_n.tif", "data://mod/noctis_custom/arm_n.png" },
-            { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_mrs.tif", "data://mod/noctis_custom/arm_mrs.png" },
-            { "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_o.tif", "data://mod/noctis_custom/arm_o.png" }
+            {
+                "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif",
+                "data://mod/noctis_custom/arm_b.png"
+            },
+            {
+                "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_n.tif",
+                "data://mod/noctis_custom/arm_n.png"
+            },
+            {
+                "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_mrs.tif",
+                "data://mod/noctis_custom/arm_mrs.png"
+            },
+            {
+                "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_o.tif",
+                "data://mod/noctis_custom/arm_o.png"
+            }
         };
 
         var gfxbin = "C:\\Testing\\Gfxbin\\Gmtl\\mouth_material.gmtl.gfxbin";
@@ -78,17 +90,16 @@ public class MaterialTests
         var materialData = writer.Write();
         File.WriteAllBytes("C:\\Testing\\Gfxbin\\mod\\noctis_custom\\clean.fbxgmtl\\arm.gmtl.gfxbin", materialData);
     }
-    
+
     private static void SetUniformValues(Material material, string uniformName, params float[] values)
     {
-        var match = material.InterfaceInputs.FirstOrDefault(u => u.ShaderGenName.ToLower() == uniformName.ToLower() && u.InterfaceIndex == 0);
+        var match = material.InterfaceInputs.FirstOrDefault(u =>
+            u.ShaderGenName.ToLower() == uniformName.ToLower() && u.InterfaceIndex == 0);
         if (match == null)
         {
             throw new ArgumentException($"Input {uniformName} was not found in material {material.Name}.");
         }
-        else
-        {
-            match.Values = values;
-        }
+
+        match.Values = values;
     }
 }

@@ -79,9 +79,7 @@ public class Mesh
     public OrientedBB OrientedBB { get; set; }
     public PrimitiveType PrimitiveType { get; set; }
 
-    public IndexType FaceIndexType { get; set; }
     public uint FaceIndexBufferOffset { get; set; }
-    public uint FaceIndexBufferSize { get; set; }
     public int[,] FaceIndices { get; set; }
 
     public uint VertexCount { get; set; }
@@ -110,8 +108,6 @@ public class Mesh
     public List<Normal> Tangents { get; set; } = new();
     public List<ColorMap> ColorMaps { get; set; } = new();
     public List<UVMap> UVMaps { get; set; } = new();
-    public List<WeightMap> WeightMaps { get; set; } = new();
-
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<byte[]>> WeightValues { get; set; } = new();
 

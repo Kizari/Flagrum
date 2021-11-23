@@ -6,7 +6,7 @@ public class MeshObject
 {
     public string Name { get; set; }
 
-    public List<Mesh> Meshes { get; } = new();
+    public List<Mesh> Meshes { get; set; } = new();
 
 
     // NOTE: Currently unused, unsure what its purpose is. Doesn't appear relevant to ClusterName or any data
