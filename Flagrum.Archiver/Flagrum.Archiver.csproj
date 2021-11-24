@@ -8,4 +8,13 @@
     <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Binmod\Resources\preview.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Binmod\Resources\preview.btex">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

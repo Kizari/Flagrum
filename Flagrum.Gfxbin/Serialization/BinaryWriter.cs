@@ -94,8 +94,6 @@ public class BinaryWriter
 
     public void WriteHalf(Half value)
     {
-        // NOTE: Seems a little strange to pack this as a Uint16, but this is how the reader code read it
-        // Hopefully this is how the engine reads it
         _stream.WriteByte((byte)TypeFormat.Uint16);
         _stream.Write(BitConverter.GetBytes(value));
     }

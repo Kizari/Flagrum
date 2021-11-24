@@ -11,6 +11,17 @@ namespace Flagrum.Console;
 
 public class ArchiverTests
 {
+    // public static void GetShader()
+    // {
+    //     var uri = "data://shader/shadergen/buffer_output_ps/1a/buffer_output_ps_1a2df833.ps.sb";
+    //     var unpacker =
+    //         new Unpacker(
+    //             "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Final Fantasy XV\\datas\\shader\\shadergen\\autoexternal.earc");
+    //     var files = unpacker.Unpack(uri);
+    //     var file = files.FirstOrDefault(f => f.Uri == uri);
+    //     File.WriteAllBytes("C:\\Testing\\Archiver\\shader.sb", file.GetData());
+    // }
+
     public static void ReplaceMaterialAndRepack()
     {
         var replacements = new Dictionary<string, string>
@@ -94,48 +105,48 @@ public class ArchiverTests
             }
         };
 
-        CreateBinMod(replacements);
+        //CreateBinMod(replacements);
     }
 
-    public static void CreateBinMod1(Dictionary<string, string> replacements)
-    {
-        var root = "C:\\Testing\\Gfxbin\\mod\\noctis_custom";
-        var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
-        var outputPath = "C:\\Testing\\Gfxbin\\d090b917-d422-41ed-a641-0047de5fea48.ffxvbinmod";
+    // public static void CreateBinMod1(Dictionary<string, string> replacements)
+    // {
+    //     var root = "C:\\Testing\\Gfxbin\\mod\\noctis_custom";
+    //     var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
+    //     var outputPath = "C:\\Testing\\Gfxbin\\d090b917-d422-41ed-a641-0047de5fea48.ffxvbinmod";
+    //
+    //     var packer = new Packer(root);
+    //     packer.AddFile("data://$mod/temp.ebex");
+    //     AddFilesRecursively(packer, root, replacements);
+    //
+    //     var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
+    //     foreach (var shader in shaders)
+    //     {
+    //         packer.AddFile(shader.Path);
+    //     }
+    //
+    //     packer.WriteToFile(outputPath);
+    // }
 
-        var packer = new Packer(root);
-        packer.AddFile("data://$mod/temp.ebex");
-        AddFilesRecursively(packer, root, replacements);
-
-        var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
-        foreach (var shader in shaders)
-        {
-            packer.AddFile(shader.Path);
-        }
-
-        packer.WriteToFile(outputPath);
-    }
-
-    public static void CreateBinMod(Dictionary<string, string> replacements)
-    {
-        var root = "C:\\Testing\\Gfxbin\\mod\\noctis_custom_2";
-        //var root = "C:\\Testing\\Gfxbin\\mod\\magic_cube";
-        var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
-        var outputPath = "C:\\Testing\\Gfxbin\\de81d8a4-53d8-4ca9-bcf0-f9397e82db81.ffxvbinmod";
-        //var outputPath = "C:\\Testing\\Gfxbin\\7e96495e-8336-4cbb-bc44-4ab826591644.ffxvbinmod";
-
-        var packer = new Packer(root);
-        packer.AddFile("data://$mod/temp.ebex");
-        AddFilesRecursively(packer, root, replacements);
-
-        var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
-        foreach (var shader in shaders)
-        {
-            packer.AddFile(shader.Path);
-        }
-
-        packer.WriteToFile(outputPath);
-    }
+    // public static void CreateBinMod(Dictionary<string, string> replacements)
+    // {
+    //     var root = "C:\\Testing\\Gfxbin\\mod\\noctis_custom_2";
+    //     //var root = "C:\\Testing\\Gfxbin\\mod\\magic_cube";
+    //     var shaderMetadata = "C:\\Testing\\Archiver\\shaders.json";
+    //     var outputPath = "C:\\Testing\\Gfxbin\\de81d8a4-53d8-4ca9-bcf0-f9397e82db81.ffxvbinmod";
+    //     //var outputPath = "C:\\Testing\\Gfxbin\\7e96495e-8336-4cbb-bc44-4ab826591644.ffxvbinmod";
+    //
+    //     var packer = new Packer(root);
+    //     packer.AddFile("data://$mod/temp.ebex");
+    //     AddFilesRecursively(packer, root, replacements);
+    //
+    //     var shaders = JsonConvert.DeserializeObject<List<ShaderData>>(File.ReadAllText(shaderMetadata));
+    //     foreach (var shader in shaders)
+    //     {
+    //         packer.AddFile(shader.Path);
+    //     }
+    //
+    //     packer.WriteToFile(outputPath);
+    // }
 
     private static void AddFilesRecursively(Packer packer, string dir, Dictionary<string, string> replacements)
     {
@@ -163,7 +174,7 @@ public class ArchiverTests
 
             if (replacements.TryGetValue(file, out var replacement))
             {
-                packer.AddFile(file, replacement);
+                //packer.AddFile(file, replacement);
             }
             else
             {

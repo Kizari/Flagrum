@@ -2,7 +2,8 @@
 from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector
 
-from .entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal
+from .entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
+from .material_data import original_name_dictionary
 
 # Matrix that converts the axes back to FBX coordinate system
 conversion_matrix = Matrix([
@@ -34,6 +35,7 @@ def pack_mesh():
             mesh.Normals = normals
             mesh.Tangents = tangents
             mesh_data.Meshes.append(mesh)
+            mesh.material = _pack_material(obj)
 
     return mesh_data
 
@@ -203,3 +205,37 @@ def _pack_vertex_positions(mesh: Object):
         vertex_positions.append(position)
 
     return vertex_positions
+
+
+def _pack_material(mesh: Object):
+    material = mesh.flagrum_material
+
+    for property_definition in material.property_collection:
+        if property_definition.material_id == material.preset:
+            material_data = property_definition
+
+    data = MaterialData()
+    data.Id = material.preset
+    data.Name = original_name_dictionary[material.preset]
+    data.Inputs = {}
+    data.Textures = {}
+
+    for prop in material_data.property_collection:
+        property_value = getattr(material_data, prop.property_name)
+
+        if prop.property_type == 'TEXTURE':
+            if property_value == '':
+                data.Textures[prop.property_name] = property_value
+            else:
+                data.Textures[prop.property_name] = bpy.path.abspath(property_value)
+        else:  # If it's not a texture, it's an input
+            if type(property_value) is not float:
+                array = []
+                for value in property_value:
+                    array.append(value)
+                data.Inputs[prop.property_name] = array
+            else:
+                # Put in an array to make handling the JSON easier
+                data.Inputs[prop.property_name] = [property_value]
+
+    return data

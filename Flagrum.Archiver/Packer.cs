@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Flagrum.Archiver.Data;
-using Flagrum.Archiver.Utilities;
 using Flagrum.Core.Services.Logging;
 using Flagrum.Core.Utilities;
 
@@ -13,23 +12,26 @@ namespace Flagrum.Archiver
     {
         public const uint PointerSize = 8;
         public const uint BlockSize = 512;
-        private readonly string _archiveDirectory;
         private readonly List<ArchiveFile> _files;
         private readonly ArchiveHeader _header;
 
         private readonly Logger _logger;
 
-        public Packer(string archiveDirectory)
+        public Packer()
         {
             _logger = new ConsoleLogger();
-            _archiveDirectory = archiveDirectory;
             _header = new ArchiveHeader();
             _files = new List<ArchiveFile>();
         }
 
-        public void AddFile(string path, string overridePath = null)
+        public void AddFile(string uri)
         {
-            _files.Add(new ArchiveFile(_archiveDirectory, path, overridePath));
+            _files.Add(new ArchiveFile(uri));
+        }
+
+        public void AddInMemoryFile(byte[] data, string uri)
+        {
+            _files.Add(new ArchiveMemoryFile(data, uri));
         }
 
         public void WriteToFile(string path)
@@ -83,7 +85,7 @@ namespace Flagrum.Archiver
 
             var stream = new MemoryStream();
 
-            stream.Write(ArchiveHeader.Tag);
+            stream.Write(ArchiveHeader.DefaultTag);
             stream.Write(BitConverter.GetBytes(_header.Version));
             stream.Write(BitConverter.GetBytes((uint)_files.Count));
             stream.Write(BitConverter.GetBytes(BlockSize));
@@ -92,7 +94,7 @@ namespace Flagrum.Archiver
             stream.Write(BitConverter.GetBytes(_header.PathListOffset));
             stream.Write(BitConverter.GetBytes(_header.DataOffset));
             stream.Write(BitConverter.GetBytes((uint)0)); // Flags are always zero
-            stream.Write(BitConverter.GetBytes(ArchiveHeader.ChunkSize));
+            stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
 
             // Archive hash must be zero before the whole header is hashed
             stream.Write(BitConverter.GetBytes((ulong)0));
@@ -104,7 +106,7 @@ namespace Flagrum.Archiver
 
             stream = new MemoryStream();
 
-            stream.Write(ArchiveHeader.Tag);
+            stream.Write(ArchiveHeader.DefaultTag);
             stream.Write(BitConverter.GetBytes(_header.Version));
             stream.Write(BitConverter.GetBytes((uint)_files.Count));
             stream.Write(BitConverter.GetBytes(BlockSize));
@@ -113,7 +115,7 @@ namespace Flagrum.Archiver
             stream.Write(BitConverter.GetBytes(_header.PathListOffset));
             stream.Write(BitConverter.GetBytes(_header.DataOffset));
             stream.Write(BitConverter.GetBytes((uint)0));
-            stream.Write(BitConverter.GetBytes(ArchiveHeader.ChunkSize));
+            stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
             stream.Write(BitConverter.GetBytes(_header.Hash));
 
             // Constant padding
@@ -154,8 +156,8 @@ namespace Flagrum.Archiver
                 stream.Write(BitConverter.GetBytes(file.UriOffset));
                 stream.Write(BitConverter.GetBytes(dataOffset));
                 stream.Write(BitConverter.GetBytes(file.RelativePathOffset));
-                stream.WriteByte(ArchiveFile.LocalizationType);
-                stream.WriteByte(ArchiveFile.Locale);
+                stream.WriteByte(file.LocalizationType);
+                stream.WriteByte(file.Locale);
                 stream.Write(BitConverter.GetBytes(key));
             }
 

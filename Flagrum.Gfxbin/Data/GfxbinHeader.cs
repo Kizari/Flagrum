@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Flagrum.Core.Services.Logging;
 using Flagrum.Gfxbin.Serialization;
 
@@ -54,7 +55,7 @@ public class GfxbinHeader
         writer.Write(Version);
         writer.WriteMapCount((uint)Dependencies.Count);
 
-        foreach (var dependency in Dependencies)
+        foreach (var dependency in Dependencies.OrderBy(d => d.PathHash))
         {
             writer.WriteStringX(dependency.PathHash);
             writer.WriteString8(dependency.Path);
@@ -62,7 +63,7 @@ public class GfxbinHeader
 
         writer.WriteArraySize((uint)Hashes.Count);
 
-        foreach (var hash in Hashes)
+        foreach (var hash in Hashes.OrderBy(h => h))
         {
             writer.WriteUInt(hash);
         }

@@ -1,8 +1,9 @@
 import bpy
+from bpy.props import PointerProperty
 from bpy.utils import register_class, unregister_class
 
+from .material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .material_panel import MaterialEditorPanel
-from .material_data import MaterialSettings
 from .menu import ImportOperator, ExportOperator
 
 bl_info = {
@@ -17,6 +18,8 @@ bl_info = {
 classes = (
     ImportOperator,
     ExportOperator,
+    FlagrumMaterialProperty,
+    FlagrumMaterialPropertyCollection,
     MaterialEditorPanel,
     MaterialSettings
 )
@@ -37,8 +40,7 @@ def register():
         register_class(cls)
     bpy.types.TOPBAR_MT_file_import.append(import_menu_item)
     bpy.types.TOPBAR_MT_file_export.append(export_menu_item)
-    bpy.types.Object.flagrum_material = bpy.props.PointerProperty(type=MaterialSettings)
-    bpy.types.Object.flagrum_material_properties = []
+    bpy.types.Object.flagrum_material = PointerProperty(type=MaterialSettings)
 
 
 def unregister():

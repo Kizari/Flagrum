@@ -18,4 +18,22 @@ public class GpubinMesh
     public List<UVMap32> UVMaps { get; set; } = new();
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<int[]>> WeightValues { get; set; } = new();
+    public MaterialData Material { get; set; }
+}
+
+public class MaterialData
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public Dictionary<string, float[]> Inputs { get; set; }
+    public Dictionary<string, string> Textures { get; set; }
+
+    public List<TextureData> TextureData { get; set; } = new();
+}
+
+public class TextureData
+{
+    public string Id { get; set; }
+    public string Uri { get; set; }
+    public byte[] Data { get; set; }
 }

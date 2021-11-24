@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Flagrum.Archiver.Utilities;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Archiver.Data
 {
@@ -22,39 +22,43 @@ namespace Flagrum.Archiver.Data
     {
         public const uint HeaderSize = 40;
         public const ulong HeaderHash = 14695981039346656037;
-        public const byte LocalizationType = 0;
-        public const byte Locale = 0;
-        private string _path;
-        private uint _processedSize;
+        private ushort _key;
 
-        private uint _size;
+        public ArchiveFile() { }
 
-        public ArchiveFile(string archiveRoot, string path, string overrideDataPath = null)
+        public ArchiveFile(string uri)
         {
-            if (path.StartsWith("data://shader"))
+            RelativePath = uri.Replace("data://", "");
+
+            if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif"))
             {
-                _path = path
-                    .Replace("data://",
-                        "C:/Users/Kieran/AppData/Local/SquareEnix/FFXVMODTool/LuminousStudio/bin/rt2/pc/")
-                    .Replace(".tif", ".btex").Replace(".tga", ".btex");
-                RelativePath = path.Replace("data://", "").Replace(".tif", ".btex").Replace(".tga", ".btex");
-                Uri = path;
+                RelativePath = RelativePath.Replace(".tga", ".btex").Replace(".tif", ".btex");
             }
-            else if (path.EndsWith(".ebex"))
+
+            var newUri = uri
+                .Replace(".gmdl.gfxbin", ".fbx")
+                .Replace(".gmtl.gfxbin", ".gmtl")
+                .Replace(".exml", ".ebex");
+
+            if (!uri.StartsWith("data://mod"))
             {
-                _path = $"C:\\Testing\\Gfxbin\\$mod\\{archiveRoot.Split('\\', '/').Last()}\\temp.exml";
-                RelativePath = path.Replace("data://", "").Replace(".ebex", ".exml");
-                Uri = path;
+                if (uri.StartsWith("data://shader/defaulttextures/wetness"))
+                {
+                    newUri = newUri.Replace(".btex", ".tga");
+                }
+                else
+                {
+                    newUri = newUri.Replace(".btex", ".tif");
+                }
             }
             else
             {
-                _path = path;
-                var directory = "mod/" + archiveRoot.Split('\\', '/').Last() + "/";
-                RelativePath = directory + path.Substring(archiveRoot.Length).Trim('\\', '/').Replace('\\', '/');
-                Uri = InferUri();
+                //newUri = newUri.Replace(".btex", ".png");
             }
 
-            var tokens = _path.Split('\\', '/');
+            Uri = newUri;
+
+            var tokens = uri.Split('\\', '/');
             var fileName = tokens.Last();
             var index = fileName.IndexOf('.');
             var type = index < 0 ? "" : fileName.Substring(index + 1);
@@ -64,126 +68,72 @@ namespace Flagrum.Archiver.Data
 
             UriAndTypeHash = (ulong)(((long)UriHash & 17592186044415L) | (((long)TypeHash << 44) & -17592186044416L));
 
-            // Everything is generated above so this path will only be used for reading the bytes from file
-            if (overrideDataPath != null)
-            {
-                _path = overrideDataPath;
-            }
+            Flags = GetDefaultBinmodFlags();
         }
 
-        public ulong NameHash { get; }
         public ulong TypeHash { get; }
-        public ulong UriAndTypeHash { get; }
-        public string Uri { get; }
+        public ulong UriAndTypeHash { get; set; }
+        public string Uri { get; set; }
         public ulong UriHash { get; }
         public uint UriOffset { get; set; }
         public string RelativePath { get; }
         public uint RelativePathOffset { get; set; }
         public ulong DataOffset { get; set; }
-
-        public uint Size
-        {
-            get
-            {
-                if (_size == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Size cannot be calculated before reading the file. Call {nameof(GetData)} first.");
-                }
-
-                return _size;
-            }
-        }
-
-        public uint ProcessedSize
-        {
-            get
-            {
-                if (_processedSize == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"ProcessedSize cannot be calculated before reading the file. Call {nameof(GetData)} first.");
-                }
-
-                return _processedSize;
-            }
-        }
-
-        public ArchiveFileFlag Flags
-        {
-            get
-            {
-                if (_path == null)
-                {
-                    throw new InvalidOperationException($"Flags must be calculated after setting {nameof(_path)}.");
-                }
-
-                var flags = ArchiveFileFlag.Autoload;
-
-                if (_path.EndsWith(".modmeta") || _path.EndsWith(".bin"))
-                {
-                    flags |= ArchiveFileFlag.MaskProtected;
-                }
-                else
-                {
-                    flags |= ArchiveFileFlag.Encrypted;
-                }
-
-                return flags;
-            }
-        }
+        public uint Size { get; set; }
+        public uint ProcessedSize { get; set; }
+        public ArchiveFileFlag Flags { get; set; }
+        public byte LocalizationType { get; set; }
+        public byte Locale { get; set; }
 
         public ushort Key
         {
             get
             {
-                if (_path.EndsWith(".modmeta") || _path.EndsWith(".bin"))
+                if (Uri != null && (Uri.EndsWith(".modmeta") || Uri.EndsWith(".bin")))
                 {
                     var hash = Uri.GetHashCode();
                     var key = (hash >> 16) ^ hash;
                     return (ushort)(key == 0 ? 57005 : key);
                 }
 
-                return 0;
+                return _key;
             }
+
+            set => _key = value;
         }
+
+        protected virtual byte[] Data => Array.Empty<byte>();
 
         public byte[] GetData()
         {
-            var data = File.ReadAllBytes(_path);
-            _size = (uint)data.Length;
+            var data = Data;
+            Size = (uint)data.Length;
 
             if (Flags.HasFlag(ArchiveFileFlag.Encrypted))
             {
                 var encryptedData = Cryptography.Encrypt(data);
-                _processedSize = (uint)encryptedData.Length;
+                ProcessedSize = (uint)encryptedData.Length;
                 return encryptedData;
             }
 
-            _processedSize = _size;
+            ProcessedSize = Size;
             return data;
         }
 
-        private string InferUri()
+        public ArchiveFileFlag GetDefaultBinmodFlags()
         {
-            var uri = Path.Combine("data://", RelativePath).Replace('\\', '/').ToLower();
+            var flags = ArchiveFileFlag.Autoload;
 
-            if (uri.EndsWith(".gmtl.gfxbin"))
+            if (Uri.EndsWith(".modmeta") || Uri.EndsWith(".bin"))
             {
-                return uri.Replace(".gmtl.gfxbin", ".gmtl");
+                flags |= ArchiveFileFlag.MaskProtected;
+            }
+            else
+            {
+                flags |= ArchiveFileFlag.Encrypted;
             }
 
-            if (uri.EndsWith(".gmdl.gfxbin"))
-            {
-                return uri.Replace(".gmdl.gfxbin", ".fbx");
-            }
-
-            if (uri.EndsWith(".btex"))
-            {
-                return uri.Replace(".btex", ".png");
-            }
-
-            return uri;
+            return flags;
         }
     }
 }

@@ -47,6 +47,23 @@ class UVMap:
     UVs: list[UV]
 
 
+@dataclass
+class MaterialPropertyMetadata:
+    property_name: str
+    is_relevant: bool
+    importance: int
+    property_type: str
+    default_value: object
+
+
+@dataclass(init=False)
+class MaterialData:
+    Id: str
+    Name: str
+    Textures: dict[str, str]
+    Inputs: dict[str, list[float]]
+
+
 @dataclass(init=False)
 class MeshData:
     Name: str
@@ -57,6 +74,7 @@ class MeshData:
     WeightIndices: list[list[list[int]]]
     WeightValues: list[list[list[float]]]
     UVMaps: list[UVMap]
+    Material: MaterialData
 
 
 @dataclass(init=False)

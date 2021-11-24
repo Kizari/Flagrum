@@ -37,12 +37,12 @@ class ImportOperator(Operator, ImportHelper):
 
 
 class ExportOperator(Operator, ExportHelper):
-    """Exports Blender files to gfxbin"""
+    """Exports Blender files to mod archives"""
     bl_idname = "flagrum.gfxbin_export"
-    bl_label = "Export gfxbin"
-    filename_ext = ".gfxbin"
+    bl_label = "Export FFXV Mod"
+    filename_ext = ".ffxvbinmod"
     filter_glob = StringProperty(
-        default="*.gfxbin",
+        default="*.ffxvbinmod",
         options={'HIDDEN'}
     )
 

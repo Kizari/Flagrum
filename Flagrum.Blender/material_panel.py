@@ -15,20 +15,33 @@ class MaterialEditorPanel(Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(data=context.view_layer.objects.active.flagrum_material, property="preset")
+        active_object = context.view_layer.objects.active
+        material = active_object.flagrum_material
 
-        for prop in context.view_layer.objects.active.flagrum_material_properties:
-            prop_name = prop[0]
-            is_basic = prop[1]
-            if is_basic:
-                layout.prop(data=context.view_layer.objects.active.flagrum_material, property=prop_name)
+        active_material_data = None
+        for property_definition in material.property_collection:
+            if property_definition.material_id == material.preset:
+                active_material_data = property_definition
 
-        if context.view_layer.objects.active.flagrum_material.preset != 'NONE':
-            layout.prop(data=context.view_layer.objects.active.flagrum_material, property="show_advanced")
+        layout.prop(data=material, property="preset")
 
-        if context.view_layer.objects.active.flagrum_material.show_advanced:
-            for prop in context.view_layer.objects.active.flagrum_material_properties:
-                prop_name = prop[0]
-                is_basic = prop[1]
-                if not is_basic:
-                    layout.prop(data=context.view_layer.objects.active.flagrum_material, property=prop_name)
+        if active_material_data is not None:
+            iterable_properties = active_material_data.property_collection.items().copy()
+            iterable_properties.sort(key=lambda p: p[1].importance)
+            for empty_string, prop in iterable_properties:
+                if prop.is_relevant and prop.property_type == 'TEXTURE':
+                    layout.prop(data=active_material_data, property=prop.property_name)
+            for empty_string, prop in iterable_properties:
+                if prop.is_relevant and prop.property_type == 'INPUT':
+                    layout.prop(data=active_material_data, property=prop.property_name)
+
+            if material.preset != 'NONE':
+                layout.prop(data=material, property="show_advanced")
+
+            if material.show_advanced:
+                for empty_string, prop in iterable_properties:
+                    if not prop.is_basic and prop.property_type == 'TEXTURE':
+                        layout.prop(data=active_material_data, property=prop.property_name)
+                for empty_string, prop in iterable_properties:
+                    if not prop.is_basic and prop.property_type == 'INPUT':
+                        layout.prop(data=active_material_data, property=prop.property_name)

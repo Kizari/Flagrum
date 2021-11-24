@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Core.Utilities;
 using Flagrum.Gfxbin.Data;
 using Flagrum.Gfxbin.Gmdl.Components;
 using Flagrum.Gfxbin.Gmdl.Constructs;
@@ -12,12 +13,12 @@ public static class OutfitTemplate
     public static Model Build(string exportPath, Gpubin gpubin)
     {
         var modelName = exportPath.Split('/', '\\').Last().Split('.').First();
-        var header = BuildHeader(modelName, exportPath);
+        var header = BuildHeader(modelName, gpubin);
 
         return new Model
         {
             Header = header,
-            Name = modelName,
+            Name = "main",
             AssetHash = ulong.Parse(header.Dependencies
                 .FirstOrDefault(d => d.Path.EndsWith(".gpubin"))!.PathHash),
 
@@ -49,8 +50,7 @@ public static class OutfitTemplate
                     Name = "Base_Parts",
                     ClusterCount = 1,
                     ClusterName = "CLUSTER_NAME",
-                    // TODO: Update this to use proper material hash
-                    Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name, 12345)).ToList()
+                    Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name, Cryptography.Hash($"data://mod/noctis_custom_2/main.fbxgmtl/{GetMaterialName(m.Name)}.gmtl"))).ToList()
                 }
             },
 
@@ -61,24 +61,40 @@ public static class OutfitTemplate
         };
     }
 
-    // TODO: Finish this method
-    private static GfxbinHeader BuildHeader(string modelName, string exportPath)
+    private static string GetMaterialName(string meshName) => meshName.ToLower() switch
     {
-        var basePath = $"data://mod/{Path.GetDirectoryName(exportPath)}/";
+        "shirtshape" => "shirt",
+        "bootsshape" => "boots",
+        "buttonshape" => "button",
+        "pantsshape" => "pants",
+        "bodyshape" => "arm",
+        _ => "ERROR"
+    };
 
-        // Generate the dependencies as (ulong, string)
+    private static GfxbinHeader BuildHeader(string modelName, Gpubin gpubin)
+    {
+        var basePath = $"data://mod/{modelName}";
+        var gpubinUri = $"{basePath}/main.gpubin";
+        var gpubinHash = Cryptography.Hash(gpubinUri);
 
-        // Generate these from the tuple list and add the extra two with the string hashes
-        var dependencies = new List<DependencyPath>
+        var materials =
+            gpubin.Meshes.Select(m  => (
+                hash: Cryptography.Hash($"{basePath}/main.fbxgmtl/{GetMaterialName(m.Name)}.gmtl"),
+                uri: $"{basePath}/main.fbxgmtl/{GetMaterialName(m.Name)}.gmtl"));
+
+        var dependencies = new List<DependencyPath>();
+        dependencies.AddRange(materials.Select(m => new DependencyPath
         {
-            new() {PathHash = "", Path = $"{basePath}{modelName}.gpubin"},
-            new() {PathHash = "asset_uri", Path = basePath},
-            new() {PathHash = "ref", Path = $"{basePath}{modelName}.gmdl"}
-        };
+            PathHash = m.hash.ToString(),
+            Path = m.uri
+        }));
 
-        // This will be generated from just the ulongs in the tuple list
-        // Is just a repeat of the hashes except for the last two that are strings
-        var hashes = new List<ulong>();
+        dependencies.Add(new DependencyPath {PathHash = gpubinHash.ToString(), Path = gpubinUri});
+        dependencies.Add(new DependencyPath {PathHash = "asset_uri", Path = basePath + "/"});
+        dependencies.Add(new DependencyPath {PathHash = "ref", Path = $"{basePath}/main.gmdl"});
+
+        var hashes = materials.Select(m => m.hash).ToList();
+        hashes.Add(gpubinHash);
 
         return new GfxbinHeader
         {
