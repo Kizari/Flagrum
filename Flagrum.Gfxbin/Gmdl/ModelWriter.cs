@@ -372,7 +372,7 @@ public class ModelWriter
 
             stride += 4;
             count++;
-            
+
             // Luminous only supports up to COLOR3
             if (count > 3)
             {

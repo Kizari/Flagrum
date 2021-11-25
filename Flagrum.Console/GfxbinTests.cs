@@ -1,10 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using Flagrum.Gfxbin.Gmdl;
-using Flagrum.Gfxbin.Gmdl.Constructs;
-using Flagrum.Gfxbin.Gmtl;
-using Newtonsoft.Json;
 
 namespace Flagrum.Console;
 
@@ -142,14 +137,14 @@ public static class GfxbinTests
         {
             var moMesh = mo.MeshObjects[0].Meshes[i];
             var mesh = model.MeshObjects[0].Meshes[i];
-        
+
             System.Console.WriteLine($"Mesh name: {moMesh.Name}, {mesh.Name}");
             foreach (var stream in mesh.VertexStreamDescriptions)
             {
                 System.Console.WriteLine($"Slot: {stream.Slot}");
                 System.Console.WriteLine($"Stride: {stream.Stride}");
                 System.Console.WriteLine($"Type: {stream.Type}");
-            
+
                 foreach (var desc in stream.VertexElementDescriptions)
                 {
                     System.Console.WriteLine($"\tSemantic: {desc.Semantic}");
@@ -157,17 +152,17 @@ public static class GfxbinTests
                     System.Console.WriteLine($"\tOffset: {desc.Offset}");
                 }
             }
-        
+
             // System.Console.WriteLine($"Vertex count: {moMesh.VertexCount}, {mesh.VertexCount}");
             // System.Console.WriteLine($"Face index count: {moMesh.FaceIndices.Length}, {mesh.FaceIndices.Length}");
-        
+
             // for (var j = 0; j < Math.Max(moMesh.FaceIndices.Length, mesh.FaceIndices.Length); j++)
             // {
             //     var moFaces = new[] {moMesh.FaceIndices[j, 0], moMesh.FaceIndices[j, 1], moMesh.FaceIndices[j, 2]};
             //     var faces = new[] {mesh.FaceIndices[j, 0], mesh.FaceIndices[j, 1], mesh.FaceIndices[j, 2]};
             //     System.Console.WriteLine($"MO: [{moFaces[0]}, {moFaces[1]}, {moFaces[2]}] O: [{faces[0]}, {faces[1]}, {faces[2]}]");
             // }
-        
+
             // for (var j = 0; j < moMesh.WeightValues[0].Count; j++)
             // {
             //     var map1 = moMesh.WeightValues[0][j];
@@ -176,7 +171,7 @@ public static class GfxbinTests
             //     System.Console.WriteLine(
             //         $"[{map1[0]}, {map1[1]}, {map1[2]}, {map1[3]}], [{map2[0]}, {map2[1]}, {map2[2]}, {map2[3]}], Sum: {sum}");
             // }
-        
+
             // for (var j = 0; j < Math.Max(moMesh.WeightIndices[0].Count, mesh.WeightIndices[0].Count); j++)
             // {
             //     var moWeight = moMesh.WeightValues[0][j];

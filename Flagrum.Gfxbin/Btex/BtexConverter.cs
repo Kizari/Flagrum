@@ -28,6 +28,7 @@ public static class BtexConverter
 
         process.StartInfo = startInfo;
         process.Start();
+        process.WaitForExit();
     }
 
     private static string GetArgsForType(TextureType type, string inPath, string outPath)

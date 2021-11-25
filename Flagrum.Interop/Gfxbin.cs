@@ -121,8 +121,6 @@ public static class Gfxbin
                                 ? BtexConverter.TextureType.Normal
                                 : BtexConverter.TextureType.Color);
 
-                        // TODO: See if there's a way to detect when the command finishes rather than sleep an arbitrary duration
-                        Thread.Sleep(100);
                         var btexData = File.ReadAllBytes(tempPath);
                         File.Delete(tempPath);
                         var fileName = filePath.Split('/', '\\').Last();

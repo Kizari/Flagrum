@@ -1,4 +1,5 @@
-﻿import bpy
+﻿import bmesh
+import bpy
 from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector
 
@@ -24,18 +25,47 @@ def pack_mesh():
         if obj.type == 'MESH':
             mesh = MeshData()
             mesh.Name = obj.name
-            mesh.VertexPositions = _pack_vertex_positions(obj)
-            mesh.FaceIndices = _pack_faces(obj)
-            mesh.UVMaps = _pack_uv_maps(obj)
-            mesh.ColorMaps = _pack_color_maps(obj)
-            weight_indices, weight_values = _pack_weight_maps(obj, reverse_bone_table)
+            mesh.material = _pack_material(obj)
+
+            # Clone the mesh so we don't mess with the original
+            mesh_copy: Object = obj.copy()
+            mesh_copy.data = obj.data.copy()
+            bpy.context.collection.objects.link(mesh_copy)
+            bpy.context.view_layer.objects.active = mesh_copy
+            bpy.ops.object.mode_set(mode='EDIT')
+            bmesh_copy = bmesh.from_edit_mesh(mesh_copy.data)
+
+            # Clear seams as we need to use them for splitting
+            for edge in bmesh_copy.edges:
+                if edge.seam:
+                    edge.seam = False
+
+            # Split edges as Luminous relies on tangents calculated this way for correct lighting
+            bpy.ops.uv.seams_from_islands()
+            island_boundaries = [edge for edge in bmesh_copy.edges if edge.seam and len(edge.link_faces) == 2]
+            bmesh.ops.split_edges(bmesh_copy, edges=island_boundaries)
+
+            # Triangulate faces as Luminous only supports tris
+            bmesh.ops.triangulate(bmesh_copy, faces=bmesh_copy.faces, quad_method='FIXED', ngon_method='EAR_CLIP')
+
+            # Apply the changes to the cloned mesh
+            bmesh.update_edit_mesh(mesh_copy.data)
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+            mesh.VertexPositions = _pack_vertex_positions(mesh_copy)
+            mesh.FaceIndices = _pack_faces(mesh_copy)
+            mesh.UVMaps = _pack_uv_maps(mesh_copy)
+            mesh.ColorMaps = _pack_color_maps(mesh_copy)
+            weight_indices, weight_values = _pack_weight_maps(mesh_copy, reverse_bone_table)
             mesh.WeightIndices = weight_indices
             mesh.WeightValues = weight_values
-            normals, tangents = _pack_normals_and_tangents(obj)
+            normals, tangents = _pack_normals_and_tangents(mesh_copy)
             mesh.Normals = normals
             mesh.Tangents = tangents
             mesh_data.Meshes.append(mesh)
-            mesh.material = _pack_material(obj)
+
+            # Unlink and delete the clone
+            bpy.data.objects.remove(mesh_copy, do_unlink=True)
 
     return mesh_data
 
@@ -107,6 +137,8 @@ def _pack_weight_maps(mesh: Object, bone_table):
             subgroup = []
             bone_name = mesh.vertex_groups[group.group].name
             if counter < 8:
+                if bone_name not in bone_table:
+                    continue
                 subgroup.append(bone_table[bone_name])
                 subgroup.append(int(group.weight * 255.0))
             else:
@@ -185,17 +217,8 @@ def _pack_faces(mesh: Object):
     faces: list[list[int]] = []
     mesh_data: Mesh = mesh.data
 
-    # # Need to triangulate the faces as Luminous only deals with tris
-    # mesh_copy = bmesh.new()
-    # mesh_copy.from_mesh(mesh_data)
-    # bmesh.ops.triangulate(mesh_copy, faces=mesh_copy.faces)
-    # 
-    # for tri in mesh_copy.faces:
-    #     # Reverse winding order as the game handles them this way
-    #     face = [tri.verts[2].index, tri.verts[1].index, tri.verts[0].index]
-    #     faces.append(face)
-
     for poly in mesh_data.polygons:
+        # Reverse winding order as the game handles them this way
         face = [poly.vertices[2], poly.vertices[1], poly.vertices[0]]
         faces.append(face)
 
