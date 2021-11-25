@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from bpy.props import StringProperty
+from bpy.props import StringProperty, EnumProperty
 from bpy.types import Operator
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 
@@ -46,10 +46,35 @@ class ExportOperator(Operator, ExportHelper):
         options={'HIDDEN'}
     )
 
+    character: EnumProperty(
+        items=(
+            ('NOCTIS', "Noctis", ""),
+            ('PROMPTO', "Prompto", ""),
+            ('IGNIS', "Ignis", ""),
+            ('GLADIOLUS', "Gladiolus", "")
+        ),
+        name="Character",
+        description="Choose the character this model will be applied to",
+        default=0,
+        options={'ANIMATABLE'}
+    )
+
+    uuid: StringProperty(name="UUID")
+    title: StringProperty(name="Title")
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(data=self, property="title")
+        layout.prop(data=self, property="character")
+        layout.prop(data=self, property="uuid")
+
     def execute(self, context):
         print(datetime.now())
         print("Packing Data...")
         data = pack_mesh()
+        data.Title = self.title
+        data.Target = self.character
+        data.Uuid = self.uuid
         Interop.export_mesh(self.filepath, data)
 
         return {'FINISHED'}

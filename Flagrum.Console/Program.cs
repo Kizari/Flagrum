@@ -1,13 +1,13 @@
-﻿using System.IO;
-using System.Text;
-using Flagrum.Core.Utilities;
-
-namespace Flagrum.Console;
+﻿namespace Flagrum.Console;
 
 public class Program
 {
     public static void Main(string[] args)
     {
+        //CsvToTextureDictionary.Run();
+        //var basePath = "C:\\Users\\Kieran\\Downloads\\FlagrumDefaultTextures\\";
+        //BtexConverter.Convert($"{basePath}white.png", $"{basePath}white-color.btex", BtexConverter.TextureType.Color);
+        //Thread.Sleep(1000);
         //var uri = "data://mod/noctis_custom_2/main.fbxgmtl/button.gmtl";
         //System.Console.WriteLine(Cryptography.Hash("button.gmtl.gfxbin"));
         InteropTests.Test();

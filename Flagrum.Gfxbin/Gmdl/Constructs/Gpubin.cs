@@ -4,6 +4,9 @@ namespace Flagrum.Gfxbin.Gmdl.Constructs;
 
 public class Gpubin
 {
+    public string Target { get; set; }
+    public string Uuid { get; set; }
+    public string Title { get; set; }
     public Dictionary<int, string> BoneTable { get; set; }
     public IEnumerable<GpubinMesh> Meshes { get; set; }
 }
