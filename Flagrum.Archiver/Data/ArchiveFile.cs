@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using Flagrum.Core.Utilities;
 
@@ -50,10 +49,6 @@ namespace Flagrum.Archiver.Data
                 {
                     newUri = newUri.Replace(".btex", ".tif");
                 }
-            }
-            else
-            {
-                //newUri = newUri.Replace(".btex", ".png");
             }
 
             Uri = newUri;

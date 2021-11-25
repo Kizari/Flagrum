@@ -19,6 +19,7 @@ public class GpubinMesh
     public List<Normal> Normals { get; set; } = new();
     public List<Normal> Tangents { get; set; } = new();
     public List<UVMap32> UVMaps { get; set; } = new();
+    public List<ColorMap> ColorMaps { get; set; } = new();
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<int[]>> WeightValues { get; set; } = new();
     public MaterialData Material { get; set; }

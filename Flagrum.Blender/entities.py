@@ -70,7 +70,7 @@ class MeshData:
     VertexPositions: list[Vector3]
     FaceIndices: list[list[int]]
     Normals: list[Normal]
-    # ColorMaps: list[ColorMap]
+    ColorMaps: list[ColorMap]
     WeightIndices: list[list[list[int]]]
     WeightValues: list[list[list[float]]]
     UVMaps: list[UVMap]

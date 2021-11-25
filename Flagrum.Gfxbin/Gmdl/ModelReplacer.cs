@@ -145,6 +145,7 @@ public class ModelReplacer
                 mesh.Tangents = match.Tangents;
                 mesh.FaceIndices = match.FaceIndices;
                 mesh.VertexPositions = match.VertexPositions;
+                mesh.ColorMaps = match.ColorMaps;
                 mesh.WeightIndices = match.WeightIndices;
 
                 // Convert weights back to bytes as JSON.NET doesn't handle byte numbers well

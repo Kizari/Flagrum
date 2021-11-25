@@ -135,8 +135,6 @@ public class ModelWriter
                 WriteVertexStream1(vertexBufferStream, mesh);
                 WriteVertexStream2(vertexBufferStream, mesh);
 
-                // TODO: Write the vertex color maps
-                // TODO: Write the rest of the UV maps
                 // TODO: Write the second weight map
                 // TODO: Write binormals, normalXfactors, fogcoord0 and psize0
 
@@ -343,7 +341,7 @@ public class ModelWriter
         stride += 4;
 
         var count = 0;
-        foreach (var uvMap in mesh.UVMaps.Take(2))
+        foreach (var uvMap in mesh.UVMaps)
         {
             elements.Add(new VertexElementDescription
             {
@@ -357,6 +355,26 @@ public class ModelWriter
 
             // Luminous only supports up to TEXCOORD7
             if (count > 7)
+            {
+                break;
+            }
+        }
+
+        count = 0;
+        foreach (var colorMap in mesh.ColorMaps)
+        {
+            elements.Add(new VertexElementDescription
+            {
+                Format = VertexElementFormat.XYZW8_UintN,
+                Semantic = $"COLOR{count}",
+                Offset = stride
+            });
+
+            stride += 4;
+            count++;
+            
+            // Luminous only supports up to COLOR3
+            if (count > 3)
             {
                 break;
             }
@@ -376,11 +394,20 @@ public class ModelWriter
             vertexStream.WriteByte((byte)tangent.Z);
             vertexStream.WriteByte((byte)tangent.W);
 
-            foreach (var uvMap in mesh.UVMaps.Take(2))
+            foreach (var uvMap in mesh.UVMaps)
             {
                 var uv = uvMap.UVs[i];
                 vertexStream.Write(BitConverter.GetBytes(uv.U));
                 vertexStream.Write(BitConverter.GetBytes(uv.V));
+            }
+
+            foreach (var colorMap in mesh.ColorMaps)
+            {
+                var color = colorMap.Colors[i];
+                vertexStream.WriteByte(color.R);
+                vertexStream.WriteByte(color.G);
+                vertexStream.WriteByte(color.B);
+                vertexStream.WriteByte(color.A);
             }
         }
 
