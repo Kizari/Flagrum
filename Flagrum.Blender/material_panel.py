@@ -40,8 +40,8 @@ class MaterialEditorPanel(Panel):
 
             if material.show_advanced:
                 for empty_string, prop in iterable_properties:
-                    if not prop.is_basic and prop.property_type == 'TEXTURE':
+                    if not prop.is_relevant and prop.property_type == 'TEXTURE':
                         layout.prop(data=active_material_data, property=prop.property_name)
                 for empty_string, prop in iterable_properties:
-                    if not prop.is_basic and prop.property_type == 'INPUT':
+                    if not prop.is_relevant and prop.property_type == 'INPUT':
                         layout.prop(data=active_material_data, property=prop.property_name)

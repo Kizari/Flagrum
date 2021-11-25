@@ -1,10 +1,24 @@
 ﻿using System.IO;
+using System.Linq;
 using Flagrum.Gfxbin.Gmdl;
+using Flagrum.Gfxbin.Gmtl;
 
 namespace Flagrum.Console;
 
 public static class GfxbinTests
 {
+    public static void CheckMaterialDefaults()
+    {
+        var path = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\materials\\nh02_000_skin_00_mat.gmtl.gfxbin";
+        var reader = new MaterialReader(path);
+        var material = reader.Read();
+
+        foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
+        {
+            System.Console.WriteLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
+        }
+    }
+    
     public static void Compare()
     {
         var gfxbin = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
