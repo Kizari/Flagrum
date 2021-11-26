@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Flagrum.Archiver.Binmod;
 using Flagrum.Gfxbin.Btex;
 using Flagrum.Gfxbin.Gmdl;

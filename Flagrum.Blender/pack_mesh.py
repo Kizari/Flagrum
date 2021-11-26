@@ -40,6 +40,13 @@ def pack_mesh():
                 if edge.seam:
                     edge.seam = False
 
+            # Select all UV verts as seams_from_islands relies on this to function
+            uv_layer = bmesh_copy.loops.layers.uv.verify()
+            for face in bmesh_copy.faces:
+                for loop in face.loops:
+                    loop_uv = loop[uv_layer]
+                    loop_uv.select = True
+
             # Split edges as Luminous relies on tangents calculated this way for correct lighting
             bpy.ops.uv.seams_from_islands()
             island_boundaries = [edge for edge in bmesh_copy.edges if edge.seam and len(edge.link_faces) == 2]

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Flagrum.Gfxbin.Characters;
 using Flagrum.Gfxbin.Gmdl.Components;
 using Flagrum.Gfxbin.Gmdl.Constructs;
 
@@ -191,6 +193,16 @@ public class ModelReplacer
         if (lucii.Value != null)
         {
             indexMap[(ushort)lucii.Key] = 341;
+        }
+
+        // Need to use indices of preloaded bones to prevent rigging issues
+        foreach (var bone in Character.GetPreloadedBones(_gpubin.Target))
+        {
+            var match = _gpubin.BoneTable.FirstOrDefault(p => p.Value == bone.Name);
+            if (match.Value != null)
+            {
+                indexMap[(ushort)match.Key] = (ushort)(bone.LodIndex >> 16);
+            }
         }
 
         // Update each weight index in the mesh to match the new index map

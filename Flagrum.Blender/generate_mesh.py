@@ -52,26 +52,26 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
         mesh.uv_layers[i].data.foreach_set("uv", per_loop_list)
 
     # Generate each of the color maps
-    # for i in range(len(mesh_data.ColorMaps)):
-    #     vertex_colors = mesh_data.ColorMaps[i].Colors
-    # 
-    #     colors = []
-    #     for color in vertex_colors:
-    #         # Colors are divided by 255 to convert from 0-255 to 0.0 - 1.0
-    #         colors.append([color.R / 255.0, color.G / 255.0, color.B / 255.0, color.A / 255.0])
-    # 
-    #     per_loop_list = [0.0] * len(mesh.loops)
-    # 
-    #     for loop in mesh.loops:
-    #         if loop.vertex_index < len(vertex_colors):
-    #             per_loop_list[loop.index] = colors[loop.vertex_index]
-    # 
-    #     per_loop_list = [colors for pair in per_loop_list for colors in pair]
-    #     new_name = "colorSet"
-    #     if i > 0:
-    #         new_name += str(i)
-    #     mesh.vertex_colors.new(name=new_name)
-    #     mesh.vertex_colors[i].data.foreach_set("color", per_loop_list)
+    for i in range(len(mesh_data.ColorMaps)):
+        vertex_colors = mesh_data.ColorMaps[i].Colors
+
+        colors = []
+        for color in vertex_colors:
+            # Colors are divided by 255 to convert from 0-255 to 0.0 - 1.0
+            colors.append([color.R / 255.0, color.G / 255.0, color.B / 255.0, color.A / 255.0])
+
+        per_loop_list = [0.0] * len(mesh.loops)
+
+        for loop in mesh.loops:
+            if loop.vertex_index < len(vertex_colors):
+                per_loop_list[loop.index] = colors[loop.vertex_index]
+
+        per_loop_list = [colors for pair in per_loop_list for colors in pair]
+        new_name = "colorSet"
+        if i > 0:
+            new_name += str(i)
+        mesh.vertex_colors.new(name=new_name)
+        mesh.vertex_colors[i].data.foreach_set("color", per_loop_list)
 
     mesh.validate()
     mesh.update()
@@ -88,6 +88,10 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
     for i in range(len(mesh_data.WeightValues)):
         for j in range(len(mesh_data.WeightValues[i])):
             for k in range(4):
+                # No need to import zero weights
+                if mesh_data.WeightValues[i][j][k] == 0:
+                    continue
+
                 bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
                 vertex_group = mesh_object.vertex_groups.get(bone_name)
 
