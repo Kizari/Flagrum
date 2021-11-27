@@ -25,7 +25,7 @@ def pack_mesh():
         if obj.type == 'MESH':
             mesh = MeshData()
             mesh.Name = obj.name
-            mesh.material = _pack_material(obj)
+            mesh.Material = _pack_material(obj)
 
             # Clone the mesh so we don't mess with the original
             mesh_copy: Object = obj.copy()

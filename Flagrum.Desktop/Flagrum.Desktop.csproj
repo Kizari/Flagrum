@@ -13,14 +13,14 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\Flagrum.Graphs\wwwroot\**\*.*">
+		<None Include="..\Flagrum.Web\wwwroot\**\*.*">
 			<Link>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</Link>
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Flagrum.Graphs\SequenceEditor.csproj" />
+	  <ProjectReference Include="..\Flagrum.Web\Flagrum.Web.csproj" />
 	</ItemGroup>
 
 </Project>

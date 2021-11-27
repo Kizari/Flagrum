@@ -32,7 +32,7 @@ def import_menu_item(self, context):
 
 def export_menu_item(self, context):
     self.layout.operator(ExportOperator.bl_idname,
-                         text="Luminous Engine (.gfxbin)")
+                         text="Flagrum (.fmd)")
 
 
 def register():

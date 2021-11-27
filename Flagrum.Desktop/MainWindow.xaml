@@ -3,9 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:flagrum="clr-namespace:SequenceEditor;assembly=SequenceEditor"
+        xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
-        xmlns:local="clr-namespace:Flagrum.Desktop"
         mc:Ignorable="d"
         Title="Flagrum" Width="1024" Height="768"
         WindowStartupLocation="CenterScreen"
@@ -13,14 +12,12 @@
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="64" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
-    
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="42"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" VerticalAlignment="Top" Background="#222">
+        <Grid Grid.Row="0" VerticalAlignment="Top" Background="#222" Height="42">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="50" />
@@ -28,20 +25,75 @@
                 <ColumnDefinition Width="50" />
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="Flagrum" Foreground="#ccc" FontSize="14" VerticalAlignment="Center" Padding="15,5" />
-            <Button Grid.Column="1" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click" Content="&#xE949;" FontFamily="Segoe MDL2 Assets" FontSize="10" Background="Transparent" BorderBrush="Transparent" Foreground="#ccc" />
-            <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Maximize_Click" FontFamily="Segoe MDL2 Assets" FontSize="10" Background="Transparent" BorderBrush="Transparent" Foreground="#ccc">
+            <Button Grid.Column="1" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click" Content="&#xE949;" FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent" Foreground="#ccc">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="Transparent" />
                         <Setter Property="Button.Content" Value="&#xE739;" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}" Value="Maximized">
-                                <Setter Property="Button.Content" Value="&#xE923;" />
-                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Black" />
+                            </Trigger>
                         </Style.Triggers>
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Grid.Column="3" Padding="0,15" WindowChrome.IsHitTestVisibleInChrome="True" Click="Close_Click" Content="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10" Background="Transparent" BorderBrush="Transparent" Foreground="#ccc" />
+            <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Maximize_Click" FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent" Foreground="#ccc">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Button.Content" Value="&#xE739;" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}" Value="Maximized">
+                                <Setter Property="Button.Content" Value="&#xE923;" />
+                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Black" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Grid.Column="3" Padding="0,15" WindowChrome.IsHitTestVisibleInChrome="True" Click="Close_Click" Content="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent" Foreground="#ccc">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Button.Content" Value="&#xE739;" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="Black" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
 
         <blazor:BlazorWebView Grid.Row="1" HostPage="wwwroot/index.html" Services="{StaticResource services}">
