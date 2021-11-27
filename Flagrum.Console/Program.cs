@@ -10,79 +10,79 @@ namespace Flagrum.Console;
 
 public class Program
 {
-    public static void Import()
-    {
-        var gfxbinPath = "C:\\Testing\\extract\\mod\\prompto_custom_2\\promptocustom2.gmdl.gfxbin";
-        var gpubinPath = gfxbinPath.Replace(".gmdl.gfxbin", ".gpubin");
-        var gfxbin = File.ReadAllBytes(gfxbinPath);
-        var gpubin = File.ReadAllBytes(gpubinPath);
-        var reader = new ModelReader(gfxbin, gpubin);
-        var model = reader.Read();
-
-        Dictionary<int, string> boneTable;
-        if (model.BoneHeaders.Count(b => b.UniqueIndex == ushort.MaxValue) > 1)
-        {
-            // Probably a broken MO gfxbin with all IDs set to this value
-            var arbitraryIndex = 0;
-            boneTable = model.BoneHeaders.ToDictionary(b => arbitraryIndex++, b => b.Name);
-        }
-        else
-        {
-            boneTable = model.BoneHeaders.ToDictionary(b => (int)b.UniqueIndex, b => b.Name);
-        }
-
-        var meshData = new Gpubin
-        {
-            BoneTable = boneTable,
-            Meshes = model.MeshObjects.SelectMany(o => o.Meshes
-                .Where(m => m.LodNear == 0)
-                .Select(m => new GpubinMesh
-                {
-                    Name = m.Name,
-                    FaceIndices = m.FaceIndices,
-                    VertexPositions = m.VertexPositions,
-                    Normals = m.Normals,
-                    UVMaps = m.UVMaps.Select(m => new UVMap32
-                    {
-                        UVs = m.UVs.Select(uv => new UV32
-                        {
-                            U = (float)uv.U,
-                            V = (float)uv.V
-                        }).ToList()
-                    }).ToList(),
-                    WeightIndices = m.WeightIndices,
-                    WeightValues = m.WeightValues
-                        .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
-                        .ToList()
-                }))
-        };
-
-        var json = JsonConvert.SerializeObject(meshData);
-        var temp = Path.GetTempFileName();
-        File.WriteAllText(temp, json);
-
-        System.Console.WriteLine("Success");
-    }
+    // public static void Import()
+    // {
+    //     var gfxbinPath = "C:\\Testing\\extract\\mod\\prompto_custom_2\\promptocustom2.gmdl.gfxbin";
+    //     var gpubinPath = gfxbinPath.Replace(".gmdl.gfxbin", ".gpubin");
+    //     var gfxbin = File.ReadAllBytes(gfxbinPath);
+    //     var gpubin = File.ReadAllBytes(gpubinPath);
+    //     var reader = new ModelReader(gfxbin, gpubin);
+    //     var model = reader.Read();
+    //
+    //     Dictionary<int, string> boneTable;
+    //     if (model.BoneHeaders.Count(b => b.UniqueIndex == ushort.MaxValue) > 1)
+    //     {
+    //         // Probably a broken MO gfxbin with all IDs set to this value
+    //         var arbitraryIndex = 0;
+    //         boneTable = model.BoneHeaders.ToDictionary(b => arbitraryIndex++, b => b.Name);
+    //     }
+    //     else
+    //     {
+    //         boneTable = model.BoneHeaders.ToDictionary(b => (int)b.UniqueIndex, b => b.Name);
+    //     }
+    //
+    //     var meshData = new Gpubin
+    //     {
+    //         BoneTable = boneTable,
+    //         Meshes = model.MeshObjects.SelectMany(o => o.Meshes
+    //             .Where(m => m.LodNear == 0)
+    //             .Select(m => new GpubinMesh
+    //             {
+    //                 Name = m.Name,
+    //                 FaceIndices = m.FaceIndices,
+    //                 VertexPositions = m.VertexPositions,
+    //                 Normals = m.Normals,
+    //                 UVMaps = m.UVMaps.Select(m => new UVMap32
+    //                 {
+    //                     UVs = m.UVs.Select(uv => new UV32
+    //                     {
+    //                         U = (float)uv.U,
+    //                         V = (float)uv.V
+    //                     }).ToList()
+    //                 }).ToList(),
+    //                 WeightIndices = m.WeightIndices,
+    //                 WeightValues = m.WeightValues
+    //                     .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
+    //                     .ToList()
+    //             }))
+    //     };
+    //
+    //     var json = JsonConvert.SerializeObject(meshData);
+    //     var temp = Path.GetTempFileName();
+    //     File.WriteAllText(temp, json);
+    //
+    //     System.Console.WriteLine("Success");
+    // }
 
     public static void Main(string[] args)
     {
-        var gfx = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gmdl.gfxbin";
-        var gpu = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gpubin";
-
-        var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
-        var model = reader.Read();
-
-        var output = "";
-        foreach (var bone in model.BoneHeaders)
-        {
-            output += "new BoneHeader {Name = \"" + bone.Name + "\", LodIndex = " + bone.LodIndex + "},\n";
-        }
-
-        System.Console.WriteLine(output);
+        // var gfx = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gmdl.gfxbin";
+        // var gpu = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gpubin";
+        //
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        //
+        // var output = "";
+        // foreach (var bone in model.BoneHeaders)
+        // {
+        //     output += "new BoneHeader {Name = \"" + bone.Name + "\", LodIndex = " + bone.LodIndex + "},\n";
+        // }
+        //
+        // System.Console.WriteLine(output);
 
         //Import();
-        //GfxbinTests.GetBoneTable();
-        //GfxbinTests.CheckMaterialDefaults();
+        GfxbinTests.GetBoneTable();
+       // GfxbinTests.CheckMaterialDefaults();
         //Test();
     }
 

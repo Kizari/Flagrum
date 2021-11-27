@@ -1,0 +1,31 @@
+﻿<PortRenderer Port="Port">
+    <div class="px-3 py-2">
+        <div style="@_style @(Port.Links.Count > 0 ? $"background-color: {Port.Color};" : "")" class="@_class">
+
+        </div>
+    </div>
+</PortRenderer>
+
+@code
+{
+    [Parameter] public StandardPort Port { get; set; }
+
+    private string _style;
+    private string _class;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Port.Color == StandardPort.Control)
+        {
+            _style = $"width: 8px; height: 12px; border-color: {Port.Color};";
+            _class = "border";
+        }
+        else
+        {
+            _style = $"width: 10px; height: 10px; border-color: {Port.Color};";
+            _class = "rounded-full border-2";
+        }
+    }
+}
