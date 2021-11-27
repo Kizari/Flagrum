@@ -49,6 +49,7 @@ public static class Gfxbin
                         Name = m.Name,
                         FaceIndices = m.FaceIndices,
                         VertexPositions = m.VertexPositions,
+                        ColorMaps = m.ColorMaps,
                         Normals = m.Normals,
                         UVMaps = m.UVMaps.Select(m => new UVMap32
                         {

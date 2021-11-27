@@ -11,10 +11,69 @@ public class GpubinUnpacker
 
     private byte[] _currentBuffer;
     private int _currentBufferPosition;
+    private readonly Dictionary<VertexElementFormat, (Type type, int elementCount)> _formatParameters;
 
     public GpubinUnpacker(byte[] gpubin)
     {
         _gpubin = gpubin;
+
+        _formatParameters = new Dictionary<VertexElementFormat, (Type type, int elementCount)>
+        {
+            {VertexElementFormat.X8_Uint, (typeof(byte), 1)},
+            {VertexElementFormat.XYZW8_Uint, (typeof(byte), 4)},
+            {VertexElementFormat.X8_Sint, (typeof(sbyte), 1)},
+            {VertexElementFormat.XYZW8_Sint, (typeof(sbyte), 4)},
+
+            {VertexElementFormat.X8_UintN, (typeof(byte), 1)},
+            {VertexElementFormat.XYZW8_UintN, (typeof(byte), 4)},
+            {VertexElementFormat.X8_SintN, (typeof(sbyte), 1)},
+            {VertexElementFormat.XYZW8_SintN, (typeof(sbyte), 4)},
+
+            {VertexElementFormat.X16_Sint, (typeof(short), 1)},
+            {VertexElementFormat.XY16_Sint, (typeof(short), 2)},
+            {VertexElementFormat.XYZW16_Sint, (typeof(short), 4)},
+
+            {VertexElementFormat.X16_Uint, (typeof(ushort), 1)},
+            {VertexElementFormat.XY16_Uint, (typeof(ushort), 2)},
+            {VertexElementFormat.XYZW16_Uint, (typeof(ushort), 4)},
+
+            {VertexElementFormat.X16_SintN, (typeof(short), 1)},
+            {VertexElementFormat.XY16_SintN, (typeof(short), 2)},
+            {VertexElementFormat.XYZW16_SintN, (typeof(short), 4)},
+
+            {VertexElementFormat.X16_UintN, (typeof(ushort), 1)},
+            {VertexElementFormat.XY16_UintN, (typeof(ushort), 2)},
+            {VertexElementFormat.XYZW16_UintN, (typeof(ushort), 4)},
+
+            {VertexElementFormat.X32_Sint, (typeof(int), 1)},
+            {VertexElementFormat.XY32_Sint, (typeof(int), 2)},
+            {VertexElementFormat.XYZ32_Sint, (typeof(int), 3)},
+            {VertexElementFormat.XYZW32_Sint, (typeof(int), 4)},
+
+            {VertexElementFormat.X32_Uint, (typeof(uint), 1)},
+            {VertexElementFormat.XY32_Uint, (typeof(uint), 2)},
+            {VertexElementFormat.XYZ32_Uint, (typeof(uint), 3)},
+            {VertexElementFormat.XYZW32_Uint, (typeof(uint), 4)},
+
+            {VertexElementFormat.X32_SintN, (typeof(int), 1)},
+            {VertexElementFormat.XY32_SintN, (typeof(int), 2)},
+            {VertexElementFormat.XYZ32_SintN, (typeof(int), 3)},
+            {VertexElementFormat.XYZW32_SintN, (typeof(int), 4)},
+
+            {VertexElementFormat.X32_UintN, (typeof(uint), 1)},
+            {VertexElementFormat.XY32_UintN, (typeof(uint), 2)},
+            {VertexElementFormat.XYZ32_UintN, (typeof(uint), 3)},
+            {VertexElementFormat.XYZW32_UintN, (typeof(uint), 4)},
+
+            {VertexElementFormat.X16_Float, (typeof(Half), 1)},
+            {VertexElementFormat.XY16_Float, (typeof(Half), 2)},
+            {VertexElementFormat.XYZW16_Float, (typeof(Half), 4)},
+
+            {VertexElementFormat.X32_Float, (typeof(float), 1)},
+            {VertexElementFormat.XY32_Float, (typeof(float), 2)},
+            {VertexElementFormat.XYZ32_Float, (typeof(float), 3)},
+            {VertexElementFormat.XYZW32_Float, (typeof(float), 4)}
+        };
     }
 
     public int[,] UnpackFaceIndices(int gpubinOffset, int faceIndicesCount, IndexType faceIndexType)
@@ -149,6 +208,10 @@ public class GpubinUnpacker
                             var weightIndices = new[] {ReadUShort(), ReadUShort(), ReadUShort(), ReadUShort()};
                             weightIndexMap.Add(weightIndices);
                             break;
+                        default:
+                            // TODO: Read the remaining semantics into proper data structures
+                            ReadPastVertexElement(element.Format);
+                            break;
                     }
                 }
             }
@@ -209,5 +272,46 @@ public class GpubinUnpacker
         var value = unchecked((sbyte)_currentBuffer[_currentBufferPosition]);
         _currentBufferPosition += sizeof(byte);
         return value;
+    }
+
+    private void ReadPastVertexElement(VertexElementFormat format)
+    {
+        var (type, elementCount) = _formatParameters[format];
+
+        for (var i = 0; i < elementCount; i++)
+        {
+            if (type == typeof(byte))
+            {
+                ReadByte();
+            }
+            else if (type == typeof(sbyte))
+            {
+                ReadSByte();
+            }
+            else if (type == typeof(short))
+            {
+                ReadShort();
+            }
+            else if (type == typeof(ushort))
+            {
+                ReadUShort();
+            }
+            else if (type == typeof(int))
+            {
+                ReadInt();
+            }
+            else if (type == typeof(uint))
+            {
+                ReadUInt();
+            }
+            else if (type == typeof(Half))
+            {
+                ReadHalf();
+            }
+            else if (type == typeof(float))
+            {
+                ReadFloat();
+            }
+        }
     }
 }
