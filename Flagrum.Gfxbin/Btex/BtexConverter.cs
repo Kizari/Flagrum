@@ -21,9 +21,10 @@ public static class BtexConverter
         var process = new Process();
         var startInfo = new ProcessStartInfo
         {
-            WindowStyle = ProcessWindowStyle.Hidden,
             FileName = "cmd.exe",
-            Arguments = $"/C {btexConverter} {GetArgsForType(type, inPath, outPath)}"
+            Arguments = $"/C {btexConverter} {GetArgsForType(type, inPath, outPath)}",
+            CreateNoWindow = true,
+            UseShellExecute = false
         };
 
         process.StartInfo = startInfo;

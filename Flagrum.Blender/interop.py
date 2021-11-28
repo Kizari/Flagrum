@@ -8,7 +8,6 @@ from .entities import Gpubin
 
 interop = ctypes.cdll.LoadLibrary(join(dirname(__file__), "lib", "Flagrum.InteropNE.dll"))
 interop.Import.restype = ctypes.c_char_p
-interop.Export.restype = ctypes.c_char_p
 
 
 class Interop:

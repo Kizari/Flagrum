@@ -1,136 +1,235 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using Flagrum.Archiver.Binmod.Data;
-using Flagrum.Core.Utilities;
+using Flagrum.Gfxbin.Btex;
+using Flagrum.Gfxbin.Gmdl;
+using Flagrum.Gfxbin.Gmdl.Constructs;
+using Flagrum.Gfxbin.Gmdl.Templates;
+using Flagrum.Gfxbin.Gmtl;
+using Newtonsoft.Json;
 
-namespace Flagrum.Archiver.Binmod
+namespace Flagrum.Archiver.Binmod;
+
+public enum Boye
 {
-    public enum Boye
+    Noctis,
+    Prompto,
+    Ignis,
+    Gladiolus
+}
+
+public class BinmodBuilder
+{
+    private readonly Modmeta _modmeta;
+    private readonly Packer _packer;
+
+    public BinmodBuilder(Modmeta modmeta, byte[] previewImage)
     {
-        Noctis,
-        Prompto,
-        Ignis,
-        Gladiolus
+        _modmeta = modmeta;
+        _packer = new Packer();
+        _packer.AddFile(_modmeta.ToBytes(), GetDataPath("index.modmeta"));
+
+        var exml = EntityPackageBuilder.BuildExml(_modmeta.ModelName, _modmeta.ModDirectoryName, _modmeta.Target);
+        _packer.AddFile(exml, "data://$mod/temp.exml");
+
+        var tempFile = Path.GetTempFileName();
+        var tempFile2 = Path.GetTempFileName();
+        File.WriteAllBytes(tempFile, previewImage);
+        BtexConverter.Convert(tempFile, tempFile2, BtexConverter.TextureType.Color);
+        var btex = File.ReadAllBytes(tempFile2);
+
+        _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
+        _packer.AddFile(btex, GetDataPath("$preview.btex"));
     }
 
-    public class BinmodBuilder
+    public void WriteToFile(string outPath)
     {
-        private readonly Packer _packer;
+        _packer.WriteToFile(outPath);
+    }
 
-        public BinmodBuilder(string modTitle, string modDirectoryName, string modelName, string uuid, Boye target)
+    public void AddModel(string name, byte[] gfxbin, byte[] gpubin)
+    {
+        _packer.AddFile(gfxbin, GetDataPath($"{name}.gmdl.gfxbin"));
+        _packer.AddFile(gpubin, GetDataPath($"{name}.gpubin"));
+    }
+
+    public void AddFile(string uri, byte[] data)
+    {
+        _packer.AddFile(data, uri);
+    }
+
+    public void AddFmd(byte[] fmd)
+    {
+        using var memoryStream = new MemoryStream(fmd);
+        using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
+
+        var dataEntry = archive.GetEntry("data.json");
+        using var dataStream = new MemoryStream();
+        var stream = dataEntry.Open();
+        stream.CopyTo(dataStream);
+
+        var json = Encoding.ASCII.GetString(dataStream.ToArray());
+        var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
+
+        var gameAssets = new List<string>();
+
+        foreach (var mesh in gpubin.Meshes)
         {
-            ModTitle = modTitle;
-            ModDirectoryName = modDirectoryName;
-            ModelName = modelName;
-            Uuid = uuid;
-            Target = target;
-
-            _packer = new Packer();
-
-            var exml = EntityPackageBuilder.BuildExml(ModelName, ModDirectoryName, Target);
-            _packer.AddInMemoryFile(exml, "data://$mod/temp.exml");
-
-            var modmeta = new Modmeta().ToBytes(ModDirectoryName, ModelName);
-            _packer.AddInMemoryFile(modmeta, GetDataPath("index.modmeta"));
-
-            var preview = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Binmod\\Resources\\preview.png");
-            _packer.AddInMemoryFile(preview, GetDataPath("$preview.png.bin"));
-
-            var previewBtex = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Binmod\\Resources\\preview.btex");
-            _packer.AddInMemoryFile(previewBtex, GetDataPath("$preview.btex"));
-        }
-
-        public string ModTitle { get; }
-        public string ModDirectoryName { get; }
-        public string ModelName { get; }
-        public string Uuid { get; }
-        public Boye Target { get; }
-
-        public void WriteToFile(string outPath)
-        {
-            _packer.WriteToFile(outPath);
-        }
-
-        public void AddMaterial(string name, byte[] material)
-        {
-            _packer.AddInMemoryFile(material, GetDataPath($"materials/{name}.gmtl.gfxbin"));
-        }
-
-        public void AddModel(string name, byte[] gfxbin, byte[] gpubin)
-        {
-            _packer.AddInMemoryFile(gfxbin, GetDataPath($"{name}.gmdl.gfxbin"));
-            _packer.AddInMemoryFile(gpubin, GetDataPath($"{name}.gpubin"));
-        }
-
-        public void AddFile(string uri, byte[] data)
-        {
-            _packer.AddInMemoryFile(data, uri);
-        }
-
-        /// <summary>
-        ///     Add a copy of a game asset to the archive
-        ///     Asset will be read from the EARC and copied to the archive
-        /// </summary>
-        public void AddGameAssets(IEnumerable<string> paths)
-        {
-            var dataDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Final Fantasy XV\\datas\\";
-            var archiveDictionary = new Dictionary<string, List<string>>();
-
-            foreach (var uri in paths)
+            foreach (var (textureId, filePath) in mesh.Material.Textures)
             {
-                var path = uri.Replace("data://", dataDirectory).Replace('/', '\\');
-                var fileName = path.Split('\\').Last();
-                path = path.Replace(fileName, "autoexternal.earc");
-
-                while (!Directory.Exists(Path.GetDirectoryName(path)))
+                if (string.IsNullOrEmpty(filePath))
                 {
-                    var newPath = "";
-                    var tokens = path.Split('\\');
-                    for (var i = 0; i < tokens.Length - 2; i++)
+                    if (MaterialBuilder.DefaultTextures.TryGetValue(textureId, out var replacement))
                     {
-                        newPath += tokens[i];
-
-                        if (i != tokens.Length - 3)
+                        mesh.Material.TextureData.Add(new TextureData
                         {
-                            newPath += '\\';
-                        }
+                            Id = textureId,
+                            Uri = $"data://mod/{_modmeta.ModDirectoryName}/sourceimages/{replacement}",
+                            Data = MaterialBuilder.GetDefaultTextureData(replacement)
+                        });
                     }
-
-                    path = newPath + "\\autoexternal.earc";
                 }
-
-                if (!archiveDictionary.ContainsKey(path))
+                else
                 {
-                    archiveDictionary.Add(path, new List<string>());
-                }
+                    var query = $"{mesh.Name}/{textureId}";
+                    var entry = archive.Entries.FirstOrDefault(e => e.FullName.Contains(query));
+                    using var textureStream = new MemoryStream();
+                    var tempStream = entry.Open();
+                    tempStream.CopyTo(textureStream);
 
-                archiveDictionary[path].Add(uri);
-            }
+                    var tempPathOriginal = Path.GetTempFileName();
+                    File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
 
-            foreach (var (archivePath, uriList) in archiveDictionary)
-            {
-                var unpacker = new Unpacker(archivePath);
-                var files = unpacker.Unpack();
+                    var tempPath = Path.GetTempFileName();
+                    BtexConverter.Convert(tempPathOriginal, tempPath,
+                        textureId.ToLower().Contains("normal")
+                            ? BtexConverter.TextureType.Normal
+                            : textureId.ToLower().Contains("basecolor")
+                                ? BtexConverter.TextureType.Color
+                                : BtexConverter.TextureType.Greyscale);
 
-                foreach (var uri in uriList)
-                {
-                    var match = files.FirstOrDefault(f => f.Uri == uri);
-                    if (match == null)
+                    var btexData = File.ReadAllBytes(tempPath);
+                    File.Delete(tempPathOriginal);
+                    File.Delete(tempPath);
+                    var fileName = filePath.Split('/', '\\').Last();
+                    var extension = fileName.Split('.').Last();
+                    var btexFileName = fileName.Replace($".{extension}", ".btex");
+                    var uri = $"data://mod/{_modmeta.ModDirectoryName}/sourceimages/{btexFileName}";
+
+                    mesh.Material.TextureData.Add(new TextureData
                     {
-                        throw new InvalidOperationException($"URI {uri} must exist in game files!");
-                    }
-
-                    _packer.AddInMemoryFile(match.GetData(), uri);
+                        Id = textureId,
+                        Uri = uri,
+                        Data = btexData
+                    });
                 }
             }
+
+            var material = MaterialBuilder.FromTemplate(
+                mesh.Material.Id,
+                $"{mesh.Name.ToLower()}_mat",
+                _modmeta.ModDirectoryName,
+                mesh.Material.Inputs.Select(p => new MaterialInputData
+                {
+                    Name = p.Key,
+                    Values = p.Value
+                }).ToList(),
+                mesh.Material.TextureData.Select(p => new MaterialTextureData
+                {
+                    Name = p.Id,
+                    Path = p.Uri
+                }).ToList());
+
+            var materialWriter = new MaterialWriter(material);
+
+            AddFile(material.Uri, materialWriter.Write());
+
+            foreach (var texture in mesh.Material.TextureData)
+            {
+                AddFile(texture.Uri, texture.Data);
+            }
+
+            gameAssets.AddRange(material.ShaderBinaries.Select(s => s.Path));
+            gameAssets.AddRange(material.Textures
+                .Where(t => !t.Path.StartsWith("data://mod"))
+                .Select(t => t.Path));
         }
 
-        private string GetDataPath(string relativePath)
+        var model = OutfitTemplate.Build(_modmeta.ModDirectoryName, _modmeta.ModelName, gpubin);
+        var replacer = new ModelReplacer(model, gpubin);
+        model = replacer.Replace();
+        var writer = new ModelWriter(model);
+        var (gfxData, gpuData) = writer.Write();
+
+        AddFile(GetDataPath($"{_modmeta.ModelName}.gmdl.gfxbin"), gfxData);
+        AddFile(GetDataPath($"{_modmeta.ModelName}.gpubin"), gpuData);
+
+        AddGameAssets(gameAssets.Distinct());
+    }
+
+    /// <summary>
+    ///     Add a copy of a game asset to the archive
+    ///     Asset will be read from the EARC and copied to the archive
+    /// </summary>
+    public void AddGameAssets(IEnumerable<string> paths)
+    {
+        var dataDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Final Fantasy XV\\datas\\";
+        var archiveDictionary = new Dictionary<string, List<string>>();
+
+        foreach (var uri in paths)
         {
-            return $"data://mod/{ModDirectoryName}/{relativePath}";
+            var path = uri.Replace("data://", dataDirectory).Replace('/', '\\');
+            var fileName = path.Split('\\').Last();
+            path = path.Replace(fileName, "autoexternal.earc");
+
+            while (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                var newPath = "";
+                var tokens = path.Split('\\');
+                for (var i = 0; i < tokens.Length - 2; i++)
+                {
+                    newPath += tokens[i];
+
+                    if (i != tokens.Length - 3)
+                    {
+                        newPath += '\\';
+                    }
+                }
+
+                path = newPath + "\\autoexternal.earc";
+            }
+
+            if (!archiveDictionary.ContainsKey(path))
+            {
+                archiveDictionary.Add(path, new List<string>());
+            }
+
+            archiveDictionary[path].Add(uri);
         }
+
+        foreach (var (archivePath, uriList) in archiveDictionary)
+        {
+            var unpacker = new Unpacker(archivePath);
+
+            foreach (var uri in uriList)
+            {
+                var fileData = unpacker.UnpackFileByQuery(uri);
+                if (fileData.Length == 0)
+                {
+                    throw new InvalidOperationException($"URI {uri} must exist in game files!");
+                }
+
+                _packer.AddFile(fileData, uri);
+            }
+        }
+    }
+
+    private string GetDataPath(string relativePath)
+    {
+        return $"data://mod/{_modmeta.ModDirectoryName}/{relativePath}";
     }
 }

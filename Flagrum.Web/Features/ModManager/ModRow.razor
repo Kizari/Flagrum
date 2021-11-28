@@ -1,0 +1,35 @@
+﻿@using Flagrum.Core.Extensions
+@using Flagrum.Web.Features.ModManager.Data
+@using Flagrum.Archiver.Binmod.Data
+@inject NavigationManager Navigation
+@inject Settings Settings
+
+<div class="row p-3 border-t border-grey-800">
+    <Switch IsEnabled="@Listing.IsEnabled" OnChange="OnEnableChanged"/>
+    <span class="ml-5 flex-grow">@Listing.DisplayName</span>
+    @if (!Listing.DisplayName.Contains(".ffxvbinmod"))
+    {
+        <Button Icon="construction" Text="Configure" OnClick="Configure"/>
+    }
+</div>
+
+@code
+{
+    [CascadingParameter]
+    public List<ModlistEntry> ModlistEntries { get; set; }
+
+    [Parameter]
+    public ModListing Listing { get; set; }
+
+    private void Configure()
+    {
+        Navigation.NavigateTo($"/mod/configure/{Listing.ToBase64String()}");
+    }
+
+    private void OnEnableChanged(bool isEnabled)
+    {
+        var match = ModlistEntries.FirstOrDefault(e => e.Path.Contains(Listing.Uuid));
+        match.IsEnabled = isEnabled;
+        ModlistEntry.ToFile(Settings.BinmodListPath, ModlistEntries);
+    }
+}

@@ -1,0 +1,82 @@
+﻿@page "/"
+@using Flagrum.Core.Extensions
+@using Flagrum.Web.Features.ModManager.Data
+@using Flagrum.Archiver.Binmod.Data
+@using System.IO
+@using Flagrum.Archiver
+
+@inject NavigationManager Navigation
+@inject Settings Settings
+
+<CascadingValue Value="Modlist">
+    <div class="p-6">
+
+        <div class="box">
+            <div class="row bg-dark-600 p-3">
+                <h5 class="font-bold text-grey-300 ml-1 flex-grow">Local Mods</h5>
+                <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
+            </div>
+            @foreach (var entry in LocalMods)
+            {
+                <ModRow Listing="@entry"/>
+            }
+        </div>
+
+        <div class="box mt-6">
+            <div class="row bg-dark-600 p-3">
+                <h5 class="font-bold text-grey-300 ml-1 flex-grow">Workshop Mods</h5>
+            </div>
+            @foreach (var entry in Modlist.Where(m => m.IsWorkshopMod))
+            {
+                <ModRow Listing="@(new ModListing {DisplayName = entry.Path.Split('\\', '/').Last(), IsEnabled = entry.IsEnabled, Uuid = entry.Path})"/>
+            }
+        </div>
+
+    </div>
+</CascadingValue>
+
+@code
+{
+    private List<ModListing> LocalMods { get; } = new();
+    private List<ModlistEntry> Modlist { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Modlist = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
+
+        foreach (var file in Directory.EnumerateFiles(Settings.ModDirectory))
+        {
+            if (file.EndsWith(".ffxvbinmod"))
+            {
+                var unpacker = new Unpacker(file);
+                var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta");
+                var modmeta = Modmeta.FromBytes(modmetaBytes);
+
+                if (modmeta == null)
+                {
+                    continue;
+                }
+
+                LocalMods.Add(new ModListing
+                {
+                    DisplayName = modmeta.Name,
+                    FilePath = file,
+                    IsEnabled = Modlist.Any(m => m.Path.Contains(modmeta.Uuid) && m.IsEnabled),
+                    Uuid = modmeta.Uuid
+                });
+            }
+        }
+    }
+
+    private void Create()
+    {
+        var mod = new ModListing
+        {
+            DisplayName = "New Mod",
+            FilePath = null
+        };
+
+        Navigation.NavigateTo($"/mod/configure/{mod.ToBase64String()}");
+    }
+}

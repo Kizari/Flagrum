@@ -1,0 +1,70 @@
+﻿@using SQEX.Ebony.Framework.Sequence.Tray
+@using Flagrum.Web.Components
+@using Blazor.Diagrams.Core.Geometry
+@if (TypeTree.IsVisible)
+{
+    <div class="flex flex-row cursor-pointer hover:bg-grey-800 items-center text-grey-300" style="padding-left: @(Indentation)px" @onclick="OnClick">
+        <div>
+            @if (TypeTree.Children.Count > 0)
+            {
+                if (TypeTree.IsCollapsed)
+                {
+                    <span class="material-icons-outlined text-sm">folder</span>
+                }
+                else
+                {
+                    <span class="material-icons text-sm">folder</span>
+                }
+            }
+            else
+            {
+                <span class="material-icons-outlined text-sm">workspaces</span>
+            }
+        </div>
+        <div class="flex-grow pl-4 text-sm">
+            @TypeTree.Name
+        </div>
+    </div>
+    @if (!TypeTree.IsCollapsed)
+    {
+        foreach (var child in TypeTree.Children.OrderByDescending(c => c.Children.Count > 0).ThenBy(c => c.Name))
+        {
+            <div>
+                <TypeTreeComponent TypeTree="child" Indentation="Indentation + 10"/>
+            </div>
+        }
+    }
+}
+
+@code
+{
+    [CascadingParameter]
+    public Diagram Diagram { get; set; }
+
+    [Parameter]
+    public TypeTree TypeTree { get; set; }
+
+    [Parameter]
+    public int Indentation { get; set; } = 4;
+
+    private void OnClick()
+    {
+        if (TypeTree.Children.Count() > 0)
+        {
+            TypeTree.IsCollapsed = !TypeTree.IsCollapsed;
+        }
+        else
+        {
+            if (TypeTree.Type == typeof(SequenceTray))
+            {
+                var group = new StandardGroup();
+                Diagram.AddGroup(group);
+            }
+            else
+            {
+                var node = new StandardNode(TypeTree.Type, new Point(50, 50));
+                Diagram.Nodes.Add(node);
+            }
+        }
+    }
+}

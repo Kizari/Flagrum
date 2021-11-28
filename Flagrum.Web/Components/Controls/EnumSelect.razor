@@ -1,0 +1,27 @@
+﻿@typeparam TEnum
+
+@inherits InputBase<TEnum>
+
+<select value="@CurrentValueAsString"
+        @onchange="OnChange"
+        class="border border-grey-700 m-0 p-2 bg-dark-600 text-grey-400 rounded w-full">
+    @foreach (var item in Enum.GetValues(typeof(TEnum)))
+    {
+        <option value="@item" class="text-grey-400">@item.ToString()</option>
+    }
+</select>
+
+@code
+{
+    private void OnChange(ChangeEventArgs e)
+    {
+        CurrentValueAsString = e.Value.ToString();
+    }
+
+    protected override bool TryParseValueFromString(string value, out TEnum result, out string validationErrorMessage)
+    {
+        result = (TEnum)Enum.Parse(typeof(TEnum), value);
+        validationErrorMessage = null;
+        return true;
+    }
+}

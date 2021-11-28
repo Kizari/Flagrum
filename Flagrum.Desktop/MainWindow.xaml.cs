@@ -1,58 +1,47 @@
-﻿using Blazored.LocalStorage;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Blazored.LocalStorage;
+using Flagrum.Web.Services;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Flagrum.Desktop
+namespace Flagrum.Desktop;
+
+/// <summary>
+///     Interaction logic for MainWindow.xaml
+/// </summary>
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddBlazorWebView();
-            serviceCollection.AddBlazoredLocalStorage();
-            Resources.Add("services", serviceCollection.BuildServiceProvider());
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddBlazorWebView();
+        serviceCollection.AddBlazoredLocalStorage();
+        serviceCollection.AddSingleton<Settings>();
+        serviceCollection.AddScoped<JSInterop>();
+        Resources.Add("services", serviceCollection.BuildServiceProvider());
 
-            InitializeComponent();
-        }
+        InitializeComponent();
+    }
 
-        private void Minimize_Click(object sender, RoutedEventArgs e)
-        {
-            this.WindowState = WindowState.Minimized;
-        }
+    private void Minimize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
 
-        private void Maximize_Click(object sender, RoutedEventArgs e)
+    private void Maximize_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
         {
-            if (this.WindowState == WindowState.Maximized)
-            {
-                this.WindowState = WindowState.Normal;
-            }
-            else
-            {
-                this.WindowState = WindowState.Maximized;
-            }
+            WindowState = WindowState.Normal;
         }
+        else
+        {
+            WindowState = WindowState.Maximized;
+        }
+    }
 
-        private void Close_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
     }
 }

@@ -1,0 +1,40 @@
+﻿@inherits InputBase<int>
+
+<input type="text"
+       class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
+       style="@Style"
+       @bind-value="@CurrentValueAsString"
+       @bind-value:event="oninput"/>
+
+@code
+{
+    public enum Variant
+    {
+        Small,
+        Normal,
+        Stretch
+    }
+
+    [Parameter]
+    public Variant Size { get; set; }
+
+    private string Style => Size switch
+    {
+        Variant.Small => "width: 80px;",
+        Variant.Normal => "",
+        Variant.Stretch => "width: 100%;",
+        _ => ""
+        };
+
+    protected override bool TryParseValueFromString(string value, out int result, out string validationErrorMessage)
+    {
+        if (int.TryParse(value, out result))
+        {
+            validationErrorMessage = null;
+            return true;
+        }
+        result = 0;
+        validationErrorMessage = "This field must be a numeric value";
+        return false;
+    }
+}

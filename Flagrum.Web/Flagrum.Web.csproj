@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Flagrum.Archiver\Flagrum.Archiver.csproj" />
+      <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj" />
     </ItemGroup>
 
 
@@ -38,7 +39,7 @@
       <Content Update="wwwroot\app.css">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Update="wwwroot\exampleJsInterop.js">
+      <Content Update="wwwroot\interop.js">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <Content Update="wwwroot\favicon.ico">

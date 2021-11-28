@@ -1,0 +1,329 @@
+﻿@page "/mod/configure/{ListingBase64}"
+@using Flagrum.Core.Extensions
+@using Flagrum.Gfxbin.Btex
+@using Flagrum.Web.Components.Controls.Data
+@using Flagrum.Web.Features.ModManager.Data
+@using Flagrum.Archiver
+@using Flagrum.Archiver.Binmod
+@using Flagrum.Archiver.Binmod.Data
+@using System.IO
+
+@inject NavigationManager Navigation
+@inject JSInterop Interop
+@inject Settings Settings
+
+<div class="p-6">
+
+    <div class="box row p-4">
+        <span class="flex-grow">@Listing.DisplayName</span>
+        <Button Icon="save" Text="Save" OnClick="Save"/>
+        <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
+    </div>
+
+    @if (!HasModelData)
+    {
+        <div class="box row p-4 mt-6">
+            <span class="flex-grow">
+                Select FMD file with your model data
+            </span>
+            <BrowseButton Icon="folder" Text="Browse" OnFileSelected="OnFileSelected"/>
+        </div>
+    }
+    else
+    {
+        <div class="box row p-4 mt-6">
+            @if (PreviewBase64 != null)
+            {
+                <img style="display:block;width:150px;height:150px;" src="data:image/png;base64, @PreviewBase64"/>
+            }
+            <div class="flex-grow pl-4">
+                <table>
+                    <tr>
+                        <td>UUID:</td>
+                        <td class="pl-3">
+                            <strong>@Modmeta.Uuid</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Mod Directory:</td>
+                        <td class="pl-3">
+                            <strong>@Modmeta.ModDirectoryName</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Model Name:</td>
+                        <td class="pl-3">
+                            <strong>@(Modmeta.ModelName).fbx</strong>
+                        </td>
+                    </tr>
+                </table>
+                <div class="row mt-6">
+                    <BrowseButton Icon="image" Text="Change Image" OnFileSelected="OnImageSelected"/>
+                    <BrowseButton Icon="view_in_ar" Text="Change Model" OnFileSelected="OnModelSelected" CssClass="ml-3"/>
+                    @if (!IsNew)
+                    {
+                        <Button Icon="upload" Text="Upload to Workshop" CssClass="ml-3"/>
+                        <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="box mt-6">
+            <EditForm Model="Modmeta">
+                <div class="p-4">
+                    <table class="w-full right-align-all-labels">
+                        <tr>
+                            <td>
+                                <label>TITLE</label>
+                            </td>
+                            <td colspan="7" class="pl-4">
+                                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Modmeta.Title"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>DESCRIPTION</label>
+                            </td>
+                            <td colspan="7" class="pl-4">
+                                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Modmeta.Description"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-4">
+                                <label>TARGET</label>
+                            </td>
+                            <td class="py-4 pl-4" colspan="3">
+                                <EnumSelect @bind-Value="Modmeta.Target"/>
+                            </td>
+                            <td class="py-4">
+                                <label>MAX HP</label>
+                            </td>
+                            <td class="py-4">
+                                <NumberBox @bind-Value="Modmeta.MaxHp"/>
+                            </td>
+                            <td class="py-4">
+                                <label>MAX MP</label>
+                            </td>
+                            <td class="py-4">
+                                <NumberBox @bind-Value="Modmeta.MaxMp"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>STRENGTH</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Strength"/>
+                            </td>
+                            <td>
+                                <label>VITALITY</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Vitality"/>
+                            </td>
+                            <td>
+                                <label>MAGIC</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Magic"/>
+                            </td>
+                            <td>
+                                <label>SPIRIT</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Spirit"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>FIRE RES</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Fire"/>
+                            </td>
+                            <td>
+                                <label>ICE RES</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Ice"/>
+                            </td>
+                            <td>
+                                <label>THUNDER RES</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Thunder"/>
+                            </td>
+                            <td>
+                                <label>DARK RES</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Dark"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>BALLISTIC RES</label>
+                            </td>
+                            <td>
+                                <NumberBox @bind-Value="Modmeta.Ballistic"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+</div>
+
+@code
+{
+    [Parameter]
+    public string ListingBase64 { get; set; }
+
+    private Unpacker _unpacker;
+
+    private ModListing Listing { get; set; }
+    private string PreviewBase64 { get; set; }
+    private Modmeta Modmeta { get; set; }
+    private bool IsNew { get; set; }
+    private bool HasModelData { get; set; }
+    private byte[] ModelData { get; set; }
+    private bool ImageHasChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Listing = ListingBase64.FromBase64String<ModListing>();
+
+        if (Listing.FilePath == null)
+        {
+            InitializeNewMod();
+        }
+        else
+        {
+            InitializeExistingMod(Listing.FilePath);
+        }
+    }
+
+    private void InitializeNewMod()
+    {
+        IsNew = true;
+
+        var previewImage = File.ReadAllBytes($"{Directory.GetCurrentDirectory()}\\Binmod\\Resources\\preview.png");
+        PreviewBase64 = Convert.ToBase64String(previewImage);
+    }
+
+    private void InitializeExistingMod(string filePath)
+    {
+        HasModelData = true;
+
+        _unpacker = new Unpacker(filePath);
+
+        var previewImage = _unpacker.UnpackFileByQuery("preview.png.bin");
+        PreviewBase64 = Convert.ToBase64String(previewImage);
+
+        var modmetaBytes = _unpacker.UnpackFileByQuery("index.modmeta");
+        Modmeta = Modmeta.FromBytes(modmetaBytes);
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void OnFileSelected(InMemoryFile file)
+    {
+        Modmeta = new Modmeta(
+            file.FileName.ToLower().Split('.')[0].Replace(' ', '_'),
+            file.FileName.Split('.')[0].Replace(" ", ""))
+        {
+            Uuid = Guid.NewGuid().ToString()
+        };
+
+        ModelData = file.Data;
+        HasModelData = true;
+        StateHasChanged();
+    }
+
+    private void OnImageSelected(InMemoryFile file)
+    {
+        PreviewBase64 = Convert.ToBase64String(file.Data);
+        ImageHasChanged = true;
+        StateHasChanged();
+    }
+
+    private void OnModelSelected(InMemoryFile file)
+    {
+        ModelData = file.Data;
+    }
+
+    private void Delete()
+    {
+        var modlist = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
+        var match = modlist.FirstOrDefault(m => m.Path.Contains(Modmeta.Uuid));
+        modlist.Remove(match);
+
+        ModlistEntry.ToFile(Settings.BinmodListPath, modlist);
+
+        var path = $"{Settings.ModDirectory}\\{Modmeta.Uuid}.ffxvbinmod";
+        File.Delete(path);
+
+        Navigation.NavigateTo("/");
+    }
+
+    private void Save()
+    {
+        var outputPath = $"{Settings.ModDirectory}\\{Modmeta.Uuid}.ffxvbinmod";
+
+        if (_unpacker != null && ModelData == null)
+        {
+            var packer = _unpacker.ToPacker();
+            packer.UpdateFile("index.modmeta", Modmeta.ToBytes());
+
+            if (ImageHasChanged)
+            {
+                var tempFile = Path.GetTempFileName();
+                var tempFile2 = Path.GetTempFileName();
+                var png = Convert.FromBase64String(PreviewBase64);
+                File.WriteAllBytes(tempFile, png);
+                BtexConverter.Convert(tempFile, tempFile2, BtexConverter.TextureType.Color);
+                var btex = File.ReadAllBytes(tempFile2);
+
+                packer.UpdateFile("preview.png.bin", png);
+                packer.UpdateFile("preview.btex", btex);
+            }
+
+            packer.WriteToFile(outputPath);
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        var builder = new BinmodBuilder(Modmeta, Convert.FromBase64String(PreviewBase64));
+        builder.AddFmd(ModelData);
+        builder.WriteToFile(outputPath);
+
+        var modList = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
+        var match = modList.FirstOrDefault(m => m.Path == Modmeta.Uuid);
+        if (match == null)
+        {
+            modList.Add(new ModlistEntry
+            {
+                Index = modList.Count > 1 ? modList.Max(m => m.Index) + 1 : 100000,
+                IsEnabled = true,
+                IsWorkshopMod = false,
+                Path = $"{Modmeta.Uuid}.ffxvbinmod"
+            });
+
+            ModlistEntry.ToFile(Settings.BinmodListPath, modList);
+        }
+
+        Navigation.NavigateTo("/");
+    }
+}

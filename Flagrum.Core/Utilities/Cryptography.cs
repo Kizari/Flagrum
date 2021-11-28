@@ -35,6 +35,31 @@ namespace Flagrum.Core.Utilities
             return encryptedData;
         }
 
+        public static byte[] Decrypt(byte[] data)
+        {
+            var size = data.Length - 33;
+
+            var iv = new byte[16];
+            Array.Copy(data, size, iv, 0, 16);
+
+            var aes = new AesManaged
+            {
+                Key = _aesKey,
+                IV = iv,
+                Padding = PaddingMode.None
+            };
+
+            var decryptedBuffer = new byte[size];
+            var encryptedBuffer = new byte[size];
+
+            Array.Copy(data, 0, encryptedBuffer, 0, size);
+
+            var decryptor = aes.CreateDecryptor();
+            decryptor.TransformBlock(encryptedBuffer, 0, size, decryptedBuffer, 0);
+
+            return decryptedBuffer;
+        }
+
         public static ulong Hash(string value)
         {
             var bytes = Encoding.UTF8.GetBytes(value);

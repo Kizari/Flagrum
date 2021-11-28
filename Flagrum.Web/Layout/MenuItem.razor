@@ -1,0 +1,65 @@
+﻿@inject NavigationManager Navigation
+
+<div class="py-4 pl-5 pr-6 flex flex-row items-center hover:bg-grey-700 cursor-pointer @(IsActive ? "bg-grey-800" : "transparent")"
+     @onclick="OnClick">
+    <div>
+        <span class="material-icons-outlined text-accent1-200">@Icon</span>
+    </div>
+    <div class="pl-3 pb-1.5 flex-grow font-display text-accent1-200">
+        @Text
+    </div>
+</div>
+
+@code
+{
+    [CascadingParameter]
+    public MainMenu Parent { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public bool IsActive { get; set; }
+
+    [Parameter]
+    public string Uri { get; set; }
+
+    [Parameter]
+    public bool DefaultActive { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Parent == null)
+        {
+            throw new InvalidOperationException($"{typeof(MenuItem)} must be nested inside a {typeof(MainMenu)} component.");
+        }
+
+        if (DefaultActive)
+        {
+            IsActive = DefaultActive;
+        }
+
+        Parent.AddItem(this);
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
+
+    private void OnClick()
+    {
+        Parent.SetActiveItem(this);
+        Navigation.NavigateTo(Uri);
+    }
+}

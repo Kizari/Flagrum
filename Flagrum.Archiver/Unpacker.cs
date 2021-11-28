@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Flagrum.Archiver.Data;
 using Flagrum.Core.Utilities;
@@ -11,56 +12,101 @@ public class Unpacker
 {
     private const ulong KeyMultiplier = 1103515245;
     private const ulong KeyAdditive = 12345;
+    private readonly ArchiveHeader _header;
 
     private readonly MemoryStream _stream;
-    private ArchiveHeader _header;
+    private List<ArchiveFile> _files;
 
     public Unpacker(string archivePath)
     {
         _stream = new MemoryStream(File.ReadAllBytes(archivePath));
+        _header = ReadHeader();
     }
 
-    public IEnumerable<ArchiveFile> Unpack()
+    /// <summary>
+    ///     Retrieves the data for one file in the archive
+    /// </summary>
+    /// <param name="query">A string that must be contained in the URI</param>
+    /// <returns>Buffer containing the file data</returns>
+    public byte[] UnpackFileByQuery(string query)
     {
-        _header = ReadHeader();
-        return ReadFiles();
-    }
+        _files ??= ReadFileHeaders().ToList();
 
-    public byte[] UnpackModmeta()
-    {
-        _header = ReadHeader();
-        for (var i = 0; i < _header.FileCount; i++)
+        var match = _files.FirstOrDefault(f => f.Uri.Contains(query));
+        if (match != null)
         {
-            _stream.Seek(_header.FileHeadersOffset + i * ArchiveFile.HeaderSize, SeekOrigin.Begin);
-
-            var file = new ArchiveMemoryFile();
-            file.UriAndTypeHash = ReadUint64();
-            file.Size = ReadUint32();
-            file.ProcessedSize = ReadUint32();
-            file.Flags = (ArchiveFileFlag)ReadUint32();
-            file.UriOffset = ReadUint32();
-            file.DataOffset = ReadUint64();
-            file.RelativePathOffset = ReadUint32();
-            file.LocalizationType = ReadByte();
-            file.Locale = ReadByte();
-            file.Key = ReadUint16();
-
-            _stream.Seek(file.UriOffset, SeekOrigin.Begin);
-            file.Uri = ReadString();
-
-            if (file.Uri.EndsWith(".modmeta"))
+            if (!match.HasData)
             {
-                _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
-                var buffer = new byte[file.ProcessedSize];
-                _stream.Read(buffer, 0, (int)file.ProcessedSize);
-                return buffer;
+                ReadFileData(match);
+            }
+
+            return match.GetData();
+        }
+
+        return Array.Empty<byte>();
+    }
+
+    public Packer ToPacker()
+    {
+        _files ??= ReadFileHeaders().ToList();
+
+        foreach (var file in _files)
+        {
+            if (!file.HasData)
+            {
+                ReadFileData(file);
+            }
+
+            if (file.RelativePath == null)
+            {
+                _stream.Seek(file.RelativePathOffset, SeekOrigin.Begin);
+                file.RelativePath = ReadString();
             }
         }
 
-        return new byte[0];
+        return Packer.FromFileList(_files);
     }
 
-    private IEnumerable<ArchiveFile> ReadFiles()
+    private void ReadFileData(ArchiveFile file)
+    {
+        _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
+        var buffer = new byte[file.ProcessedSize];
+        _stream.Read(buffer, 0, (int)file.ProcessedSize);
+
+        if (file.Key > 0)
+        {
+            var partialKey = file.Key * KeyMultiplier + KeyAdditive;
+            var finalKey = partialKey * KeyMultiplier + KeyAdditive;
+
+            var firstNumber = BitConverter.ToUInt32(buffer, 0);
+            var secondNumber = BitConverter.ToUInt32(buffer, 4);
+
+            firstNumber ^= (uint)(finalKey >> 32);
+            secondNumber ^= (uint)finalKey;
+
+            var firstKey = BitConverter.GetBytes(firstNumber);
+            var secondKey = BitConverter.GetBytes(secondNumber);
+
+            for (var k = 0; k < 4; k++)
+            {
+                buffer[k] = firstKey[k];
+            }
+
+            for (var k = 0; k < 4; k++)
+            {
+                buffer[k + 4] = secondKey[k];
+            }
+        }
+
+        if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
+        {
+            buffer = Cryptography.Decrypt(buffer);
+        }
+
+        file.SetData(buffer);
+    }
+
+    private IEnumerable<ArchiveFile> ReadFileHeaders()
     {
         var hash = ArchiveFile.HeaderHash ^ _header.Hash;
 
@@ -68,57 +114,31 @@ public class Unpacker
         {
             _stream.Seek(_header.FileHeadersOffset + i * ArchiveFile.HeaderSize, SeekOrigin.Begin);
 
-            var file = new ArchiveMemoryFile();
-            file.UriAndTypeHash = ReadUint64();
-            file.Size = ReadUint32();
-            file.ProcessedSize = ReadUint32();
-            file.Flags = (ArchiveFileFlag)ReadUint32();
-            file.UriOffset = ReadUint32();
-            file.DataOffset = ReadUint64();
-            file.RelativePathOffset = ReadUint32();
-            file.LocalizationType = ReadByte();
-            file.Locale = ReadByte();
-            file.Key = ReadUint16();
+            var file = new ArchiveFile
+            {
+                UriAndTypeHash = ReadUint64(),
+                Size = ReadUint32(),
+                ProcessedSize = ReadUint32(),
+                Flags = (ArchiveFileFlag)ReadUint32(),
+                UriOffset = ReadUint32(),
+                DataOffset = ReadUint64(),
+                RelativePathOffset = ReadUint32(),
+                LocalizationType = ReadByte(),
+                Locale = ReadByte(),
+                Key = ReadUint16()
+            };
 
-            var subhash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
-            file.Size ^= (uint)(subhash >> 32);
-            file.ProcessedSize ^= (uint)subhash;
-            hash = Cryptography.MergeHashes(subhash, ~file.UriAndTypeHash);
-            file.DataOffset ^= hash;
+            if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected))
+            {
+                var subhash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
+                file.Size ^= (uint)(subhash >> 32);
+                file.ProcessedSize ^= (uint)subhash;
+                hash = Cryptography.MergeHashes(subhash, ~file.UriAndTypeHash);
+                file.DataOffset ^= hash;
+            }
 
             _stream.Seek(file.UriOffset, SeekOrigin.Begin);
             file.Uri = ReadString();
-
-            _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
-            var buffer = new byte[file.ProcessedSize];
-            _stream.Read(buffer, 0, (int)file.ProcessedSize);
-
-            if (file.Key > 0)
-            {
-                var partialKey = file.Key * KeyMultiplier + KeyAdditive;
-                var finalKey = partialKey * KeyMultiplier + KeyAdditive;
-
-                var firstNumber = BitConverter.ToUInt32(buffer, 0);
-                var secondNumber = BitConverter.ToUInt32(buffer, 4);
-
-                firstNumber ^= (uint)(finalKey >> 32);
-                secondNumber ^= (uint)finalKey;
-
-                var firstKey = BitConverter.GetBytes(firstNumber);
-                var secondKey = BitConverter.GetBytes(secondNumber);
-
-                for (var k = 0; k < 4; k++)
-                {
-                    buffer[k] = firstKey[k];
-                }
-
-                for (var k = 0; k < 4; k++)
-                {
-                    buffer[k + 4] = secondKey[k];
-                }
-            }
-
-            file.SetData(buffer);
 
             yield return file;
         }

@@ -8,7 +8,8 @@
         mc:Ignorable="d"
         Title="Flagrum" Width="1024" Height="768"
         WindowStartupLocation="CenterScreen"
-        WindowStyle="None">
+        WindowStyle="None"
+        Background="#181512">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="64"
                       ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
@@ -105,7 +106,8 @@
             </Button>
         </Grid>
 
-        <blazor:BlazorWebView x:Name="MainWebView" Grid.Row="1" HostPage="wwwroot/index.html" Services="{StaticResource services}">
+        <blazor:BlazorWebView x:Name="MainWebView" Grid.Row="1" HostPage="wwwroot/_content/Flagrum.Web/index.html"
+                              Services="{StaticResource services}" Background="#181512">
             <blazor:BlazorWebView.RootComponents>
                 <blazor:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />
             </blazor:BlazorWebView.RootComponents>

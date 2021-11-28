@@ -1,0 +1,34 @@
+﻿<CascadingValue Value="this">
+    <div class="h-full bg-dark flex-shrink-0">
+        <MenuItem Icon="build" Text="Mod Manager" DefaultActive="true" Uri="/"/>
+        <MenuItem Icon="videogame_asset" Text="Asset Explorer" Uri="/assets"/>
+        <MenuItem Icon="search" Text="File Inspector" Uri="/inspector"/>
+    </div>
+</CascadingValue>
+
+@code
+{
+    private List<MenuItem> Items { get; set; } = new();
+
+    public void AddItem(MenuItem item)
+    {
+        Items.Add(item);
+    }
+
+    public void SetActiveItem(MenuItem item)
+    {
+        foreach (var i in Items)
+        {
+            if (i == item)
+            {
+                i.Activate();
+            }
+            else
+            {
+                i.Deactivate();
+            }
+        }
+
+        StateHasChanged();
+    }
+}
