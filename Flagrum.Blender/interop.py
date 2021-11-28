@@ -1,9 +1,8 @@
 ﻿import ctypes
 import json
-from zipfile import ZipFile, ZIP_STORED
-from datetime import datetime
 from os.path import dirname, join, splitext
 from types import SimpleNamespace
+from zipfile import ZipFile, ZIP_STORED
 
 from .entities import Gpubin
 

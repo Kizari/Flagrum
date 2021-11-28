@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Text;
 using Flagrum.Gfxbin.Gmdl;
 using Flagrum.Gfxbin.Gmtl;
 
@@ -28,10 +29,18 @@ public static class GfxbinTests
         var reader = new MaterialReader(path);
         var material = reader.Read();
 
-        foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
+        //foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
+        //{
+        //    System.Console.WriteLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
+        //}
+
+        var builder = new StringBuilder();
+        foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
         {
-            System.Console.WriteLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
+            builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
         }
+
+        File.WriteAllText("C:\\Testing\\nh02_000_skin_00_mat_texture_defaults.txt", builder.ToString());
     }
 
     public static void Compare()

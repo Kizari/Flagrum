@@ -1,18 +1,55 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.10" PrivateAssets="all" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="Scriban" Version="5.0.0" />
+        <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+        <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.5" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Flagrum.Graphs\SequenceEditor.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Components\StandardGroupRenderer.razor" />
+        <_ContentIncludedByDefault Remove="Components\StandardNodeRenderer.razor" />
+        <_ContentIncludedByDefault Remove="Components\StandardPortRenderer.razor" />
+        <_ContentIncludedByDefault Remove="Layout\MainLayout.razor" />
+        <_ContentIncludedByDefault Remove="Layout\NodeExplorer.razor" />
+        <_ContentIncludedByDefault Remove="Layout\TypeTreeComponent.razor" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\Flagrum.Archiver\Flagrum.Archiver.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Content Update="wwwroot\app.css">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\exampleJsInterop.js">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\favicon.ico">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\finalf.ttf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Update="wwwroot\index.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
 
 </Project>

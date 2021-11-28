@@ -66,6 +66,7 @@ public class Program
 
     public static void Main(string[] args)
     {
+        GfxbinTests.CheckMaterialDefaults();
         // var gfx = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gmdl.gfxbin";
         // var gpu = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gpubin";
         //
@@ -81,7 +82,7 @@ public class Program
         // System.Console.WriteLine(output);
 
         //Import();
-        GfxbinTests.GetBoneTable();
+        //GfxbinTests.GetBoneTable();
        // GfxbinTests.CheckMaterialDefaults();
         //Test();
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Flagrum.Archiver.Binmod.Data;
 using Flagrum.Core.Utilities;
 
 namespace Flagrum.Archiver.Binmod
@@ -32,7 +33,7 @@ namespace Flagrum.Archiver.Binmod
             var exml = EntityPackageBuilder.BuildExml(ModelName, ModDirectoryName, Target);
             _packer.AddInMemoryFile(exml, "data://$mod/temp.exml");
 
-            var modmeta = BuildModmeta();
+            var modmeta = new Modmeta().ToBytes(ModDirectoryName, ModelName);
             _packer.AddInMemoryFile(modmeta, GetDataPath("index.modmeta"));
 
             var preview = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Binmod\\Resources\\preview.png");
@@ -130,36 +131,6 @@ namespace Flagrum.Archiver.Binmod
         private string GetDataPath(string relativePath)
         {
             return $"data://mod/{ModDirectoryName}/{relativePath}";
-        }
-
-        private byte[] BuildModmeta()
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine("[meta]");
-            builder.AppendLine("modtype=cloth");
-            builder.AppendLine($"title={ModTitle}");
-            builder.AppendLine("desc=");
-            builder.AppendLine($"uuid={Uuid}");
-            builder.AppendLine($"type={Target.ToString().ToLower()}");
-            builder.AppendLine("itemid=0");
-            builder.AppendLine("ischecked=False");
-            builder.AppendLine("isapplytogame=True");
-            builder.AppendLine("itemplace=E_Local");
-            builder.AppendLine($"modify_gmdl[0]=mod/{ModDirectoryName}/{ModelName}.fbx");
-            builder.AppendLine($"name={ModTitle}");
-            builder.AppendLine("help=");
-            builder.AppendLine("strength=0");
-            builder.AppendLine("vitality=0");
-            builder.AppendLine("magic=0");
-            builder.AppendLine("spirit=0");
-            builder.AppendLine("hp_max=0");
-            builder.AppendLine("mp_max=0");
-            builder.AppendLine("bullet=0");
-            builder.AppendLine("fire=0");
-            builder.AppendLine("ice=0");
-            builder.AppendLine("thunder=0");
-            builder.AppendLine("dark=0");
-            return Encoding.ASCII.GetBytes(builder.ToString());
         }
     }
 }
