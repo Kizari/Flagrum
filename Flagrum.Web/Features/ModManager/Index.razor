@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="row flex-wrap px-4 ml-0.5">
+    <div class="row flex-wrap px-4 ml-0.5 mb-6">
         @foreach (var mod in AppState.Mods.Where(m => m.IsWorkshopMod))
         {
             <ModListingCard @key="mod.Uuid" Mod="@mod"/>

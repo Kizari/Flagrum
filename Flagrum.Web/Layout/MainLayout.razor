@@ -1,14 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject AppStateService AppState
 
-@foreach (var mod in AppState.Mods)
-{
-    <style @key="@mod.Uuid">
-        .preview-@mod.Uuid {
-            background-image: url('data:image/png;base64,@Convert.ToBase64String(mod.PreviewBytes)');
-        }
-    </style>
-}
+@Classes
 
 <div class="flex flex-row h-full">
     <MainMenu/>
@@ -21,8 +14,22 @@
 
 @code
 {
+    private MarkupString Classes { get; set; }
+
     public void CallStateHasChanged()
     {
+        var classes = "<style>";
+
+    @foreach (var mod in AppState.Mods)
+    {
+        classes += $".preview-{mod.Uuid}";
+        classes += "{background-image: url('data:image/png;base64,";
+        classes += Convert.ToBase64String(mod.PreviewBytes);
+        classes += "');}";
+    }
+
+        classes += "</style>";
+        Classes = (MarkupString)classes;
         StateHasChanged();
     }
 }
