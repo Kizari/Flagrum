@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Flagrum.Gfxbin.Gmdl.Constructs;
 
@@ -14,5 +15,5 @@ public class Matrix
         Rows = rows;
     }
 
-    public Vector3[] Rows { get; }
+    public IList<Vector3> Rows { get; }
 }

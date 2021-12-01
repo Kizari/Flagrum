@@ -11,7 +11,7 @@ public class Model
     public string Name { get; set; }
     public ulong AssetHash { get; set; }
 
-    public (Vector3 Min, Vector3 Max) Aabb { get; set; }
+    public Aabb Aabb { get; set; }
 
     public byte InstanceNameFormat { get; set; }
     public byte ShaderClassFormat { get; set; }

@@ -1,82 +1,110 @@
 ﻿@page "/"
-@using Flagrum.Core.Extensions
-@using Flagrum.Web.Features.ModManager.Data
 @using Flagrum.Archiver.Binmod.Data
 @using System.IO
 @using Flagrum.Archiver
 
 @inject NavigationManager Navigation
 @inject Settings Settings
+@inject AppStateService AppState
 
-<CascadingValue Value="Modlist">
-    <div class="p-6">
+<LoadingView Text="Loading Mods"
+             IsLoading="IsLoading">
 
-        <div class="box">
-            <div class="row bg-dark-600 p-3">
-                <h5 class="font-bold text-grey-300 ml-1 flex-grow">Local Mods</h5>
-                <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
-            </div>
-            @foreach (var entry in LocalMods)
-            {
-                <ModRow Listing="@entry"/>
-            }
+    <div class="mx-6 mt-6">
+        <div class="row">
+            <h5 class="font-bold text-grey-300 ml-1 flex-grow">Local Mods</h5>
+            <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
         </div>
-
-        <div class="box mt-6">
-            <div class="row bg-dark-600 p-3">
-                <h5 class="font-bold text-grey-300 ml-1 flex-grow">Workshop Mods</h5>
-            </div>
-            @foreach (var entry in Modlist.Where(m => m.IsWorkshopMod))
-            {
-                <ModRow Listing="@(new ModListing {DisplayName = entry.Path.Split('\\', '/').Last(), IsEnabled = entry.IsEnabled, Uuid = entry.Path})"/>
-            }
-        </div>
-
     </div>
-</CascadingValue>
+
+    <div class="row flex-wrap px-4 ml-0.5">
+        @foreach (var mod in AppState.Mods.Where(m => !m.IsWorkshopMod))
+        {
+            <ModListingCard @key="mod.Uuid" Mod="@mod"/>
+        }
+    </div>
+
+    <div class="mx-6 mt-8">
+        <div class="row">
+            <h5 class="font-bold text-grey-300 ml-1 flex-grow">Workshop Mods</h5>
+        </div>
+    </div>
+
+    <div class="row flex-wrap px-4 ml-0.5">
+        @foreach (var mod in AppState.Mods.Where(m => m.IsWorkshopMod))
+        {
+            <ModListingCard @key="mod.Uuid" Mod="@mod"/>
+        }
+    </div>
+
+</LoadingView>
 
 @code
 {
-    private List<ModListing> LocalMods { get; } = new();
-    private List<ModlistEntry> Modlist { get; set; }
+    [CascadingParameter]
+    public MainLayout Parent { get; set; }
 
-    protected override void OnInitialized()
+    private bool IsLoading { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
-        Modlist = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
-
-        foreach (var file in Directory.EnumerateFiles(Settings.ModDirectory))
+        if (!AppState.IsModListInitialized)
         {
-            if (file.EndsWith(".ffxvbinmod"))
+            await Task.Run(() =>
             {
-                var unpacker = new Unpacker(file);
-                var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta");
-                var modmeta = Modmeta.FromBytes(modmetaBytes);
+                var binmodList = ModlistEntry.FromFile(Settings.BinmodListPath);
 
-                if (modmeta == null)
+                foreach (var file in Directory.EnumerateFiles(Settings.ModDirectory)
+                    .Union(Directory.EnumerateDirectories(Settings.WorkshopDirectory)
+                        .SelectMany(Directory.EnumerateFiles)))
                 {
-                    continue;
+                    if (file.EndsWith(".ffxvbinmod"))
+                    {
+                        var unpacker = new Unpacker(file);
+                        var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta");
+                        var mod = Binmod.FromModmetaBytes(modmetaBytes);
+                        var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin");
+
+                        if (mod == null)
+                        {
+                            continue;
+                        }
+
+                        var binmodListing = binmodList.FirstOrDefault(e => file.Contains(e.Path.Replace('/', '\\')));
+
+                        if (mod == null || binmodListing == null)
+                        {
+                            continue;
+                        }
+
+                        mod.IsWorkshopMod = file.Contains(Settings.WorkshopDirectory);
+                        mod.IsUploaded = binmodListing.IsWorkshopMod;
+                        mod.LastUpdated = default;
+                        mod.Index = binmodListing.Index;
+                        mod.IsApplyToGame = binmodListing.IsEnabled;
+                        mod.Path = file;
+                        mod.PreviewBytes = previewBytes;
+
+    // TODO: Get tags from a file
+                        mod.Tags = new List<string>();
+    // TODO: Get visibility from a file
+                        mod.Visibility = 0;
+
+                        AppState.Mods.Add(mod);
+                    }
                 }
+            });
 
-                LocalMods.Add(new ModListing
-                {
-                    DisplayName = modmeta.Name,
-                    FilePath = file,
-                    IsEnabled = Modlist.Any(m => m.Path.Contains(modmeta.Uuid) && m.IsEnabled),
-                    Uuid = modmeta.Uuid
-                });
-            }
+            AppState.IsModListInitialized = true;
+            Parent.CallStateHasChanged();
         }
+
+        IsLoading = false;
     }
 
     private void Create()
     {
-        var mod = new ModListing
-        {
-            DisplayName = "New Mod",
-            FilePath = null
-        };
-
-        Navigation.NavigateTo($"/mod/configure/{mod.ToBase64String()}");
+        AppState.ActiveMod = null;
+        Navigation.NavigateTo("/mod/configure");
     }
 }

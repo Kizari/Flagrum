@@ -1,0 +1,37 @@
+﻿@page "/settings"
+
+<div class="p-6">
+    
+    <EditForm Model="SettingsModel">
+        <div class="box p-4 mb-4 row">
+            <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
+            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="SettingsModel.Path1"></Textbox>
+            <BrowseButton Icon="folder" Text="Browse" CssClass="ml-4"></BrowseButton>
+        </div>
+        
+        <div class="box p-4 mb-4 row">
+            <span class="mr-3" style="width: 250px;">Mod Directory Path</span>
+            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="SettingsModel.Path2"></Textbox>
+            <BrowseButton Icon="folder" Text="Browse" CssClass="ml-4"></BrowseButton>
+        </div>
+        
+        <div class="box p-4 row">
+            <span class="mr-3" style="width: 250px;">Steam Workshop Path</span>
+            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="SettingsModel.Path3"></Textbox>
+            <BrowseButton Icon="folder" Text="Browse" CssClass="ml-4"></BrowseButton>
+        </div>
+    </EditForm>
+    
+</div>
+
+@code
+{
+    private Model SettingsModel { get; set; } = new();
+
+    private class Model
+    {
+        public string Path1 { get; set; }
+        public string Path2 { get; set; }
+        public string Path3 { get; set; }
+    }
+}

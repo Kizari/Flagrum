@@ -6,4 +6,5 @@ public class ModListing
     public string FilePath { get; set; }
     public bool IsEnabled { get; set; }
     public string Uuid { get; set; }
+    public string PreviewBase64 { get; set; }
 }

@@ -24,7 +24,8 @@ module.exports = {
             },
             accent2: {
                 DEFAULT: "#630325",
-                900: "#4a021b"
+                700: "#783b4a",
+                900: "#552a35"
             },
             rose: colors.pink,
             "control": "#FEF3C7"

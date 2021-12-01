@@ -15,12 +15,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Binmod\Resources\preview.png">
+    <None Remove="Binmod\Resources\preview.btex" />
+    <Content Include="Binmod\Resources\preview.btex">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Binmod\Resources\preview.btex">
+    </Content>
+    <None Remove="Binmod\Resources\preview.png" />
+    <Content Include="Binmod\Resources\preview.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
 </Project>

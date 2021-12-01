@@ -22,7 +22,7 @@ public class ModelReader
     {
         _model.Header.Read(_reader);
 
-        _model.Aabb = (_reader.ReadVector3(), _reader.ReadVector3());
+        _model.Aabb = new Aabb(_reader.ReadVector3(), _reader.ReadVector3());
 
         _model.InstanceNameFormat = _reader.ReadByte();
         _model.ShaderClassFormat = _reader.ReadByte();

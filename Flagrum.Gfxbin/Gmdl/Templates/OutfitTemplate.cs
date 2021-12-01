@@ -12,6 +12,8 @@ public static class OutfitTemplate
     public static Model Build(string modDirectoryName, string modelName, Gpubin gpubin)
     {
         var header = BuildHeader(modDirectoryName, modelName, gpubin);
+        var allVertices = gpubin.Meshes
+            .SelectMany(m => m.VertexPositions);
 
         return new Model
         {
@@ -20,10 +22,16 @@ public static class OutfitTemplate
             AssetHash = ulong.Parse(header.Dependencies
                 .FirstOrDefault(d => d.Path.EndsWith(".gpubin"))!.PathHash),
 
-            // For now just using values from a random mod to get things working
-            // NOTE: Unsure what this does but should probably be calculated for the specific model
-            Aabb = (new Vector3(-0.6734764f, -0.0012439584f, -0.16458078f),
-                new Vector3(0.6734764f, 1.6263884f, 0.22657359f)),
+            // NOTE: Unsure what the bounding box is used for in-game, possibly culling?
+            Aabb = new Aabb(
+                new Vector3(
+                    allVertices.Min(v => v.X),
+                    allVertices.Min(v => v.Y),
+                    allVertices.Min(v => v.Z)),
+                new Vector3(
+                    allVertices.Max(v => v.X),
+                    allVertices.Max(v => v.Y),
+                    allVertices.Max(v => v.Z))),
 
             // Unsure what this is, but appears to always be true, so we use that
             Unknown1 = true,

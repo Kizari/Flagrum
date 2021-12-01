@@ -1,0 +1,104 @@
+﻿@page "/mod/upload"
+@using Flagrum.Archiver.Binmod.Data
+@inject SteamWorkshopService SteamWorkshop
+@inject AppStateService AppState
+@inject NavigationManager Navigation
+@inject JSInterop Interop
+
+<LoadingView Text="Uploading"
+             IsLoading="IsLoading">
+    <EditForm Model="Mod">
+        <div class="p-6">
+
+            <div class="box row p-4">
+                <span class="flex-grow">
+                    Upload to Steam Workshop
+                </span>
+                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish"/>
+                <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
+            </div>
+
+            <div class="box p-4 mt-6">
+                <table class="w-full">
+                    <tr>
+                        <td class="text-right pr-4" style="width: 150px;">
+                            <label class="block mb-2">MOD TITLE</label>
+                        </td>
+                        <td>
+                            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.WorkshopTitle"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-right pr-4" style="width: 150px;">
+                            <label class="block mt-4 mb-2">VISIBILITY</label>
+                        </td>
+                        <td class="pt-3">
+                            <EnumSelect @bind-Value="Visibility"/>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top; width: 150px;" class="pt-2">
+                        <td class="text-right pr-4">
+                            <label class="block mt-4 mb-2">CHANGE NOTES</label>
+                        </td>
+                        <td class="pt-3">
+                            <Textbox Rows="5" Size="Textbox.Variant.Stretch" @bind-Value="ChangeNote"/>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+
+        </div>
+    </EditForm>
+</LoadingView>
+
+@code
+{
+    private Binmod Mod { get; set; }
+    private string ChangeNote { get; set; }
+    private bool IsLoading { get; set; }
+
+    private ModVisibility Visibility
+    {
+        get => (ModVisibility)Mod.Visibility;
+        set => Mod.Visibility = (int)value;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Mod = AppState.ActiveMod;
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/mod/configure");
+    }
+
+    private void Publish()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        if (SteamWorkshop.Initialize())
+        {
+            if (Mod.ItemId > 0)
+            {
+                SteamWorkshop.Update(Mod, ChangeNote, OnUploaded);
+            }
+            else
+            {
+                SteamWorkshop.Publish(Mod, OnUploaded);
+            }
+        }
+    }
+
+    private void OnUploaded()
+    {
+        InvokeAsync(() =>
+        {
+            IsLoading = false;
+            StateHasChanged();
+        });
+    }
+}

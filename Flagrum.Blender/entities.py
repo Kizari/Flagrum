@@ -79,9 +79,6 @@ class MeshData:
 
 @dataclass(init=False)
 class Gpubin:
-    Target: str
-    Uuid: str
-    Title: str
     Meshes: list[MeshData]
     BoneTable: dict[int, str]
 

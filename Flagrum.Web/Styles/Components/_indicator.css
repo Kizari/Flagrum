@@ -1,0 +1,13 @@
+﻿.continuous-3 {
+    width: 120px;
+    height: 20px;
+    transform: skewX(-45deg);
+    background: linear-gradient(theme('colors.accent1.200') 0 0) left -30px top 0/30px 20px no-repeat theme('colors.dark.600');
+    animation: ct3 1s infinite linear;
+}
+
+@keyframes ct3 {
+    100% {
+        background-position: right -30px top 0
+    }
+}

@@ -3,7 +3,7 @@
 @inject JSInterop Interop
 
 <Button Icon="@Icon" Text="@Text" OnClick="OnClick" CssClass="@CssClass"/>
-<InputFile OnChange="OnChange" id="@_id" class="hidden"/>
+<InputFile OnChange="OnChange" accept="@AllowedExtensions" id="@_id" class="hidden"/>
 
 @code
 {
@@ -13,6 +13,9 @@
     public Action<InMemoryFile> OnFileSelected { get; set; }
 
     [Parameter]
+    public Action BeforeFileLoaded { get; set; }
+
+    [Parameter]
     public string Icon { get; set; }
 
     [Parameter]
@@ -20,6 +23,9 @@
 
     [Parameter]
     public string CssClass { get; set; }
+
+    [Parameter]
+    public string AllowedExtensions { get; set; }
 
     protected override void OnInitialized()
     {
@@ -33,6 +39,8 @@
 
     private async Task OnChange(InputFileChangeEventArgs e)
     {
+        BeforeFileLoaded?.Invoke();
+
         await using var stream = e.File.OpenReadStream(long.MaxValue);
         await using var memoryStream = new MemoryStream();
         await stream.CopyToAsync(memoryStream);

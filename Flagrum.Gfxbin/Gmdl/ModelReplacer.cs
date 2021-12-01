@@ -16,11 +16,13 @@ public class ModelReplacer
 {
     private readonly Gpubin _gpubin;
     private readonly Model _model;
+    private readonly string _boye;
 
-    public ModelReplacer(Model originalModel, Gpubin replacementData)
+    public ModelReplacer(Model originalModel, Gpubin replacementData, string boye)
     {
         _model = originalModel;
         _gpubin = replacementData;
+        _boye = boye;
     }
 
     public Model Replace()
@@ -196,7 +198,7 @@ public class ModelReplacer
         }
 
         // Need to use indices of preloaded bones to prevent rigging issues
-        foreach (var bone in Character.GetPreloadedBones(_gpubin.Target))
+        foreach (var bone in Character.GetPreloadedBones(_boye.ToUpper()))
         {
             var match = _gpubin.BoneTable.FirstOrDefault(p => p.Value == bone.Name);
             if (match.Value != null)

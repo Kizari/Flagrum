@@ -53,4 +53,11 @@
       </Content>
     </ItemGroup>
 
+
+    <ItemGroup>
+      <Reference Include="Steamworks.NET, Version=15.0.1.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\..\..\Users\Kieran\Downloads\Steamworks.NET-Standalone_15.0.1\Windows-x64\Steamworks.NET.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

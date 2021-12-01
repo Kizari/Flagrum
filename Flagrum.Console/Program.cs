@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using Flagrum.Gfxbin.Gmdl;
-using Flagrum.Gfxbin.Gmdl.Constructs;
-using Newtonsoft.Json;
+using Flagrum.Archiver;
+using Flagrum.Archiver.Binmod.Data;
+using Flagrum.Gfxbin.Btex;
 
 namespace Flagrum.Console;
 
@@ -66,7 +64,15 @@ public class Program
 
     public static void Main(string[] args)
     {
-        GfxbinTests.CheckMaterialDefaults();
+        // var unpacker =
+        //     new Unpacker(
+        //         "C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\637650\\1430394965\\meganeP_casual.ffxvbinmod");
+        // var modmeta = unpacker.UnpackFileByQuery("index.modmeta");
+        // var mod = Binmod.FromModmetaBytes(modmeta);
+        // System.Console.WriteLine(mod.Uuid);
+        BtexConverter.Convert("C:\\Testing\\Previews\\preview.png",
+             "C:\\Testing\\Previews\\preview.btex", BtexConverter.TextureType.Color);
+        //GfxbinTests.CheckMaterialDefaults();
         // var gfx = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gmdl.gfxbin";
         // var gpu = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gpubin";
         //
@@ -83,7 +89,7 @@ public class Program
 
         //Import();
         //GfxbinTests.GetBoneTable();
-       // GfxbinTests.CheckMaterialDefaults();
+        // GfxbinTests.CheckMaterialDefaults();
         //Test();
     }
 

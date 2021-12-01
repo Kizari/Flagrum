@@ -38,7 +38,7 @@ public class ModlistEntry
         return entries;
     }
 
-    public static void ToFile(string path, IEnumerable<ModlistEntry> entries)
+    public static void ToFile(string path, IEnumerable<Binmod> entries)
     {
         var orderedEntries = entries
             .OrderBy(e => e.IsWorkshopMod)
@@ -48,7 +48,7 @@ public class ModlistEntry
         foreach (var entry in orderedEntries)
         {
             builder.Append($"\"{entry.Path}\",");
-            builder.Append($"\"{(entry.IsEnabled ? "True" : "False")}\",");
+            builder.Append($"\"{(entry.IsApplyToGame ? "True" : "False")}\",");
             builder.Append($"\"{entry.Index}\",");
             builder.Append($"\"{(entry.IsWorkshopMod ? "True" : "False")}\"");
 

@@ -1,10 +1,22 @@
 ﻿@inherits InputBase<string>
 
-<input type="text"
-       class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
-       style="@Style"
-       @bind-value="@CurrentValueAsString"
-       @bind-value:event="oninput"/>
+@if (Rows > 0)
+{
+    <textarea rows="@Rows"
+           class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
+           style="@Style"
+           @bind-value="@CurrentValueAsString"
+           @bind-value:event="oninput">
+    </textarea>
+}
+else
+{
+    <input type="text"
+           class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
+           style="@Style"
+           @bind-value="@CurrentValueAsString"
+           @bind-value:event="oninput"/>
+}
 
 @code
 {
@@ -17,6 +29,9 @@
 
     [Parameter]
     public Variant Size { get; set; }
+
+    [Parameter]
+    public int Rows { get; set; }
 
     private string Style => Size switch
     {

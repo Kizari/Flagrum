@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using Blazored.LocalStorage;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,12 +10,20 @@ namespace Flagrum.Desktop;
 /// </summary>
 public partial class MainWindow : Window
 {
+#if DEBUG
+    public string HostPageUri { get; } = "wwwroot/index.html";
+#else
+    public string HostPageUri { get; } = "wwwroot/_content/Flagrum.Web/index.html";
+#endif
+
     public MainWindow()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddBlazorWebView();
         serviceCollection.AddBlazoredLocalStorage();
         serviceCollection.AddSingleton<Settings>();
+        serviceCollection.AddScoped<SteamWorkshopService>();
+        serviceCollection.AddSingleton<AppStateService>();
         serviceCollection.AddScoped<JSInterop>();
         Resources.Add("services", serviceCollection.BuildServiceProvider());
 

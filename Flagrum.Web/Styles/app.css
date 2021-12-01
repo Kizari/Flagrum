@@ -9,6 +9,7 @@
 @import "typography";
 @import "Components/node";
 @import "Components/switch";
+@import "Components/indicator";
 }
 
 @layer utilities {

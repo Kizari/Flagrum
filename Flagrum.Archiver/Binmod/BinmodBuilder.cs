@@ -24,16 +24,16 @@ public enum Boye
 
 public class BinmodBuilder
 {
-    private readonly Modmeta _modmeta;
+    private readonly Data.Binmod _mod;
     private readonly Packer _packer;
 
-    public BinmodBuilder(Modmeta modmeta, byte[] previewImage)
+    public BinmodBuilder(Data.Binmod mod, byte[] previewImage)
     {
-        _modmeta = modmeta;
+        _mod = mod;
         _packer = new Packer();
-        _packer.AddFile(_modmeta.ToBytes(), GetDataPath("index.modmeta"));
+        _packer.AddFile(_mod.ToModmeta(), GetDataPath("index.modmeta"));
 
-        var exml = EntityPackageBuilder.BuildExml(_modmeta.ModelName, _modmeta.ModDirectoryName, _modmeta.Target);
+        var exml = EntityPackageBuilder.BuildExml(_mod.ModelName, _mod.ModDirectoryName, _mod.Target);
         _packer.AddFile(exml, "data://$mod/temp.exml");
 
         var tempFile = Path.GetTempFileName();
@@ -49,12 +49,6 @@ public class BinmodBuilder
     public void WriteToFile(string outPath)
     {
         _packer.WriteToFile(outPath);
-    }
-
-    public void AddModel(string name, byte[] gfxbin, byte[] gpubin)
-    {
-        _packer.AddFile(gfxbin, GetDataPath($"{name}.gmdl.gfxbin"));
-        _packer.AddFile(gpubin, GetDataPath($"{name}.gpubin"));
     }
 
     public void AddFile(string uri, byte[] data)
@@ -88,7 +82,7 @@ public class BinmodBuilder
                         mesh.Material.TextureData.Add(new TextureData
                         {
                             Id = textureId,
-                            Uri = $"data://mod/{_modmeta.ModDirectoryName}/sourceimages/{replacement}",
+                            Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
                             Data = MaterialBuilder.GetDefaultTextureData(replacement)
                         });
                     }
@@ -118,7 +112,7 @@ public class BinmodBuilder
                     var fileName = filePath.Split('/', '\\').Last();
                     var extension = fileName.Split('.').Last();
                     var btexFileName = fileName.Replace($".{extension}", ".btex");
-                    var uri = $"data://mod/{_modmeta.ModDirectoryName}/sourceimages/{btexFileName}";
+                    var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
 
                     mesh.Material.TextureData.Add(new TextureData
                     {
@@ -132,7 +126,7 @@ public class BinmodBuilder
             var material = MaterialBuilder.FromTemplate(
                 mesh.Material.Id,
                 $"{mesh.Name.ToLower()}_mat",
-                _modmeta.ModDirectoryName,
+                _mod.ModDirectoryName,
                 mesh.Material.Inputs.Select(p => new MaterialInputData
                 {
                     Name = p.Key,
@@ -159,14 +153,14 @@ public class BinmodBuilder
                 .Select(t => t.Path));
         }
 
-        var model = OutfitTemplate.Build(_modmeta.ModDirectoryName, _modmeta.ModelName, gpubin);
-        var replacer = new ModelReplacer(model, gpubin);
+        var model = OutfitTemplate.Build(_mod.ModDirectoryName, _mod.ModelName, gpubin);
+        var replacer = new ModelReplacer(model, gpubin, _mod.Target.ToString());
         model = replacer.Replace();
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
 
-        AddFile(GetDataPath($"{_modmeta.ModelName}.gmdl.gfxbin"), gfxData);
-        AddFile(GetDataPath($"{_modmeta.ModelName}.gpubin"), gpuData);
+        AddFile(GetDataPath($"{_mod.ModelName}.gmdl.gfxbin"), gfxData);
+        AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
 
         AddGameAssets(gameAssets.Distinct());
     }
@@ -230,6 +224,6 @@ public class BinmodBuilder
 
     private string GetDataPath(string relativePath)
     {
-        return $"data://mod/{_modmeta.ModDirectoryName}/{relativePath}";
+        return $"data://mod/{_mod.ModDirectoryName}/{relativePath}";
     }
 }

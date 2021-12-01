@@ -21,4 +21,9 @@ public class JSInterop
     {
         await _jsRuntime.InvokeVoidAsync("interop.clickElement", id);
     }
+
+    public async Task SetBackgroundImageBase64(string elementId, string base64)
+    {
+        await _jsRuntime.InvokeVoidAsync("interop.setBackgroundImageBase64", elementId, base64);
+    }
 }

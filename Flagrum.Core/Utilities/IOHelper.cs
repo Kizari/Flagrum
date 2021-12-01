@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System;
+using System.IO;
 
 namespace Flagrum.Core.Utilities
 {
@@ -7,7 +7,7 @@ namespace Flagrum.Core.Utilities
     {
         public static string GetExecutingDirectory()
         {
-            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            return Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
         }
     }
 }

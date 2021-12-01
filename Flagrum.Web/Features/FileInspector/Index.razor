@@ -1,5 +1,42 @@
 ﻿@page "/inspector"
+@using Flagrum.Gfxbin.Gmdl.Components
+@using Flagrum.Web.Components.Controls.Data
+@using Flagrum.Gfxbin.Gmdl
+@using System.Reflection
+@using System.Collections
 
 <div class="p-6">
-    <h3 class="text-grey-300">Coming Soon™</h3>
+
+    <div class="box p-4 row">
+        <span class="flex-grow">Select file to inspect</span>
+        <BrowseButton Icon="folder" Text="GFXBIN" OnFileSelected="OnGfxbinSelected"/>
+        <BrowseButton Icon="folder" Text="GPUBIN" OnFileSelected="OnGpubinSelected"/>
+    </div>
+
+    @if (Model != null)
+    {
+        <div class="box mt-6 p-4">
+            <ObjectInspector Object="Model" />
+        </div>
+    }
+
 </div>
+
+@code
+{
+    private byte[] _gfxbin;
+
+    private Model Model { get; set; }
+
+    private void OnGfxbinSelected(InMemoryFile file)
+    {
+        _gfxbin = file.Data;
+    }
+
+    private void OnGpubinSelected(InMemoryFile file)
+    {
+        var modelReader = new ModelReader(_gfxbin, file.Data);
+        Model = modelReader.Read();
+        StateHasChanged();
+    }
+}

@@ -6,10 +6,11 @@
         xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
         mc:Ignorable="d"
-        Title="Flagrum" Width="1024" Height="768"
+        Title="Flagrum" Width="1038" Height="768"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        Background="#181512">
+        Background="#181512"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="64"
                       ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
@@ -21,16 +22,18 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" VerticalAlignment="Top" Background="#181512" Height="42">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="45" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="50" />
                 <ColumnDefinition Width="50" />
                 <ColumnDefinition Width="50" />
             </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="Flagrum" Foreground="#ccc" FontSize="14" VerticalAlignment="Center"
-                   Padding="15,5" />
-            <Button Grid.Column="1" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"
+            <Image Source="/flagrumHeader.png" Grid.Column="0" Margin="15, 0, 0, 0" />
+            <Label Grid.Column="1" Content="Flagrum" Foreground="#E7E5E4" FontSize="14" VerticalAlignment="Center"
+                   Padding="10, 5, 15, 8" />
+            <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"
                     Content="&#xE949;" FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent"
-                    Foreground="#ccc">
+                    Foreground="#E7E5E4">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="Transparent" />
@@ -52,8 +55,8 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Maximize_Click"
-                    FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent" Foreground="#ccc">
+            <Button Grid.Column="3" WindowChrome.IsHitTestVisibleInChrome="True" Click="Maximize_Click"
+                    FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent" Foreground="#E7E5E4">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="Transparent" />
@@ -80,9 +83,9 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <Button Grid.Column="3" Padding="0,15" WindowChrome.IsHitTestVisibleInChrome="True" Click="Close_Click"
+            <Button Grid.Column="4" Padding="0,15" WindowChrome.IsHitTestVisibleInChrome="True" Click="Close_Click"
                     Content="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent"
-                    Foreground="#ccc">
+                    Foreground="#E7E5E4">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <Setter Property="Background" Value="Transparent" />
@@ -105,8 +108,7 @@
                 </Button.Style>
             </Button>
         </Grid>
-
-        <blazor:BlazorWebView x:Name="MainWebView" Grid.Row="1" HostPage="wwwroot/_content/Flagrum.Web/index.html"
+        <blazor:BlazorWebView x:Name="MainWebView" Grid.Row="1" HostPage="{Binding HostPageUri}"
                               Services="{StaticResource services}" Background="#181512">
             <blazor:BlazorWebView.RootComponents>
                 <blazor:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />

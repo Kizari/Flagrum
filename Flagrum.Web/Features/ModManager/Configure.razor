@@ -1,236 +1,261 @@
-﻿@page "/mod/configure/{ListingBase64}"
-@using Flagrum.Core.Extensions
-@using Flagrum.Gfxbin.Btex
-@using Flagrum.Web.Components.Controls.Data
-@using Flagrum.Web.Features.ModManager.Data
+﻿@page "/mod/configure"
 @using Flagrum.Archiver
 @using Flagrum.Archiver.Binmod
 @using Flagrum.Archiver.Binmod.Data
+@using Flagrum.Gfxbin.Btex
+@using Flagrum.Web.Components.Controls.Data
 @using System.IO
+@using Flagrum.Core.Utilities
 
 @inject NavigationManager Navigation
 @inject JSInterop Interop
 @inject Settings Settings
+@inject AppStateService AppState
 
-<div class="p-6">
+<LoadingView Text="@LoadingText"
+             IsLoading="@IsLoading">
+    <div class="p-6">
 
-    <div class="box row p-4">
-        <span class="flex-grow">@Listing.DisplayName</span>
-        <Button Icon="save" Text="Save" OnClick="Save"/>
-        <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
-    </div>
-
-    @if (!HasModelData)
-    {
-        <div class="box row p-4 mt-6">
-            <span class="flex-grow">
-                Select FMD file with your model data
-            </span>
-            <BrowseButton Icon="folder" Text="Browse" OnFileSelected="OnFileSelected"/>
+        <div class="box row p-4">
+            <span class="flex-grow">@Mod.GameMenuTitle</span>
+            <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="!HasModelData"/>
+            <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
         </div>
-    }
-    else
-    {
-        <div class="box row p-4 mt-6">
-            @if (PreviewBase64 != null)
-            {
-                <img style="display:block;width:150px;height:150px;" src="data:image/png;base64, @PreviewBase64"/>
-            }
-            <div class="flex-grow pl-4">
-                <table>
-                    <tr>
-                        <td>UUID:</td>
-                        <td class="pl-3">
-                            <strong>@Modmeta.Uuid</strong>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Mod Directory:</td>
-                        <td class="pl-3">
-                            <strong>@Modmeta.ModDirectoryName</strong>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Model Name:</td>
-                        <td class="pl-3">
-                            <strong>@(Modmeta.ModelName).fbx</strong>
-                        </td>
-                    </tr>
-                </table>
-                <div class="row mt-6">
-                    <BrowseButton Icon="image" Text="Change Image" OnFileSelected="OnImageSelected"/>
-                    <BrowseButton Icon="view_in_ar" Text="Change Model" OnFileSelected="OnModelSelected" CssClass="ml-3"/>
-                    @if (!IsNew)
-                    {
-                        <Button Icon="upload" Text="Upload to Workshop" CssClass="ml-3"/>
-                        <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
-                    }
-                </div>
+
+        @if (!HasModelData)
+        {
+            <div class="box row p-4 mt-6">
+                <span class="flex-grow">
+                    Select FMD file with your model data
+                </span>
+                <BrowseButton Icon="folder"
+                              Text="Browse"
+                              AllowedExtensions=".fmd"
+                              OnFileSelected="OnFileSelected"
+                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
             </div>
-        </div>
-
-        <div class="box mt-6">
-            <EditForm Model="Modmeta">
-                <div class="p-4">
-                    <table class="w-full right-align-all-labels">
+        }
+        else
+        {
+            <div class="box row p-5 mt-6">
+                @if (PreviewBase64 != null)
+                {
+                    <img style="display:block;width:150px;height:150px;" src="data:image/png;base64, @PreviewBase64"/>
+                }
+                <div class="flex-grow pl-6">
+                    <table>
                         <tr>
-                            <td>
-                                <label>TITLE</label>
-                            </td>
-                            <td colspan="7" class="pl-4">
-                                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Modmeta.Title"/>
+                            <td class="pb-1">UUID:</td>
+                            <td class="pb-1 pl-3">
+                                <strong>@Mod.Uuid</strong>
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <label>DESCRIPTION</label>
-                            </td>
-                            <td colspan="7" class="pl-4">
-                                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Modmeta.Description"/>
+                            <td class="pb-1">Mod Directory:</td>
+                            <td class="pb-1 pl-3">
+                                <strong>@Mod.ModDirectoryName</strong>
                             </td>
                         </tr>
                         <tr>
-                            <td class="py-4">
-                                <label>TARGET</label>
+                            <td class="pb-1">Last Updated:</td>
+                            <td class="pb-1 pl-3">
+                                <strong>@(Mod.IsWorkshopMod ? "N/A" : Mod.LastUpdated == default ? "Not on Steam Workshop" : Mod.LastUpdated.ToString("d MMMM yyyy 'at' h:mm tt"))</strong>
                             </td>
-                            <td class="py-4 pl-4" colspan="3">
-                                <EnumSelect @bind-Value="Modmeta.Target"/>
-                            </td>
-                            <td class="py-4">
-                                <label>MAX HP</label>
-                            </td>
-                            <td class="py-4">
-                                <NumberBox @bind-Value="Modmeta.MaxHp"/>
-                            </td>
-                            <td class="py-4">
-                                <label>MAX MP</label>
-                            </td>
-                            <td class="py-4">
-                                <NumberBox @bind-Value="Modmeta.MaxMp"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label>STRENGTH</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Strength"/>
-                            </td>
-                            <td>
-                                <label>VITALITY</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Vitality"/>
-                            </td>
-                            <td>
-                                <label>MAGIC</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Magic"/>
-                            </td>
-                            <td>
-                                <label>SPIRIT</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Spirit"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label>FIRE RES</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Fire"/>
-                            </td>
-                            <td>
-                                <label>ICE RES</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Ice"/>
-                            </td>
-                            <td>
-                                <label>THUNDER RES</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Thunder"/>
-                            </td>
-                            <td>
-                                <label>DARK RES</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Dark"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label>BALLISTIC RES</label>
-                            </td>
-                            <td>
-                                <NumberBox @bind-Value="Modmeta.Ballistic"/>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
                         </tr>
                     </table>
+                    <div class="row mt-10">
+                        @if (!Mod.IsWorkshopMod)
+                        {
+                            <BrowseButton Icon="image"
+                                          Text="Change Image"
+                                          AllowedExtensions=".png"
+                                          OnFileSelected="OnImageSelected"/>
+                            <BrowseButton Icon="view_in_ar"
+                                          Text="Change Model"
+                                          AllowedExtensions=".fmd"
+                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"
+                                          OnFileSelected="OnModelSelected"
+                                          CssClass="ml-3"/>
+                        }
+                        
+                        @if (!IsNew && !Mod.IsWorkshopMod)
+                        {
+                            <Button Icon="upload" Text="Upload to Workshop" OnClick="Upload" CssClass="ml-3"/>
+                            <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
+                        }
+                    </div>
                 </div>
-            </EditForm>
-        </div>
-    }
+            </div>
 
-</div>
+            <div class="box mt-6">
+                <EditForm Model="Mod">
+                    <div class="p-4">
+                        <table class="w-full right-align-all-labels">
+                            <tr>
+                                <td>
+                                    <label>IN-GAME TITLE</label>
+                                </td>
+                                <td colspan="7" class="pl-4">
+                                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.GameMenuTitle"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>DESCRIPTION</label>
+                                </td>
+                                <td colspan="7" class="pl-4">
+                                    <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Mod.Description"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-2">
+                                    <label>TARGET</label>
+                                </td>
+                                <td class="py-2 pl-4" colspan="3">
+                                    <EnumSelect @bind-Value="Mod.Target"/>
+                                </td>
+                                <td class="py-2">
+                                    <label>MAX HP</label>
+                                </td>
+                                <td class="py-2">
+                                    <NumberBox @bind-Value="Mod.MaxHp"/>
+                                </td>
+                                <td class="py-2">
+                                    <label>MAX MP</label>
+                                </td>
+                                <td class="py-2">
+                                    <NumberBox @bind-Value="Mod.MaxMp"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>STRENGTH</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Strength"/>
+                                </td>
+                                <td>
+                                    <label>VITALITY</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Vitality"/>
+                                </td>
+                                <td>
+                                    <label>MAGIC</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Magic"/>
+                                </td>
+                                <td>
+                                    <label>SPIRIT</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Spirit"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>FIRE RES</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Fire"/>
+                                </td>
+                                <td>
+                                    <label>ICE RES</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Ice"/>
+                                </td>
+                                <td>
+                                    <label>THUNDER RES</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Thunder"/>
+                                </td>
+                                <td>
+                                    <label>DARK RES</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Dark"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>BALLISTIC RES</label>
+                                </td>
+                                <td>
+                                    <NumberBox @bind-Value="Mod.Ballistic"/>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </EditForm>
+            </div>
+        }
+    </div>
+</LoadingView>
 
 @code
 {
-    [Parameter]
-    public string ListingBase64 { get; set; }
-
     private Unpacker _unpacker;
 
-    private ModListing Listing { get; set; }
+    private Binmod Mod { get; set; }
     private string PreviewBase64 { get; set; }
-    private Modmeta Modmeta { get; set; }
     private bool IsNew { get; set; }
     private bool HasModelData { get; set; }
     private byte[] ModelData { get; set; }
     private bool ImageHasChanged { get; set; }
+    private string LoadingText { get; set; }
+    private bool IsLoading { get; set; }
 
     protected override void OnInitialized()
     {
-        Listing = ListingBase64.FromBase64String<ModListing>();
+        Mod = AppState.ActiveMod?.Clone();
 
-        if (Listing.FilePath == null)
+        if (Mod == null)
         {
             InitializeNewMod();
         }
         else
         {
-            InitializeExistingMod(Listing.FilePath);
+            InitializeExistingMod();
         }
+    }
+
+    private void SetLoading(string text)
+    {
+        LoadingText = text;
+        IsLoading = true;
+        StateHasChanged();
     }
 
     private void InitializeNewMod()
     {
         IsNew = true;
 
-        var previewImage = File.ReadAllBytes($"{Directory.GetCurrentDirectory()}\\Binmod\\Resources\\preview.png");
+        var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Binmod\\Resources\\preview.png");
         PreviewBase64 = Convert.ToBase64String(previewImage);
+
+        Mod = new Binmod
+        {
+            GameMenuTitle = "New Mod",
+            Uuid = Guid.NewGuid().ToString(),
+            PreviewBytes = previewImage
+        };
+
+        Mod.Path = $"{Settings.ModDirectory}\\{Mod.Uuid}.ffxvbinmod";
     }
 
-    private void InitializeExistingMod(string filePath)
+    private void InitializeExistingMod()
     {
+        PreviewBase64 = Convert.ToBase64String(Mod.PreviewBytes);
         HasModelData = true;
-
-        _unpacker = new Unpacker(filePath);
-
-        var previewImage = _unpacker.UnpackFileByQuery("preview.png.bin");
-        PreviewBase64 = Convert.ToBase64String(previewImage);
-
-        var modmetaBytes = _unpacker.UnpackFileByQuery("index.modmeta");
-        Modmeta = Modmeta.FromBytes(modmetaBytes);
     }
 
     private void Cancel()
@@ -240,15 +265,12 @@
 
     private void OnFileSelected(InMemoryFile file)
     {
-        Modmeta = new Modmeta(
-            file.FileName.ToLower().Split('.')[0].Replace(' ', '_'),
-            file.FileName.Split('.')[0].Replace(" ", ""))
-        {
-            Uuid = Guid.NewGuid().ToString()
-        };
+        Mod.ModDirectoryName = file.FileName.ToLower().Split('.')[0].Replace(' ', '_');
+        Mod.ModelName = file.FileName.Split('.')[0].Replace(" ", "");
 
         ModelData = file.Data;
         HasModelData = true;
+        IsLoading = false;
         StateHasChanged();
     }
 
@@ -261,31 +283,31 @@
 
     private void OnModelSelected(InMemoryFile file)
     {
+        Mod.ModDirectoryName = file.FileName.ToLower().Split('.')[0].Replace(' ', '_');
+        Mod.ModelName = file.FileName.Split('.')[0].Replace(" ", "");
+        
         ModelData = file.Data;
+        StateHasChanged();
     }
 
     private void Delete()
     {
-        var modlist = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
-        var match = modlist.FirstOrDefault(m => m.Path.Contains(Modmeta.Uuid));
-        modlist.Remove(match);
+        SetLoading("Deleting Mod");
 
-        ModlistEntry.ToFile(Settings.BinmodListPath, modlist);
-
-        var path = $"{Settings.ModDirectory}\\{Modmeta.Uuid}.ffxvbinmod";
-        File.Delete(path);
+        AppState.Mods.Remove(AppState.ActiveMod);
+        AppState.UpdateBinmodList();
+        File.Delete(Mod.Path);
 
         Navigation.NavigateTo("/");
     }
 
     private void Save()
     {
-        var outputPath = $"{Settings.ModDirectory}\\{Modmeta.Uuid}.ffxvbinmod";
-
         if (_unpacker != null && ModelData == null)
         {
+            SetLoading("Saving");
             var packer = _unpacker.ToPacker();
-            packer.UpdateFile("index.modmeta", Modmeta.ToBytes());
+            packer.UpdateFile("index.modmeta", Mod.ToModmeta());
 
             if (ImageHasChanged)
             {
@@ -298,32 +320,52 @@
 
                 packer.UpdateFile("preview.png.bin", png);
                 packer.UpdateFile("preview.btex", btex);
+                Mod.PreviewBytes = png;
             }
 
-            packer.WriteToFile(outputPath);
+            packer.WriteToFile(Mod.Path);
+
+            AppState.ActiveMod.UpdateFrom(Mod);
             Navigation.NavigateTo("/");
             return;
         }
 
-        var builder = new BinmodBuilder(Modmeta, Convert.FromBase64String(PreviewBase64));
-        builder.AddFmd(ModelData);
-        builder.WriteToFile(outputPath);
+        SetLoading("Building Mod");
+        BuildAsync();
+    }
 
-        var modList = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
-        var match = modList.FirstOrDefault(m => m.Path == Modmeta.Uuid);
-        if (match == null)
+    private async void BuildAsync()
+    {
+        await Task.Run(() =>
         {
-            modList.Add(new ModlistEntry
+            var builder = new BinmodBuilder(Mod, Convert.FromBase64String(PreviewBase64));
+            builder.AddFmd(ModelData);
+            builder.WriteToFile(Mod.Path);
+            
+            Mod.IsApplyToGame = true;
+
+            if (Mod.Index == 0)
             {
-                Index = modList.Count > 1 ? modList.Max(m => m.Index) + 1 : 100000,
-                IsEnabled = true,
-                IsWorkshopMod = false,
-                Path = $"{Modmeta.Uuid}.ffxvbinmod"
-            });
+                var modList = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
+                Mod.Index = modList.Count > 1 ? modList.Max(m => m.Index) + 1 : 100000;
+            }
 
-            ModlistEntry.ToFile(Settings.BinmodListPath, modList);
-        }
+            if (AppState.ActiveMod == null)
+            {
+                AppState.Mods.Add(Mod);
+            }
+            else
+            {
+                AppState.ActiveMod.UpdateFrom(Mod);
+            }
+            
+            AppState.UpdateBinmodList();
+            Navigation.NavigateTo("/");
+        });
+    }
 
-        Navigation.NavigateTo("/");
+    private void Upload()
+    {
+        Navigation.NavigateTo("/mod/upload");
     }
 }

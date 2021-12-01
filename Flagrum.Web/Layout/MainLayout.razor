@@ -1,13 +1,28 @@
 ﻿@inherits LayoutComponentBase
+@inject AppStateService AppState
+
+@foreach (var mod in AppState.Mods)
+{
+    <style @key="@mod.Uuid">
+        .preview-@mod.Uuid {
+            background-image: url('data:image/png;base64,@Convert.ToBase64String(mod.PreviewBytes)');
+        }
+    </style>
+}
 
 <div class="flex flex-row h-full">
     <MainMenu/>
-    <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto">
-        @Body
+    <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
     </div>
 </div>
 
 @code
 {
-
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
 }
