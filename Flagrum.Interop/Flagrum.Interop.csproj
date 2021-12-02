@@ -28,8 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Archiver\Flagrum.Archiver.csproj" />
-        <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj" />
+      <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

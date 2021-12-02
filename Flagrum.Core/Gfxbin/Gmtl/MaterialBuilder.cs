@@ -35,7 +35,6 @@ public static class MaterialBuilder
         {"BaseColor2_Texture", "white-color.btex"},
         {"BloodTexture_Mask", "white.btex"},
         {"DirtField_mask", "white.btex"},
-        {"DirtTexture_Mask", "white.btex"},
         {"DropsMask_Texture", "white.btex"},
         {"DustColorMaskTex", "white.btex"},
         {"Emissive1_Texture", "black.btex"},
@@ -88,7 +87,7 @@ public static class MaterialBuilder
         List<MaterialInputData> inputs,
         List<MaterialTextureData> textures)
     {
-        var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Gmtl\\Templates\\{templateName}.json";
+        var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
         var json = File.ReadAllText(templatePath);
         var material = JsonConvert.DeserializeObject<Material>(json);
 
@@ -129,7 +128,7 @@ public static class MaterialBuilder
 
         if (match == null)
         {
-            throw new ArgumentException($"Texture {name} was not found in material {material.Name}", nameof(name));
+            return;
         }
 
         var dependencyMatch = material.Header.Dependencies.FirstOrDefault(d => d.Path == match.Path);
@@ -147,7 +146,7 @@ public static class MaterialBuilder
 
     public static byte[] GetDefaultTextureData(string name)
     {
-        return File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Gmtl\\Textures\\{name}");
+        return File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\Textures\\{name}");
     }
 }
 

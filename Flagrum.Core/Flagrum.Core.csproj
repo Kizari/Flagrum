@@ -1,11 +1,201 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="CsvHelper" Version="27.2.1" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Resources\preview.btex">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\preview.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\NAMED_HUMAN_SKIN.json" />
+        <Content Include="Resources\Materials\NAMED_HUMAN_SKIN.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\AVATAR_CLOTH.json" />
+        <Content Include="Resources\Materials\AVATAR_CLOTH.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\AVATAR_EYE.json" />
+        <Content Include="Resources\Materials\AVATAR_EYE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\AVATAR_GLASS.json" />
+        <Content Include="Resources\Materials\AVATAR_GLASS.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\AVATAR_HAIR.json" />
+        <Content Include="Resources\Materials\AVATAR_HAIR.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\AVATAR_OUTFIT.json" />
+        <Content Include="Resources\Materials\AVATAR_OUTFIT.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\AVATAR_SKIN.json" />
+        <Content Include="Resources\Materials\AVATAR_SKIN.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\BASIC_MATERIAL.json" />
+        <Content Include="Resources\Materials\BASIC_MATERIAL.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\CAR_BASIC.json" />
+        <Content Include="Resources\Materials\CAR_BASIC.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\CAR_GLASS_EMISSION.json" />
+        <Content Include="Resources\Materials\CAR_GLASS_EMISSION.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\CHOCOBO_BASIC.json" />
+        <Content Include="Resources\Materials\CHOCOBO_BASIC.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\CHOCOBO_LIGHT.json" />
+        <Content Include="Resources\Materials\CHOCOBO_LIGHT.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENEMY_BASIC.json" />
+        <Content Include="Resources\Materials\ENEMY_BASIC.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENEMY_GLASS.json" />
+        <Content Include="Resources\Materials\ENEMY_GLASS.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENEMY_HAIR.json" />
+        <Content Include="Resources\Materials\ENEMY_HAIR.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENEMY_SKIN.json" />
+        <Content Include="Resources\Materials\ENEMY_SKIN.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENVIRONMENT_BASIC.json" />
+        <Content Include="Resources\Materials\ENVIRONMENT_BASIC.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENVIRONMENT_EMISSIVE.json" />
+        <Content Include="Resources\Materials\ENVIRONMENT_EMISSIVE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\ENVIRONMENT_GLASS.json" />
+        <Content Include="Resources\Materials\ENVIRONMENT_GLASS.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\FOOD.json" />
+        <Content Include="Resources\Materials\FOOD.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\HAIRWORKS.json" />
+        <Content Include="Resources\Materials\HAIRWORKS.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\LUCII_PHANTOM.json" />
+        <Content Include="Resources\Materials\LUCII_PHANTOM.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\NAMED_HUMAN_DAMAGE_ALPHA_CLOTH.json" />
+        <Content Include="Resources\Materials\NAMED_HUMAN_DAMAGE_ALPHA_CLOTH.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\NAMED_HUMAN_EYE.json" />
+        <Content Include="Resources\Materials\NAMED_HUMAN_EYE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\NAMED_HUMAN_HAIR.json" />
+        <Content Include="Resources\Materials\NAMED_HUMAN_HAIR.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\NAMED_HUMAN_OUTFIT.json" />
+        <Content Include="Resources\Materials\NAMED_HUMAN_OUTFIT.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\PROP_EMISSIVE.json" />
+        <Content Include="Resources\Materials\PROP_EMISSIVE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\PROP_GLASS.json" />
+        <Content Include="Resources\Materials\PROP_GLASS.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\PUDDING.json" />
+        <Content Include="Resources\Materials\PUDDING.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\REGALIA_BODY.json" />
+        <Content Include="Resources\Materials\REGALIA_BODY.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\REGALIA_EMISSION.json" />
+        <Content Include="Resources\Materials\REGALIA_EMISSION.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\REGALIA_GLASS.json" />
+        <Content Include="Resources\Materials\REGALIA_GLASS.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\REGALIA_INTERIOR.json" />
+        <Content Include="Resources\Materials\REGALIA_INTERIOR.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\REGALIA_TIRE.json" />
+        <Content Include="Resources\Materials\REGALIA_TIRE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\SCOURGE.json" />
+        <Content Include="Resources\Materials\SCOURGE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\UNNAMED_HUMAN_CLOTH.json" />
+        <Content Include="Resources\Materials\UNNAMED_HUMAN_CLOTH.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\UNNAMED_HUMAN_EYE.json" />
+        <Content Include="Resources\Materials\UNNAMED_HUMAN_EYE.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\UNNAMED_HUMAN_HAIR.json" />
+        <Content Include="Resources\Materials\UNNAMED_HUMAN_HAIR.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Materials\UNNAMED_HUMAN_SKIN.json" />
+        <Content Include="Resources\Materials\UNNAMED_HUMAN_SKIN.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Textures\black.btex" />
+        <Content Include="Resources\Textures\black.btex">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Textures\blue.btex" />
+        <Content Include="Resources\Textures\blue.btex">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Textures\teal.btex" />
+        <Content Include="Resources\Textures\teal.btex">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Textures\white.btex" />
+        <Content Include="Resources\Textures\white.btex">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Textures\white-color.btex" />
+        <Content Include="Resources\Textures\white-color.btex">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Gfxbin" />
+    </ItemGroup>
 
 </Project>

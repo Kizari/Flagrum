@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Flagrum.Archiver.Data;
 using Flagrum.Core.Utilities;
 
-namespace Flagrum.Archiver;
+namespace Flagrum.Core.Archive;
 
 public class Unpacker
 {

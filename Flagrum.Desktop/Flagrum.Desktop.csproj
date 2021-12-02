@@ -19,9 +19,9 @@
 
     <ItemGroup>
       <None Remove="flagrumHeader.png" />
-      <Content Include="flagrumHeader.png">
+      <Resource Include="flagrumHeader.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+      </Resource>
     </ItemGroup>
 
 </Project>

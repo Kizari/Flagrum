@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Threading.Tasks;
 using System.Timers;
-using Flagrum.Archiver.Binmod.Data;
+using Flagrum.Core.Archive;
 using Steamworks;
 
 namespace Flagrum.Web.Services;
@@ -10,20 +9,20 @@ namespace Flagrum.Web.Services;
 public class SteamWorkshopService
 {
     private const uint AppId = 637650;
+    private readonly AppId_t _appId;
 
     private readonly JSInterop _interop;
-    private readonly AppId_t _appId;
     private Binmod _activeMod;
+    private CallResult<CreateItemResult_t> _createItemCallback;
     private bool _isInitialized;
     private Action _onCreate;
     private Action _onUpdate;
-    private string _tempPreview;
-    private string _tempDat;
-    private string _tempBinmod;
-    private string _tempDirectory;
-    private CallResult<CreateItemResult_t> _createItemCallback;
     private CallResult<SubmitItemUpdateResult_t> _submitItemUpdateCallback;
-    private Timer _timer;
+    private string _tempBinmod;
+    private string _tempDat;
+    private string _tempDirectory;
+    private string _tempPreview;
+    private readonly Timer _timer;
 
     public SteamWorkshopService(JSInterop interop)
     {
@@ -64,13 +63,13 @@ public class SteamWorkshopService
 
     public void Update(Binmod mod, string changeNote, Action onComplete)
     {
-        File.AppendAllText("C:\\Testing\\log.txt", $"Update called!\r\n");
+        File.AppendAllText("C:\\Testing\\log.txt", "Update called!\r\n");
         _activeMod = mod;
         _onUpdate = onComplete;
 
         if (mod.PreviewBytes.Length > 953673)
         {
-            File.AppendAllText("C:\\Testing\\log.txt", $"Preview file too big!\r\n");
+            File.AppendAllText("C:\\Testing\\log.txt", "Preview file too big!\r\n");
             // TODO: Show alert to user
             return;
         }
@@ -112,7 +111,7 @@ public class SteamWorkshopService
     {
         _timer.Stop();
         File.AppendAllText("C:\\Testing\\log.txt", $"OnCreate called with result {result.m_eResult}\r\n");
-        
+
         if (result.m_eResult == EResult.k_EResultOK)
         {
             _activeMod.IsUploaded = true;
@@ -129,12 +128,12 @@ public class SteamWorkshopService
     {
         _timer.Stop();
         File.AppendAllText("C:\\Testing\\log.txt", $"OnUpdate called with result {result.m_eResult}\r\n");
-        
+
         if (result.m_eResult == EResult.k_EResultOK)
         {
             _activeMod.LastUpdated = DateTime.Now;
             _onUpdate();
-            
+
             File.Delete(_tempPreview);
             File.Delete(_tempBinmod);
             File.Delete(_tempDat);

@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using Flagrum.Archiver.Binmod.Data;
 using Flagrum.Gfxbin.Btex;
 using Flagrum.Gfxbin.Gmdl;
 using Flagrum.Gfxbin.Gmdl.Constructs;
@@ -12,7 +11,7 @@ using Flagrum.Gfxbin.Gmdl.Templates;
 using Flagrum.Gfxbin.Gmtl;
 using Newtonsoft.Json;
 
-namespace Flagrum.Archiver.Binmod;
+namespace Flagrum.Core.Archive;
 
 public enum Boye
 {
@@ -24,10 +23,10 @@ public enum Boye
 
 public class BinmodBuilder
 {
-    private readonly Data.Binmod _mod;
+    private readonly Binmod _mod;
     private readonly Packer _packer;
 
-    public BinmodBuilder(Data.Binmod mod, byte[] previewImage)
+    public BinmodBuilder(Binmod mod, byte[] previewImage)
     {
         _mod = mod;
         _packer = new Packer();

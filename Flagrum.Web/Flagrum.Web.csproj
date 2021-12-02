@@ -30,12 +30,6 @@
 
 
     <ItemGroup>
-      <ProjectReference Include="..\Flagrum.Archiver\Flagrum.Archiver.csproj" />
-      <ProjectReference Include="..\Flagrum.Gfxbin\Flagrum.Gfxbin.csproj" />
-    </ItemGroup>
-
-
-    <ItemGroup>
       <Content Update="wwwroot\app.css">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
@@ -58,6 +52,11 @@
       <Reference Include="Steamworks.NET, Version=15.0.1.0, Culture=neutral, PublicKeyToken=null">
         <HintPath>..\..\..\Users\Kieran\Downloads\Steamworks.NET-Standalone_15.0.1\Windows-x64\Steamworks.NET.dll</HintPath>
       </Reference>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
     </ItemGroup>
 
 </Project>

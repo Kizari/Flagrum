@@ -1,25 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
-namespace Flagrum.Archiver.Binmod.Data;
+namespace Flagrum.Core.Archive;
 
-public class Modmeta
+public enum ModVisibility
 {
-    private Modmeta() { }
+    Public,
+    FriendsOnly,
+    Private,
+    Unlisted
+}
 
-    public Modmeta(string modDirectoryName, string modelName)
-    {
-        ModDirectoryName = modDirectoryName;
-        ModelName = modelName;
-    }
-
-    public string Title { get; set; }
-    public string Name { get; set; }
+public class Binmod
+{
+    public ulong ItemId { get; set; }
+    public int Visibility { get; set; }
+    public byte[] PreviewBytes { get; set; }
+    public string GameMenuTitle { get; set; }
+    public string WorkshopTitle { get; set; }
     public string Description { get; set; }
+    public IList<string> Tags { get; set; }
     public string Uuid { get; set; }
+    public string Path { get; set; }
+    public bool IsUploaded { get; set; }
+    public bool IsWorkshopMod { get; set; }
+    public DateTime LastUpdated { get; set; }
+    public int Index { get; set; }
     public string ModDirectoryName { get; set; }
     public string ModelName { get; set; }
-    public bool IsChecked { get; set; }
     public bool IsApplyToGame { get; set; }
     public int Strength { get; set; }
     public int Vitality { get; set; }
@@ -34,7 +43,7 @@ public class Modmeta
     public int Dark { get; set; }
     public Boye Target { get; set; }
 
-    public static Modmeta FromBytes(byte[] buffer)
+    public static Binmod FromModmetaBytes(byte[] buffer)
     {
         try
         {
@@ -46,18 +55,19 @@ public class Modmeta
             var enumString = lines[5]["type=".Length..].ToCharArray();
             enumString[0] = enumString[0].ToString().ToUpper()[0];
             var target = Enum.Parse<Boye>(enumString);
-            
-            return new Modmeta
+
+            return new Binmod
             {
-                Title = lines[2]["title=".Length..],
+                WorkshopTitle = lines[2]["title=".Length..],
                 ModDirectoryName = tokens[1],
                 ModelName = tokens[2].Split('.')[0],
                 Description = lines[3]["desc=".Length..],
                 Uuid = lines[4]["uuid=".Length..],
                 Target = target,
-                IsChecked = bool.Parse(lines[7]["ischecked=".Length..]),
+                ItemId = ulong.Parse(lines[6]["itemid=".Length..]),
+                IsUploaded = bool.Parse(lines[7]["ischecked=".Length..]),
                 IsApplyToGame = bool.Parse(lines[8]["isapplytogame=".Length..]),
-                Name = lines[11]["name=".Length..],
+                GameMenuTitle = lines[11]["name=".Length..],
                 Strength = int.Parse(lines[13]["strength=".Length..]),
                 Vitality = int.Parse(lines[14]["vitality=".Length..]),
                 Magic = int.Parse(lines[15]["magic=".Length..]),
@@ -77,21 +87,21 @@ public class Modmeta
         }
     }
 
-    public byte[] ToBytes()
+    public byte[] ToModmeta()
     {
         var builder = new StringBuilder();
         builder.AppendLine("[meta]");
         builder.AppendLine("modtype=cloth");
-        builder.AppendLine($"title={Title}");
+        builder.AppendLine($"title={WorkshopTitle}");
         builder.AppendLine($"desc={Description}");
         builder.AppendLine($"uuid={Uuid}");
         builder.AppendLine($"type={Target.ToString().ToLower()}");
-        builder.AppendLine("itemid=0");
-        builder.AppendLine($"ischecked={(IsChecked ? "True" : "False")}");
+        builder.AppendLine($"itemid={ItemId}");
+        builder.AppendLine($"ischecked={(IsWorkshopMod ? "True" : "False")}");
         builder.AppendLine($"isapplytogame={(IsApplyToGame ? "True" : "False")}");
-        builder.AppendLine("itemplace=E_Local");
+        builder.AppendLine($"itemplace={(IsWorkshopMod ? "E_Local" : "E_SteamWorkshop")}");
         builder.AppendLine($"modify_gmdl[0]=mod/{ModDirectoryName}/{ModelName}.fbx");
-        builder.AppendLine($"name={Title}");
+        builder.AppendLine($"name={GameMenuTitle}");
         builder.AppendLine("help=");
         builder.AppendLine($"strength={Strength}");
         builder.AppendLine($"vitality={Vitality}");
@@ -105,5 +115,72 @@ public class Modmeta
         builder.AppendLine($"thunder={Thunder}");
         builder.AppendLine($"dark={Dark}");
         return Encoding.ASCII.GetBytes(builder.ToString());
+    }
+
+    public Binmod Clone()
+    {
+        return new()
+        {
+            ItemId = ItemId,
+            Visibility = Visibility,
+            PreviewBytes = PreviewBytes,
+            GameMenuTitle = GameMenuTitle,
+            WorkshopTitle = WorkshopTitle,
+            Description = Description,
+            Tags = Tags,
+            Uuid = Uuid,
+            Path = Path,
+            IsUploaded = IsUploaded,
+            IsWorkshopMod = IsWorkshopMod,
+            LastUpdated = LastUpdated,
+            Index = Index,
+            ModDirectoryName = ModDirectoryName,
+            ModelName = ModelName,
+            IsApplyToGame = IsApplyToGame,
+            Strength = Strength,
+            Vitality = Vitality,
+            Magic = Magic,
+            Spirit = Spirit,
+            MaxHp = MaxHp,
+            MaxMp = MaxMp,
+            Ballistic = Ballistic,
+            Fire = Fire,
+            Ice = Ice,
+            Thunder = Thunder,
+            Dark = Dark,
+            Target = Target
+        };
+    }
+
+    public void UpdateFrom(Binmod mod)
+    {
+        ItemId = mod.ItemId;
+        Visibility = mod.Visibility;
+        PreviewBytes = mod.PreviewBytes;
+        GameMenuTitle = mod.GameMenuTitle;
+        WorkshopTitle = mod.WorkshopTitle;
+        Description = mod.Description;
+        Tags = mod.Tags;
+        Uuid = mod.Uuid;
+        Path = mod.Path;
+        IsUploaded = mod.IsUploaded;
+        IsWorkshopMod = mod.IsWorkshopMod;
+        LastUpdated = mod.LastUpdated;
+        Index = mod.Index;
+        ModDirectoryName = mod.ModDirectoryName;
+        ModelName = mod.ModelName;
+        IsApplyToGame = mod.IsApplyToGame;
+        Strength = mod.Strength;
+        Vitality = mod.Vitality;
+        Magic = mod.Magic;
+        Spirit = mod.Spirit;
+        MaxHp = mod.MaxHp;
+        MaxMp = mod.MaxMp;
+        Ballistic = mod.Ballistic;
+        Fire = mod.Fire;
+        Ice = mod.Ice;
+        Thunder = mod.Thunder;
+        Dark = mod.Dark;
+        Target = mod.Target;
     }
 }
