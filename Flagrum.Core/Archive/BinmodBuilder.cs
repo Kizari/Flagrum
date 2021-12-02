@@ -101,7 +101,7 @@ public class BinmodBuilder
                     BtexConverter.Convert(tempPathOriginal, tempPath,
                         textureId.ToLower().Contains("normal")
                             ? BtexConverter.TextureType.Normal
-                            : textureId.ToLower().Contains("basecolor")
+                            : textureId.ToLower().Contains("basecolor") || textureId.ToLower().Contains("mrs")
                                 ? BtexConverter.TextureType.Color
                                 : BtexConverter.TextureType.Greyscale);
 
