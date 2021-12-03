@@ -1,5 +1,5 @@
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Vector, kdtree
 
 from .entities import MeshData
 
@@ -79,6 +79,30 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
     mesh_object = bpy.data.objects.new(mesh_data.Name, mesh)
     context.collection.objects.link(mesh_object)
     mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
+
+    # Add normal data as a custom data if present
+    size = len(mesh_data.Normals)
+    if size > 0:
+        print("Custom normal data detected")
+
+        kd = kdtree.KDTree(size)
+        for i in range(size):
+            vertex = mesh.vertices[i]
+            kd.insert(vertex.co, i)
+
+        kd.balance()
+
+        for i in range(size):
+            vertex = vertices[i]
+            for (co, index, distance) in kd.find_range([vertex[0], vertex[1], vertex[2]], 0.001):
+                match = index
+                break
+            normal = mesh_data.Normals[i]
+            tangent = mesh_data.Tangents[i]
+            fcnd = mesh_object.flagrum_custom_normal_data.add()
+            fcnd.vertex_index = match
+            fcnd.normal = [normal.X, normal.Y, normal.Z, normal.W]
+            fcnd.tangent = [tangent.X, tangent.Y, tangent.Z, tangent.W]
 
     # Thanks Sai for the fix here
     layer = bpy.context.view_layer

@@ -27,11 +27,22 @@ def pack_mesh():
             mesh.Name = obj.name
             mesh.Material = _pack_material(obj)
 
+            # Need to preserve the vertex positions of the custom data since the next operations change the indices
+            custom_data = []
+            for item in obj.flagrum_custom_normal_data:
+                vertex = obj.data.vertices[item.vertex_index]
+                custom_data.append((vertex.co, item.normal, item.tangent))
+
             # Clone the mesh so we don't mess with the original
             mesh_copy: Object = obj.copy()
             mesh_copy.data = obj.data.copy()
             bpy.context.collection.objects.link(mesh_copy)
             bpy.context.view_layer.objects.active = mesh_copy
+
+            # Make sure all verts are selected otherwise some of the bmesh operations shit themselves
+            for vertex in mesh_copy.data.vertices:
+                vertex.select = True
+
             bpy.ops.object.mode_set(mode='EDIT')
             bmesh_copy = bmesh.from_edit_mesh(mesh_copy.data)
 
@@ -40,7 +51,7 @@ def pack_mesh():
                 if edge.seam:
                     edge.seam = False
 
-            # Select all UV verts as seams_from_islands relies on this to function
+            # Select all verts and UV verts as seams_from_islands relies on this to function
             uv_layer = bmesh_copy.loops.layers.uv.verify()
             for face in bmesh_copy.faces:
                 for loop in face.loops:
@@ -66,7 +77,7 @@ def pack_mesh():
             weight_indices, weight_values = _pack_weight_maps(mesh_copy, reverse_bone_table)
             mesh.WeightIndices = weight_indices
             mesh.WeightValues = weight_values
-            normals, tangents = _pack_normals_and_tangents_v2(mesh_copy)
+            normals, tangents = _pack_normals_and_tangents_v2(mesh_copy, custom_data)
             mesh.Normals = normals
             mesh.Tangents = tangents
             mesh_data.Meshes.append(mesh)
@@ -77,7 +88,7 @@ def pack_mesh():
     return mesh_data
 
 
-def _pack_normals_and_tangents_v2(mesh: Object):
+def _pack_normals_and_tangents_v2(mesh: Object, custom_data):
     mesh_data: Mesh = mesh.data
     normals: list[Normal] = []
     tangents: list[Normal] = []
@@ -132,7 +143,7 @@ def _pack_normals_and_tangents_v2(mesh: Object):
     for i in range(size):
         vertex = mesh_data.vertices[i]
         group = []
-        for (co, index, distance) in kd.find_range(vertex.co, 0):
+        for (co, index, distance) in kd.find_range(vertex.co, 0.001):
             group.append(index)
         if len(group) > 1:
             normal = normals[group[0]]
@@ -142,6 +153,24 @@ def _pack_normals_and_tangents_v2(mesh: Object):
                     index = group[j]
                     normals[index] = normal
                     tangents[index] = tangent
+
+    # Reapply the preserved normals if present
+    for item in custom_data:
+        for (co, index, distance) in kd.find_range(item[0], 0):
+            match = index
+            break
+        normal = Normal()
+        tangent = Normal()
+        normal.X = item[1][0]
+        normal.Y = item[1][1]
+        normal.Z = item[1][2]
+        normal.W = item[1][3]
+        tangent.X = item[2][0]
+        tangent.Y = item[2][1]
+        tangent.Z = item[2][2]
+        tangent.W = item[2][3]
+        normals[match] = normal
+        tangents[match] = tangent
 
     return normals, tangents
 

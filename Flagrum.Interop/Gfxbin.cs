@@ -35,32 +35,66 @@ public static class Gfxbin
                 boneTable = model.BoneHeaders.ToDictionary(b => (int)b.UniqueIndex, b => b.Name);
             }
 
-            var meshData = new Gpubin
+            Gpubin meshData;
+
+            if (gfxbinPath.EndsWith("_$fcnd.gmdl.gfxbin"))
             {
-                BoneTable = boneTable,
-                Meshes = model.MeshObjects.SelectMany(o => o.Meshes
-                    .Where(m => m.LodNear == 0)
-                    .Select(m => new GpubinMesh
-                    {
-                        Name = m.Name,
-                        FaceIndices = m.FaceIndices,
-                        VertexPositions = m.VertexPositions,
-                        ColorMaps = m.ColorMaps,
-                        Normals = m.Normals,
-                        UVMaps = m.UVMaps.Select(m => new UVMap32
+                meshData = new Gpubin
+                {
+                    BoneTable = boneTable,
+                    Meshes = model.MeshObjects.SelectMany(o => o.Meshes
+                        .Where(m => m.LodNear == 0)
+                        .Select(m => new GpubinMesh
                         {
-                            UVs = m.UVs.Select(uv => new UV32
+                            Name = m.Name,
+                            FaceIndices = m.FaceIndices,
+                            VertexPositions = m.VertexPositions,
+                            Normals = m.Normals,
+                            Tangents = m.Tangents,
+                            ColorMaps = m.ColorMaps,
+                            UVMaps = m.UVMaps.Select(m => new UVMap32
                             {
-                                U = (float)uv.U,
-                                V = (float)uv.V
-                            }).ToList()
-                        }).ToList(),
-                        WeightIndices = m.WeightIndices,
-                        WeightValues = m.WeightValues
-                            .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
-                            .ToList()
-                    }))
-            };
+                                UVs = m.UVs.Select(uv => new UV32
+                                {
+                                    U = (float)uv.U,
+                                    V = (float)uv.V
+                                }).ToList()
+                            }).ToList(),
+                            WeightIndices = m.WeightIndices,
+                            WeightValues = m.WeightValues
+                                .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
+                                .ToList()
+                        }))
+                };
+            }
+            else
+            {
+                meshData = new Gpubin
+                {
+                    BoneTable = boneTable,
+                    Meshes = model.MeshObjects.SelectMany(o => o.Meshes
+                        .Where(m => m.LodNear == 0)
+                        .Select(m => new GpubinMesh
+                        {
+                            Name = m.Name,
+                            FaceIndices = m.FaceIndices,
+                            VertexPositions = m.VertexPositions,
+                            ColorMaps = m.ColorMaps,
+                            UVMaps = m.UVMaps.Select(m => new UVMap32
+                            {
+                                UVs = m.UVs.Select(uv => new UV32
+                                {
+                                    U = (float)uv.U,
+                                    V = (float)uv.V
+                                }).ToList()
+                            }).ToList(),
+                            WeightIndices = m.WeightIndices,
+                            WeightValues = m.WeightValues
+                                .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
+                                .ToList()
+                        }))
+                };
+            }
 
             var json = JsonConvert.SerializeObject(meshData);
             var temp = Path.GetTempFileName();

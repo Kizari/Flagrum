@@ -1,10 +1,12 @@
 import bpy
-from bpy.props import PointerProperty
+from bpy.props import PointerProperty, CollectionProperty
 from bpy.utils import register_class, unregister_class
 
+from .flagrum_panel import FlagrumPanel
 from .material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .material_panel import MaterialEditorPanel
 from .menu import ImportOperator, ExportOperator
+from .transfer_fcnd import TransferFCNDOperator, FCNDSettings
 
 bl_info = {
     "name": "GFXBIN format",
@@ -21,7 +23,10 @@ classes = (
     FlagrumMaterialProperty,
     FlagrumMaterialPropertyCollection,
     MaterialEditorPanel,
-    MaterialSettings
+    MaterialSettings,
+    FCNDSettings,
+    TransferFCNDOperator,
+    FlagrumPanel
 )
 
 
@@ -41,6 +46,7 @@ def register():
     bpy.types.TOPBAR_MT_file_import.append(import_menu_item)
     bpy.types.TOPBAR_MT_file_export.append(export_menu_item)
     bpy.types.Object.flagrum_material = PointerProperty(type=MaterialSettings)
+    bpy.types.Object.flagrum_custom_normal_data = CollectionProperty(type=FCNDSettings)
 
 
 def unregister():
