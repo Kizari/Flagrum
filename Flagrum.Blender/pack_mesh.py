@@ -1,7 +1,7 @@
 ﻿import bmesh
 import bpy
 from bpy.types import Object, Mesh
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Vector, kdtree
 
 from .entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
 from .material_data import original_name_dictionary
@@ -66,7 +66,7 @@ def pack_mesh():
             weight_indices, weight_values = _pack_weight_maps(mesh_copy, reverse_bone_table)
             mesh.WeightIndices = weight_indices
             mesh.WeightValues = weight_values
-            normals, tangents = _pack_normals_and_tangents(mesh_copy)
+            normals, tangents = _pack_normals_and_tangents_v2(mesh_copy)
             mesh.Normals = normals
             mesh.Tangents = tangents
             mesh_data.Meshes.append(mesh)
@@ -75,6 +75,75 @@ def pack_mesh():
             bpy.data.objects.remove(mesh_copy, do_unlink=True)
 
     return mesh_data
+
+
+def _pack_normals_and_tangents_v2(mesh: Object):
+    mesh_data: Mesh = mesh.data
+    normals: list[Normal] = []
+    tangents: list[Normal] = []
+
+    mesh_data.use_auto_smooth = True
+    mesh_data.normals_split_custom_set_from_vertices([vertex.normal for vertex in mesh_data.vertices])
+
+    try:
+        mesh_data.calc_tangents()
+    except:
+        pass
+
+    normals_dict = {}
+    tangents_dict = {}
+    bitangents_dict = {}
+
+    for loop in mesh_data.loops:
+        if loop.vertex_index not in normals_dict:
+            normals_dict[loop.vertex_index] = []
+            tangents_dict[loop.vertex_index] = []
+            bitangents_dict[loop.vertex_index] = []
+
+        normals_dict[loop.vertex_index].append(loop.normal)
+        tangents_dict[loop.vertex_index].append(loop.tangent)
+        bitangents_dict[loop.vertex_index].append(int(loop.bitangent_sign))
+
+    size = len(mesh_data.vertices)
+
+    for i in range(size):
+        normal = Normal()
+        tangent = Normal()
+        converted_normal = conversion_matrix @ Vector(normals_dict[i][0])
+        converted_tangent = conversion_matrix @ Vector(tangents_dict[i][0])
+        normal.X = int(converted_normal[0] * 127.0)
+        normal.Y = int(converted_normal[1] * 127.0)
+        normal.Z = int(converted_normal[2] * 127.0)
+        normal.W = 0
+        tangent.X = int(converted_tangent[0] * 127.0)
+        tangent.Y = int(converted_tangent[1] * 127.0)
+        tangent.Z = int(converted_tangent[2] * 127.0)
+        tangent.W = bitangents_dict[i][0] * 127
+        normals.append(normal)
+        tangents.append(tangent)
+
+    kd = kdtree.KDTree(size)
+    for i in range(size):
+        vertex = mesh_data.vertices[i]
+        kd.insert(vertex.co, i)
+
+    kd.balance()
+
+    for i in range(size):
+        vertex = mesh_data.vertices[i]
+        group = []
+        for (co, index, distance) in kd.find_range(vertex.co, 0):
+            group.append(index)
+        if len(group) > 1:
+            normal = normals[group[0]]
+            tangent = tangents[group[0]]
+            for j in range(len(group)):
+                if j > 0:
+                    index = group[j]
+                    normals[index] = normal
+                    tangents[index] = tangent
+
+    return normals, tangents
 
 
 def _pack_normals_and_tangents(mesh: Object):

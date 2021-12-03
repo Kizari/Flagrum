@@ -97,13 +97,23 @@ public class BinmodBuilder
                     var tempPathOriginal = Path.GetTempFileName();
                     File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
 
+                    BtexConverter.TextureType textureType;
+                    if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureType = BtexConverter.TextureType.Normal;
+                    }
+                    else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase) ||
+                             textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureType = BtexConverter.TextureType.Color;
+                    }
+                    else
+                    {
+                        textureType = BtexConverter.TextureType.Greyscale;
+                    }
+
                     var tempPath = Path.GetTempFileName();
-                    BtexConverter.Convert(tempPathOriginal, tempPath,
-                        textureId.ToLower().Contains("normal")
-                            ? BtexConverter.TextureType.Normal
-                            : textureId.ToLower().Contains("basecolor") || textureId.ToLower().Contains("mrs")
-                                ? BtexConverter.TextureType.Color
-                                : BtexConverter.TextureType.Greyscale);
+                    BtexConverter.Convert(tempPathOriginal, tempPath, textureType);
 
                     var btexData = File.ReadAllBytes(tempPath);
                     File.Delete(tempPathOriginal);

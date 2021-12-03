@@ -47,7 +47,31 @@ public class ModlistEntry
         var builder = new StringBuilder();
         foreach (var entry in orderedEntries)
         {
-            builder.Append($"\"{entry.Path}\",");
+            string modPath;
+            if (entry.IsWorkshopMod)
+            {
+                modPath = "";
+                var tokens = entry.Path.Split('\\');
+                for (var i = 0; i < tokens.Length; i++)
+                {
+                    if (i > 0 && i < tokens.Length - 1)
+                    {
+                        modPath += '\\';
+                    }
+                    else if (i > 0)
+                    {
+                        modPath += '/';
+                    }
+
+                    modPath += tokens[i];
+                }
+            }
+            else
+            {
+                modPath = entry.Path.Split('\\').Last();
+            }
+
+            builder.Append($"\"{modPath}\",");
             builder.Append($"\"{(entry.IsApplyToGame ? "True" : "False")}\",");
             builder.Append($"\"{entry.Index}\",");
             builder.Append($"\"{(entry.IsWorkshopMod ? "True" : "False")}\"");
