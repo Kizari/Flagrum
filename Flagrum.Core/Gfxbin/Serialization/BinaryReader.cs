@@ -534,7 +534,7 @@ public class BinaryReader
             return string.Empty;
         }
 
-        var result = Encoding.ASCII.GetString(_buffer, _position, length - 1);
+        var result = Encoding.UTF8.GetString(_buffer, _position, length - 1);
 
         _position += length;
         return result;
@@ -544,7 +544,7 @@ public class BinaryReader
     {
         var pathFormat = (TypeFormat)(byte)Read();
         var length = _buffer[_position];
-        var result = Encoding.ASCII.GetString(_buffer, _position + 1, length - 1);
+        var result = Encoding.UTF8.GetString(_buffer, _position + 1, length - 1);
 
         _position += length + 1;
         return result;

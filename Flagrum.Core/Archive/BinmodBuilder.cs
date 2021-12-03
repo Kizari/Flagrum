@@ -65,7 +65,7 @@ public class BinmodBuilder
         var stream = dataEntry.Open();
         stream.CopyTo(dataStream);
 
-        var json = Encoding.ASCII.GetString(dataStream.ToArray());
+        var json = Encoding.UTF8.GetString(dataStream.ToArray());
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
 
         var gameAssets = new List<string>();
@@ -94,33 +94,46 @@ public class BinmodBuilder
                     var tempStream = entry.Open();
                     tempStream.CopyTo(textureStream);
 
-                    var tempPathOriginal = Path.GetTempFileName();
-                    File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
+                    var fileName = filePath.Split('/', '\\').Last();
+                    var extension = fileName.Split('.').Last();
+                    string btexFileName;
+                    byte[] btexData;
 
-                    BtexConverter.TextureType textureType;
-                    if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
+                    if (extension.ToLower() == "btex")
                     {
-                        textureType = BtexConverter.TextureType.Normal;
-                    }
-                    else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase) ||
-                             textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
-                    {
-                        textureType = BtexConverter.TextureType.Color;
+                        btexFileName = fileName;
+                        btexData = textureStream.ToArray();
                     }
                     else
                     {
-                        textureType = BtexConverter.TextureType.Greyscale;
+                        var tempPathOriginal = Path.GetTempFileName();
+                        File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
+
+                        BtexConverter.TextureType textureType;
+                        if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
+                        {
+                            textureType = BtexConverter.TextureType.Normal;
+                        }
+                        else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase) ||
+                                 textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            textureType = BtexConverter.TextureType.Color;
+                        }
+                        else
+                        {
+                            textureType = BtexConverter.TextureType.Greyscale;
+                        }
+
+                        var tempPath = Path.GetTempFileName();
+                        BtexConverter.Convert(tempPathOriginal, tempPath, textureType);
+
+                        btexData = File.ReadAllBytes(tempPath);
+                        File.Delete(tempPathOriginal);
+                        File.Delete(tempPath);
+
+                        btexFileName = fileName.Replace($".{extension}", ".btex");
                     }
 
-                    var tempPath = Path.GetTempFileName();
-                    BtexConverter.Convert(tempPathOriginal, tempPath, textureType);
-
-                    var btexData = File.ReadAllBytes(tempPath);
-                    File.Delete(tempPathOriginal);
-                    File.Delete(tempPath);
-                    var fileName = filePath.Split('/', '\\').Last();
-                    var extension = fileName.Split('.').Last();
-                    var btexFileName = fileName.Replace($".{extension}", ".btex");
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
 
                     mesh.Material.TextureData.Add(new TextureData

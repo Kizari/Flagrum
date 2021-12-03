@@ -38,7 +38,7 @@ public class Modmeta
     {
         try
         {
-            var lines = Encoding.ASCII.GetString(buffer).Split("\r\n");
+            var lines = Encoding.UTF8.GetString(buffer).Split("\r\n");
 
             var modelString = lines[10]["modify_gmdl[0]=".Length..];
             var tokens = modelString.Split('/');
@@ -104,6 +104,6 @@ public class Modmeta
         builder.AppendLine($"ice={Ice}");
         builder.AppendLine($"thunder={Thunder}");
         builder.AppendLine($"dark={Dark}");
-        return Encoding.ASCII.GetBytes(builder.ToString());
+        return Encoding.UTF8.GetBytes(builder.ToString());
     }
 }

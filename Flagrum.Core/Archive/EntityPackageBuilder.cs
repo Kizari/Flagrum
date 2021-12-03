@@ -17,9 +17,9 @@ public class EntityPackageBuilder
 
     public static byte[] BuildExml(string modelName, string modDirectoryName, Boye boye)
     {
-        var modelNameBytes = Encoding.ASCII.GetBytes(modelName);
-        var modDirectoryBytes = Encoding.ASCII.GetBytes(modDirectoryName);
-        var modelNameExtensionBytes = Encoding.ASCII.GetBytes($"{modelName}.fbx");
+        var modelNameBytes = Encoding.UTF8.GetBytes(modelName);
+        var modDirectoryBytes = Encoding.UTF8.GetBytes(modDirectoryName);
+        var modelNameExtensionBytes = Encoding.UTF8.GetBytes($"{modelName}.fbx");
 
         using var stream = new MemoryStream();
         stream.Write(Parts[boye][0]);

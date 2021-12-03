@@ -18,7 +18,7 @@ namespace Flagrum.Gfxbin.Serialization
 
             _map.Add(value, _offset);
 
-            var bytes = Encoding.ASCII.GetBytes(value);
+            var bytes = Encoding.UTF8.GetBytes(value);
             _buffer.AddRange(bytes);
             _buffer.Add(0x00);
 
