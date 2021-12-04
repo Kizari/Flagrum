@@ -17,7 +17,7 @@
 
     [Parameter]
     public Variant Size { get; set; }
-    
+
     [Parameter]
     public int Min { get; set; }
 
@@ -30,7 +30,7 @@
         Variant.Normal => "",
         Variant.Stretch => "width: 100%;",
         _ => ""
-    };
+        };
 
     protected override bool TryParseValueFromString(string value, out int? result, out string validationErrorMessage)
     {
@@ -40,14 +40,14 @@
             validationErrorMessage = null;
             return true;
         }
-        
+
         if (int.TryParse(value, out var parsedInt))
         {
             validationErrorMessage = null;
             result = parsedInt;
             return true;
         }
-        
+
         result = 0;
         validationErrorMessage = "This field must be a numeric value";
         return false;

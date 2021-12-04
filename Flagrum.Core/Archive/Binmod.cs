@@ -120,7 +120,7 @@ public class Binmod
 
     public Binmod Clone()
     {
-        return new()
+        return new Binmod
         {
             ItemId = ItemId,
             Visibility = Visibility,

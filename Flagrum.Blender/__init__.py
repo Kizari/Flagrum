@@ -7,11 +7,11 @@ from .material_panel import MaterialEditorPanel
 from .menu import ImportOperator, ExportOperator
 
 bl_info = {
-    "name": "GFXBIN format",
-    "version": (1, 1, 0),
+    "name": "Flagrum Blender Plugin",
+    "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
-    "description": "Import a Luminous Engine model",
+    "description": "Build mod data for Flagrum",
     "category": "Import-Export",
 }
 
@@ -27,7 +27,7 @@ classes = (
 
 def import_menu_item(self, context):
     self.layout.operator(ImportOperator.bl_idname,
-                         text="Luminous Engine (.gfxbin)")
+                         text="FFXV Model (.gfxbin)")
 
 
 def export_menu_item(self, context):

@@ -1,24 +1,34 @@
-﻿import ctypes
-import json
+﻿import json
+import os
+import subprocess
+import tempfile
 from os.path import dirname, join, splitext
 from types import SimpleNamespace
 from zipfile import ZipFile, ZIP_STORED
 
 from .entities import Gpubin
 
-interop = ctypes.cdll.LoadLibrary(join(dirname(__file__), "lib", "Flagrum.InteropNE.dll"))
-interop.Import.restype = ctypes.c_char_p
-
 
 class Interop:
 
     @staticmethod
     def import_mesh(gfxbin_path):
-        import_path = interop.Import(gfxbin_path)
-        import_file = open(import_path, mode='r')
+        tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
+        flagrum_path = join(dirname(__file__), "lib", "Flagrum.Blender.exe")
+        command = "\"" + flagrum_path + "\" import -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        (output, err) = process.communicate()
+        status = process.wait()
+        print(output)
+        print(err)
+
+        import_file = open(tempfile_path, mode='r')
         import_data = import_file.read()
 
         data: Gpubin = json.loads(import_data, object_hook=lambda d: SimpleNamespace(**d))
+
+        import_file.close()
+        os.remove(tempfile_path)
         return data
 
     @staticmethod
