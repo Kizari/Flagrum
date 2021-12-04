@@ -26,7 +26,7 @@ public class BinmodBuilder
     private readonly Binmod _mod;
     private readonly Packer _packer;
 
-    public BinmodBuilder(Binmod mod, byte[] previewImage)
+    public BinmodBuilder(string btexConverterPath, Binmod mod, byte[] previewImage)
     {
         _mod = mod;
         _packer = new Packer();
@@ -38,7 +38,7 @@ public class BinmodBuilder
         var tempFile = Path.GetTempFileName();
         var tempFile2 = Path.GetTempFileName();
         File.WriteAllBytes(tempFile, previewImage);
-        BtexConverter.Convert(tempFile, tempFile2, BtexConverter.TextureType.Color);
+        BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Color);
         var btex = File.ReadAllBytes(tempFile2);
 
         _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
@@ -55,7 +55,7 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(byte[] fmd)
+    public void AddFmd(string btexConverterPath, byte[] fmd, string gameDataDirectory)
     {
         using var memoryStream = new MemoryStream(fmd);
         using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
@@ -125,7 +125,7 @@ public class BinmodBuilder
                         }
 
                         var tempPath = Path.GetTempFileName();
-                        BtexConverter.Convert(tempPathOriginal, tempPath, textureType);
+                        BtexConverter.Convert(btexConverterPath, tempPathOriginal, tempPath, textureType);
 
                         btexData = File.ReadAllBytes(tempPath);
                         File.Delete(tempPathOriginal);
@@ -184,16 +184,15 @@ public class BinmodBuilder
         AddFile(GetDataPath($"{_mod.ModelName}.gmdl.gfxbin"), gfxData);
         AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
 
-        AddGameAssets(gameAssets.Distinct());
+        AddGameAssets(gameAssets.Distinct(), gameDataDirectory + "\\");
     }
 
     /// <summary>
     ///     Add a copy of a game asset to the archive
     ///     Asset will be read from the EARC and copied to the archive
     /// </summary>
-    public void AddGameAssets(IEnumerable<string> paths)
+    public void AddGameAssets(IEnumerable<string> paths, string dataDirectory)
     {
-        var dataDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Final Fantasy XV\\datas\\";
         var archiveDictionary = new Dictionary<string, List<string>>();
 
         foreach (var uri in paths)

@@ -1,22 +1,25 @@
 ﻿@page "/inspector"
-@using Flagrum.Gfxbin.Gmdl.Components
-@using Flagrum.Web.Components.Controls.Data
 @using Flagrum.Gfxbin.Gmdl
-@using System.Reflection
-@using System.Collections
+@using System.IO
+@using Flagrum.Gfxbin.Gmtl
+@inject IWpfService Wpf
 
 <div class="p-6">
 
-    <div class="box p-4 row">
-        <span class="flex-grow">Select file to inspect</span>
-        <BrowseButton Icon="folder" Text="GFXBIN" OnFileSelected="OnGfxbinSelected"/>
-        <BrowseButton Icon="folder" Text="GPUBIN" OnFileSelected="OnGpubinSelected"/>
+    <div class="row mb-4">
+        <h5 class="font-bold text-grey-300 ml-1 flex-grow">File Inspector</h5>
+        <span class="text-grey-500 text-sm">Currently supports .gmdl.gfxbin, .gmtl.gfxbin, .ffxvbinmod, and .earc</span>
     </div>
 
-    @if (Model != null)
+    <div class="box p-4 row">
+        <span class="flex-grow">Select file to inspect</span>
+        <Button Icon="folder" Text="Browse" OnClick="BrowseClicked" />
+    </div>
+
+    @if (Object != null)
     {
         <div class="box mt-6 p-4">
-            <ObjectInspector Object="Model" />
+            <ObjectInspector Object="Object"/>
         </div>
     }
 
@@ -24,19 +27,40 @@
 
 @code
 {
-    private byte[] _gfxbin;
+    private object Object { get; set; }
 
-    private Model Model { get; set; }
-
-    private void OnGfxbinSelected(InMemoryFile file)
+    private void BrowseClicked()
     {
-        _gfxbin = file.Data;
-    }
+        Wpf.OpenFileDialog(
+            "Game Model (*.gmdl.gfxbin)|*.gmdl.gfxbin|" +
+            "Game Material (*.gmtl.gfxbin)|*.gmtl.gfxbin|" +
+            "Asset Archive (*.earc)|*.earc|" +
+            "FFXV Mod (*.ffxvbinmod)|*.ffxvbinmod",
+            path =>
+            {
+                if (path.EndsWith(".gmdl.gfxbin"))
+                {
+                    var gpubinPath = path.Replace(".gmdl.gfxbin", ".gpubin");
+                    // TODO: Show an error to the user if the gpubin is missing
+                    if (!File.Exists(gpubinPath))
+                    {
+                        return;
+                    }
 
-    private void OnGpubinSelected(InMemoryFile file)
-    {
-        var modelReader = new ModelReader(_gfxbin, file.Data);
-        Model = modelReader.Read();
-        StateHasChanged();
+                    var modelReader = new ModelReader(File.ReadAllBytes(path), File.ReadAllBytes(gpubinPath));
+                    Object = modelReader.Read();
+                }
+                else if (path.EndsWith(".gmtl.gfxbin"))
+                {
+                    var materialReader = new MaterialReader(path);
+                    Object = materialReader.Read();
+                }
+                else if (path.EndsWith(".earc") || path.EndsWith(".ffxvbinmod"))
+                {
+                    // TODO: Implement something here
+                }
+                
+                InvokeAsync(StateHasChanged);
+            });
     }
 }

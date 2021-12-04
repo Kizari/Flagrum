@@ -16,7 +16,7 @@
 
         <div class="box row p-4">
             <span class="flex-grow">@Mod.GameMenuTitle</span>
-            <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="!HasModelData"/>
+            <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!HasModelData || StatsTotal > 100)"/>
             <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
         </div>
 
@@ -38,7 +38,7 @@
             <div class="box row p-5 mt-6">
                 @if (PreviewBase64 != null)
                 {
-                    <img style="display:block;width:150px;height:150px;" src="data:image/png;base64, @PreviewBase64"/>
+                    <img style="display:block;width:150px;height:150px;" src="images/@(ImageName).png"/>
                 }
                 <div class="flex-grow pl-6">
                     <table>
@@ -86,7 +86,7 @@
             </div>
 
             <div class="box mt-6">
-                <EditForm Model="Mod">
+                <EditForm Model="Stats">
                     <div class="p-4">
                         <table class="w-full right-align-all-labels">
                             <tr>
@@ -116,13 +116,13 @@
                                     <label>MAX HP</label>
                                 </td>
                                 <td class="py-2">
-                                    <NumberBox @bind-Value="Mod.MaxHp"/>
+                                    <NumberBox @bind-Value="Stats.MaxHp"/>
                                 </td>
                                 <td class="py-2">
                                     <label>MAX MP</label>
                                 </td>
                                 <td class="py-2">
-                                    <NumberBox @bind-Value="Mod.MaxMp"/>
+                                    <NumberBox @bind-Value="Stats.MaxMp"/>
                                 </td>
                             </tr>
                             <tr>
@@ -130,25 +130,25 @@
                                     <label>STRENGTH</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Strength"/>
+                                    <NumberBox @bind-Value="Stats.Strength"/>
                                 </td>
                                 <td>
                                     <label>VITALITY</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Vitality"/>
+                                    <NumberBox @bind-Value="Stats.Vitality"/>
                                 </td>
                                 <td>
                                     <label>MAGIC</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Magic"/>
+                                    <NumberBox @bind-Value="Stats.Magic"/>
                                 </td>
                                 <td>
                                     <label>SPIRIT</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Spirit"/>
+                                    <NumberBox @bind-Value="Stats.Spirit"/>
                                 </td>
                             </tr>
                             <tr>
@@ -156,25 +156,25 @@
                                     <label>FIRE RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Fire"/>
+                                    <NumberBox @bind-Value="Stats.Fire"/>
                                 </td>
                                 <td>
                                     <label>ICE RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Ice"/>
+                                    <NumberBox @bind-Value="Stats.Ice"/>
                                 </td>
                                 <td>
                                     <label>THUNDER RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Thunder"/>
+                                    <NumberBox @bind-Value="Stats.Thunder"/>
                                 </td>
                                 <td>
                                     <label>DARK RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Dark"/>
+                                    <NumberBox @bind-Value="Stats.Dark"/>
                                 </td>
                             </tr>
                             <tr>
@@ -182,14 +182,16 @@
                                     <label>BALLISTIC RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Mod.Ballistic"/>
+                                    <NumberBox @bind-Value="Stats.Ballistic"/>
                                 </td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td class="pt-2">
+                                    <label class="@(StatsTotal <= 100 ? "" : "text-error")">@StatsTotal/100</label>
+                                </td>
+                                <td colspan="5" class="pl-4 pt-2">
+                                    <div class="bg-black">
+                                        <div class="@(StatsTotal <= 100 ? "bg-accent1-200" : "bg-error")" style="width: @(StatsTotal <= 0 ? "0" : StatsTotal > 100 ? "100" : StatsTotal.ToString())%">&nbsp;</div>
+                                    </div>
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -202,6 +204,7 @@
 @code
 {
     private Binmod Mod { get; set; }
+    private StatsModel Stats { get; set; }
     private string PreviewBase64 { get; set; }
     private bool IsNew { get; set; }
     private bool HasModelData { get; set; }
@@ -209,6 +212,8 @@
     private bool ImageHasChanged { get; set; }
     private string LoadingText { get; set; }
     private bool IsLoading { get; set; }
+    private int StatsTotal { get; set; }
+    private string ImageName { get; set; } = "current_preview";
 
     protected override void OnInitialized()
     {
@@ -222,6 +227,25 @@
         {
             InitializeExistingMod();
         }
+
+        File.WriteAllBytes($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\current_preview.png", Mod.PreviewBytes);
+
+        Stats = new StatsModel(Mod, () =>
+        {
+            StatsTotal = (int)(
+                Stats.MaxHp * 0.2
+                + Stats.MaxMp * 0.2
+                + Stats.Strength * 0.2
+                + Stats.Vitality * 0.2
+                + Stats.Magic * 0.2
+                + Stats.Spirit * 0.2
+                + Stats.Fire
+                + Stats.Ice
+                + Stats.Thunder
+                + Stats.Dark
+                + Stats.Ballistic);
+            StateHasChanged();
+        });
     }
 
     private void SetLoading(string text)
@@ -270,17 +294,40 @@
         StateHasChanged();
     }
 
-    private void OnImageSelected(InMemoryFile file)
+    private async void OnImageSelected(InMemoryFile file)
     {
         PreviewBase64 = Convert.ToBase64String(file.Data);
+        await File.WriteAllBytesAsync($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\current_preview.png", file.Data);
         ImageHasChanged = true;
-        StateHasChanged();
+
+    // This jank is required or the UI won't update the image if the value hasn't changed
+        ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
+
+    // This appears to call weirdly and so needs InvokeAsync or it won't update either
+        await InvokeAsync(StateHasChanged);
     }
 
     private void OnModelSelected(InMemoryFile file)
     {
         Mod.ModDirectoryName = file.FileName.ToLower().Split('.')[0].Replace(' ', '_');
         Mod.ModelName = file.FileName.Split('.')[0].Replace(" ", "");
+
+        if (AppState.Mods.Any(m => m.ModDirectoryName == Mod.ModDirectoryName))
+        {
+            var tokens = Mod.ModDirectoryName.Split('_');
+            var counter = 2;
+            if (!int.TryParse(tokens.Last(), out counter))
+            {
+                Mod.ModDirectoryName += "_2";
+            }
+
+            while (AppState.Mods.Any(m => m.ModDirectoryName == Mod.ModDirectoryName))
+            {
+                counter++;
+                var index = Mod.ModDirectoryName.LastIndexOf('_');
+                Mod.ModDirectoryName = Mod.ModDirectoryName.Substring(index) + counter;
+            }
+        }
 
         ModelData = file.Data;
         IsLoading = false;
@@ -300,10 +347,23 @@
 
     private void Save()
     {
+        File.WriteAllBytes($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\{Mod.Uuid}.png", Convert.FromBase64String(PreviewBase64));
+
         if (ModelData == null)
         {
             SetLoading("Saving");
+            SaveAsync();
+            return;
+        }
 
+        SetLoading("Building Mod");
+        BuildAsync();
+    }
+
+    private async void SaveAsync()
+    {
+        await Task.Run(() =>
+        {
             var unpacker = new Unpacker(Mod.Path);
             var packer = unpacker.ToPacker();
             packer.UpdateFile("index.modmeta", Mod.ToModmeta());
@@ -314,7 +374,7 @@
                 var tempFile2 = Path.GetTempFileName();
                 var png = Convert.FromBase64String(PreviewBase64);
                 File.WriteAllBytes(tempFile, png);
-                BtexConverter.Convert(tempFile, tempFile2, BtexConverter.TextureType.Color);
+                BtexConverter.Convert(Settings.BTexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Color);
                 var btex = File.ReadAllBytes(tempFile2);
 
                 packer.UpdateFile("preview.png.bin", png);
@@ -326,19 +386,15 @@
 
             AppState.ActiveMod.UpdateFrom(Mod);
             Navigation.NavigateTo("/");
-            return;
-        }
-
-        SetLoading("Building Mod");
-        BuildAsync();
+        });
     }
 
     private async void BuildAsync()
     {
         await Task.Run(() =>
         {
-            var builder = new BinmodBuilder(Mod, Convert.FromBase64String(PreviewBase64));
-            builder.AddFmd(ModelData);
+            var builder = new BinmodBuilder(Settings.BTexConverterPath, Mod, Convert.FromBase64String(PreviewBase64));
+            builder.AddFmd(Settings.BTexConverterPath, ModelData, Settings.GameDataDirectory);
             builder.WriteToFile(Mod.Path);
 
             Mod.IsApplyToGame = true;
@@ -366,5 +422,171 @@
     private void Upload()
     {
         Navigation.NavigateTo("/mod/upload");
+    }
+
+    private class StatsModel
+    {
+        private readonly Binmod _mod;
+        private readonly Action _onChange;
+        private int _ballistic;
+
+        private int _dark;
+
+        private int _fire;
+
+        private int _ice;
+
+        private int _magic;
+
+        private int _maxHp;
+
+        private int _maxMp;
+
+        private int _spirit;
+
+        private int _strength;
+
+        private int _thunder;
+
+        private int _vitality;
+
+        public StatsModel(Binmod mod, Action onChange)
+        {
+            _mod = mod;
+            _onChange = onChange;
+
+            _maxHp = mod.MaxHp;
+            _maxMp = mod.MaxMp;
+            _strength = mod.Strength;
+            _vitality = mod.Vitality;
+            _magic = mod.Magic;
+            _spirit = mod.Spirit;
+            _fire = mod.Fire;
+            _ice = mod.Ice;
+            _thunder = mod.Thunder;
+            _dark = mod.Dark;
+            _ballistic = mod.Ballistic;
+        }
+
+        public int MaxHp
+        {
+            get => _maxHp;
+            set
+            {
+                _maxHp = value;
+                _mod.MaxHp = value;
+                _onChange();
+            }
+        }
+
+        public int MaxMp
+        {
+            get => _maxMp;
+            set
+            {
+                _maxMp = value;
+                _mod.MaxMp = value;
+                _onChange();
+            }
+        }
+
+        public int Strength
+        {
+            get => _strength;
+            set
+            {
+                _strength = value;
+                _mod.Strength = value;
+                _onChange();
+            }
+        }
+
+        public int Vitality
+        {
+            get => _vitality;
+            set
+            {
+                _vitality = value;
+                _mod.Vitality = value;
+                _onChange();
+            }
+        }
+
+        public int Magic
+        {
+            get => _magic;
+            set
+            {
+                _magic = value;
+                _mod.Magic = value;
+                _onChange();
+            }
+        }
+
+        public int Spirit
+        {
+            get => _spirit;
+            set
+            {
+                _spirit = value;
+                _mod.Spirit = value;
+                _onChange();
+            }
+        }
+
+        public int Fire
+        {
+            get => _fire;
+            set
+            {
+                _fire = value;
+                _mod.Fire = value;
+                _onChange();
+            }
+        }
+
+        public int Ice
+        {
+            get => _ice;
+            set
+            {
+                _ice = value;
+                _mod.Ice = value;
+                _onChange();
+            }
+        }
+
+        public int Thunder
+        {
+            get => _thunder;
+            set
+            {
+                _thunder = value;
+                _mod.Thunder = value;
+                _onChange();
+            }
+        }
+
+        public int Dark
+        {
+            get => _dark;
+            set
+            {
+                _dark = value;
+                _mod.Dark = value;
+                _onChange();
+            }
+        }
+
+        public int Ballistic
+        {
+            get => _ballistic;
+            set
+            {
+                _ballistic = value;
+                _mod.Ballistic = value;
+                _onChange();
+            }
+        }
     }
 }

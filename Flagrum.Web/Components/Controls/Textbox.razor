@@ -5,6 +5,7 @@
     <textarea rows="@Rows"
            class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
            style="@Style"
+            readonly="IsReadOnly"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput">
     </textarea>
@@ -14,6 +15,7 @@ else
     <input type="text"
            class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
            style="@Style"
+           readonly="IsReadOnly"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput"/>
 }
@@ -32,6 +34,9 @@ else
 
     [Parameter]
     public int Rows { get; set; }
+
+    [Parameter]
+    public bool IsReadOnly { get; set; }
 
     private string Style => Size switch
     {

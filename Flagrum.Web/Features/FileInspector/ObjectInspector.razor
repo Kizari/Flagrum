@@ -46,12 +46,12 @@
                 }
                 else
                 {
-                    @value.ToString()
+                    @value?.ToString()
                 }
             </td>
         </tr>
         
-        @if (isExpandable)
+        @if (isExpandable && IsExpanded)
         {
             if (isEnumerable && !value.GetType().GetTypeInfo().IsArray)
             {
@@ -85,4 +85,6 @@
 {
     [Parameter]
     public object Object { get; set; }
+    
+    private bool IsExpanded { get; set; }
 }

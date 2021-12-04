@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Flagrum.Gfxbin.Btex;
 
@@ -12,17 +11,13 @@ public static class BtexConverter
         Normal
     }
 
-    public static void Convert(string inPath, string outPath, TextureType type)
+    public static void Convert(string btexConverterPath, string inPath, string outPath, TextureType type)
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var btexConverter =
-            $"{appData}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
-
         var process = new Process();
         var startInfo = new ProcessStartInfo
         {
             FileName = "cmd.exe",
-            Arguments = $"/C {btexConverter} {GetArgsForType(type, inPath, outPath)}",
+            Arguments = $"/C {btexConverterPath} {GetArgsForType(type, inPath, outPath)}",
             CreateNoWindow = true,
             UseShellExecute = false
         };

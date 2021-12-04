@@ -28,7 +28,10 @@ module.exports = {
                 900: "#552a35"
             },
             rose: colors.pink,
-            "control": "#FEF3C7"
+            "control": "#FEF3C7",
+            "error": "#7e2020",
+            "black": "#000000",
+            "white": "#ffffff"
         },
         fontFamily: {
             "display": ['"Play"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],

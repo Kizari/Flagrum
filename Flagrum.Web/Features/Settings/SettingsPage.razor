@@ -1,37 +1,120 @@
 ﻿@page "/settings"
 
+@inject Settings Settings
+@inject IWpfService WpfService
+
 <div class="p-6">
-    
-    <EditForm Model="SettingsModel">
-        <div class="box p-4 mb-4 row">
-            <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
-            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="SettingsModel.Path1"></Textbox>
-            <BrowseButton Icon="folder" Text="Browse" CssClass="ml-4"></BrowseButton>
+
+    @if (Warn)
+    {
+        <div class="bg-error mb-6 p-4">
+            <span class="text-white">
+                Flagrum was unable to automatically detect the location of your game files.
+                Please set the paths below.
+            </span>
         </div>
-        
-        <div class="box p-4 mb-4 row">
-            <span class="mr-3" style="width: 250px;">Mod Directory Path</span>
-            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="SettingsModel.Path2"></Textbox>
-            <BrowseButton Icon="folder" Text="Browse" CssClass="ml-4"></BrowseButton>
+    }
+
+    <EditForm Model="Data">
+        <div class="box p-4 mb-4">
+            <div class="row mb-3">
+                <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="GamePathClicked"/>
+            </div>
+            <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe</small>
         </div>
-        
-        <div class="box p-4 row">
-            <span class="mr-3" style="width: 250px;">Steam Workshop Path</span>
-            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="SettingsModel.Path3"></Textbox>
-            <BrowseButton Icon="folder" Text="Browse" CssClass="ml-4"></BrowseButton>
+
+        <div class="box p-4 mb-4">
+            <div class="row mb-3">
+                <span class="mr-3" style="width: 250px;">Binmod List Path</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="BinmodListPathClicked"/>
+            </div>
+            <small class="text-grey-600">Default C:\Users\[USERNAME]\Documents\My Games\FINAL FANTASY XV\Steam\[STEAM_USER_ID]\mod\binmod.list</small>
+        </div>
+
+        <div class="box p-4 mb-4">
+            <div class="row mb-3">
+                <span class="mr-3" style="width: 250px;">Workshop ACF Path</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.WorkshopPath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="WorkshopPathClicked"/>
+            </div>
+            <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</small>
+        </div>
+
+        <div class="box p-4">
+            <div class="row mb-3">
+                <span class="mr-3" style="width: 250px;">BTex Converter Path</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BTexConverterPath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="BTexConverterPathClicked"/>
+            </div>
+            <small class="text-grey-600">Default C:\Users\[USERNAME]\AppData\Local\SquareEnix\FFXVMODTool\LuminousStudio\luminous\sdk\bin\BTexConverter.exe</small>
         </div>
     </EditForm>
-    
+
 </div>
 
 @code
 {
-    private Model SettingsModel { get; set; } = new();
+    [Parameter]
+    public bool Warn { get; set; }
 
-    private class Model
+    private SettingsData Data { get; } = new();
+
+    protected override void OnInitialized()
     {
-        public string Path1 { get; set; }
-        public string Path2 { get; set; }
-        public string Path3 { get; set; }
+        Data.GamePath = Settings.GamePath;
+        Data.WorkshopPath = Settings.WorkshopPath;
+        Data.BinmodListPath = Settings.BinmodListPath;
+        Data.BTexConverterPath = Settings.BTexConverterPath;
+    }
+
+    private void GamePathClicked()
+    {
+        WpfService.OpenFileDialog(
+            "Application (*.exe)|*.exe",
+            path =>
+            {
+                Data.GamePath = path;
+                Settings.SetGamePath(path);
+                InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private void BinmodListPathClicked()
+    {
+        WpfService.OpenFileDialog(
+            "Binmod List (*.list)|*.list",
+            path =>
+            {
+                Data.BinmodListPath = path;
+                Settings.SetBinmodListPath(path);
+                InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private void WorkshopPathClicked()
+    {
+        WpfService.OpenFileDialog(
+            "Workshop Manifest (*.acf)|*.acf",
+            path =>
+            {
+                Data.WorkshopPath = path;
+                Settings.SetWorkshopPath(path);
+                InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private void BTexConverterPathClicked()
+    {
+        WpfService.OpenFileDialog(
+            "Application (*.exe)|*.exe",
+            path =>
+            {
+                Data.BTexConverterPath = path;
+                Settings.SetBTexConverterPath(path);
+                InvokeAsync(StateHasChanged);
+            });
     }
 }

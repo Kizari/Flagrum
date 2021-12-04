@@ -1,35 +1,19 @@
 ﻿@inherits LayoutComponentBase
 @inject AppStateService AppState
-
-@Classes
+@inject Settings Settings
 
 <div class="flex flex-row h-full">
-    <MainMenu/>
-    <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
-        <CascadingValue Value="this">
-            @Body
-        </CascadingValue>
-    </div>
+    @if (Settings.IsReady)
+    {
+        <MainMenu/>
+        <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
+            <CascadingValue Value="this">
+                @Body
+            </CascadingValue>
+        </div>
+    }
+    else
+    {
+        <SettingsPage Warn="true"/>
+    }
 </div>
-
-@code
-{
-    private MarkupString Classes { get; set; }
-
-    public void CallStateHasChanged()
-    {
-        var classes = "<style>";
-
-    @foreach (var mod in AppState.Mods)
-    {
-        classes += $".preview-{mod.Uuid}";
-        classes += "{background-image: url('data:image/png;base64,";
-        classes += Convert.ToBase64String(mod.PreviewBytes);
-        classes += "');}";
-    }
-
-        classes += "</style>";
-        Classes = (MarkupString)classes;
-        StateHasChanged();
-    }
-}

@@ -1,83 +1,177 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using Flagrum.Core.Utilities;
+using Newtonsoft.Json;
 
 namespace Flagrum.Web.Services;
 
+public class SettingsData
+{
+    public string GamePath { get; set; }
+    public string BinmodListPath { get; set; }
+    public string WorkshopPath { get; set; }
+    public string BTexConverterPath { get; set; }
+}
+
 public class Settings
 {
-    private string _binmodListPath;
-    private string _flagrumDirectory;
-    private string _modDirectory;
-    private string _tempDirectory;
-    private string _workshopDirectory;
-
-    public string TempDirectory
+    public Settings()
     {
-        get
+        var imagesDirectory = $"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images";
+        if (!Directory.Exists(imagesDirectory))
         {
-            if (_tempDirectory == null)
-            {
-                _tempDirectory = $"{FlagrumDirectory}\\tmp";
-
-                if (!Directory.Exists(_tempDirectory))
-                {
-                    Directory.CreateDirectory(_tempDirectory);
-                }
-            }
-
-            return _tempDirectory;
+            Directory.CreateDirectory(imagesDirectory);
         }
-    }
 
-    public string FlagrumDirectory
-    {
-        get
+        FlagrumDirectory =
+            $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
+
+        if (!Directory.Exists(FlagrumDirectory))
         {
-            if (_flagrumDirectory == null)
-            {
-                _flagrumDirectory =
-                    $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
-
-                if (!Directory.Exists(_flagrumDirectory))
-                {
-                    Directory.CreateDirectory(_flagrumDirectory);
-                }
-            }
-
-            return _flagrumDirectory;
+            Directory.CreateDirectory(FlagrumDirectory);
         }
-    }
 
-    public string ModDirectory
-    {
-        get
+        SettingsPath = $"{FlagrumDirectory}\\settings.json";
+
+        if (File.Exists(SettingsPath))
         {
-            if (_modDirectory == null)
+            var json = File.ReadAllText(SettingsPath);
+            var settingsData = JsonConvert.DeserializeObject<SettingsData>(json);
+            GamePath = settingsData.GamePath;
+            BinmodListPath = settingsData.BinmodListPath;
+            WorkshopPath = settingsData.WorkshopPath;
+            BTexConverterPath = settingsData.BTexConverterPath;
+        }
+
+        TempDirectory = "FlagrumDirectory\\tmp";
+        if (!Directory.Exists(TempDirectory))
+        {
+            Directory.CreateDirectory(TempDirectory);
+        }
+
+        if (BinmodListPath == null)
+        {
+            var basePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\My Games\\FINAL FANTASY XV\\Steam";
+
+            foreach (var directory in Directory.EnumerateDirectories(basePath))
             {
-                var basePath =
-                    $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\My Games\\FINAL FANTASY XV\\Steam";
-                foreach (var directory in Directory.EnumerateDirectories(basePath))
+                foreach (var subdirectory in Directory.EnumerateDirectories(directory))
                 {
-                    foreach (var subdirectory in Directory.EnumerateDirectories(directory))
+                    if (subdirectory.EndsWith("\\mod"))
                     {
-                        if (subdirectory.EndsWith("\\mod"))
+                        var binmodList = Directory.EnumerateFiles(subdirectory)
+                            .FirstOrDefault(f => f.ToLower().EndsWith("\\binmod.list"));
+
+                        if (binmodList != null)
                         {
-                            _modDirectory = subdirectory;
+                            BinmodListPath = binmodList;
                         }
                     }
                 }
             }
+        }
 
-            return _modDirectory;
+        if (WorkshopPath == null)
+        {
+            var workshopPath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Steam\\steamapps\\workshop\\appworkshop_637650.acf";
+
+            if (File.Exists(workshopPath))
+            {
+                WorkshopPath = workshopPath;
+            }
+        }
+
+        if (GamePath == null)
+        {
+            var gamePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Steam\\steamapps\\common\\Final Fantasy XV\\ffxv_s.exe";
+
+            if (File.Exists(gamePath))
+            {
+                GamePath = gamePath;
+            }
+        }
+
+        if (BTexConverterPath == null)
+        {
+            var btexConverterPath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
+
+            if (File.Exists(btexConverterPath))
+            {
+                BTexConverterPath = btexConverterPath;
+            }
+        }
+
+        CheckIsReady();
+        Save();
+    }
+
+    public bool IsReady { get; set; }
+    public string FlagrumDirectory { get; }
+    public string SettingsPath { get; }
+    public string TempDirectory { get; }
+
+    public string GamePath { get; private set; }
+    public string BinmodListPath { get; private set; }
+    public string WorkshopPath { get; private set; }
+    public string BTexConverterPath { get; private set; }
+
+    public string ModDirectory => $"{Path.GetDirectoryName(BinmodListPath)}";
+    public string WorkshopDirectory => $"{Path.GetDirectoryName(WorkshopPath)}\\content\\637650";
+    public string GameDataDirectory => $"{Path.GetDirectoryName(GamePath)}\\datas";
+
+    public void SetGamePath(string path)
+    {
+        GamePath = path;
+        Save();
+        CheckIsReady();
+    }
+
+    public void SetBinmodListPath(string path)
+    {
+        BinmodListPath = path;
+        Save();
+        CheckIsReady();
+    }
+
+    public void SetWorkshopPath(string path)
+    {
+        WorkshopPath = path;
+        Save();
+        CheckIsReady();
+    }
+
+    public void SetBTexConverterPath(string path)
+    {
+        BTexConverterPath = path;
+        Save();
+        CheckIsReady();
+    }
+
+    private void CheckIsReady()
+    {
+        if (!IsReady)
+        {
+            IsReady = GamePath != null && BinmodListPath != null && WorkshopPath != null && BTexConverterPath != null;
         }
     }
 
-    // TODO: Probably isn't always at this path
-    public string WorkshopDirectory => _workshopDirectory ??=
-        $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Steam\\steamapps\\workshop\\content\\637650";
+    public void Save()
+    {
+        var settingsData = new SettingsData
+        {
+            GamePath = GamePath,
+            WorkshopPath = WorkshopPath,
+            BinmodListPath = BinmodListPath,
+            BTexConverterPath = BTexConverterPath
+        };
 
-    public string BinmodListPath => _binmodListPath ??=
-        $"{ModDirectory}\\binmod.list";
+        File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(settingsData));
+    }
 
     public string GetTempFile()
     {

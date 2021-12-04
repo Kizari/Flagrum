@@ -1,10 +1,12 @@
 ﻿@page "/"
 @using Flagrum.Core.Archive
+@using Flagrum.Core.Utilities
 @using System.IO
 
 @inject NavigationManager Navigation
 @inject Settings Settings
 @inject AppStateService AppState
+@inject ILogger<Index> Logger
 
 <LoadingView Text="Loading Mods"
              IsLoading="IsLoading">
@@ -78,6 +80,7 @@
                                 continue;
                             }
 
+                            mod.Description = mod.Description.Replace("\\n", "\n");
                             mod.IsWorkshopMod = file.Contains(Settings.WorkshopDirectory);
                             mod.IsUploaded = binmodListing.IsWorkshopMod;
                             mod.LastUpdated = default;
@@ -85,6 +88,7 @@
                             mod.IsApplyToGame = binmodListing.IsEnabled;
                             mod.Path = file;
                             mod.PreviewBytes = previewBytes;
+                            File.WriteAllBytes($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\{mod.Uuid}.png", previewBytes);
 
     // TODO: Get tags from a file
                             mod.Tags = new List<string>();
@@ -96,13 +100,12 @@
                     }
                     catch (Exception e)
                     {
-                        continue;
+                        Logger.LogError(e, e.Message);
                     }
                 }
             });
 
             AppState.IsModListInitialized = true;
-            Parent.CallStateHasChanged();
         }
 
         IsLoading = false;
