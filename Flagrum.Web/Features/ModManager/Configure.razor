@@ -156,25 +156,25 @@
                                     <label>FIRE RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Stats.Fire"/>
+                                    <NumberBox Max="100" @bind-Value="Stats.Fire"/>
                                 </td>
                                 <td>
                                     <label>ICE RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Stats.Ice"/>
+                                    <NumberBox Max="100" @bind-Value="Stats.Ice"/>
                                 </td>
                                 <td>
                                     <label>THUNDER RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Stats.Thunder"/>
+                                    <NumberBox Max="100" @bind-Value="Stats.Thunder"/>
                                 </td>
                                 <td>
                                     <label>DARK RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Stats.Dark"/>
+                                    <NumberBox Max="100" @bind-Value="Stats.Dark"/>
                                 </td>
                             </tr>
                             <tr>
@@ -182,7 +182,7 @@
                                     <label>BALLISTIC RES</label>
                                 </td>
                                 <td>
-                                    <NumberBox @bind-Value="Stats.Ballistic"/>
+                                    <NumberBox Max="100" @bind-Value="Stats.Ballistic"/>
                                 </td>
                                 <td class="pt-2">
                                     <label class="@(StatsTotal <= 100 ? "" : "text-error")">@StatsTotal/100</label>
@@ -312,7 +312,7 @@
         Mod.ModDirectoryName = file.FileName.ToLower().Split('.')[0].Replace(' ', '_');
         Mod.ModelName = file.FileName.Split('.')[0].Replace(" ", "");
 
-        if (AppState.Mods.Any(m => m.ModDirectoryName == Mod.ModDirectoryName))
+        if (AppState.Mods.Any(m => m.ModDirectoryName == Mod.ModDirectoryName && m.Uuid != Mod.Uuid))
         {
             var tokens = Mod.ModDirectoryName.Split('_');
             var counter = 2;
@@ -428,27 +428,27 @@
     {
         private readonly Binmod _mod;
         private readonly Action _onChange;
-        private int _ballistic;
+        private int? _ballistic;
 
-        private int _dark;
+        private int? _dark;
 
-        private int _fire;
+        private int? _fire;
 
-        private int _ice;
+        private int? _ice;
 
-        private int _magic;
+        private int? _magic;
 
-        private int _maxHp;
+        private int? _maxHp;
 
-        private int _maxMp;
+        private int? _maxMp;
 
-        private int _spirit;
+        private int? _spirit;
 
-        private int _strength;
+        private int? _strength;
 
-        private int _thunder;
+        private int? _thunder;
 
-        private int _vitality;
+        private int? _vitality;
 
         public StatsModel(Binmod mod, Action onChange)
         {
@@ -468,123 +468,123 @@
             _ballistic = mod.Ballistic;
         }
 
-        public int MaxHp
+        public int? MaxHp
         {
             get => _maxHp;
             set
             {
                 _maxHp = value;
-                _mod.MaxHp = value;
+                _mod.MaxHp = value ?? 0;
                 _onChange();
             }
         }
 
-        public int MaxMp
+        public int? MaxMp
         {
             get => _maxMp;
             set
             {
                 _maxMp = value;
-                _mod.MaxMp = value;
+                _mod.MaxMp = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Strength
+        public int? Strength
         {
             get => _strength;
             set
             {
                 _strength = value;
-                _mod.Strength = value;
+                _mod.Strength = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Vitality
+        public int? Vitality
         {
             get => _vitality;
             set
             {
                 _vitality = value;
-                _mod.Vitality = value;
+                _mod.Vitality = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Magic
+        public int? Magic
         {
             get => _magic;
             set
             {
                 _magic = value;
-                _mod.Magic = value;
+                _mod.Magic = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Spirit
+        public int? Spirit
         {
             get => _spirit;
             set
             {
                 _spirit = value;
-                _mod.Spirit = value;
+                _mod.Spirit = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Fire
+        public int? Fire
         {
             get => _fire;
             set
             {
                 _fire = value;
-                _mod.Fire = value;
+                _mod.Fire = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Ice
+        public int? Ice
         {
             get => _ice;
             set
             {
                 _ice = value;
-                _mod.Ice = value;
+                _mod.Ice = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Thunder
+        public int? Thunder
         {
             get => _thunder;
             set
             {
                 _thunder = value;
-                _mod.Thunder = value;
+                _mod.Thunder = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Dark
+        public int? Dark
         {
             get => _dark;
             set
             {
                 _dark = value;
-                _mod.Dark = value;
+                _mod.Dark = value ?? 0;
                 _onChange();
             }
         }
 
-        public int Ballistic
+        public int? Ballistic
         {
             get => _ballistic;
             set
             {
                 _ballistic = value;
-                _mod.Ballistic = value;
+                _mod.Ballistic = value ?? 0;
                 _onChange();
             }
         }

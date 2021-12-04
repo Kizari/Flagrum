@@ -109,6 +109,11 @@ public class Unpacker
     {
         var hash = ArchiveFile.HeaderHash ^ _header.Hash;
 
+        if ((_header.Flags & (uint)ArchiveFileFlag.Copyguard) > 0)
+        {
+            hash ^= ArchiveHeader.CopyguardHash;
+        }
+
         for (var i = 0; i < _header.FileCount; i++)
         {
             _stream.Seek(_header.FileHeadersOffset + i * ArchiveFile.HeaderSize, SeekOrigin.Begin);

@@ -11,6 +11,7 @@ public enum ArchiveFileFlag : uint
     Autoload = 1,
     Compressed = 2,
     Reference = 4,
+    Copyguard = 8,
     Patched = 16,
     PatchedDeleted = 32,
     Encrypted = 64,

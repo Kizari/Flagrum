@@ -1,7 +1,7 @@
-﻿@inherits InputBase<int>
+﻿@inherits InputBase<int?>
 
 <input type="text"
-       class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
+       class="border m-0 p-2 text-grey-400 rounded @(CurrentValue != null && (CurrentValue < Min || CurrentValue > Max) ? "border-accent2-900 bg-error" : "border-grey-700 bg-dark-600")"
        style="@Style"
        @bind-value="@CurrentValueAsString"
        @bind-value:event="oninput"/>
@@ -17,6 +17,12 @@
 
     [Parameter]
     public Variant Size { get; set; }
+    
+    [Parameter]
+    public int Min { get; set; }
+
+    [Parameter]
+    public int Max { get; set; } = 500;
 
     private string Style => Size switch
     {
@@ -24,15 +30,24 @@
         Variant.Normal => "",
         Variant.Stretch => "width: 100%;",
         _ => ""
-        };
+    };
 
-    protected override bool TryParseValueFromString(string value, out int result, out string validationErrorMessage)
+    protected override bool TryParseValueFromString(string value, out int? result, out string validationErrorMessage)
     {
-        if (int.TryParse(value, out result))
+        if (string.IsNullOrWhiteSpace(value))
         {
+            result = null;
             validationErrorMessage = null;
             return true;
         }
+        
+        if (int.TryParse(value, out var parsedInt))
+        {
+            validationErrorMessage = null;
+            result = parsedInt;
+            return true;
+        }
+        
         result = 0;
         validationErrorMessage = "This field must be a numeric value";
         return false;
