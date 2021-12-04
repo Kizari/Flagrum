@@ -33,7 +33,7 @@
             <td class="pr-2">
                 @if (isExpandable)
                 {
-                    <span class="material-icons text-accent2-900">add_box</span>
+                    <span class="material-icons text-accent2-900 cursor-pointer" @onclick="Toggle">@(IsExpanded ? "indeterminate_check_box" : "add_box")</span>
                 }
             </td>
             <td class="pr-4">
@@ -86,5 +86,11 @@
     [Parameter]
     public object Object { get; set; }
     
-    private bool IsExpanded { get; set; }
+    [Parameter]
+    public bool IsExpanded { get; set; }
+
+    private void Toggle()
+    {
+        IsExpanded = !IsExpanded;
+    }
 }
