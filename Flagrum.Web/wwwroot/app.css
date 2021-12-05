@@ -26438,9 +26438,9 @@ input:checked + .slider:before {
 }
 
 .glow {
-  box-shadow: 0 0 5px 4px #ccffff;
-  -webkit-box-shadow: 0 0 5px 4px #ccffff;
-  -moz-box-shadow: 0 0 5px 4px #ccffff;
+  box-shadow: 0 0 3px 4px #783b4a;
+  -webkit-box-shadow: 0 0 3px 4px #783b4a;
+  -moz-box-shadow: 0 0 3px 4px #783b4a;
 }
 
 .row {

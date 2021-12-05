@@ -49,7 +49,7 @@ public class GpubinPacker
     private void AlignToChunk()
     {
         var currentPosition = _gpubinStream.Position;
-        var alignment = Core.Utilities.Serialization.GetAlignment((uint)currentPosition, ChunkSize);
+        var alignment = Utilities.Serialization.GetAlignment((uint)currentPosition, ChunkSize);
 
         // Only write padding if it isn't already the end of the chunk
         if (alignment - currentPosition != ChunkSize)

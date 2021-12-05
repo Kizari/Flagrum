@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Web.Features.ModManager.Data;
+﻿namespace Flagrum.Web.Features.ModLibrary.Data;
 
 public class ModListing
 {

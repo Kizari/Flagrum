@@ -7,7 +7,6 @@ using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 using Blazored.LocalStorage;
-using Flagrum.Web.Components;
 using Flagrum.Web.Components.Graph;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -18,6 +17,7 @@ namespace Flagrum.Web.Features.SequenceEditor;
 
 public partial class SequenceEditor
 {
+    private string _autosavePath;
     [Inject] private ISyncLocalStorageService LocalStorage { get; set; }
     [Inject] private IJSRuntime JSRuntime { get; set; }
     [Inject] private Services.Settings Settings { get; set; }
@@ -25,8 +25,6 @@ public partial class SequenceEditor
     private Diagram Diagram { get; set; }
 
     private Timer SaveTimer { get; set; }
-
-    private string _autosavePath;
 
     protected override void OnInitialized()
     {
@@ -60,7 +58,7 @@ public partial class SequenceEditor
         {
             json = await File.ReadAllTextAsync(_autosavePath);
         }
-        
+
         if (json != null)
         {
             try

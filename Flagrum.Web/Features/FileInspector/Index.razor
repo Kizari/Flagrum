@@ -8,7 +8,7 @@
 
     <div class="box p-4 row">
         <span class="flex-grow">Select file to inspect</span>
-        <Button Icon="folder" Text="Browse" OnClick="BrowseClicked" />
+        <Button Icon="folder" Text="Browse" OnClick="BrowseClicked"/>
     </div>
 
     @if (Object != null)
@@ -29,14 +29,14 @@
         Wpf.OpenFileDialog(
             "Game Model (*.gmdl.gfxbin)|*.gmdl.gfxbin|" +
             "Game Material (*.gmtl.gfxbin)|*.gmtl.gfxbin", // +
-            //"Asset Archive (*.earc)|*.earc|" +
-            //"FFXV Mod (*.ffxvbinmod)|*.ffxvbinmod",
+    //"Asset Archive (*.earc)|*.earc|" +
+    //"FFXV Mod (*.ffxvbinmod)|*.ffxvbinmod",
             path =>
             {
                 if (path.EndsWith(".gmdl.gfxbin"))
                 {
                     var gpubinPath = path.Replace(".gmdl.gfxbin", ".gpubin");
-                    // TODO: Show an error to the user if the gpubin is missing
+    // TODO: Show an error to the user if the gpubin is missing
                     if (!File.Exists(gpubinPath))
                     {
                         return;
@@ -52,9 +52,9 @@
                 }
                 else if (path.EndsWith(".earc") || path.EndsWith(".ffxvbinmod"))
                 {
-                    // TODO: Implement something here
+    // TODO: Implement something here
                 }
-                
+
                 InvokeAsync(StateHasChanged);
             });
     }

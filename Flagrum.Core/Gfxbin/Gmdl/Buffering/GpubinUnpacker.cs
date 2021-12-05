@@ -7,11 +7,11 @@ namespace Flagrum.Core.Gfxbin.Gmdl.Buffering;
 
 public class GpubinUnpacker
 {
+    private readonly Dictionary<VertexElementFormat, (Type type, int elementCount)> _formatParameters;
     private readonly byte[] _gpubin;
 
     private byte[] _currentBuffer;
     private int _currentBufferPosition;
-    private readonly Dictionary<VertexElementFormat, (Type type, int elementCount)> _formatParameters;
 
     public GpubinUnpacker(byte[] gpubin)
     {
