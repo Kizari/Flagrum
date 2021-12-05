@@ -1,5 +1,5 @@
-﻿@using System.Collections
-@using System.Reflection
+﻿@using System.Reflection
+@using System.Collections
 <table class="w-full" style="max-width: 100%">
     @foreach (var property in Object.GetType().GetProperties())
     {
@@ -11,11 +11,8 @@
         {
             continue;
         }
-        else
-        {
-            value = property.GetValue(Object);
-        }
-        
+        value = property.GetValue(Object);
+
         var count = 0;
         if (isEnumerable)
         {
@@ -28,7 +25,7 @@
                 }
             }
         }
-                    
+
         <tr>
             <td class="pr-2">
                 @if (isExpandable)
@@ -50,7 +47,7 @@
                 }
             </td>
         </tr>
-        
+
         @if (isExpandable)
         {
             if (isEnumerable && !value.GetType().GetTypeInfo().IsArray)
@@ -62,7 +59,7 @@
                         {
                             if (!item.GetType().GetTypeInfo().IsArray)
                             {
-                                <ObjectInspector Object="@item" />
+                                <ObjectInspector Object="@item"/>
                             }
                         }
                     </td>

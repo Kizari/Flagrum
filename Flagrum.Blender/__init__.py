@@ -2,6 +2,7 @@ import bpy
 from bpy.props import PointerProperty, CollectionProperty
 from bpy.utils import register_class, unregister_class
 
+from .custom_normals import UseCustomNormalsOperator
 from .flagrum_panel import FlagrumPanel
 from .material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .material_panel import MaterialEditorPanel
@@ -26,6 +27,7 @@ classes = (
     MaterialSettings,
     FCNDSettings,
     TransferFCNDOperator,
+    UseCustomNormalsOperator,
     FlagrumPanel
 )
 

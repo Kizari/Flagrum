@@ -140,19 +140,19 @@ def _pack_normals_and_tangents_v2(mesh: Object, custom_data):
 
     kd.balance()
 
-    for i in range(size):
-        vertex = mesh_data.vertices[i]
-        group = []
-        for (co, index, distance) in kd.find_range(vertex.co, 0.001):
-            group.append(index)
-        if len(group) > 1:
-            normal = normals[group[0]]
-            tangent = tangents[group[0]]
-            for j in range(len(group)):
-                if j > 0:
-                    index = group[j]
-                    normals[index] = normal
-                    tangents[index] = tangent
+    # for i in range(size):
+    #     vertex = mesh_data.vertices[i]
+    #     group = []
+    #     for (co, index, distance) in kd.find_range(vertex.co, 0.001):
+    #         group.append(index)
+    #     if len(group) > 1:
+    #         normal = normals[group[0]]
+    #         tangent = tangents[group[0]]
+    #         for j in range(len(group)):
+    #             if j > 0:
+    #                 index = group[j]
+    #                 normals[index] = normal
+    #                 tangents[index] = tangent
 
     # Reapply the preserved normals if present
     for item in custom_data:
