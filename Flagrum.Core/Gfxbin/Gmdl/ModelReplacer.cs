@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Flagrum.Gfxbin.Characters;
 using Flagrum.Gfxbin.Gmdl.Components;
@@ -14,9 +13,9 @@ namespace Flagrum.Gfxbin.Gmdl;
 /// </summary>
 public class ModelReplacer
 {
+    private readonly string _boye;
     private readonly Gpubin _gpubin;
     private readonly Model _model;
-    private readonly string _boye;
 
     public ModelReplacer(Model originalModel, Gpubin replacementData, string boye)
     {
