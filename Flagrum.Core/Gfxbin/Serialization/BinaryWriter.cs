@@ -2,10 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Services.Logging;
-using Flagrum.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Serialization;
+namespace Flagrum.Core.Gfxbin.Serialization;
 
 public class BinaryWriter
 {

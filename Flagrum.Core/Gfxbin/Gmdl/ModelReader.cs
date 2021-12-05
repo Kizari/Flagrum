@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using Flagrum.Gfxbin.Gmdl.Buffering;
-using Flagrum.Gfxbin.Gmdl.Components;
-using Flagrum.Gfxbin.Gmdl.Constructs;
-using Flagrum.Gfxbin.Serialization;
+using Flagrum.Core.Gfxbin.Gmdl.Buffering;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Serialization;
 
-namespace Flagrum.Gfxbin.Gmdl;
+namespace Flagrum.Core.Gfxbin.Gmdl;
 
 public class ModelReader
 {

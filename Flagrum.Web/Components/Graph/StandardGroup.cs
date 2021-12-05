@@ -1,11 +1,8 @@
-﻿using Blazor.Diagrams.Core.Models;
+﻿using System.Collections.Generic;
+using Blazor.Diagrams.Core.Models;
 using SQEX.Ebony.Framework.Node;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Flagrum.Web.Components
+namespace Flagrum.Web.Components.Graph
 {
     public class StandardGroup : GroupModel
     {

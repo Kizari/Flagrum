@@ -1,10 +1,8 @@
-﻿using Blazor.Diagrams.Core;
-using Blazor.Diagrams.Core.Geometry;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Blazor.Diagrams.Core;
 
-namespace Flagrum.Web.Components
+namespace Flagrum.Web.Components.Graph
 {
     public class DiagramData
     {

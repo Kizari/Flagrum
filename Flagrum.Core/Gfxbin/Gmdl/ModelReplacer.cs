@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flagrum.Gfxbin.Characters;
-using Flagrum.Gfxbin.Gmdl.Components;
-using Flagrum.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Characters;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Gmdl;
+namespace Flagrum.Core.Gfxbin.Gmdl;
 
 /// <summary>
 ///     Temporary class to handle placing mesh data into an existing GFXBIN
@@ -161,7 +161,7 @@ public class ModelReplacer
                         V = (Half)uv.V
                     }).ToList()
                 }).ToList();
-                
+
                 // Calculate the bounding box for this mesh
                 mesh.Aabb = new Aabb(
                     new Vector3(

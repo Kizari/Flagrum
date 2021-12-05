@@ -4,12 +4,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Templates;
+using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
-using Flagrum.Gfxbin.Btex;
-using Flagrum.Gfxbin.Gmdl;
-using Flagrum.Gfxbin.Gmdl.Constructs;
-using Flagrum.Gfxbin.Gmdl.Templates;
-using Flagrum.Gfxbin.Gmtl;
 using Newtonsoft.Json;
 
 namespace Flagrum.Core.Archive;

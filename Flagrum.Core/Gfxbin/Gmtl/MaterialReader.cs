@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Flagrum.Gfxbin.Gmtl.Data;
-using BinaryReader = Flagrum.Gfxbin.Serialization.BinaryReader;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
+using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader;
 
-namespace Flagrum.Gfxbin.Gmtl;
+namespace Flagrum.Core.Gfxbin.Gmtl;
 
 public class MaterialReader
 {

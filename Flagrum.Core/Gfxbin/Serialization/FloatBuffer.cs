@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Flagrum.Gfxbin.Serialization
+namespace Flagrum.Core.Gfxbin.Serialization
 {
     public class FloatBuffer
     {

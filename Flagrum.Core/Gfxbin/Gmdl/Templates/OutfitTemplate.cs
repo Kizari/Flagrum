@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Flagrum.Core.Gfxbin.Data;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Utilities;
-using Flagrum.Gfxbin.Data;
-using Flagrum.Gfxbin.Gmdl.Components;
-using Flagrum.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Gmdl.Templates;
+namespace Flagrum.Core.Gfxbin.Gmdl.Templates;
 
 public static class OutfitTemplate
 {

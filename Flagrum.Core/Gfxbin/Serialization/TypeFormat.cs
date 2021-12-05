@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Gfxbin.Serialization
+﻿namespace Flagrum.Core.Gfxbin.Serialization
 {
     public enum TypeFormat
     {

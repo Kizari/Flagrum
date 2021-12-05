@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
-using Flagrum.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Serialization;
+namespace Flagrum.Core.Gfxbin.Serialization;
 
 public class BinaryReader
 {

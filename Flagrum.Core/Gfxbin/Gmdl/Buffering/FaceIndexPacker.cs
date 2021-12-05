@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 
-namespace Flagrum.Gfxbin.Gmdl.Buffering;
+namespace Flagrum.Core.Gfxbin.Gmdl.Buffering;
 
 public class FaceIndexPacker<TIndex> where TIndex : struct
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 
-namespace Flagrum.Gfxbin.Serialization
+namespace Flagrum.Core.Gfxbin.Serialization
 {
     public class StringBuffer
     {

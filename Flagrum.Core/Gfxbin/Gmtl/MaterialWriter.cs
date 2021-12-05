@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Flagrum.Gfxbin.Gmtl.Data;
-using Flagrum.Gfxbin.Serialization;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
+using Flagrum.Core.Gfxbin.Serialization;
 
-namespace Flagrum.Gfxbin.Gmtl;
+namespace Flagrum.Core.Gfxbin.Gmtl;
 
 public class MaterialWriter
 {

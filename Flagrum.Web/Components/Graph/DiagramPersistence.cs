@@ -1,16 +1,15 @@
-﻿using Black.Sequence.Action.EventScript;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Black.Sequence.Action.EventScript;
 using Black.Sequence.Actor;
 using Black.Sequence.Control;
 using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 using SQEX.Ebony.Framework.Sequence.Event;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Flagrum.Web.Components
+namespace Flagrum.Web.Components.Graph
 {
     public class DiagramPersistence
     {

@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Gfxbin.Gmdl.Constructs;
+﻿namespace Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
 public struct Normal
 {

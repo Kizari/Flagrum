@@ -1,5 +1,5 @@
-﻿using Flagrum.Gfxbin.Gmdl;
-using Flagrum.Gfxbin.Gmdl.Constructs;
+﻿using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Newtonsoft.Json;
 
 namespace Flagrum.Blender;

@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
-using Flagrum.Gfxbin.Gmdl;
-using Flagrum.Gfxbin.Gmtl;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmtl;
 
 namespace Flagrum.Console;
 

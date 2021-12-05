@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Flagrum.Gfxbin.Btex;
+namespace Flagrum.Core.Gfxbin.Btex;
 
 public static class BtexConverter
 {

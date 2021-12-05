@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Flagrum.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 
-namespace Flagrum.Gfxbin.Characters;
+namespace Flagrum.Core.Gfxbin.Characters;
 
 public class IgnisData
 {

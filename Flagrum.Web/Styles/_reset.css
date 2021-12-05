@@ -40,7 +40,7 @@
 }
 
 .diagram-canvas.grid {
-    background-color: rgb(0, 12, 22);
+    @apply bg-dark-600;
     background-size: 50px 50px;
     background-image: linear-gradient(to right, rgb(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgb(255, 255, 255, 0.05) 1px, transparent 1px)
 }

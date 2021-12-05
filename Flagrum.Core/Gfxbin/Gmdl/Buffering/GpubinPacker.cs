@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using Flagrum.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 
-namespace Flagrum.Gfxbin.Gmdl.Buffering;
+namespace Flagrum.Core.Gfxbin.Gmdl.Buffering;
 
 public class GpubinPacker
 {

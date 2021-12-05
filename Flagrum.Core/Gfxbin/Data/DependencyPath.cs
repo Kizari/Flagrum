@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Gfxbin.Data
+﻿namespace Flagrum.Core.Gfxbin.Data
 {
     public class DependencyPath
     {

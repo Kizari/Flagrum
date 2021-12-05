@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Flagrum.Core.Gfxbin.Serialization;
 using Flagrum.Core.Services.Logging;
-using Flagrum.Gfxbin.Serialization;
 
-namespace Flagrum.Gfxbin.Data;
+namespace Flagrum.Core.Gfxbin.Data;
 
 public class GfxbinHeader
 {

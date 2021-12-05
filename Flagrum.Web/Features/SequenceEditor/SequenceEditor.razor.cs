@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Timers;
 using Blazor.Diagrams.Core;
@@ -7,6 +8,7 @@ using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 using Blazored.LocalStorage;
 using Flagrum.Web.Components;
+using Flagrum.Web.Components.Graph;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -18,13 +20,17 @@ public partial class SequenceEditor
 {
     [Inject] private ISyncLocalStorageService LocalStorage { get; set; }
     [Inject] private IJSRuntime JSRuntime { get; set; }
+    [Inject] private Services.Settings Settings { get; set; }
 
     private Diagram Diagram { get; set; }
 
     private Timer SaveTimer { get; set; }
 
+    private string _autosavePath;
+
     protected override void OnInitialized()
     {
+        _autosavePath = $"{Settings.TempDirectory}\\sequence_autosave.json";
         InitializeSaveTimer();
         Diagram = new Diagram(CreateDiagramOptions());
         Diagram.RegisterModelComponent<StandardNode, StandardNodeRenderer>();
@@ -48,7 +54,13 @@ public partial class SequenceEditor
     private async void LoadData()
     {
         var persistence = new DiagramPersistence();
-        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "SequenceEditorDiagram");
+
+        string json = null;
+        if (File.Exists(_autosavePath))
+        {
+            json = await File.ReadAllTextAsync(_autosavePath);
+        }
+        
         if (json != null)
         {
             try
@@ -73,10 +85,9 @@ public partial class SequenceEditor
         SaveTimer = new Timer(10000);
         SaveTimer.Elapsed += async (sender, args) =>
         {
-            Console.WriteLine("Saved!");
             var diagramData = DiagramData.FromDiagram(Diagram);
             var json = JsonConvert.SerializeObject(diagramData);
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "SequenceEditorDiagram", json);
+            await File.WriteAllTextAsync(_autosavePath, json);
         };
 
         SaveTimer.Start();

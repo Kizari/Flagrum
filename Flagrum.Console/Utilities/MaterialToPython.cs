@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using CsvHelper;
-using Flagrum.Gfxbin.Gmtl;
+using Flagrum.Core.Gfxbin.Gmtl;
 
 namespace Flagrum.Console.Utilities;
 

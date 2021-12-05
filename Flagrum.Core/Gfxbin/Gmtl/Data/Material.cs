@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Flagrum.Gfxbin.Data;
+using Flagrum.Core.Gfxbin.Data;
 
-namespace Flagrum.Gfxbin.Gmtl.Data;
+namespace Flagrum.Core.Gfxbin.Gmtl.Data;
 
 public class Material
 {
