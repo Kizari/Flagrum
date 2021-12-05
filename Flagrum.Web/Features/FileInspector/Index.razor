@@ -6,11 +6,6 @@
 
 <div class="p-6">
 
-    <div class="row mb-4">
-        <h5 class="font-bold text-grey-300 ml-1 flex-grow">File Inspector</h5>
-        <span class="text-grey-500 text-sm">Currently supports .gmdl.gfxbin, .gmtl.gfxbin, .ffxvbinmod, and .earc</span>
-    </div>
-
     <div class="box p-4 row">
         <span class="flex-grow">Select file to inspect</span>
         <Button Icon="folder" Text="Browse" OnClick="BrowseClicked" />
@@ -33,9 +28,9 @@
     {
         Wpf.OpenFileDialog(
             "Game Model (*.gmdl.gfxbin)|*.gmdl.gfxbin|" +
-            "Game Material (*.gmtl.gfxbin)|*.gmtl.gfxbin|" +
-            "Asset Archive (*.earc)|*.earc|" +
-            "FFXV Mod (*.ffxvbinmod)|*.ffxvbinmod",
+            "Game Material (*.gmtl.gfxbin)|*.gmtl.gfxbin", // +
+            //"Asset Archive (*.earc)|*.earc|" +
+            //"FFXV Mod (*.ffxvbinmod)|*.ffxvbinmod",
             path =>
             {
                 if (path.EndsWith(".gmdl.gfxbin"))

@@ -228,7 +228,7 @@
             InitializeExistingMod();
         }
 
-        File.WriteAllBytes($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\current_preview.png", Mod.PreviewBytes);
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
 
         Stats = new StatsModel(Mod, () =>
         {
@@ -286,7 +286,7 @@
     private async void OnImageSelected(InMemoryFile file)
     {
         PreviewBase64 = Convert.ToBase64String(file.Data);
-        await File.WriteAllBytesAsync($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\current_preview.png", file.Data);
+        await File.WriteAllBytesAsync($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", file.Data);
         ImageHasChanged = true;
 
     // This jank is required or the UI won't update the image if the value hasn't changed
@@ -320,7 +320,7 @@
 
     private void Save()
     {
-        File.WriteAllBytes($"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images\\{Mod.Uuid}.png", Convert.FromBase64String(PreviewBase64));
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", Convert.FromBase64String(PreviewBase64));
 
         if (ModelData == null)
         {

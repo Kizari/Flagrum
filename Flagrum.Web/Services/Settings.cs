@@ -18,7 +18,7 @@ public class Settings
 {
     public Settings()
     {
-        var imagesDirectory = $"{IOHelper.GetExecutingDirectory()}\\wwwroot\\images";
+        var imagesDirectory = $"{IOHelper.GetWebRoot()}\\images";
         if (!Directory.Exists(imagesDirectory))
         {
             Directory.CreateDirectory(imagesDirectory);

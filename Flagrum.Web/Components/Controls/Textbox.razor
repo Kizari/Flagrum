@@ -5,7 +5,7 @@
     <textarea rows="@Rows"
            class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
            style="@Style"
-            readonly="IsReadOnly"
+            readonly="@IsReadOnly"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput">
     </textarea>
@@ -15,7 +15,7 @@ else
     <input type="text"
            class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
            style="@Style"
-           readonly="IsReadOnly"
+           readonly="@IsReadOnly"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput"/>
 }
