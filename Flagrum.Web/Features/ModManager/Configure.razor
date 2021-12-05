@@ -29,7 +29,7 @@
                 <BrowseButton Icon="folder"
                               Text="Browse"
                               AllowedExtensions=".fmd"
-                              OnFileSelected="OnFileSelected"
+                              OnFileSelected="OnModelSelected"
                               BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
             </div>
         }
@@ -51,7 +51,7 @@
                         <tr>
                             <td class="pb-1">Mod Directory:</td>
                             <td class="pb-1 pl-3">
-                                <strong>@Mod.ModDirectoryName</strong>
+                                <strong>@($"data://mod/{Mod.ModDirectoryName}/")</strong>
                             </td>
                         </tr>
                         <tr>
@@ -233,17 +233,17 @@
         Stats = new StatsModel(Mod, () =>
         {
             StatsTotal = (int)(
-                Stats.MaxHp * 0.2
-                + Stats.MaxMp * 0.2
-                + Stats.Strength * 0.2
-                + Stats.Vitality * 0.2
-                + Stats.Magic * 0.2
-                + Stats.Spirit * 0.2
-                + Stats.Fire
-                + Stats.Ice
-                + Stats.Thunder
-                + Stats.Dark
-                + Stats.Ballistic);
+                (Stats.MaxHp ?? 0) * 0.2
+                + (Stats.MaxMp ?? 0) * 0.2
+                + (Stats.Strength ?? 0) * 0.2
+                + (Stats.Vitality ?? 0) * 0.2
+                + (Stats.Magic ?? 0) * 0.2
+                + (Stats.Spirit ?? 0) * 0.2
+                + Stats.Fire ?? 0
+                + Stats.Ice ?? 0
+                + Stats.Thunder ?? 0
+                + Stats.Dark ?? 0
+                + Stats.Ballistic ?? 0);
             StateHasChanged();
         });
     }
@@ -283,17 +283,6 @@
         Navigation.NavigateTo("/");
     }
 
-    private void OnFileSelected(InMemoryFile file)
-    {
-        Mod.ModDirectoryName = file.FileName.ToLower().Split('.')[0].Replace(' ', '_');
-        Mod.ModelName = file.FileName.Split('.')[0].Replace(" ", "");
-
-        ModelData = file.Data;
-        HasModelData = true;
-        IsLoading = false;
-        StateHasChanged();
-    }
-
     private async void OnImageSelected(InMemoryFile file)
     {
         PreviewBase64 = Convert.ToBase64String(file.Data);
@@ -309,27 +298,11 @@
 
     private void OnModelSelected(InMemoryFile file)
     {
-        Mod.ModDirectoryName = file.FileName.ToLower().Split('.')[0].Replace(' ', '_');
-        Mod.ModelName = file.FileName.Split('.')[0].Replace(" ", "");
-
-        if (AppState.Mods.Any(m => m.ModDirectoryName == Mod.ModDirectoryName && m.Uuid != Mod.Uuid))
-        {
-            var tokens = Mod.ModDirectoryName.Split('_');
-            var counter = 2;
-            if (!int.TryParse(tokens.Last(), out counter))
-            {
-                Mod.ModDirectoryName += "_2";
-            }
-
-            while (AppState.Mods.Any(m => m.ModDirectoryName == Mod.ModDirectoryName))
-            {
-                counter++;
-                var index = Mod.ModDirectoryName.LastIndexOf('_');
-                Mod.ModDirectoryName = Mod.ModDirectoryName.Substring(index) + counter;
-            }
-        }
+        Mod.ModDirectoryName = Mod.Uuid;
+        Mod.ModelName = $"mod_{Mod.Uuid}";
 
         ModelData = file.Data;
+        HasModelData = true;
         IsLoading = false;
         StateHasChanged();
     }
