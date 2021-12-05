@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Utilities;
 using Flagrum.Gfxbin.Btex;
 using Flagrum.Gfxbin.Gmdl;
 using Flagrum.Gfxbin.Gmdl.Constructs;
@@ -145,9 +146,12 @@ public class BinmodBuilder
                 }
             }
 
+            // This is called now as the original name is used to locate files in the previous step
+            mesh.Name = mesh.Name.ToSafeString();
+
             var material = MaterialBuilder.FromTemplate(
                 mesh.Material.Id,
-                $"{mesh.Name.ToLower()}_mat",
+                $"{mesh.Name}_mat",
                 _mod.ModDirectoryName,
                 mesh.Material.Inputs.Select(p => new MaterialInputData
                 {

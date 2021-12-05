@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Flagrum.Desktop;
+namespace Flagrum.Desktop.Services;
 
 public class ConsoleLoggerConfiguration
 {

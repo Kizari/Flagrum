@@ -2,7 +2,7 @@
 using Flagrum.Web.Services;
 using Microsoft.Win32;
 
-namespace Flagrum.Desktop;
+namespace Flagrum.Desktop.Services;
 
 public class WpfService : IWpfService
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using Flagrum.Desktop.Services;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

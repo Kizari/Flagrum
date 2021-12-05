@@ -299,7 +299,7 @@
     private void OnModelSelected(InMemoryFile file)
     {
         Mod.ModDirectoryName = Mod.Uuid;
-        Mod.ModelName = $"mod_{Mod.Uuid}";
+        Mod.ModelName = file.FileName.Split('\\', '/').Last().Split('.')[0].ToSafeString();
 
         ModelData = file.Data;
         HasModelData = true;
