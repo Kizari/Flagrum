@@ -11,6 +11,7 @@ from .read_armature_data import import_armature_data
 
 
 class ImportOperator(Operator, ImportHelper):
+    """Imports data from a Luminous Engine model"""
     bl_idname = "flagrum.gfxbin_import"
     bl_label = "Import gfxbin"
     filename_ext = ".gfxbin"
@@ -35,6 +36,7 @@ class ImportOperator(Operator, ImportHelper):
 
 
 class ExportOperator(Operator, ExportHelper):
+    """Exports a mod data package for use with Flagrum"""
     bl_idname = "flagrum.gfxbin_export"
     bl_label = "Export to Flagrum"
     filename_ext = ".fmd"

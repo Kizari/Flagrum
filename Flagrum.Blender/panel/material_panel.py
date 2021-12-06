@@ -8,6 +8,7 @@ from .material_data import material_properties
 
 
 class TextureSlotOperator(Operator, ImportHelper):
+    """Select a texture file from the local file system"""
     bl_idname = "flagrum.texture_slot"
     bl_label = "Open"
     filename_ext = ".btex"
@@ -32,6 +33,7 @@ class TextureSlotOperator(Operator, ImportHelper):
 
 
 class ClearTextureOperator(Operator):
+    """Clears the current texture from the corresponding texture slot"""
     bl_idname = "flagrum.clear_texture"
     bl_label = "Clear"
 
@@ -49,6 +51,7 @@ class ClearTextureOperator(Operator):
 
 
 class MaterialResetOperator(Operator):
+    """Resets all material properties to their default values"""
     bl_idname = "flagrum.material_reset"
     bl_label = "Reset to Defaults"
 
