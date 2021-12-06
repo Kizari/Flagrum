@@ -7,11 +7,11 @@ from .material_panel import MaterialEditorPanel
 from .menu import ImportOperator, ExportOperator
 
 bl_info = {
-    "name": "Flagrum Blender Plugin",
+    "name": "Flagrum",
     "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
-    "description": "Build mod data for Flagrum",
+    "description": "Blender add-on for Flagrum",
     "category": "Import-Export",
 }
 
