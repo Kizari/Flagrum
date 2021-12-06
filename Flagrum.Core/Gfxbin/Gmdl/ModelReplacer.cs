@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Flagrum.Gfxbin.Characters;
-using Flagrum.Gfxbin.Gmdl.Components;
-using Flagrum.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Characters;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Gmdl;
+namespace Flagrum.Core.Gfxbin.Gmdl;
 
 /// <summary>
 ///     Temporary class to handle placing mesh data into an existing GFXBIN
@@ -14,9 +13,9 @@ namespace Flagrum.Gfxbin.Gmdl;
 /// </summary>
 public class ModelReplacer
 {
+    private readonly string _boye;
     private readonly Gpubin _gpubin;
     private readonly Model _model;
-    private readonly string _boye;
 
     public ModelReplacer(Model originalModel, Gpubin replacementData, string boye)
     {
@@ -151,8 +150,6 @@ public class ModelReplacer
                 mesh.VertexPositions = match.VertexPositions;
                 mesh.ColorMaps = match.ColorMaps;
                 mesh.WeightIndices = match.WeightIndices;
-
-                // Convert weights back to bytes as JSON.NET doesn't handle byte numbers well
                 mesh.WeightValues = weightValues;
 
                 // Convert the UV coords back to half-precision floats
@@ -164,6 +161,32 @@ public class ModelReplacer
                         V = (Half)uv.V
                     }).ToList()
                 }).ToList();
+
+                // Calculate the bounding box for this mesh
+                mesh.Aabb = new Aabb(
+                    new Vector3(
+                        mesh.VertexPositions.Min(v => v.X),
+                        mesh.VertexPositions.Min(v => v.Y),
+                        mesh.VertexPositions.Min(v => v.Z)),
+                    new Vector3(
+                        mesh.VertexPositions.Max(v => v.X),
+                        mesh.VertexPositions.Max(v => v.Y),
+                        mesh.VertexPositions.Max(v => v.Z)
+                    )
+                );
+
+                var center = new Vector3(
+                    (mesh.Aabb.Min.X + mesh.Aabb.Max.X) / 2,
+                    (mesh.Aabb.Min.Y + mesh.Aabb.Min.Y) / 2,
+                    (mesh.Aabb.Min.Z + mesh.Aabb.Max.Z) / 2
+                );
+
+                mesh.OrientedBB = new OrientedBB(
+                    center,
+                    new Vector3(mesh.Aabb.Max.X - center.X, 0, 0),
+                    new Vector3(0, mesh.Aabb.Max.Y - center.Y, 0),
+                    new Vector3(0, 0, mesh.Aabb.Max.Z - center.Z)
+                );
 
                 // Generate list of Bone IDs used in this mesh
                 var boneIds = new List<uint>();
@@ -188,14 +211,6 @@ public class ModelReplacer
         ushort count = 10000;
         usedIndices = usedIndices.Distinct().ToList();
         var indexMap = usedIndices.ToDictionary(i => i, i => count++);
-
-        // Need to hardcode this index to prevent Noct's finger from deforming incorrectly
-        // Presuming this is because this bone is assigned this index on another one of his models
-        var lucii = _gpubin.BoneTable.FirstOrDefault(p => p.Value == "R_Middle1");
-        if (lucii.Value != null)
-        {
-            indexMap[(ushort)lucii.Key] = 341;
-        }
 
         // Need to use indices of preloaded bones to prevent rigging issues
         foreach (var bone in Character.GetPreloadedBones(_boye.ToUpper()))
@@ -264,17 +279,5 @@ public class ModelReplacer
         // }
 
         return _model;
-    }
-
-    private TValue[] FixArraySize<TValue>(TValue[] values, int desiredSize)
-    {
-        if (values.Length < desiredSize)
-        {
-            var newValues = new TValue[desiredSize];
-            Array.Copy(values, 0, newValues, 0, values.Length);
-            return newValues;
-        }
-
-        return values;
     }
 }

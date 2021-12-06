@@ -30,7 +30,7 @@
             <td class="pr-2">
                 @if (isExpandable)
                 {
-                    <span class="material-icons text-accent2-900">add_box</span>
+                    <span class="material-icons text-accent2-900 cursor-pointer" @onclick="Toggle">@(IsExpanded ? "indeterminate_check_box" : "add_box")</span>
                 }
             </td>
             <td class="pr-4">
@@ -43,12 +43,12 @@
                 }
                 else
                 {
-                    @value.ToString()
+                    @value?.ToString()
                 }
             </td>
         </tr>
-
-        @if (isExpandable)
+        
+        @if (isExpandable && IsExpanded)
         {
             if (isEnumerable && !value.GetType().GetTypeInfo().IsArray)
             {
@@ -82,4 +82,12 @@
 {
     [Parameter]
     public object Object { get; set; }
+    
+    [Parameter]
+    public bool IsExpanded { get; set; }
+
+    private void Toggle()
+    {
+        IsExpanded = !IsExpanded;
+    }
 }

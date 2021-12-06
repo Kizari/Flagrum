@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Flagrum.Core.Gfxbin.Data;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Utilities;
-using Flagrum.Gfxbin.Data;
-using Flagrum.Gfxbin.Gmdl.Components;
-using Flagrum.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Gmdl.Templates;
+namespace Flagrum.Core.Gfxbin.Gmdl.Templates;
 
 public static class OutfitTemplate
 {
@@ -13,7 +13,8 @@ public static class OutfitTemplate
     {
         var header = BuildHeader(modDirectoryName, modelName, gpubin);
         var allVertices = gpubin.Meshes
-            .SelectMany(m => m.VertexPositions);
+            .SelectMany(m => m.VertexPositions)
+            .ToList();
 
         return new Model
         {
@@ -135,11 +136,6 @@ public static class OutfitTemplate
         return new Mesh
         {
             Name = meshName,
-
-            // For now just using values from a random mod to get things working
-            // NOTE: Unsure what this does but should probably be calculated for the specific mesh
-            Aabb = new Aabb(new Vector3(-0.6734764f, -0.0012439584f, -0.16458078f),
-                new Vector3(0.6734764f, 1.6263884f, 0.22657359f)),
 
             // Not really sure why these appear twice, but not a problem for now
             // These defaults work fine for all outfit meshes for now

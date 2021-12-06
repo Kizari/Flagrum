@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
-using Flagrum.Gfxbin.Gmtl.Data;
 using Newtonsoft.Json;
 
-namespace Flagrum.Gfxbin.Gmtl;
+namespace Flagrum.Core.Gfxbin.Gmtl;
 
 public static class MaterialBuilder
 {

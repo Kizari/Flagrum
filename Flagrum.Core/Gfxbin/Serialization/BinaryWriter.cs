@@ -2,10 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Services.Logging;
-using Flagrum.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Serialization;
+namespace Flagrum.Core.Gfxbin.Serialization;
 
 public class BinaryWriter
 {
@@ -170,7 +170,7 @@ public class BinaryWriter
 
     public void WriteStringX(string value)
     {
-        var byteList = Encoding.ASCII.GetBytes(value).ToList();
+        var byteList = Encoding.UTF8.GetBytes(value).ToList();
         byteList.Add(0x00);
         var bytes = byteList.ToArray();
 
@@ -188,7 +188,7 @@ public class BinaryWriter
 
     public void WriteString8(string value)
     {
-        var byteList = Encoding.ASCII.GetBytes(value).ToList();
+        var byteList = Encoding.UTF8.GetBytes(value).ToList();
         byteList.Add(0x00);
         var bytes = byteList.ToArray();
 
@@ -230,7 +230,7 @@ public class BinaryWriter
             return;
         }
 
-        var stringBytes = Encoding.ASCII.GetBytes(value);
+        var stringBytes = Encoding.UTF8.GetBytes(value);
         var stringBuffer = new byte[stringBytes.Length + 1];
         Array.Copy(stringBytes, stringBuffer, stringBytes.Length);
 

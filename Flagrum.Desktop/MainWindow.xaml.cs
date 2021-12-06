@@ -1,7 +1,11 @@
-﻿using System.Windows;
-using Blazored.LocalStorage;
+﻿using System;
+using System.Windows;
+using Flagrum.Desktop.Services;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 
 namespace Flagrum.Desktop;
 
@@ -18,14 +22,22 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddBlazorWebView();
-        serviceCollection.AddBlazoredLocalStorage();
-        serviceCollection.AddSingleton<Settings>();
-        serviceCollection.AddScoped<SteamWorkshopService>();
-        serviceCollection.AddSingleton<AppStateService>();
-        serviceCollection.AddScoped<JSInterop>();
-        Resources.Add("services", serviceCollection.BuildServiceProvider());
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            builder.AddConfiguration();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, ConsoleLoggerProvider>());
+            LoggerProviderOptions.RegisterProviderOptions<ConsoleLoggerConfiguration, ConsoleLoggerProvider>(
+                builder.Services);
+            Action<ConsoleLoggerConfiguration> configure = c => { };
+            builder.Services.Configure(configure);
+        });
+
+        services.AddScoped<IWpfService, WpfService>();
+        services.AddBlazorWebView();
+        services.AddFlagrum();
+        Resources.Add("services", services.BuildServiceProvider());
 
         InitializeComponent();
     }

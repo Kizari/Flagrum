@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Flagrum.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 
-namespace Flagrum.Gfxbin.Gmdl.Buffering;
+namespace Flagrum.Core.Gfxbin.Gmdl.Buffering;
 
 public class GpuBuffer
 {

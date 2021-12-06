@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Flagrum.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Gmdl.Components;
+namespace Flagrum.Core.Gfxbin.Gmdl.Components;
 
 public enum VertexLayoutType
 {

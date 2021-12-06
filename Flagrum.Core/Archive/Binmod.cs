@@ -47,7 +47,7 @@ public class Binmod
     {
         try
         {
-            var lines = Encoding.ASCII.GetString(buffer).Split("\r\n");
+            var lines = Encoding.UTF8.GetString(buffer).Split("\r\n");
 
             var modelString = lines[10]["modify_gmdl[0]=".Length..];
             var tokens = modelString.Split('/');
@@ -93,7 +93,8 @@ public class Binmod
         builder.AppendLine("[meta]");
         builder.AppendLine("modtype=cloth");
         builder.AppendLine($"title={WorkshopTitle}");
-        builder.AppendLine($"desc={Description}");
+        // Can't append literal newlines to the modmeta or things will break
+        builder.AppendLine($"desc={Description.Replace("\r\n", "\\n").Replace("\n", "\\n")}");
         builder.AppendLine($"uuid={Uuid}");
         builder.AppendLine($"type={Target.ToString().ToLower()}");
         builder.AppendLine($"itemid={ItemId}");
@@ -114,12 +115,12 @@ public class Binmod
         builder.AppendLine($"ice={Ice}");
         builder.AppendLine($"thunder={Thunder}");
         builder.AppendLine($"dark={Dark}");
-        return Encoding.ASCII.GetBytes(builder.ToString());
+        return Encoding.UTF8.GetBytes(builder.ToString());
     }
 
     public Binmod Clone()
     {
-        return new()
+        return new Binmod
         {
             ItemId = ItemId,
             Visibility = Visibility,

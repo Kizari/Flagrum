@@ -6,12 +6,12 @@
 
     <ItemGroup>
         <PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.10" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="Scriban" Version="5.0.0" />
-        <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
-        <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.5" />
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+        <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
     </ItemGroup>
 
     <ItemGroup>
@@ -34,12 +34,6 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <Content Update="wwwroot\interop.js">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Update="wwwroot\favicon.ico">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Update="wwwroot\finalf.ttf">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <Content Update="wwwroot\index.html">

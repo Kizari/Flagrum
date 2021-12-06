@@ -1,5 +1,5 @@
 ﻿<div class="rounded-md @(Node.Selected ? "glow" : "")">
-    <div class="rounded-t-md bg-grey-600 px-4 py-3 font-display">
+    <div class="rounded-t-md bg-grey-700 px-4 py-3 font-display text-grey-200">
         @Node.Title
     </div>
     <div class="rounded-b-md shadow-md bg-grey-800 text-grey-400 text-sm py-1">
@@ -16,7 +16,7 @@
                     <div>
                         @if (input != null)
                         {
-                            <StandardPortRenderer Port="(StandardPort)input" />
+                            <StandardPortRenderer Port="input"/>
                         }
                     </div>
                     <div class="flex-grow pr-3">
@@ -28,7 +28,7 @@
                     <div>
                         @if (output != null)
                         {
-                            <StandardPortRenderer Port="(StandardPort)output" />
+                            <StandardPortRenderer Port="output"/>
                         }
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                                 @field.Name
                             </td>
                             <td class="px-2">
-                                <input type="text" class="w-full bg-grey-900 border border border-dark-700" style="min-width: 100px;" />
+                                <input type="text" class="w-full bg-grey-900 border border border-dark-700" style="min-width: 100px;"/>
                             </td>
                         </tr>
                     }

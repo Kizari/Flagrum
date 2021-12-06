@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using Flagrum.Gfxbin.Gmdl.Components;
-using Flagrum.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
-namespace Flagrum.Gfxbin.Gmdl.Buffering;
+namespace Flagrum.Core.Gfxbin.Gmdl.Buffering;
 
 public class GpubinUnpacker
 {
+    private readonly Dictionary<VertexElementFormat, (Type type, int elementCount)> _formatParameters;
     private readonly byte[] _gpubin;
 
     private byte[] _currentBuffer;
     private int _currentBufferPosition;
-    private readonly Dictionary<VertexElementFormat, (Type type, int elementCount)> _formatParameters;
 
     public GpubinUnpacker(byte[] gpubin)
     {

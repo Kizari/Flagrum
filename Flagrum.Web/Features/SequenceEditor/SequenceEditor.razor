@@ -1,8 +1,10 @@
 ﻿@page "/sequenceeditor"
 
-<CascadingValue Value="Diagram">
+<div class="flex-grow h-full flex flex-row">
     <NodeExplorer/>
-    <div class="flex-grow">
-        <DiagramCanvas Class="grid"/>
+    <div class="flex-grow" style="width: 100%; height: 100%;">
+        <CascadingValue Value="Diagram">
+            <DiagramCanvas Class="grid"/>
+        </CascadingValue>
     </div>
-</CascadingValue>
+</div>

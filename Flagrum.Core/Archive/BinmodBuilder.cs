@@ -4,11 +4,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using Flagrum.Gfxbin.Btex;
-using Flagrum.Gfxbin.Gmdl;
-using Flagrum.Gfxbin.Gmdl.Constructs;
-using Flagrum.Gfxbin.Gmdl.Templates;
-using Flagrum.Gfxbin.Gmtl;
+using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Templates;
+using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
 namespace Flagrum.Core.Archive;
@@ -26,7 +27,7 @@ public class BinmodBuilder
     private readonly Binmod _mod;
     private readonly Packer _packer;
 
-    public BinmodBuilder(Binmod mod, byte[] previewImage)
+    public BinmodBuilder(string btexConverterPath, Binmod mod, byte[] previewImage)
     {
         _mod = mod;
         _packer = new Packer();
@@ -38,7 +39,7 @@ public class BinmodBuilder
         var tempFile = Path.GetTempFileName();
         var tempFile2 = Path.GetTempFileName();
         File.WriteAllBytes(tempFile, previewImage);
-        BtexConverter.Convert(tempFile, tempFile2, BtexConverter.TextureType.Color);
+        BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Color);
         var btex = File.ReadAllBytes(tempFile2);
 
         _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
@@ -55,7 +56,7 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(byte[] fmd)
+    public void AddFmd(string btexConverterPath, byte[] fmd, string gameDataDirectory)
     {
         using var memoryStream = new MemoryStream(fmd);
         using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
@@ -65,7 +66,7 @@ public class BinmodBuilder
         var stream = dataEntry.Open();
         stream.CopyTo(dataStream);
 
-        var json = Encoding.ASCII.GetString(dataStream.ToArray());
+        var json = Encoding.UTF8.GetString(dataStream.ToArray());
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
 
         var gameAssets = new List<string>();
@@ -94,33 +95,46 @@ public class BinmodBuilder
                     var tempStream = entry.Open();
                     tempStream.CopyTo(textureStream);
 
-                    var tempPathOriginal = Path.GetTempFileName();
-                    File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
+                    var fileName = filePath.Split('/', '\\').Last();
+                    var extension = fileName.Split('.').Last();
+                    string btexFileName;
+                    byte[] btexData;
 
-                    BtexConverter.TextureType textureType;
-                    if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
+                    if (extension.ToLower() == "btex")
                     {
-                        textureType = BtexConverter.TextureType.Normal;
-                    }
-                    else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase) ||
-                             textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
-                    {
-                        textureType = BtexConverter.TextureType.Color;
+                        btexFileName = fileName;
+                        btexData = textureStream.ToArray();
                     }
                     else
                     {
-                        textureType = BtexConverter.TextureType.Greyscale;
+                        var tempPathOriginal = Path.GetTempFileName();
+                        File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
+
+                        BtexConverter.TextureType textureType;
+                        if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
+                        {
+                            textureType = BtexConverter.TextureType.Normal;
+                        }
+                        else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase) ||
+                                 textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
+                        {
+                            textureType = BtexConverter.TextureType.Color;
+                        }
+                        else
+                        {
+                            textureType = BtexConverter.TextureType.Greyscale;
+                        }
+
+                        var tempPath = Path.GetTempFileName();
+                        BtexConverter.Convert(btexConverterPath, tempPathOriginal, tempPath, textureType);
+
+                        btexData = File.ReadAllBytes(tempPath);
+                        File.Delete(tempPathOriginal);
+                        File.Delete(tempPath);
+
+                        btexFileName = fileName.Replace($".{extension}", ".btex");
                     }
 
-                    var tempPath = Path.GetTempFileName();
-                    BtexConverter.Convert(tempPathOriginal, tempPath, textureType);
-
-                    var btexData = File.ReadAllBytes(tempPath);
-                    File.Delete(tempPathOriginal);
-                    File.Delete(tempPath);
-                    var fileName = filePath.Split('/', '\\').Last();
-                    var extension = fileName.Split('.').Last();
-                    var btexFileName = fileName.Replace($".{extension}", ".btex");
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
 
                     mesh.Material.TextureData.Add(new TextureData
@@ -132,9 +146,12 @@ public class BinmodBuilder
                 }
             }
 
+            // This is called now as the original name is used to locate files in the previous step
+            mesh.Name = mesh.Name.ToSafeString();
+
             var material = MaterialBuilder.FromTemplate(
                 mesh.Material.Id,
-                $"{mesh.Name.ToLower()}_mat",
+                $"{mesh.Name}_mat",
                 _mod.ModDirectoryName,
                 mesh.Material.Inputs.Select(p => new MaterialInputData
                 {
@@ -171,16 +188,15 @@ public class BinmodBuilder
         AddFile(GetDataPath($"{_mod.ModelName}.gmdl.gfxbin"), gfxData);
         AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
 
-        AddGameAssets(gameAssets.Distinct());
+        AddGameAssets(gameAssets.Distinct(), gameDataDirectory + "\\");
     }
 
     /// <summary>
     ///     Add a copy of a game asset to the archive
     ///     Asset will be read from the EARC and copied to the archive
     /// </summary>
-    public void AddGameAssets(IEnumerable<string> paths)
+    public void AddGameAssets(IEnumerable<string> paths, string dataDirectory)
     {
-        var dataDirectory = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Final Fantasy XV\\datas\\";
         var archiveDictionary = new Dictionary<string, List<string>>();
 
         foreach (var uri in paths)

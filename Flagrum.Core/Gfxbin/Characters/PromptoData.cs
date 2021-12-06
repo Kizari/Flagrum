@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using Flagrum.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 
-namespace Flagrum.Gfxbin.Characters;
+namespace Flagrum.Core.Gfxbin.Characters;
 
-public class PromptoData
+public static class PromptoData
 {
-    public static List<BoneHeader> PreloadedBones => new List<BoneHeader>
+    public static List<BoneHeader> PreloadedBones => new()
     {
         new BoneHeader {Name = "C_Spine2", LodIndex = 196607},
         new BoneHeader {Name = "C_Spine3", LodIndex = 262143},

@@ -8,6 +8,7 @@ public class ArchiveHeader
     public const uint ProtectedArchiveVersion = 2147483648;
     public const uint Size = 64;
     public const uint DefaultChunkSize = 128;
+    public const ulong CopyguardHash = 10026789885951819402;
 
     public ArchiveHeader()
     {

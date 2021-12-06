@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
-using Flagrum.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 
-namespace Flagrum.Gfxbin.Gmdl.Buffering;
+namespace Flagrum.Core.Gfxbin.Gmdl.Buffering;
 
 public class GpubinPacker
 {
@@ -49,7 +49,7 @@ public class GpubinPacker
     private void AlignToChunk()
     {
         var currentPosition = _gpubinStream.Position;
-        var alignment = Core.Utilities.Serialization.GetAlignment((uint)currentPosition, ChunkSize);
+        var alignment = Utilities.Serialization.GetAlignment((uint)currentPosition, ChunkSize);
 
         // Only write padding if it isn't already the end of the chunk
         if (alignment - currentPosition != ChunkSize)

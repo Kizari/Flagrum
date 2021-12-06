@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Gfxbin.Gmtl;
+using Flagrum.Core.Gfxbin.Gmtl;
 using Newtonsoft.Json;
 
 namespace Flagrum.Console.Utilities;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Flagrum.Gfxbin.Gmdl.Constructs;
+namespace Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
 public class Matrix
 {

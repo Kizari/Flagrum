@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Gfxbin.Gmdl.Buffering;
-using Flagrum.Gfxbin.Gmdl.Components;
-using BinaryWriter = Flagrum.Gfxbin.Serialization.BinaryWriter;
+using Flagrum.Core.Gfxbin.Gmdl.Buffering;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using BinaryWriter = Flagrum.Core.Gfxbin.Serialization.BinaryWriter;
 
-namespace Flagrum.Gfxbin.Gmdl;
+namespace Flagrum.Core.Gfxbin.Gmdl;
 
 public class ModelWriter
 {

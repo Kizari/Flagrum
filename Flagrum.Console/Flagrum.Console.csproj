@@ -7,7 +7,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
-        <ProjectReference Include="..\Flagrum.Interop\Flagrum.Interop.csproj" />
     </ItemGroup>
 
 </Project>

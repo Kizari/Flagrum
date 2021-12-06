@@ -1,21 +1,18 @@
 ﻿@using System.Reflection
-
+@using SQEX.Ebony.Framework.Node
 <div class="bg-grey-900 w-96 h-full overflow-auto">
-    <div class="px-4 pt-4">
-        <h2 class="font-display text-grey-100">Node Explorer</h2>
-    </div>
     <div class="px-5 pt-5 flex flex-row">
         <div>
             <span class="material-icons-outlined">search</span>
         </div>
         <div class="flex-grow pl-3">
-            <input class="bg-dark border border-dark-700 w-full" type="text" @bind="Search" />
+            <input class="bg-dark border border-dark-700 w-full" type="text" @bind="Search"/>
         </div>
     </div>
     <div class="my-4">
         @foreach (var tree in TypeTree.OrderByDescending(c => c.Children.Count > 0).ThenBy(c => c.Name))
         {
-            <TypeTreeComponent TypeTree="tree" Indentation="25" />
+            <TypeTreeComponent TypeTree="tree" Indentation="25"/>
         }
     </div>
 </div>
@@ -26,6 +23,7 @@
     public List<TypeTree> Nodes { get; set; } = new();
 
     private string _search;
+
     private string Search
     {
         get => _search;
@@ -52,7 +50,7 @@
     {
         var allTypes = Assembly.GetExecutingAssembly()
             .GetTypes()
-            .Where(t => t.IsAssignableTo(typeof(SQEX.Ebony.Framework.Node.GraphNode)) && t != typeof(SQEX.Ebony.Framework.Node.GraphNode));
+            .Where(t => t.IsAssignableTo(typeof(GraphNode)) && t != typeof(GraphNode));
 
         GenerateTypeTree(allTypes);
         StateHasChanged();
@@ -105,32 +103,32 @@
 
     private void GenerateTypeTree(IEnumerable<Type> allTypes)
     {
-        //var engines = new string[] { "SQEX", "Black", "Luminous", "Ebony", "Crystal", "White" };
-        //foreach (var type in allTypes)
-        //{
-        //    var tokens = type.Namespace.Split('.');
-        //    if (engines.Contains(tokens[0]))
-        //    {
-        //        var currentTree = TypeTree;
-        //        foreach (var token in tokens)
-        //        {
-        //            var match = currentTree.FirstOrDefault(t => t.Name == token);
-        //            if (match == null)
-        //            {
-        //                var newTree = new TypeTree { Name = token };
-        //                currentTree.Add(newTree);
-        //                currentTree = newTree.Children;
-        //            }
-        //            else
-        //            {
-        //                currentTree = match.Children;
-        //            }
-        //        }
+    //var engines = new string[] { "SQEX", "Black", "Luminous", "Ebony", "Crystal", "White" };
+    //foreach (var type in allTypes)
+    //{
+    //    var tokens = type.Namespace.Split('.');
+    //    if (engines.Contains(tokens[0]))
+    //    {
+    //        var currentTree = TypeTree;
+    //        foreach (var token in tokens)
+    //        {
+    //            var match = currentTree.FirstOrDefault(t => t.Name == token);
+    //            if (match == null)
+    //            {
+    //                var newTree = new TypeTree { Name = token };
+    //                currentTree.Add(newTree);
+    //                currentTree = newTree.Children;
+    //            }
+    //            else
+    //            {
+    //                currentTree = match.Children;
+    //            }
+    //        }
 
-        //        currentTree.Add(new TypeTree { Name = type.Name, Type = type });
-        //        Nodes.Add(new TypeTree { Name = type.Name, Type = type });
-        //    }
-        //}
+    //        currentTree.Add(new TypeTree { Name = type.Name, Type = type });
+    //        Nodes.Add(new TypeTree { Name = type.Name, Type = type });
+    //    }
+    //}
         foreach (var type in allTypes)
         {
             var tokens = type.Namespace.Split('.');
@@ -153,7 +151,7 @@
                     var match = currentTree.FirstOrDefault(t => t.Name == token);
                     if (match == null)
                     {
-                        var newTree = new TypeTree { Name = token };
+                        var newTree = new TypeTree {Name = token};
                         currentTree.Add(newTree);
                         currentTree = newTree.Children;
                     }
@@ -163,8 +161,8 @@
                     }
                 }
 
-                currentTree.Add(new TypeTree { Name = type.Name, Type = type });
-                Nodes.Add(new TypeTree { Name = type.Name, Type = type });
+                currentTree.Add(new TypeTree {Name = type.Name, Type = type});
+                Nodes.Add(new TypeTree {Name = type.Name, Type = type});
             }
         }
     }

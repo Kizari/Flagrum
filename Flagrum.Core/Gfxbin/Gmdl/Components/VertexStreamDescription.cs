@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Flagrum.Gfxbin.Gmdl.Components;
+namespace Flagrum.Core.Gfxbin.Gmdl.Components;
 
 public enum VertexStreamSlot
 {
