@@ -27,9 +27,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="Resources\flagrum-titlebar.png">
+      <Resource Include="flagrum-titlebar.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+      </Resource>
     </ItemGroup>
 
 </Project>
