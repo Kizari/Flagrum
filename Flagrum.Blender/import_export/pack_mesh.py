@@ -3,8 +3,8 @@ import bpy
 from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector, kdtree
 
-from .entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
-from .material_data import original_name_dictionary
+from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
+from ..panel.material_data import original_name_dictionary
 
 # Matrix that converts the axes back to FBX coordinate system
 conversion_matrix = Matrix([

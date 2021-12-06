@@ -1,7 +1,7 @@
 import bpy
 from mathutils import Matrix, Vector, kdtree
 
-from .entities import MeshData
+from ..entities import MeshData
 
 
 def generate_mesh(context, mesh_data: MeshData, bone_table):

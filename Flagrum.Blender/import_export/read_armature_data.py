@@ -3,7 +3,7 @@ import os
 import struct
 from mathutils import Matrix
 
-from .entities import ArmatureData, BoneData
+from ..entities import ArmatureData, BoneData
 
 
 def import_armature_data(context):

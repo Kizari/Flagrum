@@ -6,7 +6,7 @@
         xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
         mc:Ignorable="d"
-        Title="Flagrum" Width="1042" Height="768"
+        Title="Flagrum" Width="1052" Height="768"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         Background="#181512"

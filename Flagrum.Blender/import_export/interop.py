@@ -6,7 +6,7 @@ from os.path import dirname, join, splitext
 from types import SimpleNamespace
 from zipfile import ZipFile, ZIP_STORED
 
-from .entities import Gpubin
+from ..entities import Gpubin
 
 
 class Interop:

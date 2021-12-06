@@ -11,11 +11,11 @@ from .read_armature_data import import_armature_data
 
 
 class ImportOperator(Operator, ImportHelper):
-    """Imports gfxbin files into Blender"""
     bl_idname = "flagrum.gfxbin_import"
     bl_label = "Import gfxbin"
     filename_ext = ".gfxbin"
-    filter_glob = StringProperty(
+
+    filter_glob: StringProperty(
         default="*.gfxbin",
         options={'HIDDEN'}
     )
@@ -35,11 +35,11 @@ class ImportOperator(Operator, ImportHelper):
 
 
 class ExportOperator(Operator, ExportHelper):
-    """Exports Blender files to mod archives"""
     bl_idname = "flagrum.gfxbin_export"
     bl_label = "Export to Flagrum"
     filename_ext = ".fmd"
-    filter_glob = StringProperty(
+
+    filter_glob: StringProperty(
         default="*.fmd",
         options={'HIDDEN'}
     )

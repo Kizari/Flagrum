@@ -14,7 +14,7 @@
                 <span class="flex-grow">
                     Upload to Steam Workshop
                 </span>
-                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish"/>
+                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish" IsDisabled="true"/>
                 <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
             </div>
 
@@ -38,10 +38,18 @@
                     </tr>
                     <tr style="vertical-align: top; width: 150px;" class="pt-2">
                         <td class="text-right pr-4">
+                            <label class="block mt-4 mb-2">WORKSHOP DESCRIPTION</label>
+                        </td>
+                        <td class="pt-3">
+                            <Textbox Rows="6" Size="Textbox.Variant.Stretch" @bind-Value="Description"/>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top; width: 150px;" class="pt-2">
+                        <td class="text-right pr-4">
                             <label class="block mt-4 mb-2">CHANGE NOTES</label>
                         </td>
                         <td class="pt-3">
-                            <Textbox Rows="5" Size="Textbox.Variant.Stretch" @bind-Value="ChangeNote"/>
+                            <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="ChangeNote"/>
                         </td>
                     </tr>
                 </table>
@@ -56,6 +64,7 @@
 {
     private Binmod Mod { get; set; }
     private string ChangeNote { get; set; }
+    private string Description { get; set; }
     private bool IsLoading { get; set; }
 
     private ModVisibility Visibility

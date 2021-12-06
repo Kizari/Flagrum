@@ -2,12 +2,11 @@ import bpy
 from bpy.props import PointerProperty, CollectionProperty
 from bpy.utils import register_class, unregister_class
 
-from .custom_normals import UseCustomNormalsOperator
-from .flagrum_panel import FlagrumPanel
-from .material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
-from .material_panel import MaterialEditorPanel
-from .menu import ImportOperator, ExportOperator
-from .transfer_fcnd import TransferFCNDOperator, FCNDSettings
+from .import_export.menu import ImportOperator, ExportOperator
+from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
+from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, ClearTextureOperator
+from .panel.normals_panel import UseCustomNormalsOperator, TransferFCNDOperator, FCNDSettings, NormalsPanel
+from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator
 
 bl_info = {
     "name": "Flagrum",
@@ -23,12 +22,18 @@ classes = (
     ExportOperator,
     FlagrumMaterialProperty,
     FlagrumMaterialPropertyCollection,
+    TextureSlotOperator,
+    ClearTextureOperator,
+    MaterialResetOperator,
     MaterialEditorPanel,
     MaterialSettings,
     FCNDSettings,
     TransferFCNDOperator,
     UseCustomNormalsOperator,
-    FlagrumPanel
+    DeleteUnusedBonesOperator,
+    DeleteUnusedVGroupsOperator,
+    CleanupPanel,
+    NormalsPanel
 )
 
 
