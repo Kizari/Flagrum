@@ -165,6 +165,8 @@ public class EntityPackageBuilder
         });
 
         Parts.Add(Boye.Noctis, parts);
+        Parts.Add(Boye.Gladiolus, parts);
+        Parts.Add(Boye.Ignis, parts);
     }
 
     private static void AddPrompto()

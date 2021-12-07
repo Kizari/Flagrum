@@ -95,14 +95,13 @@ public class BinmodBuilder
                     var tempStream = entry.Open();
                     tempStream.CopyTo(textureStream);
 
-                    var fileName = filePath.Split('/', '\\').Last();
-                    var extension = fileName.Split('.').Last();
-                    string btexFileName;
+                    var extension = filePath.Split('\\', '/').Last().Split('.').Last();
+                    var btexFileName = $"{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{GetTextureSuffix(textureId)}.btex";
+                    
                     byte[] btexData;
 
                     if (extension.ToLower() == "btex")
                     {
-                        btexFileName = fileName;
                         btexData = textureStream.ToArray();
                     }
                     else
@@ -131,8 +130,6 @@ public class BinmodBuilder
                         btexData = File.ReadAllBytes(tempPath);
                         File.Delete(tempPathOriginal);
                         File.Delete(tempPath);
-
-                        btexFileName = fileName.Replace($".{extension}", ".btex");
                     }
 
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
@@ -170,7 +167,10 @@ public class BinmodBuilder
 
             foreach (var texture in mesh.Material.TextureData)
             {
-                AddFile(texture.Uri, texture.Data);
+                if (!_packer.HasFile(texture.Uri))
+                {
+                    AddFile(texture.Uri, texture.Data);
+                }
             }
 
             gameAssets.AddRange(material.ShaderBinaries.Select(s => s.Path));
@@ -250,5 +250,35 @@ public class BinmodBuilder
     private string GetDataPath(string relativePath)
     {
         return $"data://mod/{_mod.ModDirectoryName}/{relativePath}";
+    }
+
+    private string GetTextureSuffix(string textureId)
+    {
+        if (textureId.ToLower().Contains("normal"))
+        {
+            return "_n";
+        }
+
+        if (textureId.ToLower().Contains("basecolor"))
+        {
+            return "_b";
+        }
+
+        if (textureId.ToLower().Contains("mrs"))
+        {
+            return "_mrs";
+        }
+
+        if (textureId.ToLower().Contains("occlusion"))
+        {
+            return "_o";
+        }
+
+        if (textureId.ToLower().Contains("opacity"))
+        {
+            return "_a";
+        }
+
+        return "";
     }
 }

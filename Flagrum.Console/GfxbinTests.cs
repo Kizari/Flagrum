@@ -10,8 +10,8 @@ public static class GfxbinTests
 {
     public static void GetBoneTable()
     {
-        var gfx = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gmdl.gfxbin";
-        var gpu = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\nh02_000.gpubin";
+        var gfx = "C:\\Testing\\Exineris\\mod\\b376d00b-e6ae-497d-a004-485914158a9b\\ignis.gmdl.gfxbin";
+        var gpu = "C:\\Testing\\Exineris\\mod\\b376d00b-e6ae-497d-a004-485914158a9b\\ignis.gpubin";
 
         var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
         var model = reader.Read();
@@ -29,17 +29,17 @@ public static class GfxbinTests
         var reader = new MaterialReader(path);
         var material = reader.Read();
 
-        var builder = new StringBuilder();
-        foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
-        {
-            builder.AppendLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
-        }
-
         // var builder = new StringBuilder();
-        // foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
+        // foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
         // {
-        //     builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
+        //     builder.AppendLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
         // }
+
+        var builder = new StringBuilder();
+        foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
+        {
+            builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
+        }
 
         File.WriteAllText("C:\\Testing\\nh01_000_skin_00_mat_texture_defaults.txt", builder.ToString());
     }

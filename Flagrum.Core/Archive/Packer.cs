@@ -34,6 +34,8 @@ public class Packer
         return new Packer(files);
     }
 
+    public bool HasFile(string uri) => _files.Any(f => f.Uri == uri);
+
     public void AddFile(byte[] data, string uri)
     {
         var file = new ArchiveFile(uri);

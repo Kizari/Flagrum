@@ -103,6 +103,9 @@
                         Logger.LogError(e, e.Message);
                     }
                 }
+                
+                var paths = AppState.Mods.Select(m => m.Path);
+                AppState.UnmanagedEntries = binmodList.Where(e => !paths.Contains(e.Path)).ToList();
             });
 
             AppState.IsModListInitialized = true;
