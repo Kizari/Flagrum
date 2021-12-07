@@ -14,7 +14,7 @@ class Interop:
     @staticmethod
     def import_mesh(gfxbin_path):
         tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
-        flagrum_path = join(dirname(__file__), "lib", "Flagrum.Blender.exe")
+        flagrum_path = join(dirname(__file__), "..", "lib", "Flagrum.Blender.exe")
         command = "\"" + flagrum_path + "\" import -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
         process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         (output, err) = process.communicate()
