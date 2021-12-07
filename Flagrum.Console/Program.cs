@@ -1,4 +1,5 @@
 ﻿using Flagrum.Console.Utilities;
+using Flagrum.Core.Gfxbin.Gmtl;
 
 namespace Flagrum.Console;
 
@@ -6,7 +7,12 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        GfxbinToBoneDictionary.Run("C:\\Testing\\character\\nh\\nh03\\model_000\\nh03_000.gmdl.gfxbin");
+        GfxbinTests.CheckMaterialDefaults();
+        //var gfxbin = "C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
+        //var materialReader = new MaterialReader(gfxbin);
+        //var material = materialReader.Read();
+        
+        // GfxbinToBoneDictionary.Run("C:\\Testing\\character\\nh\\nh03\\model_000\\nh03_000.gmdl.gfxbin");
         // var gfxbinData =
         //     File.ReadAllBytes(
         //         "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin");

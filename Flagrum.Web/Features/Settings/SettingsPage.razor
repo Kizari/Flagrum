@@ -57,6 +57,9 @@
 
 @code
 {
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
     [Parameter]
     public bool Warn { get; set; }
 
@@ -79,6 +82,7 @@
                 Data.GamePath = path;
                 Settings.SetGamePath(path);
                 InvokeAsync(StateHasChanged);
+                InvokeAsync(Layout.CallStateHasChanged);
             });
     }
 
@@ -91,6 +95,7 @@
                 Data.BinmodListPath = path;
                 Settings.SetBinmodListPath(path);
                 InvokeAsync(StateHasChanged);
+                InvokeAsync(Layout.CallStateHasChanged);
             });
     }
 
@@ -103,6 +108,7 @@
                 Data.WorkshopPath = path;
                 Settings.SetWorkshopPath(path);
                 InvokeAsync(StateHasChanged);
+                InvokeAsync(Layout.CallStateHasChanged);
             });
     }
 
@@ -115,6 +121,7 @@
                 Data.BTexConverterPath = path;
                 Settings.SetBTexConverterPath(path);
                 InvokeAsync(StateHasChanged);
+                InvokeAsync(Layout.CallStateHasChanged);
             });
     }
 }

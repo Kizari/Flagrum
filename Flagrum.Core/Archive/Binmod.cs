@@ -94,7 +94,7 @@ public class Binmod
         builder.AppendLine("modtype=cloth");
         builder.AppendLine($"title={WorkshopTitle}");
         // Can't append literal newlines to the modmeta or things will break
-        builder.AppendLine($"desc={Description.Replace("\r\n", "\\n").Replace("\n", "\\n")}");
+        builder.AppendLine($"desc={Description?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"uuid={Uuid}");
         builder.AppendLine($"type={Target.ToString().ToLower()}");
         builder.AppendLine($"itemid={ItemId}");

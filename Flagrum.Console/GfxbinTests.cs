@@ -25,22 +25,23 @@ public static class GfxbinTests
     public static void CheckMaterialDefaults()
     {
         var path =
-            "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\materials\\nh02_000_skin_00_mat.gmtl.gfxbin";
+            "C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
         var reader = new MaterialReader(path);
         var material = reader.Read();
 
-        //foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
-        //{
-        //    System.Console.WriteLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
-        //}
-
         var builder = new StringBuilder();
-        foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
+        foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
         {
-            builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
+            builder.AppendLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
         }
 
-        File.WriteAllText("C:\\Testing\\nh02_000_skin_00_mat_texture_defaults.txt", builder.ToString());
+        // var builder = new StringBuilder();
+        // foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
+        // {
+        //     builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
+        // }
+
+        File.WriteAllText("C:\\Testing\\nh01_000_skin_00_mat_texture_defaults.txt", builder.ToString());
     }
 
     public static void Compare()

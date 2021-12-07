@@ -14,6 +14,16 @@
     }
     else
     {
-        <SettingsPage Warn="true"/>
+        <CascadingValue Value="this">
+            <Flagrum.Web.Features.Settings.SettingsPage Warn="true"/>
+        </CascadingValue>
     }
 </div>
+
+@code
+{
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
+}
