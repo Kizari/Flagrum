@@ -8,7 +8,7 @@ public class Program
     public static void Main(string[] args)
     {
         //GfxbinTests.GetBoneTable();
-        //GfxbinTests.CheckMaterialDefaults();
+        GfxbinTests.CheckMaterialDefaults();
         //var gfxbin = "C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
         //var materialReader = new MaterialReader(gfxbin);
         //var material = materialReader.Read();
