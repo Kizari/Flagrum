@@ -105,7 +105,7 @@
                 }
                 
                 var paths = AppState.Mods.Select(m => m.Path);
-                AppState.UnmanagedEntries = binmodList.Where(e => !paths.Contains(e.Path)).ToList();
+                AppState.UnmanagedEntries = binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
             });
 
             AppState.IsModListInitialized = true;
