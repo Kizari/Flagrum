@@ -7,8 +7,10 @@ namespace Flagrum.Core.Utilities
 {
     public static class Cryptography
     {
-        private const ulong HashSeed = 1469598103934665603;
-        private const ulong HashPrime = 1099511628211;
+        private const uint HashSeed32 = 2166136261;
+        private const uint HashPrime32 = 16777619;
+        private const ulong HashSeed64 = 1469598103934665603;
+        private const ulong HashPrime64 = 1099511628211;
 
         private static readonly byte[] _aesKey = new byte[16]
             {156, 108, 93, 65, 21, 82, 63, 23, 90, 211, 248, 183, 117, 88, 30, 207};
@@ -60,10 +62,16 @@ namespace Flagrum.Core.Utilities
             return decryptedBuffer;
         }
 
-        public static ulong Hash(string value)
+        public static ulong Hash64(string value)
         {
             var bytes = Encoding.UTF8.GetBytes(value);
-            return bytes.Aggregate(HashSeed, (current, b) => (current ^ b) * HashPrime);
+            return bytes.Aggregate(HashSeed64, (current, b) => (current ^ b) * HashPrime64);
+        }
+
+        public static uint Hash32(string value)
+        {
+            var bytes = Encoding.UTF8.GetBytes(value);
+            return bytes.Aggregate(HashSeed32, (current, b) => (uint)(((int)current ^ b) * HashPrime32));
         }
 
         public static ulong Base64Hash(byte[] bytes)
@@ -79,6 +87,16 @@ namespace Flagrum.Core.Utilities
         public static ulong MergeHashes(ulong hash1, ulong hash2)
         {
             return (hash1 * 1099511628211) ^ hash2;
+        }
+
+        public static ulong HashFileUri64(string uri)
+        {
+            var tokens = uri.Replace("data://", "").Split('/').Last().Split('.');
+            var extension = tokens.Length > 2 ? string.Join('.', tokens, 1, tokens.Length - 1) : tokens.Last();
+            
+            var uriHash = Hash64(uri);
+            var typeHash = Hash64(extension);
+            return (ulong)(((long)uriHash & 17592186044415L) | (((long)typeHash << 44) & -17592186044416L));
         }
     }
 }

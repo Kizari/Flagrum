@@ -58,7 +58,7 @@ public static class OutfitTemplate
                     ClusterCount = 1,
                     ClusterName = "CLUSTER_NAME",
                     Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name,
-                            Cryptography.Hash($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl")))
+                            Cryptography.HashFileUri64($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl")))
                         .ToList()
                 }
             },
@@ -74,24 +74,13 @@ public static class OutfitTemplate
     {
         var basePath = $"data://mod/{modDirectoryName}";
         var gpubinUri = $"{basePath}/{modelName}.gpubin";
-        var gpubinHash = Cryptography.Hash(gpubinUri);
+        var gpubinHash = Cryptography.HashFileUri64(gpubinUri);
 
         var materials =
-            gpubin.Meshes.Select(m =>
-            {
-                // // TODO: Remove this test code!
-                // if (m.Name.ToLower() == "chest")
-                // {
-                //     return (
-                //         hash: 1364787005808950668UL,
-                //         uri: "data://mod/ardyn_mankini/ardynmankini.fbxgmtl/chest.gmtl"
-                //     );
-                // }
-                
-                return (
-                    hash: Cryptography.Hash($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
-                    uri: $"{basePath}/materials/{m.Name.ToLower()}_mat.gmtl");
-            });
+            gpubin.Meshes.Select(m => (
+                    hash: Cryptography.HashFileUri64($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
+                    uri: $"{basePath}/materials/{m.Name.ToLower()}_mat.gmtl"
+            ));
 
         var dependencies = new List<DependencyPath>();
         dependencies.AddRange(materials.Select(m => new DependencyPath

@@ -12,7 +12,7 @@ public class Packer
 {
     public const uint PointerSize = 8;
     public const uint BlockSize = 512;
-    private readonly List<ArchiveFile> _files;
+    private List<ArchiveFile> _files;
     private readonly ArchiveHeader _header;
 
     private readonly Logger _logger;
@@ -60,11 +60,12 @@ public class Packer
         _logger.LogInformation("Packing archive...");
 
         // Sort files by TypeHash, then UriHash
-        _files.Sort((first, second) =>
-        {
-            var difference = first.TypeHash.CompareTo(second.TypeHash);
-            return difference == 0 ? first.UriHash.CompareTo(second.UriHash) : difference;
-        });
+        // _files.Sort((first, second) =>
+        // {
+        //     var difference = first.TypeHash.CompareTo(second.TypeHash);
+        //     return difference == 0 ? first.UriHash.CompareTo(second.UriHash) : difference;
+        // });
+        _files = _files.OrderBy(f => f.TypeHash).ThenBy(f => f.UriHash).ToList();
 
         _header.UriListOffset = ArchiveHeader.Size +
                                 Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,

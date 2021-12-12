@@ -50,8 +50,8 @@ public class ArchiveFile
         var index = fileName.IndexOf('.');
         var type = index < 0 ? "" : fileName.Substring(index + 1);
 
-        UriHash = Cryptography.Hash(Uri);
-        TypeHash = Cryptography.Hash(type);
+        UriHash = Cryptography.Hash64(Uri);
+        TypeHash = Cryptography.Hash64(type);
 
         UriAndTypeHash = (ulong)(((long)UriHash & 17592186044415L) | (((long)TypeHash << 44) & -17592186044416L));
 

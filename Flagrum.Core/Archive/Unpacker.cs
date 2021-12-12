@@ -102,7 +102,16 @@ public class Unpacker
             buffer = Cryptography.Decrypt(buffer);
         }
 
-        file.SetData(buffer);
+        if (file.ProcessedSize > file.Size)
+        {
+            var finalData = new byte[file.Size];
+            Array.Copy(buffer, 0, finalData, 0, file.Size);
+            file.SetData(finalData);
+        }
+        else
+        {
+            file.SetData(buffer);
+        }
     }
 
     private IEnumerable<ArchiveFile> ReadFileHeaders()

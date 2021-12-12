@@ -93,15 +93,7 @@ public static class MaterialBuilder
 
         material.Name = materialName;
         material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
-        material.NameHash = (uint)Cryptography.Hash(material.Uri);
-        
-        // // TODO: Remove this test code
-        // if (materialName == "chest_mat")
-        // {
-        //     material.Name = "chest";
-        //     material.Uri = "data://mod/ardyn_mankini/ardynmankini.fbxgmtl/chest.gmtl";
-        //     material.NameHash = (uint)Cryptography.Hash(material.Uri);
-        // }
+        material.NameHash = Cryptography.Hash32(materialName);
 
         foreach (var input in inputs)
         {
@@ -156,6 +148,8 @@ public static class MaterialBuilder
         var dependencyMatch = material.Header.Dependencies.FirstOrDefault(d => d.Path == match.Path);
 
         match.Path = path;
+        match.PathHash = Cryptography.Hash32(path);
+        match.ResourceFileHash = Cryptography.HashFileUri64(path);
 
         // TODO: Rework material editor to generate dependency tables and remove this fallable idiocy
         if (dependencyMatch == null)
@@ -164,6 +158,7 @@ public static class MaterialBuilder
         }
 
         dependencyMatch.Path = path;
+        dependencyMatch.PathHash = Cryptography.HashFileUri64(path).ToString();
     }
 
     public static byte[] GetDefaultTextureData(string name)
