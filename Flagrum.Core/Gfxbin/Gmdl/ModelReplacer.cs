@@ -251,33 +251,6 @@ public class ModelReplacer
             .OrderBy(b => b.LodIndex)
             .ToList();
 
-        // foreach (var mesh in _model.MeshObjects[0].Meshes)
-        // {
-        //     Console.WriteLine($"Mesh name: {mesh.Name}");
-        //     for (var j = 0; j < mesh.WeightValues[0].Count; j++)
-        //     {
-        //         if (mesh.WeightIndices[1][j].Length < 1)
-        //         {
-        //             continue;
-        //         }
-        //
-        //         var map1 = FixArraySize(mesh.WeightValues[0][j], 4);
-        //         var map2 = FixArraySize(mesh.WeightValues[1][j], 4);
-        //         var map1i = FixArraySize(mesh.WeightIndices[0][j], 4);
-        //         var map2i = FixArraySize(mesh.WeightIndices[1][j], 4);
-        //
-        //         var sum = map1.Sum(s => s) + map2.Sum(s => s);
-        //         Console.WriteLine($"[({map1i[0]}, {map1[0]}), " +
-        //                           $"({map1i[1]}, {map1[1]}), " +
-        //                           $"({map1i[2]}, {map1[2]}), " +
-        //                           $"({map1i[3]}, {map1[3]})], " +
-        //                           $"[({map2i[0]}, {map2[0]}), " +
-        //                           $"({map2i[1]}, {map2[1]}), " +
-        //                           $"({map2i[2]}, {map2[2]}), " +
-        //                           $"({map2i[3]}, {map2[3]}]");
-        //     }
-        // }
-
         return _model;
     }
 }

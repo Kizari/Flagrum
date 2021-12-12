@@ -30,27 +30,18 @@ public class ArchiveFile
     {
         RelativePath = uri.Replace("data://", "");
 
-        if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif"))
+        if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif") || RelativePath.EndsWith(".dds"))
         {
-            RelativePath = RelativePath.Replace(".tga", ".btex").Replace(".tif", ".btex");
+            RelativePath = RelativePath
+                .Replace(".tga", ".btex")
+                .Replace(".tif", ".btex")
+                .Replace(".dds", ".btex");
         }
 
         var newUri = uri
             .Replace(".gmdl.gfxbin", ".fbx")
             .Replace(".gmtl.gfxbin", ".gmtl")
             .Replace(".exml", ".ebex");
-
-        if (!uri.StartsWith("data://mod"))
-        {
-            if (uri.StartsWith("data://shader/defaulttextures/wetness"))
-            {
-                newUri = newUri.Replace(".btex", ".tga");
-            }
-            else
-            {
-                newUri = newUri.Replace(".btex", ".tif");
-            }
-        }
 
         Uri = newUri;
 

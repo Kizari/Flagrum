@@ -1,26 +1,41 @@
 ﻿@page "/mod/configure"
 @using Flagrum.Core.Utilities
 @using Flagrum.Web.Components.Controls.Data
-@using Flagrum.Core.Archive
+@using Flagrum.Web.Features.ModLibrary.Stats
+@using Flagrum.Core.Archive.Binmod
 @using Flagrum.Core.Gfxbin.Btex
 @using System.IO
+@using Flagrum.Core.Archive
 
 @inject NavigationManager Navigation
 @inject JSInterop Interop
 @inject Settings Settings
 @inject AppStateService AppState
+@inject ILogger<Configure> Logger
 
+<CascadingValue Value="this">
 <LoadingView Text="@LoadingText"
              IsLoading="@IsLoading">
-    <div class="p-6">
+<div class="p-6">
 
-        <div class="box row p-4">
-            <span class="flex-grow">@Mod.GameMenuTitle</span>
-            <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!HasModelData || StatsTotal > 100)"/>
-            <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
-        </div>
+<div class="box row p-4">
+    <span class="flex-grow">@(Mod.GameMenuTitle == null ? Mod.WorkshopTitle : Mod.GameMenuTitle)</span>
+    <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!HasModelData || StatsTotal > 100)"/>
+    <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
+</div>
 
-        @if (!HasModelData)
+@if (!HasModelData)
+{
+    <div class="box row p-4 mt-6">
+        <label>TYPE</label>
+        <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged" CssClass="mx-4"/>
+        <label>TARGET</label>
+        <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" CssClass="ml-4"/>
+    </div>
+
+    @if (Mod.Target > -1)
+    {
+        @if (BinmodTypeHelper.GetModelCount(Mod.Type, Mod.Target) == 1)
         {
             <div class="box row p-4 mt-6">
                 <span class="flex-grow">
@@ -35,188 +50,124 @@
         }
         else
         {
-            <div class="box row p-5 mt-6">
-                @if (PreviewBase64 != null)
-                {
-                    <img style="display:block;width:150px;height:150px;" src="images/@(ImageName).png"/>
-                }
-                <div class="flex-grow pl-6">
-                    <table>
-                        <tr>
-                            <td class="pb-1">UUID:</td>
-                            <td class="pb-1 pl-3">
-                                <strong>@Mod.Uuid</strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="pb-1">Mod Directory:</td>
-                            <td class="pb-1 pl-3">
-                                <strong>@($"data://mod/{Mod.ModDirectoryName}/")</strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="pb-1">Last Updated:</td>
-                            <td class="pb-1 pl-3">
-                                <strong>@(Mod.IsWorkshopMod ? "N/A" : Mod.LastUpdated == default ? "Not on Steam Workshop" : Mod.LastUpdated.ToString("d MMMM yyyy 'at' h:mm tt"))</strong>
-                            </td>
-                        </tr>
-                    </table>
-                    <div class="row mt-10">
-                        @if (!Mod.IsWorkshopMod)
-                        {
-                            <BrowseButton Icon="image"
-                                          Text="Change Image"
-                                          AllowedExtensions=".png"
-                                          OnFileSelected="OnImageSelected"/>
-                            <BrowseButton Icon="view_in_ar"
-                                          Text="Change Model"
-                                          AllowedExtensions=".fmd"
-                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"
-                                          OnFileSelected="OnModelSelected"
-                                          CssClass="ml-3"/>
-                        }
-
-                        @if (!IsNew && !Mod.IsWorkshopMod)
-                        {
-                            <Button Icon="upload" Text="Upload to Workshop" OnClick="Upload" CssClass="ml-3"/>
-                            <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
-                        }
-                    </div>
-                </div>
+            <div class="box row p-4 mt-6">
+                <span class="flex-grow">
+                    @(Model1Data == null ? "Select FMD file for first model" : Mod.Model1Name + ".fmd")
+                </span>
+                <BrowseButton Icon="folder"
+                              Text="Browse"
+                              AllowedExtensions=".fmd"
+                              OnFileSelected="OnModel1Selected"
+                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
             </div>
-
-            <div class="box mt-6">
-                <EditForm Model="Stats">
-                    <div class="p-4">
-                        <table class="w-full right-align-all-labels">
-                            <tr>
-                                <td>
-                                    <label>IN-GAME TITLE</label>
-                                </td>
-                                <td colspan="7" class="pl-4">
-                                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.GameMenuTitle"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label>DESCRIPTION</label>
-                                </td>
-                                <td colspan="7" class="pl-4">
-                                    <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Mod.Description"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="py-2">
-                                    <label>TARGET</label>
-                                </td>
-                                <td class="py-2 pl-4" colspan="3">
-                                    <EnumSelect @bind-Value="Mod.Target"/>
-                                </td>
-                                <td class="py-2">
-                                    <label>MAX HP</label>
-                                </td>
-                                <td class="py-2">
-                                    <NumberBox @bind-Value="Stats.MaxHp"/>
-                                </td>
-                                <td class="py-2">
-                                    <label>MAX MP</label>
-                                </td>
-                                <td class="py-2">
-                                    <NumberBox @bind-Value="Stats.MaxMp"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label>STRENGTH</label>
-                                </td>
-                                <td>
-                                    <NumberBox @bind-Value="Stats.Strength"/>
-                                </td>
-                                <td>
-                                    <label>VITALITY</label>
-                                </td>
-                                <td>
-                                    <NumberBox @bind-Value="Stats.Vitality"/>
-                                </td>
-                                <td>
-                                    <label>MAGIC</label>
-                                </td>
-                                <td>
-                                    <NumberBox @bind-Value="Stats.Magic"/>
-                                </td>
-                                <td>
-                                    <label>SPIRIT</label>
-                                </td>
-                                <td>
-                                    <NumberBox @bind-Value="Stats.Spirit"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label>FIRE RES</label>
-                                </td>
-                                <td>
-                                    <NumberBox Max="100" @bind-Value="Stats.Fire"/>
-                                </td>
-                                <td>
-                                    <label>ICE RES</label>
-                                </td>
-                                <td>
-                                    <NumberBox Max="100" @bind-Value="Stats.Ice"/>
-                                </td>
-                                <td>
-                                    <label>THUNDER RES</label>
-                                </td>
-                                <td>
-                                    <NumberBox Max="100" @bind-Value="Stats.Thunder"/>
-                                </td>
-                                <td>
-                                    <label>DARK RES</label>
-                                </td>
-                                <td>
-                                    <NumberBox Max="100" @bind-Value="Stats.Dark"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label>BALLISTIC RES</label>
-                                </td>
-                                <td>
-                                    <NumberBox Max="100" @bind-Value="Stats.Ballistic"/>
-                                </td>
-                                <td class="pt-2">
-                                    <label class="@(StatsTotal <= 100 ? "" : "text-error")">@StatsTotal/100</label>
-                                </td>
-                                <td colspan="5" class="pl-4 pt-2">
-                                    <div class="bg-black">
-                                        <div class="@(StatsTotal <= 100 ? "bg-accent1-200" : "bg-error")" style="width: @(StatsTotal <= 0 ? "0" : StatsTotal > 100 ? "100" : StatsTotal.ToString())%">&nbsp;</div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                </EditForm>
+            <div class="box row p-4 mt-6">
+                <span class="flex-grow">
+                    @(Model1Data == null ? "Select FMD file for second model" : Mod.Model2Name + ".fmd")
+                </span>
+                <BrowseButton Icon="folder"
+                              Text="Browse"
+                              AllowedExtensions=".fmd"
+                              OnFileSelected="OnModel2Selected"
+                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
             </div>
         }
+    }
+}
+else
+{
+    <div class="box row p-5 mt-4">
+        @if (PreviewBase64 != null)
+        {
+            <img style="display:block;width:175px;height:175px;" src="images/@(ImageName).png"/>
+        }
+        <div class="flex-grow pl-6">
+            <table>
+                <tr>
+                    <td class="pb-1">Mod Type:</td>
+                    <td class="pb-1 pl-3">
+                        <strong>@BinmodTypeHelper.GetDisplayName((BinmodType)Mod.Type)</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="pb-1">Mod Target:</td>
+                    <td class="pb-1 pl-3">
+                        <strong>@(BinmodTypeHelper.GetTargets(Mod.Type)[Mod.Target])</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="pb-1">UUID:</td>
+                    <td class="pb-1 pl-3">
+                        <strong>@Mod.Uuid</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="pb-1">Last Updated:</td>
+                    <td class="pb-1 pl-3">
+                        <strong>@(Mod.IsWorkshopMod ? "N/A" : Mod.LastUpdated == default ? "Not on Steam Workshop" : Mod.LastUpdated.ToString("d MMMM yyyy 'at' h:mm tt"))</strong>
+                    </td>
+                </tr>
+            </table>
+            <div class="row mt-6">
+                @if (!Mod.IsWorkshopMod)
+                {
+                    <BrowseButton Icon="image"
+                                  Text="Change Image"
+                                  AllowedExtensions=".png"
+                                  OnFileSelected="OnImageSelected"/>
+                    <BrowseButton Icon="view_in_ar"
+                                  Text="Change Model"
+                                  AllowedExtensions=".fmd"
+                                  BeforeFileLoaded="@(() => SetLoading("Loading Data"))"
+                                  OnFileSelected="OnModelSelected"
+                                  CssClass="ml-3"/>
+                }
+
+                @if (!IsNew && !Mod.IsWorkshopMod)
+                {
+                    <Button Icon="upload" Text="Upload to Workshop" OnClick="Upload" CssClass="ml-3"/>
+                    <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
+                }
+            </div>
+        </div>
     </div>
+    @if (Mod.Type is (int)BinmodType.Cloth or (int)BinmodType.StyleEdit)
+    {
+        <Outfit />
+    }
+    else if (Mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
+    {
+        <Weapon />
+    }
+    else
+    {
+        <Replacement />
+    }
+}
+</div>
 </LoadingView>
+</CascadingValue>
 
 @code
 {
-    private Binmod Mod { get; set; }
-    private StatsModel Stats { get; set; }
+    public Binmod Mod { get; set; }
+    public int StatsTotal { get; set; }
     private string PreviewBase64 { get; set; }
     private bool IsNew { get; set; }
     private bool HasModelData { get; set; }
     private byte[] ModelData { get; set; }
+    private byte[] Model1Data { get; set; }
+    private byte[] Model2Data { get; set; }
     private bool ImageHasChanged { get; set; }
     private string LoadingText { get; set; }
     private bool IsLoading { get; set; }
-    private int StatsTotal { get; set; }
     private string ImageName { get; set; } = "current_preview";
+    private Dictionary<int, string> ModTypes { get; set; }
+    private Dictionary<int, string> ModTargets { get; set; }
 
     protected override void OnInitialized()
     {
+        ModTypes = Enum.GetValues<BinmodType>().ToDictionary(t => (int)t, t => BinmodTypeHelper.GetDisplayName(t));
+
         Mod = AppState.ActiveMod?.Clone();
 
         if (Mod == null)
@@ -228,24 +179,10 @@
             InitializeExistingMod();
         }
 
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
+        ModTargets = BinmodTypeHelper.GetTargets(Mod.Type);
+        Logger.LogInformation($"Mod type is {Mod.Type}!");
 
-        Stats = new StatsModel(Mod, () =>
-        {
-            StatsTotal = (int)(
-                (Stats.MaxHp ?? 0) * 0.2
-                + (Stats.MaxMp ?? 0) * 0.2
-                + (Stats.Strength ?? 0) * 0.2
-                + (Stats.Vitality ?? 0) * 0.2
-                + (Stats.Magic ?? 0) * 0.2
-                + (Stats.Spirit ?? 0) * 0.2
-                + Stats.Fire ?? 0
-                + Stats.Ice ?? 0
-                + Stats.Thunder ?? 0
-                + Stats.Dark ?? 0
-                + Stats.Ballistic ?? 0);
-            StateHasChanged();
-        });
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
     }
 
     private void SetLoading(string text)
@@ -266,7 +203,8 @@
         {
             GameMenuTitle = "New Mod",
             Uuid = Guid.NewGuid().ToString(),
-            PreviewBytes = previewImage
+            PreviewBytes = previewImage,
+            IsApplyToGame = true
         };
 
         Mod.Path = $"{Settings.ModDirectory}\\{Mod.Uuid}.ffxvbinmod";
@@ -307,6 +245,32 @@
         StateHasChanged();
     }
 
+    private void OnModel1Selected(InMemoryFile file)
+    {
+        Mod.Model1Name = file.FileName.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+        Model1Data = file.Data;
+        CheckBothModelsSelected();
+    }
+
+    private void OnModel2Selected(InMemoryFile file)
+    {
+        Mod.Model2Name = file.FileName.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+        Model2Data = file.Data;
+        CheckBothModelsSelected();
+    }
+
+    private void CheckBothModelsSelected()
+    {
+        if (Model1Data != null && Model2Data != null)
+        {
+            Mod.ModDirectoryName = Mod.Uuid;
+            HasModelData = true;
+        }
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
     private void Delete()
     {
         SetLoading("Deleting Mod");
@@ -339,7 +303,7 @@
         {
             var unpacker = new Unpacker(Mod.Path);
             var packer = unpacker.ToPacker();
-            packer.UpdateFile("index.modmeta", Mod.ToModmeta());
+            packer.UpdateFile("index.modmeta", Modmeta.Build(Mod));
 
             if (ImageHasChanged)
             {
@@ -397,169 +361,18 @@
         Navigation.NavigateTo("/mod/upload");
     }
 
-    private class StatsModel
+    private void ModTypeChanged(int newType)
     {
-        private readonly Binmod _mod;
-        private readonly Action _onChange;
-        private int? _ballistic;
+        ModTargets = BinmodTypeHelper.GetTargets(newType);
+        Mod.Target = -1;
+        StateHasChanged();
+    }
 
-        private int? _dark;
-
-        private int? _fire;
-
-        private int? _ice;
-
-        private int? _magic;
-
-        private int? _maxHp;
-
-        private int? _maxMp;
-
-        private int? _spirit;
-
-        private int? _strength;
-
-        private int? _thunder;
-
-        private int? _vitality;
-
-        public StatsModel(Binmod mod, Action onChange)
+    private void ModTargetChanged(int newTarget)
+    {
+        if (Mod.Type == (int)BinmodType.Character)
         {
-            _mod = mod;
-            _onChange = onChange;
-
-            _maxHp = mod.MaxHp;
-            _maxMp = mod.MaxMp;
-            _strength = mod.Strength;
-            _vitality = mod.Vitality;
-            _magic = mod.Magic;
-            _spirit = mod.Spirit;
-            _fire = mod.Fire;
-            _ice = mod.Ice;
-            _thunder = mod.Thunder;
-            _dark = mod.Dark;
-            _ballistic = mod.Ballistic;
-        }
-
-        public int? MaxHp
-        {
-            get => _maxHp;
-            set
-            {
-                _maxHp = value;
-                _mod.MaxHp = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? MaxMp
-        {
-            get => _maxMp;
-            set
-            {
-                _maxMp = value;
-                _mod.MaxMp = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Strength
-        {
-            get => _strength;
-            set
-            {
-                _strength = value;
-                _mod.Strength = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Vitality
-        {
-            get => _vitality;
-            set
-            {
-                _vitality = value;
-                _mod.Vitality = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Magic
-        {
-            get => _magic;
-            set
-            {
-                _magic = value;
-                _mod.Magic = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Spirit
-        {
-            get => _spirit;
-            set
-            {
-                _spirit = value;
-                _mod.Spirit = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Fire
-        {
-            get => _fire;
-            set
-            {
-                _fire = value;
-                _mod.Fire = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Ice
-        {
-            get => _ice;
-            set
-            {
-                _ice = value;
-                _mod.Ice = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Thunder
-        {
-            get => _thunder;
-            set
-            {
-                _thunder = value;
-                _mod.Thunder = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Dark
-        {
-            get => _dark;
-            set
-            {
-                _dark = value;
-                _mod.Dark = value ?? 0;
-                _onChange();
-            }
-        }
-
-        public int? Ballistic
-        {
-            get => _ballistic;
-            set
-            {
-                _ballistic = value;
-                _mod.Ballistic = value ?? 0;
-                _onChange();
-            }
+            Mod.OriginalGmdls = ModelReplacementPresets.GetOriginalGmdls(newTarget).ToList();
         }
     }
 }

@@ -77,9 +77,21 @@ public static class OutfitTemplate
         var gpubinHash = Cryptography.Hash(gpubinUri);
 
         var materials =
-            gpubin.Meshes.Select(m => (
-                hash: Cryptography.Hash($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
-                uri: $"{basePath}/materials/{m.Name.ToLower()}_mat.gmtl"));
+            gpubin.Meshes.Select(m =>
+            {
+                // // TODO: Remove this test code!
+                // if (m.Name.ToLower() == "chest")
+                // {
+                //     return (
+                //         hash: 1364787005808950668UL,
+                //         uri: "data://mod/ardyn_mankini/ardynmankini.fbxgmtl/chest.gmtl"
+                //     );
+                // }
+                
+                return (
+                    hash: Cryptography.Hash($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
+                    uri: $"{basePath}/materials/{m.Name.ToLower()}_mat.gmtl");
+            });
 
         var dependencies = new List<DependencyPath>();
         dependencies.AddRange(materials.Select(m => new DependencyPath

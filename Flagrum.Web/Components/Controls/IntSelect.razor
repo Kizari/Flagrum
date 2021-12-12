@@ -1,0 +1,24 @@
+﻿<select value="@Value"
+        @onchange="OnOptionSelected"
+        class="border border-grey-700 m-0 p-2 bg-dark-600 text-grey-400 rounded w-full @CssClass">
+    @foreach (var (id, name) in Values)
+    {
+        <option value="@id" class="text-grey-400">@name</option>
+    }
+</select>
+
+@code
+{
+    [Parameter] public IDictionary<int, string> Values { get; set; }
+    [Parameter] public Action<int> OnChange { get; set; }
+    [Parameter] public int Value { get; set; }
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter] public string CssClass { get; set; }
+    
+    private async Task OnOptionSelected(ChangeEventArgs e)
+    {
+        Value = int.Parse(e.Value?.ToString() ?? "-1");
+        await ValueChanged.InvokeAsync(Value);
+        OnChange?.Invoke(Value);
+    }
+}

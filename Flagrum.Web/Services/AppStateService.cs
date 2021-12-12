@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Archive;
+using Flagrum.Core.Archive.Binmod;
 
 namespace Flagrum.Web.Services;
 

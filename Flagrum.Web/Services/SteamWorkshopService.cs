@@ -2,6 +2,7 @@
 using System.IO;
 using System.Timers;
 using Flagrum.Core.Archive;
+using Flagrum.Core.Archive.Binmod;
 using Steamworks;
 
 namespace Flagrum.Web.Services;

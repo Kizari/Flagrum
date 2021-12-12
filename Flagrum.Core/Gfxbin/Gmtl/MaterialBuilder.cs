@@ -94,6 +94,14 @@ public static class MaterialBuilder
         material.Name = materialName;
         material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
         material.NameHash = (uint)Cryptography.Hash(material.Uri);
+        
+        // // TODO: Remove this test code
+        // if (materialName == "chest_mat")
+        // {
+        //     material.Name = "chest";
+        //     material.Uri = "data://mod/ardyn_mankini/ardynmankini.fbxgmtl/chest.gmtl";
+        //     material.NameHash = (uint)Cryptography.Hash(material.Uri);
+        // }
 
         foreach (var input in inputs)
         {
@@ -104,6 +112,20 @@ public static class MaterialBuilder
         {
             SetTexturePath(material, texture.Name, texture.Path);
         }
+
+        var referenceUri = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
+        if (referenceUri != null)
+        {
+            referenceUri.Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
+        }
+
+        var assetUri = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
+        if (assetUri != null)
+        {
+            assetUri.Path = $"data://mod/{modDirectoryName}/materials/";
+        }
+
+        material.HighTexturePackAsset = "";
 
         return material;
     }

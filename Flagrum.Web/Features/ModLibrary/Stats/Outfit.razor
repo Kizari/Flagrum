@@ -1,0 +1,139 @@
+﻿@using Flagrum.Web.Features.ModLibrary.Data
+@using Microsoft.AspNetCore.Components
+
+<div class="box mt-4">
+    <EditForm Model="OutfitStats">
+        <div class="p-4">
+            <table class="w-full right-align-all-labels">
+                <tr>
+                    <td>
+                        <label>IN-GAME TITLE</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuTitle"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>DESCRIPTION</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>MAX HP</label>
+                    </td>
+                    <td>
+                        <NumberBox @bind-Value="OutfitStats.MaxHp"/>
+                    </td>
+                    <td>
+                        <label>MAX MP</label>
+                    </td>
+                    <td>
+                        <NumberBox @bind-Value="OutfitStats.MaxMp"/>
+                    </td>
+                    <td>
+                        <label>FIRE RES</label>
+                    </td>
+                    <td>
+                        <NumberBox Max="100" @bind-Value="OutfitStats.Fire"/>
+                    </td>
+                    <td>
+                        <label>ICE RES</label>
+                    </td>
+                    <td>
+                        <NumberBox Max="100" @bind-Value="OutfitStats.Ice"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>STRENGTH</label>
+                    </td>
+                    <td>
+                        <NumberBox @bind-Value="OutfitStats.Strength"/>
+                    </td>
+                    <td>
+                        <label>VITALITY</label>
+                    </td>
+                    <td>
+                        <NumberBox @bind-Value="OutfitStats.Vitality"/>
+                    </td>
+                    <td>
+                        <label>THUNDER RES</label>
+                    </td>
+                    <td>
+                        <NumberBox Max="100" @bind-Value="OutfitStats.Thunder"/>
+                    </td>
+                    <td>
+                        <label>DARK RES</label>
+                    </td>
+                    <td>
+                        <NumberBox Max="100" @bind-Value="OutfitStats.Dark"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>MAGIC</label>
+                    </td>
+                    <td>
+                        <NumberBox @bind-Value="OutfitStats.Magic"/>
+                    </td>
+                    <td>
+                        <label>SPIRIT</label>
+                    </td>
+                    <td>
+                        <NumberBox @bind-Value="OutfitStats.Spirit"/>
+                    </td>
+                    <td>
+                        <label>BALLISTIC RES</label>
+                    </td>
+                    <td>
+                        <NumberBox Max="100" @bind-Value="OutfitStats.Ballistic"/>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="pt-4">
+                        <label class="@(Parent.StatsTotal <= 100 ? "" : "text-error")">@Parent.StatsTotal/100</label>
+                    </td>
+                    <td colspan="7" class="pl-4 pt-4">
+                        <div class="bg-black">
+                            <div class="@(Parent.StatsTotal <= 100 ? "bg-accent1-200" : "bg-error")" style="width: @(Parent.StatsTotal <= 0 ? "0" : Parent.StatsTotal > 100 ? "100" : Parent.StatsTotal.ToString())%">&nbsp;</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </EditForm>
+</div>
+
+@code
+{
+    [CascadingParameter]
+    public Configure Parent { get; set; }
+    
+    private OutfitStatsModel OutfitStats { get; set; }
+
+    protected override void OnInitialized()
+    {
+        OutfitStats = new OutfitStatsModel(Parent.Mod, () =>
+        {
+            Parent.StatsTotal = (int)(
+                (OutfitStats.MaxHp ?? 0) * 0.2
+                + (OutfitStats.MaxMp ?? 0) * 0.2
+                + (OutfitStats.Strength ?? 0) * 0.2
+                + (OutfitStats.Vitality ?? 0) * 0.2
+                + (OutfitStats.Magic ?? 0) * 0.2
+                + (OutfitStats.Spirit ?? 0) * 0.2
+                + OutfitStats.Fire ?? 0
+                + OutfitStats.Ice ?? 0
+                + OutfitStats.Thunder ?? 0
+                + OutfitStats.Dark ?? 0
+                + OutfitStats.Ballistic ?? 0);
+            StateHasChanged();
+        });
+    }
+}

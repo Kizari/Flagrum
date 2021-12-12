@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Components
+
+<div class="box mt-4">
+    <EditForm Model="Parent">
+        <div class="p-4">
+            <table class="w-full right-align-all-labels">
+                <tr>
+                    <td>
+                        <label>DESCRIPTION</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </EditForm>
+</div>
+
+@code
+{
+    [CascadingParameter]
+    public Configure Parent { get; set; }
+}

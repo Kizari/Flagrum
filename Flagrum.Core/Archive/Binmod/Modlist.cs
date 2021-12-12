@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using CsvHelper;
 
-namespace Flagrum.Core.Archive;
+namespace Flagrum.Core.Archive.Binmod;
 
 public class ModlistEntry
 {

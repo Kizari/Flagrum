@@ -12,7 +12,7 @@ using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
-namespace Flagrum.Core.Archive;
+namespace Flagrum.Core.Archive.Binmod;
 
 public enum Boye
 {
@@ -31,15 +31,15 @@ public class BinmodBuilder
     {
         _mod = mod;
         _packer = new Packer();
-        _packer.AddFile(_mod.ToModmeta(), GetDataPath("index.modmeta"));
+        _packer.AddFile(Modmeta.Build(_mod), GetDataPath("index.modmeta"));
 
-        var exml = EntityPackageBuilder.BuildExml(_mod.ModelName, _mod.ModDirectoryName, _mod.Target);
+        var exml = EntityPackageBuilder.BuildExml(_mod);
         _packer.AddFile(exml, "data://$mod/temp.exml");
 
         var tempFile = Path.GetTempFileName();
         var tempFile2 = Path.GetTempFileName();
         File.WriteAllBytes(tempFile, previewImage);
-        BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Color);
+        BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
         var btex = File.ReadAllBytes(tempFile2);
 
         _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
@@ -114,8 +114,9 @@ public class BinmodBuilder
                         {
                             textureType = BtexConverter.TextureType.Normal;
                         }
-                        else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase) ||
-                                 textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
+                        else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase)
+                                 || textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase)
+                                 || textureId.Contains("emissive", StringComparison.OrdinalIgnoreCase))
                         {
                             textureType = BtexConverter.TextureType.Color;
                         }
@@ -180,7 +181,7 @@ public class BinmodBuilder
         }
 
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, _mod.ModelName, gpubin);
-        var replacer = new ModelReplacer(model, gpubin, _mod.Target.ToString());
+        var replacer = new ModelReplacer(model, gpubin, BinmodTypeHelper.GetModmetaTargetName(_mod.Type, _mod.Target));
         model = replacer.Replace();
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
@@ -277,6 +278,11 @@ public class BinmodBuilder
         if (textureId.ToLower().Contains("opacity"))
         {
             return "_a";
+        }
+
+        if (textureId.ToLower().Contains("emissive"))
+        {
+            return "_e";
         }
 
         return "";

@@ -1,4 +1,4 @@
-﻿@using Flagrum.Core.Archive
+﻿@using Flagrum.Core.Archive.Binmod
 @inject NavigationManager Navigation
 @inject Settings Settings
 @inject JSInterop Interop
@@ -22,7 +22,7 @@
     <div class="p-3 row">
         <span class="text-sm font-display flex-grow"
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">
-            @Mod.GameMenuTitle
+            @(Mod.GameMenuTitle ?? Mod.WorkshopTitle)
         </span>
         <span class="material-icons-outlined text-sm cursor-pointer" @onclick="Configure">build</span>
     </div>

@@ -1,5 +1,9 @@
-﻿using Flagrum.Console.Utilities;
-using Flagrum.Core.Gfxbin.Gmtl;
+﻿using System.IO;
+using System.Linq;
+using System.Text;
+using Flagrum.Console.Utilities;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Gfxbin.Gmdl;
 
 namespace Flagrum.Console;
 
@@ -7,12 +11,63 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        // var gfx = "C:\\Testing\\ModelReplacements\\mo-sword\\mod\\sword_1\\khopesh.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        // foreach (var node in model.NodeTable)
+        // {
+        //     System.Console.WriteLine(node.Name);
+        //     for (int i = 0; i < node.Matrix.Rows.Count; i++)
+        //     {
+        //         System.Console.WriteLine($"{node.Matrix.Rows[i].X}, {node.Matrix.Rows[i].Y}, {node.Matrix.Rows[i].Z}");
+        //     }
+        // }
+        //
+        // return;
+
+        var gfx =
+            "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.gmdl.gfxbin";
+        var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+
+        var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        var model = reader.Read();
+        var builder = new StringBuilder();
+        builder.AppendLine("var dictionary = new Dictionary<ulong, string>");
+        builder.AppendLine("{");
+        foreach (var dependency in model.Header.Dependencies)
+        {
+            if (ulong.TryParse(dependency.PathHash, out var pathHash))
+            {
+                builder.Append("    {" + pathHash + ", \"" + dependency.Path + "\"}");
+                if (dependency != model.Header.Dependencies.Last())
+                {
+                    builder.Append(",");
+                }
+
+                builder.Append("\n");
+            }
+        }
+
+        builder.AppendLine("};");
+        File.WriteAllText("C:\\Modding\\Dependencies.cs", builder.ToString());
+
+        // var unpacker = new Unpacker("C:\\Modding\\ardyn_gladio.ffxvbinmod");
+        // var packer = unpacker.ToPacker();
+        // // var material =
+        // //     File.ReadAllBytes(
+        // //         "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin");
+        // //
+        // // packer.UpdateFile("chest.gmtl", material);
+        // packer.WriteToFile("C:\\Modding\\0e828ff5-d9dd-4b9b-b6f5-c26a1ed6ad43.ffxvbinmod");
+
+        //ModelReplacementTableToCs.Run();
         //GfxbinTests.GetBoneTable();
-        GfxbinTests.CheckMaterialDefaults();
+        //GfxbinTests.CheckMaterialDefaults();
         //var gfxbin = "C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
         //var materialReader = new MaterialReader(gfxbin);
         //var material = materialReader.Read();
-        
+
         // GfxbinToBoneDictionary.Run("C:\\Testing\\character\\nh\\nh03\\model_000\\nh03_000.gmdl.gfxbin");
         // var gfxbinData =
         //     File.ReadAllBytes(
