@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Flagrum.Core.Gfxbin.Data;
 
 namespace Flagrum.Core.Gfxbin.Gmtl.Data;
@@ -46,4 +47,6 @@ public class Material
     public uint InputsBufferSize { get; set; }
 
     public string Uri { get; set; }
+
+    public List<(string Path, string OffsetPath)> StringPropertyPaths { get; set; } = new();
 }

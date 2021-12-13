@@ -94,6 +94,13 @@ public class BinaryWriter
 
     public void WriteHalf(Half value)
     {
+        var bytes = BitConverter.GetBytes(value);
+        if (bytes[1] == 0)
+        {
+            _stream.WriteByte(bytes[0]);
+            return;
+        }
+        
         _stream.WriteByte((byte)TypeFormat.Uint16);
         _stream.Write(BitConverter.GetBytes(value));
     }
@@ -117,6 +124,7 @@ public class BinaryWriter
         }
         else
         {
+            _stream.WriteByte((byte)TypeFormat.Bin8);
             _stream.WriteByte((byte)bin.Length);
         }
 

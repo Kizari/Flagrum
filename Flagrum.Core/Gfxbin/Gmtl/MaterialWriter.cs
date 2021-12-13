@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Gfxbin.Serialization;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Gfxbin.Gmtl;
 
@@ -31,7 +33,7 @@ public class MaterialWriter
         WriteSamplers();
         WriteShaderBinaries();
         WriteShaderPrograms();
-
+        
         _writer.WriteBin(inputBuffer.ToArray());
         _writer.WriteBin(stringBuffer.ToArray());
 
@@ -41,57 +43,81 @@ public class MaterialWriter
     private byte[] CreateStringBuffer()
     {
         var stringBuffer = new StringBuffer();
-        var tuples = new List<(object, PropertyInfo, string)>
-            {(_material, typeof(Material).GetProperty(nameof(Material.NameOffset)), _material.Name)};
+        // var tuples = new List<(object, PropertyInfo, string, uint)>
+        //     {(_material, typeof(Material).GetProperty(nameof(Material.NameOffset)), _material.Name, _material.NameHash)};
+        //
+        // foreach (var input in _material.InterfaceInputs)
+        // {
+        //     tuples.Add((input,
+        //         typeof(MaterialInterfaceInput).GetProperty(nameof(MaterialInterfaceInput.NameOffset)), input.Name, input.NameHash));
+        //     tuples.Add((input,
+        //         typeof(MaterialInterfaceInput).GetProperty(nameof(MaterialInterfaceInput.ShaderGenNameOffset)),
+        //         input.ShaderGenName, input.ShaderGenNameHash));
+        // }
+        //
+        // foreach (var @interface in _material.Interfaces)
+        // {
+        //     tuples.Add((@interface, typeof(MaterialInterface).GetProperty(nameof(MaterialInterface.NameOffset)),
+        //         @interface.Name, @interface.NameHash));
+        //     tuples.Add((@interface,
+        //         typeof(MaterialInterface).GetProperty(nameof(MaterialInterface.ShaderGenNameOffset)),
+        //         @interface.ShaderGenName, @interface.ShaderGenNameHash));
+        // }
+        //
+        // foreach (var texture in _material.Textures)
+        // {
+        //     tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.NameOffset)),
+        //         texture.Name, texture.NameHash));
+        //     tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.ShaderGenNameOffset)),
+        //         texture.ShaderGenName, texture.ShaderGenNameHash));
+        //     tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.PathOffset)),
+        //         texture.Path, texture.PathHash));
+        // }
+        //
+        // foreach (var sampler in _material.Samplers)
+        // {
+        //     tuples.Add((sampler, typeof(MaterialSampler).GetProperty(nameof(MaterialSampler.NameOffset)),
+        //         sampler.Name, Cryptography.Hash32(sampler.Name)));
+        //     tuples.Add((sampler, typeof(MaterialSampler).GetProperty(nameof(MaterialSampler.ShaderGenNameOffset)),
+        //         sampler.ShaderGenName, Cryptography.Hash32(sampler.ShaderGenName)));
+        // }
+        //
+        // foreach (var shader in _material.ShaderBinaries)
+        // {
+        //     tuples.Add((shader, typeof(MaterialShaderBinary).GetProperty(nameof(MaterialShaderBinary.PathOffset)),
+        //         shader.Path, Cryptography.Hash32(shader.Path)));
+        // }
+        //
+        // tuples.Add((_material, typeof(Material).GetProperty(nameof(Material.HighTexturePackAssetOffset)),
+        //     _material.HighTexturePackAsset, Cryptography.Hash32(_material.HighTexturePackAsset)));
 
-        foreach (var input in _material.InterfaceInputs)
+        // foreach (var (instance, propertyInfo, stringValue, hash) in tuples.OrderBy(d => d.Item4))
+        // {
+        //     propertyInfo.SetValue(instance, stringBuffer.Put(stringValue));
+        // }
+
+        foreach (var (path, offsetPath) in _material.StringPropertyPaths)
         {
-            tuples.Add((input,
-                typeof(MaterialInterfaceInput).GetProperty(nameof(MaterialInterfaceInput.NameOffset)), input.Name));
-            tuples.Add((input,
-                typeof(MaterialInterfaceInput).GetProperty(nameof(MaterialInterfaceInput.ShaderGenNameOffset)),
-                input.ShaderGenName));
-        }
-
-        foreach (var @interface in _material.Interfaces)
-        {
-            tuples.Add((@interface, typeof(MaterialInterface).GetProperty(nameof(MaterialInterface.NameOffset)),
-                @interface.Name));
-            tuples.Add((@interface,
-                typeof(MaterialInterface).GetProperty(nameof(MaterialInterface.ShaderGenNameOffset)),
-                @interface.ShaderGenName));
-        }
-
-        foreach (var texture in _material.Textures)
-        {
-            tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.NameOffset)),
-                texture.Name));
-            tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.ShaderGenNameOffset)),
-                texture.ShaderGenName));
-            tuples.Add((texture, typeof(MaterialTexture).GetProperty(nameof(MaterialTexture.PathOffset)),
-                texture.Path));
-        }
-
-        foreach (var sampler in _material.Samplers)
-        {
-            tuples.Add((sampler, typeof(MaterialSampler).GetProperty(nameof(MaterialSampler.NameOffset)),
-                sampler.Name));
-            tuples.Add((sampler, typeof(MaterialSampler).GetProperty(nameof(MaterialSampler.ShaderGenNameOffset)),
-                sampler.ShaderGenName));
-        }
-
-        foreach (var shader in _material.ShaderBinaries)
-        {
-            tuples.Add((shader, typeof(MaterialShaderBinary).GetProperty(nameof(MaterialShaderBinary.PathOffset)),
-                shader.Path));
-        }
-
-        tuples.Add((_material, typeof(Material).GetProperty(nameof(Material.HighTexturePackAssetOffset)),
-            _material.HighTexturePackAsset));
-
-        foreach (var (instance, propertyInfo, stringValue) in tuples.OrderBy(d => d.Item3.Length))
-        {
-            propertyInfo.SetValue(instance, stringBuffer.Put(stringValue));
+            if (!path.Contains('.'))
+            {
+                var pathProperty = typeof(Material).GetProperty(path);
+                var offsetProperty = typeof(Material).GetProperty(offsetPath);
+                offsetProperty.SetValue(_material, stringBuffer.Put((string)pathProperty.GetValue(_material)));
+            }
+            else
+            {
+                var tokens = path.Split('.');
+                var listPath = tokens[0].Remove(tokens[0].IndexOf('['));
+                var index = tokens[0].Substring(tokens[0].IndexOf('[') + 1);
+                index = index.Remove(index.IndexOf(']'));
+                var propertyPath = tokens[1];
+                var listProperty = typeof(Material).GetProperty(listPath);
+                var list = listProperty.GetValue(_material);
+                var item = typeof(IList).GetMethod("get_Item").Invoke(list, new object[] {int.Parse(index)});
+                var pathProperty = item.GetType().GetProperty(propertyPath);
+                var offsetProperty = item.GetType().GetProperty(offsetPath.Split('.')[1]);
+                offsetProperty.SetValue(item, stringBuffer.Put((string)pathProperty.GetValue(item)));
+            }
         }
 
         return stringBuffer.ToArray();

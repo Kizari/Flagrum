@@ -9,7 +9,9 @@ using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Services.Logging;
 using Flagrum.Core.Utilities;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Flagrum.Core.Archive.Binmod;
@@ -56,7 +58,7 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(string btexConverterPath, byte[] fmd, string gameDataDirectory)
+    public void AddFmd(string btexConverterPath, byte[] fmd, ILogger logger)
     {
         using var memoryStream = new MemoryStream(fmd);
         using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
@@ -69,22 +71,39 @@ public class BinmodBuilder
         var json = Encoding.UTF8.GetString(dataStream.ToArray());
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
 
-        var gameAssets = new List<string>();
-
         foreach (var mesh in gpubin.Meshes)
         {
+            var replacements = new Dictionary<string, string>();
             foreach (var (textureId, filePath) in mesh.Material.Textures)
             {
                 if (string.IsNullOrEmpty(filePath))
                 {
                     if (MaterialBuilder.DefaultTextures.TryGetValue(textureId, out var replacement))
                     {
-                        mesh.Material.TextureData.Add(new TextureData
+                        string replacementUri;
+                        if (replacement == "white.btex" || replacement == "white-color.btex")
                         {
-                            Id = textureId,
-                            Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
-                            Data = MaterialBuilder.GetDefaultTextureData(replacement)
-                        });
+                            replacementUri = "data://shader/defaulttextures/white.tif";
+                        }
+                        else if (replacement == "blue.btex")
+                        {
+                            replacementUri = "data://shader/defaulttextures/lightblue.tif";
+                        }
+                        else if (replacement == "black.btex")
+                        {
+                            replacementUri = "data://shader/defaulttextures/black.tif";
+                        }
+                        else
+                        {
+                            replacementUri = "data://shader/defaulttextures/gray.tif";
+                        }
+                        replacements.Add(textureId, replacementUri);
+                        // mesh.Material.TextureData.Add(new TextureData
+                        // {
+                        //     Id = textureId,
+                        //     Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
+                        //     Data = MaterialBuilder.GetDefaultTextureData(replacement)
+                        // });
                     }
                 }
                 else
@@ -160,10 +179,47 @@ public class BinmodBuilder
                 {
                     Name = p.Id,
                     Path = p.Uri
-                }).ToList());
+                }).ToList(),
+                replacements);
+            
+            // var textureMatch = material.Textures.FirstOrDefault(t => t.Path == "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif");
+            // if (textureMatch != null)
+            // {
+            //     var dependencyMatch =
+            //         material.Header.Dependencies.FirstOrDefault(d => d.PathHash == textureMatch.ResourceFileHash.ToString());
+            //
+            //     var hashIndex = material.Header.Hashes.IndexOf(textureMatch.ResourceFileHash);
+            //     
+            //     textureMatch.Path = $"data://mod/{_mod.ModDirectoryName}/sourceimages/bodyshape_basecolor0_texture_b.btex";
+            //     textureMatch.PathHash = Cryptography.Hash32(textureMatch.Path);
+            //     textureMatch.ResourceFileHash = Cryptography.HashFileUri64(textureMatch.Path);
+            //
+            //     dependencyMatch.Path = textureMatch.Path;
+            //     dependencyMatch.PathHash = textureMatch.ResourceFileHash.ToString();
+            //     material.Header.Hashes[hashIndex] = textureMatch.ResourceFileHash;
+            // }
+            
+            logger.LogInformation($"Material Name: {material.Name} ({Cryptography.Hash32(material.Name)})");
+            logger.LogInformation($"Material Hash: {material.NameHash}");
+            logger.LogInformation($"Material Uri: {material.Uri}");
 
+            foreach (var dependency in material.Header.Dependencies)
+            {
+                logger.LogInformation($"{dependency.PathHash}: {dependency.Path}");
+            }
+
+            foreach (var texture in material.Textures)
+            {
+                logger.LogInformation($"{texture.NameHash}: {texture.Name}");
+                logger.LogInformation($"{texture.PathHash}: {texture.Path}");
+                logger.LogInformation($"{texture.ShaderGenNameHash}: {texture.ShaderGenName}");
+                logger.LogInformation($"{texture.ResourceFileHash}");
+                var path =
+                    $"data://mod/{_mod.Uuid}/sourceimages/{texture.ShaderGenName.ToLower()}{GetTextureSuffix(texture.ShaderGenName)}.btex";
+                logger.LogInformation($"{Cryptography.HashFileUri64(path)}: {path}");
+            }
+            
             var materialWriter = new MaterialWriter(material);
-
             AddFile(material.Uri, materialWriter.Write());
 
             foreach (var texture in mesh.Material.TextureData)
@@ -173,79 +229,34 @@ public class BinmodBuilder
                     AddFile(texture.Uri, texture.Data);
                 }
             }
-
-            gameAssets.AddRange(material.ShaderBinaries.Select(s => s.Path));
-            gameAssets.AddRange(material.Textures
-                .Where(t => !t.Path.StartsWith("data://mod"))
-                .Select(t => t.Path));
         }
 
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, _mod.ModelName, gpubin);
         var replacer = new ModelReplacer(model, gpubin, BinmodTypeHelper.GetModmetaTargetName(_mod.Type, _mod.Target));
         model = replacer.Replace();
+
+        logger.LogInformation("Model Name: " + model.Name);
+        logger.LogInformation($"Model Hash: {model.AssetHash}");
+        logger.LogInformation("\nModel Dependencies:");
+        foreach (var dependency in model.Header.Dependencies)
+        {
+            logger.LogInformation($"{dependency.PathHash}: {dependency.Path}");
+        }
+
+        logger.LogInformation("\nModel Materials:");
+        foreach (var mesh in model.MeshObjects[0].Meshes)
+        {
+            logger.LogInformation($"{mesh.DefaultMaterialHash}");
+
+            var materialPath = $"data://mod/{_mod.Uuid}/materials/{mesh.Name}_mat.gmtl";
+            logger.LogInformation($"{Cryptography.HashFileUri64(materialPath)}: {materialPath}");
+        }
+        
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
 
         AddFile(GetDataPath($"{_mod.ModelName}.gmdl.gfxbin"), gfxData);
         AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
-
-        AddGameAssets(gameAssets.Distinct(), gameDataDirectory + "\\");
-    }
-
-    /// <summary>
-    ///     Add a copy of a game asset to the archive
-    ///     Asset will be read from the EARC and copied to the archive
-    /// </summary>
-    public void AddGameAssets(IEnumerable<string> paths, string dataDirectory)
-    {
-        var archiveDictionary = new Dictionary<string, List<string>>();
-
-        foreach (var uri in paths)
-        {
-            var path = uri.Replace("data://", dataDirectory).Replace('/', '\\');
-            var fileName = path.Split('\\').Last();
-            path = path.Replace(fileName, "autoexternal.earc");
-
-            while (!Directory.Exists(Path.GetDirectoryName(path)))
-            {
-                var newPath = "";
-                var tokens = path.Split('\\');
-                for (var i = 0; i < tokens.Length - 2; i++)
-                {
-                    newPath += tokens[i];
-
-                    if (i != tokens.Length - 3)
-                    {
-                        newPath += '\\';
-                    }
-                }
-
-                path = newPath + "\\autoexternal.earc";
-            }
-
-            if (!archiveDictionary.ContainsKey(path))
-            {
-                archiveDictionary.Add(path, new List<string>());
-            }
-
-            archiveDictionary[path].Add(uri);
-        }
-
-        foreach (var (archivePath, uriList) in archiveDictionary)
-        {
-            var unpacker = new Unpacker(archivePath);
-
-            foreach (var uri in uriList)
-            {
-                var fileData = unpacker.UnpackFileByQuery(uri);
-                if (fileData.Length == 0)
-                {
-                    throw new InvalidOperationException($"URI {uri} must exist in game files!");
-                }
-
-                _packer.AddFile(fileData, uri);
-            }
-        }
     }
 
     private string GetDataPath(string relativePath)

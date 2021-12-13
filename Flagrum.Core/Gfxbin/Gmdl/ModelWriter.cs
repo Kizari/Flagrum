@@ -162,7 +162,7 @@ public class ModelWriter
 
                 // TODO: More versioning for the rest of this method (see reader)
 
-                // FIXME: Should be written as an int, not uint
+                // TODO: Should be written as an int, not uint
                 _writer.WriteUInt((uint)mesh.DrawPriorityOffset);
 
                 _writer.Write((mesh.Flags & 1u) != 0);

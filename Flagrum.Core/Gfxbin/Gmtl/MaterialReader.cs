@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
+using Flagrum.Core.Utilities;
 using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader;
 
 namespace Flagrum.Core.Gfxbin.Gmtl;
@@ -16,7 +18,7 @@ public class MaterialReader
 
     public MaterialReader(string filePath) : this(File.ReadAllBytes(filePath)) { }
 
-    private MaterialReader(byte[] materialData)
+    public MaterialReader(byte[] materialData)
     {
         _reader = new BinaryReader(materialData);
         _material = new Material();
@@ -351,47 +353,73 @@ public class MaterialReader
 
     private void ReadStrings()
     {
+        var propertyPaths = new List<(ulong offset, string path, string offsetPath)>();
+        
         _reader.UnpackBlob(out var buffer, out _);
         _stringBuffer = buffer;
 
         _material.Name = GetStringFromBuffer(_material.NameOffset);
+        propertyPaths.Add((_material.NameOffset, nameof(Material.Name), nameof(Material.NameOffset)));
 
-        foreach (var materialInterface in _material.Interfaces)
+        for (var i = 0; i < _material.Interfaces.Count; i++)
         {
+            var materialInterface = _material.Interfaces[i];
             materialInterface.Name = GetStringFromBuffer(materialInterface.NameOffset);
             materialInterface.ShaderGenName = GetStringFromBuffer(materialInterface.ShaderGenNameOffset);
+            var i1 = i;
+            propertyPaths.Add((materialInterface.NameOffset, $"{nameof(Material.Interfaces)}[{i1}].{nameof(MaterialInterface.Name)}", $"{nameof(Material.Interfaces)}[{i1}].{nameof(MaterialInterface.NameOffset)}"));
+            propertyPaths.Add((materialInterface.ShaderGenNameOffset, $"{nameof(Material.Interfaces)}[{i1}].{nameof(MaterialInterface.ShaderGenName)}", $"{nameof(Material.Interfaces)}[{i1}].{nameof(MaterialInterface.ShaderGenNameOffset)}"));
         }
 
-        foreach (var input in _material.InterfaceInputs)
+        for (var i = 0; i < _material.InterfaceInputs.Count; i++)
         {
+            var input = _material.InterfaceInputs[i];
             input.Name = GetStringFromBuffer(input.NameOffset);
             input.ShaderGenName = GetStringFromBuffer(input.ShaderGenNameOffset);
+            var i1 = i;
+            propertyPaths.Add((input.NameOffset, $"{nameof(Material.InterfaceInputs)}[{i1}].{nameof(MaterialInterfaceInput.Name)}", $"{nameof(Material.InterfaceInputs)}[{i1}].{nameof(MaterialInterfaceInput.NameOffset)}"));
+            propertyPaths.Add((input.ShaderGenNameOffset, $"{nameof(Material.InterfaceInputs)}[{i1}].{nameof(MaterialInterfaceInput.ShaderGenName)}", $"{nameof(Material.InterfaceInputs)}[{i1}].{nameof(MaterialInterfaceInput.ShaderGenNameOffset)}"));
         }
 
-        foreach (var texture in _material.Textures)
+        for (var i = 0; i < _material.Textures.Count; i++)
         {
+            var texture = _material.Textures[i];
             texture.Name = GetStringFromBuffer(texture.NameOffset);
             texture.ShaderGenName = GetStringFromBuffer(texture.ShaderGenNameOffset);
             texture.Path = GetStringFromBuffer(texture.PathOffset);
+            var i1 = i;
+            propertyPaths.Add((texture.NameOffset, $"{nameof(Material.Textures)}[{i1}].{nameof(MaterialTexture.Name)}", $"{nameof(Material.Textures)}[{i1}].{nameof(MaterialTexture.NameOffset)}"));
+            propertyPaths.Add((texture.ShaderGenNameOffset, $"{nameof(Material.Textures)}[{i1}].{nameof(MaterialTexture.ShaderGenName)}", $"{nameof(Material.Textures)}[{i1}].{nameof(MaterialTexture.ShaderGenNameOffset)}"));
+            propertyPaths.Add((texture.PathOffset, $"{nameof(Material.Textures)}[{i1}].{nameof(MaterialTexture.Path)}", $"{nameof(Material.Textures)}[{i1}].{nameof(MaterialTexture.PathOffset)}"));
         }
 
-        foreach (var sampler in _material.Samplers)
+        for (var i = 0; i < _material.Samplers.Count; i++)
         {
+            var sampler = _material.Samplers[i];
             sampler.Name = GetStringFromBuffer(sampler.NameOffset);
             sampler.ShaderGenName = GetStringFromBuffer(sampler.ShaderGenNameOffset);
+            var i1 = i;
+            propertyPaths.Add((sampler.NameOffset, $"{nameof(Material.Samplers)}[{i1}].{nameof(MaterialSampler.Name)}", $"{nameof(Material.Samplers)}[{i1}].{nameof(MaterialSampler.NameOffset)}"));
+            propertyPaths.Add((sampler.ShaderGenNameOffset, $"{nameof(Material.Samplers)}[{i1}].{nameof(MaterialSampler.ShaderGenName)}", $"{nameof(Material.Samplers)}[{i1}].{nameof(MaterialSampler.ShaderGenNameOffset)}"));
         }
 
-        foreach (var shader in _material.ShaderBinaries)
+        for (var i = 0; i < _material.ShaderBinaries.Count; i++)
         {
+            var shader = _material.ShaderBinaries[i];
             shader.Path = GetStringFromBuffer(shader.PathOffset);
+            var i1 = i;
+            propertyPaths.Add((shader.PathOffset, $"{nameof(Material.ShaderBinaries)}[{i1}].{nameof(MaterialShaderBinary.Path)}", $"{nameof(Material.ShaderBinaries)}[{i1}].{nameof(MaterialShaderBinary.PathOffset)}"));
         }
 
         if (_material.HighTexturePackAssetOffset != 0)
         {
             _material.HighTexturePackAsset = GetStringFromBuffer(_material.HighTexturePackAssetOffset);
+            propertyPaths.Add((_material.HighTexturePackAssetOffset, nameof(Material.HighTexturePackAsset), nameof(Material.HighTexturePackAssetOffset)));
         }
-    }
 
+        _material.StringPropertyPaths = propertyPaths.OrderBy(p => p.offset).Select(p => (p.path, p.offsetPath)).ToList();
+    }
+    
     private string GetStringFromBuffer(ulong offset)
     {
         var sb = new StringBuilder();

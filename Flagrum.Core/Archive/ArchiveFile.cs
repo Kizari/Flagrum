@@ -30,12 +30,14 @@ public class ArchiveFile
     {
         RelativePath = uri.Replace("data://", "");
 
-        if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif") || RelativePath.EndsWith(".dds"))
+        if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif") || RelativePath.EndsWith(".dds") || RelativePath.EndsWith(".png"))
         {
             RelativePath = RelativePath
                 .Replace(".tga", ".btex")
                 .Replace(".tif", ".btex")
-                .Replace(".dds", ".btex");
+                .Replace(".dds", ".btex")
+                .Replace(".png", ".btex");
+            // TODO: Add other image types
         }
 
         var newUri = uri

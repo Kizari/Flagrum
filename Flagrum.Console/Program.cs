@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Archive;
+using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl;
@@ -14,6 +16,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        //MaterialsToTemplates.Run();
         // var gfx = "C:\\Testing\\ModelReplacements\\mo-sword\\mod\\sword_1\\khopesh.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
@@ -29,11 +32,15 @@ public class Program
         //
         // return;
 
-        // var gfx =
-        //     "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin";
-        //
-        // var reader = new MaterialReader(gfx);
-        // var material = reader.Read();
+        var gfx =
+            "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin";
+        
+        var reader = new MaterialReader(gfx);
+        var material = reader.Read();
+        foreach (var texture in material.Textures)
+        {
+            System.Console.WriteLine(texture.Name + ": " + texture.Path);
+        }
         //
         // System.Console.WriteLine(material.NameHash);
         // System.Console.WriteLine(material.Name);
@@ -52,22 +59,25 @@ public class Program
         //     System.Console.WriteLine($"{Cryptography.Hash32(texture.ShaderGenName)}: {texture.ShaderGenName}");
         // }
         
-        // var gfx = "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin";
-        // var reader = new MaterialReader(gfx);
-        // var material = reader.Read();
-        //
-        // foreach (var dependency in material.Header.Dependencies)
-        // {
-        //     if (dependency.PathHash != "ref" && dependency.PathHash != "asset_uri")
-        //     {
-        //         dependency.PathHash = Cryptography.HashFileUri64(dependency.Path).ToString();
-        //     }
-        // }
-        //
-        // var writer = new MaterialWriter(material);
-        // File.WriteAllBytes(
-        //     "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest_copy.gmtl.gfxbin",
-        //     writer.Write());
+        //var gfx = "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin";
+         // var gfx =
+         //      "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh00\\model_000\\materials\\nh00_000_skin_02_mat.gmtl.gfxbin";
+         // var reader = new MaterialReader(gfx);
+         // var material = reader.Read();
+         //
+         // var dependencies = new List<DependencyPath>();
+         // dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
+         // dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
+         // dependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://character/nh/nh00/model_000/materials/"});
+         // dependencies.Add(new DependencyPath { PathHash = "ref", Path = $"data://character/nh/nh00/model_000/materials/nh00_000_skin_02_mat.gmtl"});
+         // material.Header.Dependencies = dependencies.DistinctBy(d => d.PathHash).ToList();
+         //
+         // var writer = new MaterialWriter(material);
+         // File.WriteAllBytes(
+         //     "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh00\\model_000\\materials\\nh00_000_skin_02_mat_copy.gmtl.gfxbin",
+         //     writer.Write());
+        
+        
 
         // var gfx =
         //     "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.gmdl.gfxbin";
@@ -112,14 +122,14 @@ public class Program
         // builder.AppendLine("};");
         // File.WriteAllText("C:\\Modding\\Dependencies.cs", builder.ToString());
 
-        var unpacker = new Unpacker("C:\\Modding\\ardyn_gladio.earc");
-        var packer = unpacker.ToPacker();
-        // var material =
-        //     File.ReadAllBytes(
-        //         "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin");
-        //
-        // packer.UpdateFile("chest.gmtl", material);
-        packer.WriteToFile("C:\\Modding\\0e828ff5-d9dd-4b9b-b6f5-c26a1ed6ad43.earc");
+        // var unpacker = new Unpacker("C:\\Modding\\ardyn_gladio.earc");
+        // var packer = unpacker.ToPacker();
+        // // var material =
+        // //     File.ReadAllBytes(
+        // //         "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.fbxgmtl\\chest.gmtl.gfxbin");
+        // //
+        // // packer.UpdateFile("chest.gmtl", material);
+        // packer.WriteToFile("C:\\Modding\\0e828ff5-d9dd-4b9b-b6f5-c26a1ed6ad43.earc");
 
         //ModelReplacementTableToCs.Run();
         //GfxbinTests.GetBoneTable();

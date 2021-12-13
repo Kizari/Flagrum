@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
@@ -85,7 +87,8 @@ public static class MaterialBuilder
 
     public static Material FromTemplate(string templateName, string materialName, string modDirectoryName,
         List<MaterialInputData> inputs,
-        List<MaterialTextureData> textures)
+        List<MaterialTextureData> textures,
+        Dictionary<string, string> replacements)
     {
         var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
         var json = File.ReadAllText(templatePath);
@@ -105,19 +108,39 @@ public static class MaterialBuilder
             SetTexturePath(material, texture.Name, texture.Path);
         }
 
-        var referenceUri = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
-        if (referenceUri != null)
-        {
-            referenceUri.Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
-        }
-
-        var assetUri = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
-        if (assetUri != null)
-        {
-            assetUri.Path = $"data://mod/{modDirectoryName}/materials/";
-        }
-
         material.HighTexturePackAsset = "";
+        
+        foreach (var (textureId, replacementUri) in replacements)
+        {
+            var match = material.Textures.FirstOrDefault(t => t.ShaderGenName == textureId);
+            match.Path = replacementUri;
+            match.PathHash = Cryptography.Hash32(replacementUri);
+            match.ResourceFileHash = Cryptography.HashFileUri64(replacementUri);
+        }
+
+        var dependencies = new List<DependencyPath>();
+        dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
+        dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
+        dependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/materials/"});
+        dependencies.Add(new DependencyPath { PathHash = "ref", Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl"});
+        material.Header.Dependencies = dependencies.DistinctBy(d => d.PathHash).ToList();
+        material.Header.Hashes = material.Header.Dependencies
+            .Where(d => ulong.TryParse(d.PathHash, out _))
+            .Select(d => ulong.Parse(d.PathHash))
+            .OrderBy(h => h)
+            .ToList();
+
+        // var match = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
+        // if (match != null)
+        // {
+        //     match.Path = $"data://mod/{modDirectoryName}/materials/";
+        // }
+        //
+        // match = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
+        // if (match != null)
+        // {
+        //     match.Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
+        // }
 
         return material;
     }
@@ -145,20 +168,10 @@ public static class MaterialBuilder
             return;
         }
 
-        var dependencyMatch = material.Header.Dependencies.FirstOrDefault(d => d.Path == match.Path);
-
+        //match.HighTextureStreamingLevels = 0;
         match.Path = path;
         match.PathHash = Cryptography.Hash32(path);
         match.ResourceFileHash = Cryptography.HashFileUri64(path);
-
-        // TODO: Rework material editor to generate dependency tables and remove this fallable idiocy
-        if (dependencyMatch == null)
-        {
-            return;
-        }
-
-        dependencyMatch.Path = path;
-        dependencyMatch.PathHash = Cryptography.HashFileUri64(path).ToString();
     }
 
     public static byte[] GetDefaultTextureData(string name)

@@ -5,12 +5,7 @@
 @using Flagrum.Core.Archive.Binmod
 @using Flagrum.Core.Gfxbin.Btex
 @using System.IO
-@using System.IO.Compression
-@using System.Text
 @using Flagrum.Core.Archive
-@using Flagrum.Core.Gfxbin.Gmdl
-@using Flagrum.Core.Gfxbin.Gmdl.Constructs
-@using Newtonsoft.Json
 
 @inject NavigationManager Navigation
 @inject JSInterop Interop
@@ -336,10 +331,10 @@ else
         await Task.Run(() =>
         {
             var builder = new BinmodBuilder(Settings.BTexConverterPath, Mod, Convert.FromBase64String(PreviewBase64));
-            builder.AddFmd(Settings.BTexConverterPath, ModelData, Settings.GameDataDirectory);
+            builder.AddFmd(Settings.BTexConverterPath, ModelData, Logger);
             builder.WriteToFile(Mod.Path);
 
-            Mod.IsApplyToGame = true;
+            Mod.IsApplyToGame = false;
 
             if (Mod.Index == 0)
             {
