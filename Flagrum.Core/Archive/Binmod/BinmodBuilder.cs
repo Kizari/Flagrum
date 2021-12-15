@@ -187,12 +187,11 @@ public class BinmodBuilder
                 out var materialType,
                 out var extras);
 
-            dependencies.AddRange(extras);
-            // // TODO: Remove this!
-            // foreach (var (extraUri, extraData) in extras)
-            // {
-            //     _packer.AddFile(extraData, extraUri);
-            // }
+            // TODO: Remove this!
+            foreach (var (extraUri, extraData) in extras)
+            {
+                _packer.AddFile(extraData, extraUri);
+            }
             
             mesh.MaterialType = materialType;
 
@@ -322,16 +321,19 @@ public class BinmodBuilder
             //         }
             //     }
             // }
-            mesh.ColorMaps = new List<ColorMap>();
-            for (var i = 0; i < 4; i++)
+            if (_mod.Type != (int)BinmodType.Weapon)
             {
-                var colorMap = new ColorMap();
-                colorMap.Colors = new List<Color4>();
-                for (var j = 0; j < mesh.VertexPositions.Count(); j++)
+                mesh.ColorMaps = new List<ColorMap>();
+                for (var i = 0; i < 4; i++)
                 {
-                    colorMap.Colors.Add(new Color4 {R = 255, G = 255, B = 255, A = 255});
+                    var colorMap = new ColorMap();
+                    colorMap.Colors = new List<Color4>();
+                    for (var j = 0; j < mesh.VertexPositions.Count(); j++)
+                    {
+                        colorMap.Colors.Add(new Color4 {R = 255, G = 255, B = 255, A = 255});
+                    }
+                    mesh.ColorMaps.Add(colorMap);
                 }
-                mesh.ColorMaps.Add(colorMap);
             }
             
             // mesh.Flags = 262276;

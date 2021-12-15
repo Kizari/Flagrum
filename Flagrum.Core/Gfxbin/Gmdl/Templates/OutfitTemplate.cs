@@ -110,23 +110,15 @@ public static class OutfitTemplate
     {
         var nodeTable = new List<NodeInformation>
         {
-            BuildNode("Root"),
-            BuildNode("Trans"),
-            BuildNode("Proxy"),
-            BuildNode("Interest"),
-            BuildNode("Mesh")
+            BuildNode("Armature")
+            // BuildNode("Root"),
+            // BuildNode("Trans"),
+            // BuildNode("Proxy"),
+            // BuildNode("Interest"),
+            // BuildNode("Mesh")
         };
 
-        for (var i = 0; i < 8; i++)
-        {
-            nodeTable.Add(BuildNode("LOD" + i));
-            foreach (var meshName in meshNames)
-            {
-                nodeTable.Add(BuildNode(meshName));
-            }
-        }
-
-        //nodeTable.AddRange(meshNames.Select(BuildNode));
+        nodeTable.AddRange(meshNames.Select(BuildNode));
         return nodeTable;
     }
 

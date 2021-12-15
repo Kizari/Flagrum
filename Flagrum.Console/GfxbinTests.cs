@@ -21,10 +21,8 @@ namespace Flagrum.Console;
 
 public class UselessLogger : ILogger
 {
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-    {
-        
-    }
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
+        Func<TState, Exception, string> formatter) { }
 
     public bool IsEnabled(LogLevel logLevel)
     {
@@ -50,7 +48,7 @@ public static class GfxbinTests
         var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
         var model = reader.Read();
-        
+
         var allVertices = model.MeshObjects[0].Meshes
             .SelectMany(m => m.VertexPositions)
             .ToList();
@@ -67,7 +65,7 @@ public static class GfxbinTests
         foreach (var mesh in model.MeshObjects[0].Meshes)
         {
             mesh.ColorMaps.Clear();
-            
+
             mesh.Aabb = new Aabb(
                 new Vector3(
                     mesh.VertexPositions.Min(v => v.X),
@@ -77,7 +75,7 @@ public static class GfxbinTests
                     mesh.VertexPositions.Max(v => v.X),
                     mesh.VertexPositions.Max(v => v.Y),
                     mesh.VertexPositions.Max(v => v.Z)));
-            
+
             var center = new Vector3(
                 (mesh.Aabb.Min.X + mesh.Aabb.Max.X) / 2,
                 (mesh.Aabb.Min.Y + mesh.Aabb.Min.Y) / 2,
@@ -91,10 +89,10 @@ public static class GfxbinTests
                 new Vector3(0, 0, mesh.Aabb.Max.Z - center.Z)
             );
         }
-        
-        
+
+
         model.Header.Dependencies.Clear();
-        
+
         var gpubinPath = $"data://mod/{modDirectoryName}/{modelName}.gpubin";
         var materialUri = $"data://mod/{modDirectoryName}/materials/bodyshape_mat.gmtl";
         model.AssetHash = Cryptography.HashFileUri64(gpubinPath);
@@ -103,11 +101,15 @@ public static class GfxbinTests
             mesh.DefaultMaterialHash = Cryptography.HashFileUri64(materialUri);
             mesh.VertexLayoutType = VertexLayoutType.Skinning_4Bones;
         }
-        
-        model.Header.Dependencies.Add(new DependencyPath {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
-        model.Header.Dependencies.Add(new DependencyPath {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
-        model.Header.Dependencies.Add(new DependencyPath {PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/"});
-        model.Header.Dependencies.Add(new DependencyPath {PathHash = "ref", Path = $"data://mod/{modDirectoryName}/{modelName}.gmdl"});
+
+        model.Header.Dependencies.Add(new DependencyPath
+            {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
+        model.Header.Dependencies.Add(new DependencyPath
+            {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
+        model.Header.Dependencies.Add(new DependencyPath
+            {PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/"});
+        model.Header.Dependencies.Add(new DependencyPath
+            {PathHash = "ref", Path = $"data://mod/{modDirectoryName}/{modelName}.gmdl"});
         model.Header.Dependencies = model.Header.Dependencies
             .OrderBy(d => d.PathHash)
             .ToList();
@@ -116,140 +118,158 @@ public static class GfxbinTests
             .Select(d => ulong.Parse(d.PathHash))
             .OrderBy(h => h)
             .ToList();
-        
+
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
         packer.UpdateFile($"{modelName}.gmdl", gfxData);
         packer.UpdateFile($"{modelName}.gpubin", gpuData);
-        
+
         packer.WriteToFile($"C:\\Modding\\ModelReplacementTesting\\{modDirectoryName}.ffxvbinmod");
     }
-    
+
     public static void BuildGameAssetWeaponMod()
     {
         var btexConverterPath =
             $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
-        
+
         var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
         var mod = new Binmod
         {
             Type = (int)BinmodType.Weapon,
             Target = (int)WeaponSoloTarget.Sword,
-            GameMenuTitle = "Some Sword",
-            WorkshopTitle = "Some Sword",
-            Description = "So sharp!",
-            Uuid = "b9c5399e-61d1-4552-89ea-08b4089205b1",
-            Index = 17219519,
-            ModDirectoryName = "model_010",
-            ModelName = "nh00_010",
+            GameMenuTitle = "Angery Sword",
+            WorkshopTitle = "Angery Sword",
+            Description = "So default!",
+            Uuid = "33684db3-62c7-4a32-be4b-0deb7c293005",
+            Index = 17197479,
+            ModDirectoryName = "33684db3-62c7-4a32-be4b-0deb7c293005",
+            ModelName = "angery_sword",
             Attack = 30,
+            Critical = 2,
             MaxHp = 93,
             MaxMp = 19,
-            Critical = 2,
             Vitality = 12
         };
 
         var packer = new Packer();
-        
-        packer.AddFile( Modmeta.Build(mod), $"data://mod/{mod.ModDirectoryName}/index.modmeta");
+
+        packer.AddFile(Modmeta.Build(mod), $"data://mod/{mod.ModDirectoryName}/index.modmeta");
         var exml = EntityPackageBuilder.BuildExml(mod);
-        packer.AddFile(exml,$"data://$mod/temp.ebex");
-        
+        packer.AddFile(exml, "data://$mod/temp.ebex");
+
         var tempFile = Path.GetTempFileName();
         var tempFile2 = Path.GetTempFileName();
         File.WriteAllBytes(tempFile, previewImage);
         BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
         var btex = File.ReadAllBytes(tempFile2);
-        
+
         packer.AddFile(previewImage, $"data://mod/{mod.ModDirectoryName}/$preview.png.bin");
         packer.AddFile(btex, $"data://mod/{mod.ModDirectoryName}/$preview.png");
 
-        // foreach (var texturePath in Directory.EnumerateFiles("C:\\Modding\\GameAssetTesting\\nh00_010\\sourceimages"))
-        // {
-        //     packer.AddFile(File.ReadAllBytes(texturePath), texturePath
-        //         .Replace("C:\\Modding\\GameAssetTesting\\nh00_010", $"data://mod/{mod.ModDirectoryName}")
-        //         .Replace('\\', '/')
-        //         .Replace(".btex", ".tif"));
-        // }
+        foreach (var texturePath in Directory.EnumerateFiles("C:\\Modding\\Extractions\\character\\we\\we01\\model_100\\sourceimages"))
+        {
+            packer.AddFile(File.ReadAllBytes(texturePath), texturePath
+                .Replace("C:\\Modding\\Extractions\\character\\we\\we01\\model_100", $"data://mod/{mod.ModDirectoryName}")
+                .Replace('\\', '/')
+                .Replace(".btex", ".tif"));
+        }
 
         var gfx = "C:\\Modding\\Extractions\\character\\we\\we01\\model_100\\we01_100.gmdl.gfxbin";
         var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
         var model = reader.Read();
+        foreach (var mesh in model.MeshObjects[0].Meshes)
+        {
+            mesh.MaterialType = MaterialType.FourWeights;
+        }
         var reference = model.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
         var assetUri = model.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
+        reference.Path = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl";
+        assetUri.Path = $"data://mod/{mod.ModDirectoryName}/";
         var gpubin = model.Header.Dependencies.FirstOrDefault(d => d.Path.EndsWith(".gpubin"));
         var index = model.Header.Hashes.IndexOf(ulong.Parse(gpubin.PathHash));
         gpubin.Path = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
-        gpubin.PathHash = Cryptography.HashFileUri64(gpubin.Path).ToString();
-        model.Header.Hashes[index] = Cryptography.HashFileUri64(gpubin.Path);
-        reference.Path = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl";
-        assetUri.Path = $"data://mod/{mod.ModDirectoryName}/";
-        //model.Header.Dependencies.Clear();
-        
-        // foreach (var materialPath in Directory.EnumerateFiles("C:\\Modding\\GameAssetTesting\\nh00_010\\materials"))
-        // {
-        //     var materialUri = materialPath
-        //         .Replace("C:\\Modding\\GameAssetTesting\\nh00_010", $"data://mod/{mod.ModDirectoryName}")
-        //         .Replace('\\', '/')
-        //         .Replace(".gmtl.gfxbin", ".gmtl");
-        //     
-        //     model.Header.Dependencies.Add(new DependencyPath {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
-        //
-        //     var materialReader = new MaterialReader(materialPath);
-        //     var material = materialReader.Read();
-        //     foreach (var texture in material.Textures.Where(t => t.Path.Contains("character/nh/nh00")))
-        //     {
-        //         texture.Path = texture.Path.Replace("data://character/nh/nh00", "data://mod");
-        //         texture.PathHash = Cryptography.Hash32(texture.Path);
-        //         texture.ResourceFileHash = Cryptography.HashFileUri64(texture.Path);
-        //     }
-        //     
-        //     var dependencies = new List<DependencyPath>();
-        //     dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-        //     dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-        //     dependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://mod/{mod.ModDirectoryName}/materials/"});
-        //     dependencies.Add(new DependencyPath { PathHash = "ref", Path = materialUri});
-        //     material.Header.Dependencies = dependencies
-        //         .DistinctBy(d => d.PathHash)
-        //         .OrderBy(d => d.PathHash)
-        //         .ToList();
-        //     material.Header.Hashes = material.Header.Dependencies
-        //         .Where(d => ulong.TryParse(d.PathHash, out _))
-        //         .Select(d => ulong.Parse(d.PathHash))
-        //         .OrderBy(h => h)
-        //         .ToList();
-        //
-        //     var materialWriter = new MaterialWriter(material);
-        //     packer.AddFile(materialWriter.Write(), materialUri);
-        // }
+        var gpubinHash = Cryptography.HashFileUri64(gpubin.Path);
+        gpubin.PathHash = gpubinHash.ToString();
+        model.Header.Hashes[index] = gpubinHash;
+        model.AssetHash = gpubinHash;
+        model.Header.Dependencies.Clear();
 
-        // var gpubinPath = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
-        // model.Header.Dependencies.Add(new DependencyPath {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
-        // model.Header.Dependencies.Add(reference);
-        // model.Header.Dependencies.Add(assetUri);
-        // model.Header.Dependencies = model.Header.Dependencies
-        //     .OrderBy(d => d.PathHash)
-        //     .ToList();
-        // model.Header.Hashes = model.Header.Dependencies
-        //     .Where(d => ulong.TryParse(d.PathHash, out _))
-        //     .Select(d => ulong.Parse(d.PathHash))
-        //     .OrderBy(h => h)
-        //     .ToList();
+        foreach (var materialPath in Directory.EnumerateFiles("C:\\Modding\\Extractions\\character\\we\\we01\\model_100\\materials").Where(f => !f.Contains("backup")))
+        {
+            var materialUri = materialPath
+                .Replace("C:\\Modding\\Extractions\\character\\we\\we01\\model_100", $"data://mod/{mod.ModDirectoryName}")
+                .Replace('\\', '/')
+                .Replace(".gmtl.gfxbin", ".gmtl");
+            
+            model.Header.Dependencies.Add(new DependencyPath {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
         
+            var materialReader = new MaterialReader(materialPath);
+            var material = materialReader.Read();
+            var oldMaterialHash = Cryptography.HashFileUri64(material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref").Path);
+            var matchingMeshes = model.MeshObjects[0].Meshes;//.Where(m => m.DefaultMaterialHash == oldMaterialHash);
+            if (!matchingMeshes.Any())
+            {
+                throw new Exception("REEEEEEE");
+            }
+            
+            foreach (var matchingMesh in matchingMeshes)
+            {
+                matchingMesh.DefaultMaterialHash = Cryptography.HashFileUri64(materialUri);
+            }
+                
+            foreach (var texture in material.Textures.Where(t => t.Path.Contains("character/we/we01")))
+            {
+                texture.Path = texture.Path.Replace("data://character/we/we01", "data://mod");
+                texture.PathHash = Cryptography.Hash32(texture.Path);
+                texture.ResourceFileHash = Cryptography.HashFileUri64(texture.Path);
+            }
+            
+            var dependencies = new List<DependencyPath>();
+            dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
+            dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
+            dependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://mod/{mod.ModDirectoryName}/materials/"});
+            dependencies.Add(new DependencyPath { PathHash = "ref", Path = materialUri});
+            material.Header.Dependencies = dependencies
+                .DistinctBy(d => d.PathHash)
+                .OrderBy(d => d.PathHash)
+                .ToList();
+            material.Header.Hashes = material.Header.Dependencies
+                .Where(d => ulong.TryParse(d.PathHash, out _))
+                .Select(d => ulong.Parse(d.PathHash))
+                .OrderBy(h => h)
+                .ToList();
+        
+            var materialWriter = new MaterialWriter(material);
+            packer.AddFile(materialWriter.Write(), materialUri);
+        }
+        
+        var gpubinPath = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
+        model.Header.Dependencies.Add(new DependencyPath {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
+        model.Header.Dependencies.Add(reference);
+        model.Header.Dependencies.Add(assetUri);
+        model.Header.Dependencies = model.Header.Dependencies
+            .OrderBy(d => d.PathHash)
+            .ToList();
+        model.Header.Hashes = model.Header.Dependencies
+            .Where(d => ulong.TryParse(d.PathHash, out _))
+            .Select(d => ulong.Parse(d.PathHash))
+            .OrderBy(h => h)
+            .ToList();
+
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
-        
+
         packer.AddFile(gfxData, $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl.gfxbin");
         packer.AddFile(gpuData, $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin");
         packer.WriteToFile($"C:\\Modding\\{mod.Uuid}.ffxvbinmod");
     }
-    
+
     public static void BuildGameAssetMod()
     {
         var btexConverterPath =
             $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
-        
+
         var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
         var mod = new Binmod
         {
@@ -262,22 +282,23 @@ public static class GfxbinTests
             Index = 17217034,
             ModDirectoryName = "model_010",
             ModelName = "nh00_010",
-            OriginalGmdls = new List<string>(ModelReplacementPresets.GetOriginalGmdls((int)ModelReplacementTarget.Gladiolus)),
+            OriginalGmdls =
+                new List<string>(ModelReplacementPresets.GetOriginalGmdls((int)ModelReplacementTarget.Gladiolus)),
             OriginalGmdlCount = ModelReplacementPresets.GetOriginalGmdls((int)ModelReplacementTarget.Gladiolus).Length
         };
 
         var packer = new Packer();
-        
-        packer.AddFile( Modmeta.Build(mod), $"data://mod/{mod.ModDirectoryName}/index.modmeta");
+
+        packer.AddFile(Modmeta.Build(mod), $"data://mod/{mod.ModDirectoryName}/index.modmeta");
         var exml = EntityPackageBuilder.BuildExml(mod);
-        packer.AddFile(exml,$"data://$mod/temp.ebex");
-        
+        packer.AddFile(exml, "data://$mod/temp.ebex");
+
         var tempFile = Path.GetTempFileName();
         var tempFile2 = Path.GetTempFileName();
         File.WriteAllBytes(tempFile, previewImage);
         BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
         var btex = File.ReadAllBytes(tempFile2);
-        
+
         packer.AddFile(previewImage, $"data://mod/{mod.ModDirectoryName}/$preview.png.bin");
         packer.AddFile(btex, $"data://mod/{mod.ModDirectoryName}/$preview.png");
 
@@ -305,89 +326,97 @@ public static class GfxbinTests
         model.Header.Hashes[index] = gpubinHash;
         model.AssetHash = gpubinHash;
         model.Header.Dependencies.Clear();
-        
-         foreach (var materialPath in Directory.EnumerateFiles("C:\\Modding\\GameAssetTesting\\nh00_010\\materials"))
-         {
-             var materialUri = materialPath
-                 .Replace("C:\\Modding\\GameAssetTesting\\nh00_010", $"data://mod/{mod.ModDirectoryName}")
-                 .Replace('\\', '/')
-                 .Replace(".gmtl.gfxbin", ".gmtl");
-             
-             model.Header.Dependencies.Add(new DependencyPath {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
-        
-             var materialReader = new MaterialReader(materialPath);
-             var material = materialReader.Read();
-             var oldMaterialHash = Cryptography.HashFileUri64(material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref").Path);
-             var matchingMeshes = model.MeshObjects[0].Meshes.Where(m => m.DefaultMaterialHash == oldMaterialHash);
-             if (!matchingMeshes.Any())
-             {
-                 throw new Exception("REEEEEEE");
-             }
-             
-             foreach (var matchingMesh in matchingMeshes)
-             {
-                 matchingMesh.DefaultMaterialHash = Cryptography.HashFileUri64(materialUri);
-             }
-                 
-             foreach (var texture in material.Textures.Where(t => t.Path.Contains("character/nh/nh00")))
-             {
-                 texture.Path = texture.Path.Replace("data://character/nh/nh00", "data://mod");
-                 texture.PathHash = Cryptography.Hash32(texture.Path);
-                 texture.ResourceFileHash = Cryptography.HashFileUri64(texture.Path);
-             }
-             
-             var dependencies = new List<DependencyPath>();
-             dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-             dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-             dependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://mod/{mod.ModDirectoryName}/materials/"});
-             dependencies.Add(new DependencyPath { PathHash = "ref", Path = materialUri});
-             material.Header.Dependencies = dependencies
-                 .DistinctBy(d => d.PathHash)
-                 .OrderBy(d => d.PathHash)
-                 .ToList();
-             material.Header.Hashes = material.Header.Dependencies
-                 .Where(d => ulong.TryParse(d.PathHash, out _))
-                 .Select(d => ulong.Parse(d.PathHash))
-                 .OrderBy(h => h)
-                 .ToList();
-        
-             var materialWriter = new MaterialWriter(material);
-             packer.AddFile(materialWriter.Write(), materialUri);
-         }
 
-         var gpubinPath = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
-         model.Header.Dependencies.Add(new DependencyPath {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
-         model.Header.Dependencies.Add(reference);
-         model.Header.Dependencies.Add(assetUri);
-         model.Header.Dependencies = model.Header.Dependencies
-             .OrderBy(d => d.PathHash)
-             .ToList();
-         model.Header.Hashes = model.Header.Dependencies
-             .Where(d => ulong.TryParse(d.PathHash, out _))
-             .Select(d => ulong.Parse(d.PathHash))
-             .OrderBy(h => h)
-             .ToList();
-        
+        foreach (var materialPath in Directory.EnumerateFiles("C:\\Modding\\GameAssetTesting\\nh00_010\\materials"))
+        {
+            var materialUri = materialPath
+                .Replace("C:\\Modding\\GameAssetTesting\\nh00_010", $"data://mod/{mod.ModDirectoryName}")
+                .Replace('\\', '/')
+                .Replace(".gmtl.gfxbin", ".gmtl");
+
+            model.Header.Dependencies.Add(new DependencyPath
+                {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
+
+            var materialReader = new MaterialReader(materialPath);
+            var material = materialReader.Read();
+            var oldMaterialHash =
+                Cryptography.HashFileUri64(material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref").Path);
+            var matchingMeshes = model.MeshObjects[0].Meshes.Where(m => m.DefaultMaterialHash == oldMaterialHash);
+            if (!matchingMeshes.Any())
+            {
+                throw new Exception("REEEEEEE");
+            }
+
+            foreach (var matchingMesh in matchingMeshes)
+            {
+                matchingMesh.DefaultMaterialHash = Cryptography.HashFileUri64(materialUri);
+            }
+
+            foreach (var texture in material.Textures.Where(t => t.Path.Contains("character/nh/nh00")))
+            {
+                texture.Path = texture.Path.Replace("data://character/nh/nh00", "data://mod");
+                texture.PathHash = Cryptography.Hash32(texture.Path);
+                texture.ResourceFileHash = Cryptography.HashFileUri64(texture.Path);
+            }
+
+            var dependencies = new List<DependencyPath>();
+            dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s =>
+                new DependencyPath {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
+            dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath
+                {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
+            dependencies.Add(new DependencyPath
+                {PathHash = "asset_uri", Path = $"data://mod/{mod.ModDirectoryName}/materials/"});
+            dependencies.Add(new DependencyPath {PathHash = "ref", Path = materialUri});
+            material.Header.Dependencies = dependencies
+                .DistinctBy(d => d.PathHash)
+                .OrderBy(d => d.PathHash)
+                .ToList();
+            material.Header.Hashes = material.Header.Dependencies
+                .Where(d => ulong.TryParse(d.PathHash, out _))
+                .Select(d => ulong.Parse(d.PathHash))
+                .OrderBy(h => h)
+                .ToList();
+
+            var materialWriter = new MaterialWriter(material);
+            packer.AddFile(materialWriter.Write(), materialUri);
+        }
+
+        var gpubinPath = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
+        model.Header.Dependencies.Add(new DependencyPath
+            {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
+        model.Header.Dependencies.Add(reference);
+        model.Header.Dependencies.Add(assetUri);
+        model.Header.Dependencies = model.Header.Dependencies
+            .OrderBy(d => d.PathHash)
+            .ToList();
+        model.Header.Hashes = model.Header.Dependencies
+            .Where(d => ulong.TryParse(d.PathHash, out _))
+            .Select(d => ulong.Parse(d.PathHash))
+            .OrderBy(h => h)
+            .ToList();
+
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
-        
+
         packer.AddFile(gfxData, $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl.gfxbin");
         packer.AddFile(gpuData, $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin");
         packer.WriteToFile($"C:\\Modding\\{mod.Uuid}.ffxvbinmod");
     }
-    
+
     public static void CheckMod()
     {
         var outPath = "C:\\Testing\\ModelReplacements\\SinglePlayerSword\\";
-        var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
+        var unpacker =
+            new Unpacker(
+                "C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
         var gfx = unpacker.UnpackFileByQuery("khopesh.fbx", out _);
         var gpu = unpacker.UnpackFileByQuery("khopesh.gpubin", out _);
         File.WriteAllBytes($"{outPath}khopesh.gmdl.gfxbin", gfx);
         var reader = new ModelReader(gfx, gpu);
         var model = reader.Read();
-        bool x = true;
+        var x = true;
     }
-    
+
     public static void FixModelReplacementMod()
     {
         var btexConverterPath =
@@ -395,10 +424,10 @@ public static class GfxbinTests
 
         var modDirectory = "f749648e-54dd-4159-940d-65ff379663d4";
         var modelName = "ardynmankini3";
-        
+
         var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
         var moFiles = unpacker.UnpackFilesByQuery("data://shader");
-        
+
         var fbxDefault = unpacker.UnpackFileByQuery("material.gmtl", out _);
         unpacker = new Unpacker($"C:\\Modding\\ModelReplacementTesting\\{modDirectory}.earc");
         var packer = unpacker.ToPacker();
@@ -428,7 +457,7 @@ public static class GfxbinTests
         {
             packer.AddFile(data, uri);
         }
-        
+
         packer.WriteToFile($"C:\\Modding\\ModelReplacementTesting\\{modDirectory}.ffxvbinmod");
     }
 
@@ -436,10 +465,10 @@ public static class GfxbinTests
     {
         var btexConverterPath =
             $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
-        
+
         var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
         var moFiles = unpacker.UnpackFilesByQuery("data://shader");
-        
+
         var fbxDefault = unpacker.UnpackFileByQuery("material.gmtl", out _);
         unpacker = new Unpacker("C:\\Modding\\WeaponTesting\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924.earc");
         var packer = unpacker.ToPacker();
@@ -449,7 +478,8 @@ public static class GfxbinTests
         var oldDependency = material.Header.Dependencies.FirstOrDefault(d => d.Path.EndsWith("_d.png"));
         var oldIndex = material.Header.Hashes.IndexOf(ulong.Parse(oldDependency.PathHash));
         var oldTexture = material.Textures.FirstOrDefault(t => t.Path == oldDependency.Path);
-        oldTexture.Path = "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/sourceimages/body_ashape_basecolor0_texture_b.btex";
+        oldTexture.Path =
+            "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/sourceimages/body_ashape_basecolor0_texture_b.btex";
         oldTexture.PathHash = Cryptography.Hash32(oldTexture.Path);
         oldTexture.ResourceFileHash = Cryptography.HashFileUri64(oldTexture.Path);
         material.Header.Hashes[oldIndex] = oldTexture.ResourceFileHash;
@@ -464,22 +494,23 @@ public static class GfxbinTests
         var writer = new MaterialWriter(material);
 
         packer.RemoveFile("body_ashape_mat.gmtl");
-        packer.AddFile(writer.Write(), "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/materials/body_ashape_mat.gmtl");
+        packer.AddFile(writer.Write(),
+            "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/materials/body_ashape_mat.gmtl");
         foreach (var (uri, data) in moFiles)
         {
             packer.AddFile(data, uri);
         }
-        
+
         packer.WriteToFile("C:\\Modding\\WeaponTesting\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924.ffxvbinmod");
     }
-    
+
     public static void BuildMod()
     {
         //CheckMod();
-        
+
         var btexConverterPath =
             $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
-        
+
         var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
         var mod = new Binmod
         {
@@ -498,51 +529,51 @@ public static class GfxbinTests
             Critical = 2,
             Vitality = 12
         };
-        
+
         // var builder = new BinmodBuilder(btexConverterPath, mod, previewImage);
         //var fmd = File.ReadAllBytes("C:\\Users\\Kieran\\Desktop\\angery_sword.fmd");
         // builder.AddFmd(btexConverterPath, fmd, new UselessLogger());
         // builder.WriteToFile("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
-        
+
         var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
         var material = unpacker.UnpackFileByQuery("material.gmtl", out _);
         var packer = unpacker.ToPacker();
-        
+
         packer.UpdateFile("index.modmeta", Modmeta.Build(mod));
         var exml = EntityPackageBuilder.BuildExml(mod);
         packer.UpdateFile("temp.ebex", exml);
-        
+
         var tempFile = Path.GetTempFileName();
         var tempFile2 = Path.GetTempFileName();
         File.WriteAllBytes(tempFile, previewImage);
         BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
         var btex = File.ReadAllBytes(tempFile2);
-        
+
         packer.UpdateFile("$preview.png.bin", previewImage);
         packer.UpdateFile("$preview.png", btex);
-        
+
         var fmd = File.ReadAllBytes("C:\\Users\\Kieran\\Desktop\\angery_sword.fmd");
         using var memoryStream = new MemoryStream(fmd);
         using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
-        
+
         var dataEntry = archive.GetEntry("data.json");
         using var dataStream = new MemoryStream();
         var stream = dataEntry.Open();
         stream.CopyTo(dataStream);
-        
+
         var json = Encoding.UTF8.GetString(dataStream.ToArray());
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
-        
+
         var model = OutfitTemplate.Build(mod.ModDirectoryName, mod.ModelName, gpubin);
         var replacer = new ModelReplacer(model, gpubin, BinmodTypeHelper.GetModmetaTargetName(mod.Type, mod.Target));
         model = replacer.Replace();
-        
+
         foreach (var bone in model.BoneHeaders)
         {
             bone.Name = "Bone";
             bone.LodIndex = 4294967295;
         }
-        
+
         foreach (var mesh in model.MeshObjects[0].Meshes)
         {
             mesh.MaterialType = MaterialType.OneWeight;
@@ -556,13 +587,13 @@ public static class GfxbinTests
                 }
             }
         }
-        
+
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
-        
+
         var outPath = "C:\\Testing\\ModelReplacements\\SinglePlayerSword\\khopesh.gmdl.gfxbin";
         File.WriteAllBytes(outPath, gfxData);
-        
+
         packer.UpdateFile("khopesh.fbx", gfxData);
         packer.UpdateFile("khopesh.gpubin", gpuData);
         packer.RemoveFile("material.gmtl");
@@ -571,10 +602,11 @@ public static class GfxbinTests
         var diffusePath =
             "C:\\Modding\\WeaponTesting\\mod\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924\\sourceimages\\body_ashape_basecolor0_texture_b.btex";
         packer.UpdateFile("khopesh_d.png", File.ReadAllBytes(diffusePath));
-        
-        packer.WriteToFile("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
+
+        packer.WriteToFile(
+            "C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
     }
-    
+
     public static void GetBoneTable()
     {
         var gfx = "C:\\Testing\\Exineris\\mod\\b376d00b-e6ae-497d-a004-485914158a9b\\ignis.gmdl.gfxbin";
@@ -592,8 +624,9 @@ public static class GfxbinTests
     public static void CheckMaterialDefaults()
     {
         //var path =
-            //C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
-        var path = "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\materials\\nh02_000_eye_00_mat.gmtl.gfxbin";
+        //C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
+        var path =
+            "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\materials\\nh02_000_eye_00_mat.gmtl.gfxbin";
         var reader = new MaterialReader(path);
         var material = reader.Read();
 

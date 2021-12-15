@@ -1,15 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Flagrum.Console.Utilities;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl;
-using Flagrum.Core.Gfxbin.Gmdl.Components;
-using Flagrum.Core.Gfxbin.Gmtl;
-using Flagrum.Core.Gfxbin.Gmtl.Data;
-using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
 namespace Flagrum.Console;
@@ -26,13 +18,15 @@ public class Program
         paths.AddRange(Directory.EnumerateFiles(directory).Select(f =>
         {
             var result = f.Replace("C:\\Testing\\ModelReplacements\\mo-sword\\", "data://").Replace('\\', '/');
-            return (f, result.Contains("/wetness/") ? result.Replace(".btex", ".tga") : result.Replace(".btex", ".tif"));
+            return (f,
+                result.Contains("/wetness/") ? result.Replace(".btex", ".tga") : result.Replace(".btex", ".tif"));
         }));
     }
-    
+
     public static void Main(string[] args)
     {
-        GfxbinTests.Add010ToMod();
+        GfxbinTests.BuildGameAssetWeaponMod();
+        return;
         var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
         //var gfx = "C:\\Modding\\ModelReplacementTesting\\mod\\gladio_succulent\\mo00_001.gmdl.gfxbin";
         var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
@@ -40,7 +34,7 @@ public class Program
         var model = reader.Read();
         var json = JsonConvert.SerializeObject(model.BoneHeaders);
         File.WriteAllText("C:\\Modding\\ModelReplacementTesting\\bones.json", json);
-        bool x = true;
+        var x = true;
 
         //GfxbinTests.BuildMod2();
         // var gfx = "C:\\Modding\\Extractions\\angery_sword\\mod\\0e664ae0-1baa-4f96-8518-ad16d11d1141\\angery_sword.gmdl.gfxbin";
@@ -185,7 +179,6 @@ public class Program
         //     writer.Write());
 
 
-
         // var gfx =
         //     "C:\\Testing\\ModelReplacements\\Extract3\\mod\\gladiolus_ardyn\\ardynmankini.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
@@ -228,7 +221,6 @@ public class Program
         //
         // builder.AppendLine("};");
         // File.WriteAllText("C:\\Modding\\Dependencies.cs", builder.ToString());
-
 
 
         //ModelReplacementTableToCs.Run();
