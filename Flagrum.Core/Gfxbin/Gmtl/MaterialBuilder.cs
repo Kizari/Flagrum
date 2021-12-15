@@ -91,11 +91,11 @@ public static class MaterialBuilder
         List<MaterialTextureData> textures,
         Dictionary<string, string> replacements,
         out MaterialType type,
-        out Dictionary<string, byte[]> extras)
+        out IEnumerable<string> extras)
     {
         type = templateName switch
         {
-            "BASIC_MATERIAL" => MaterialType.OneWeight,
+            //"BASIC_MATERIAL" => MaterialType.OneWeight,
             //"NAMED_HUMAN_OUTFIT" => MaterialType.SixWeights,
             //"NAMED_HUMAN_SKIN" => MaterialType.EightWeights,
             _ => MaterialType.FourWeights
@@ -129,12 +129,10 @@ public static class MaterialBuilder
         //     return material;
         // }
         // else
-        {
-            extras = new Dictionary<string, byte[]>();
-            var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
-            var json = File.ReadAllText(templatePath);
-            material = JsonConvert.DeserializeObject<Material>(json);
-        }
+        
+        var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
+        var json = File.ReadAllText(templatePath);
+        material = JsonConvert.DeserializeObject<Material>(json);
 
         material.Name = materialName;
         material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
@@ -144,12 +142,12 @@ public static class MaterialBuilder
         {
             SetInputValues(material, input.Name, input.Values);
         }
-
+        
         foreach (var texture in textures)
         {
             SetTexturePath(material, texture.Name, texture.Path);
         }
-
+        
         material.HighTexturePackAsset = "";
         
         foreach (var (textureId, replacementUri) in replacements)
@@ -172,6 +170,10 @@ public static class MaterialBuilder
             .OrderBy(h => h)
             .ToList();
 
+        extras = dependencies
+            .Where(d => !d.Path.StartsWith("data://mod"))
+            .Select(d => d.Path);
+        
         return material;
     }
 

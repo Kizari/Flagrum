@@ -331,7 +331,7 @@ else
         await Task.Run(() =>
         {
             var builder = new BinmodBuilder(Settings.BTexConverterPath, Mod, Convert.FromBase64String(PreviewBase64));
-            builder.AddFmd(Settings.BTexConverterPath, ModelData, Logger);
+            builder.AddFmd(Settings.BTexConverterPath, ModelData, Logger, Settings.GameDataDirectory);
             builder.WriteToFile(Mod.Path);
 
             Mod.IsApplyToGame = false;

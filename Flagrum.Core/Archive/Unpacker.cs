@@ -27,13 +27,14 @@ public class Unpacker
     /// </summary>
     /// <param name="query">A string that must be contained in the URI</param>
     /// <returns>Buffer containing the file data</returns>
-    public byte[] UnpackFileByQuery(string query)
+    public byte[] UnpackFileByQuery(string query, out ArchiveFileFlag flags)
     {
         _files ??= ReadFileHeaders().ToList();
 
         var match = _files.FirstOrDefault(f => f.Uri.Contains(query));
         if (match != null)
         {
+            flags = match.Flags;
             if (!match.HasData)
             {
                 ReadFileData(match);
@@ -42,6 +43,7 @@ public class Unpacker
             return match.GetUnencryptedData();
         }
 
+        flags = ArchiveFileFlag.None;
         return Array.Empty<byte>();
     }
 

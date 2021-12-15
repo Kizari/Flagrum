@@ -110,10 +110,23 @@ public static class OutfitTemplate
     {
         var nodeTable = new List<NodeInformation>
         {
-            BuildNode("Armature")
+            BuildNode("Root"),
+            BuildNode("Trans"),
+            BuildNode("Proxy"),
+            BuildNode("Interest"),
+            BuildNode("Mesh")
         };
 
-        nodeTable.AddRange(meshNames.Select(BuildNode));
+        for (var i = 0; i < 8; i++)
+        {
+            nodeTable.Add(BuildNode("LOD" + i));
+            foreach (var meshName in meshNames)
+            {
+                nodeTable.Add(BuildNode(meshName));
+            }
+        }
+
+        //nodeTable.AddRange(meshNames.Select(BuildNode));
         return nodeTable;
     }
 
@@ -123,12 +136,11 @@ public static class OutfitTemplate
         {
             Name = nodeName,
 
-            // NOTE: Mods appear to use a scale factor of 100 to render correctly?
             // Does this even actually do anything in-game?
             Matrix = new Matrix(
-                new Vector3(100, 0, 0),
-                new Vector3(0, 0, -100),
-                new Vector3(0, 100, 0),
+                new Vector3(1, 0, 0),
+                new Vector3(0, 1, 0),
+                new Vector3(0, 0, 1),
                 new Vector3(0, 0, 0))
         };
     }
@@ -162,7 +174,11 @@ public static class OutfitTemplate
             // i.e. Skinning_8Bones may allow 8 weights per vertex (e.g. BLENDWEIGHTS1 may work?)
             // Using the above types currently breaks the mod (no rigging and ghostlike appearance)
             // Perhaps other changes are needed to enable this?
-            VertexLayoutType = materialType == MaterialType.OneWeight ? VertexLayoutType.Skinning_1Bones : VertexLayoutType.Skinning_4Bones,
+            VertexLayoutType = materialType switch
+            {
+                MaterialType.OneWeight => VertexLayoutType.Skinning_1Bones,
+                _ => VertexLayoutType.Skinning_4Bones
+            },
 
             LowLodShadowCascadeNo = 2, // Always 2
             IsOrientedBB = true, // Always true

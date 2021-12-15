@@ -32,10 +32,14 @@ public class Program
     
     public static void Main(string[] args)
     {
-        var gfx = "C:\\Modding\\WeaponTesting\\mod\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924\\angery_sword.gmdl.gfxbin";
+        GfxbinTests.Add010ToMod();
+        var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
+        //var gfx = "C:\\Modding\\ModelReplacementTesting\\mod\\gladio_succulent\\mo00_001.gmdl.gfxbin";
         var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
         var model = reader.Read();
+        var json = JsonConvert.SerializeObject(model.BoneHeaders);
+        File.WriteAllText("C:\\Modding\\ModelReplacementTesting\\bones.json", json);
         bool x = true;
 
         //GfxbinTests.BuildMod2();

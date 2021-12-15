@@ -365,8 +365,7 @@ public class ModelWriter
         stride += 4;
 
         var count = 0;
-        // TODO: Undo 1 map limit
-        foreach (var uvMap in mesh.UVMaps.Take(1))
+        foreach (var uvMap in mesh.UVMaps)
         {
             elements.Add(new VertexElementDescription
             {
@@ -419,8 +418,7 @@ public class ModelWriter
             vertexStream.WriteByte((byte)tangent.Z);
             vertexStream.WriteByte((byte)tangent.W);
 
-            // TODO: Remove 1 map limit
-            foreach (var uvMap in mesh.UVMaps.Take(1))
+            foreach (var uvMap in mesh.UVMaps)
             {
                 var uv = uvMap.UVs[i];
                 vertexStream.Write(BitConverter.GetBytes(uv.U));

@@ -36,6 +36,15 @@ public class Packer
 
     public bool HasFile(string uri) => _files.Any(f => f.Uri == uri);
 
+    public void AddCompressedFile(byte[] data, string uri)
+    {
+        var file = new ArchiveFile(uri);
+        file.SetData(data);
+        file.Flags |= ArchiveFileFlag.Compressed;
+
+        _files.Add(file);
+    }
+    
     public void AddFile(byte[] data, string uri)
     {
         var file = new ArchiveFile(uri);
@@ -76,12 +85,6 @@ public class Packer
 
         _logger.LogInformation("Packing archive...");
 
-        // Sort files by TypeHash, then UriHash
-        // _files.Sort((first, second) =>
-        // {
-        //     var difference = first.TypeHash.CompareTo(second.TypeHash);
-        //     return difference == 0 ? first.UriHash.CompareTo(second.UriHash) : difference;
-        // });
         _files = _files.OrderBy(f => f.TypeHash).ThenBy(f => f.UriHash).ToList();
 
         _header.UriListOffset = ArchiveHeader.Size +
@@ -130,7 +133,7 @@ public class Packer
         stream.Write(BitConverter.GetBytes(_header.UriListOffset));
         stream.Write(BitConverter.GetBytes(_header.PathListOffset));
         stream.Write(BitConverter.GetBytes(_header.DataOffset));
-        stream.Write(BitConverter.GetBytes((uint)0)); // Flags are always zero
+        stream.Write(BitConverter.GetBytes(_header.Flags));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
 
         // Archive hash must be zero before the whole header is hashed
@@ -151,7 +154,7 @@ public class Packer
         stream.Write(BitConverter.GetBytes(_header.UriListOffset));
         stream.Write(BitConverter.GetBytes(_header.PathListOffset));
         stream.Write(BitConverter.GetBytes(_header.DataOffset));
-        stream.Write(BitConverter.GetBytes((uint)0));
+        stream.Write(BitConverter.GetBytes(_header.Flags));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
         stream.Write(BitConverter.GetBytes(_header.Hash));
 

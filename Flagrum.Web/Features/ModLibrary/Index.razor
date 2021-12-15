@@ -65,9 +65,9 @@
                         if (file.EndsWith(".ffxvbinmod"))
                         {
                             var unpacker = new Unpacker(file);
-                            var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta");
+                            var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta", out _);
                             var mod = Binmod.FromModmetaBytes(modmetaBytes);
-                            var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin");
+                            var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
 
                             if (mod == null)
                             {

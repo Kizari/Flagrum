@@ -43,7 +43,7 @@ public static class EntityPackageBuilder
         builder.AppendLine($"      <filePath_ type=\"string\">mod/{mod.ModDirectoryName}/$preview.png.bin</filePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine($"    <object objectIndex=\"4\" name=\"{mod.ModelName}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.ModelName}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
-        builder.AppendLine($"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.ModelName}.fbx</sourcePath_>");
+        builder.AppendLine($"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine("  </objects>");
         builder.AppendLine("</package>");

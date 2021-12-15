@@ -44,15 +44,19 @@ public class ArchiveFile
         {
             RelativePath = RelativePath.Replace(".gmtl", ".gmtl.gfxbin");
         }
+        else if (RelativePath.EndsWith(".gmdl"))
+        {
+            RelativePath = RelativePath.Replace(".gmdl", ".gmdl.gfxbin");
+        }
 
         var newUri = uri
-            .Replace(".gmdl.gfxbin", ".fbx")
+            .Replace(".gmdl.gfxbin", ".gmdl")
             .Replace(".gmtl.gfxbin", ".gmtl")
             .Replace(".exml", ".ebex");
 
         Uri = newUri;
 
-        var tokens = uri.Split('\\', '/');
+        var tokens = RelativePath.Split('\\', '/');
         var fileName = tokens.Last();
         var index = fileName.IndexOf('.');
         var type = index < 0 ? "" : fileName.Substring(index + 1);
@@ -105,18 +109,18 @@ public class ArchiveFile
         _buffer = data;
     }
 
-    public ArchiveFileFlag GetDefaultBinmodFlags()
+    private ArchiveFileFlag GetDefaultBinmodFlags()
     {
         var flags = ArchiveFileFlag.Autoload;
 
-        if (Uri.EndsWith(".modmeta") || Uri.EndsWith(".bin"))
-        {
-            flags |= ArchiveFileFlag.MaskProtected;
-        }
-        else
-        {
-            flags |= ArchiveFileFlag.Encrypted;
-        }
+         if (Uri.EndsWith(".modmeta") || Uri.EndsWith(".bin"))
+         {
+             flags |= ArchiveFileFlag.MaskProtected;
+         }
+         else
+         {
+             flags |= ArchiveFileFlag.Encrypted;
+         }
 
         return flags;
     }
