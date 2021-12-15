@@ -40,6 +40,11 @@ public class ArchiveFile
             // TODO: Add other image types
         }
 
+        if (RelativePath.EndsWith(".gmtl"))
+        {
+            RelativePath = RelativePath.Replace(".gmtl", ".gmtl.gfxbin");
+        }
+
         var newUri = uri
             .Replace(".gmdl.gfxbin", ".fbx")
             .Replace(".gmtl.gfxbin", ".gmtl")
@@ -60,10 +65,10 @@ public class ArchiveFile
         Flags = GetDefaultBinmodFlags();
     }
 
-    public ulong TypeHash { get; }
+    public ulong TypeHash { get; set; }
     public ulong UriAndTypeHash { get; set; }
     public string Uri { get; set; }
-    public ulong UriHash { get; }
+    public ulong UriHash { get; set; }
     public uint UriOffset { get; set; }
     public string RelativePath { get; set; }
     public uint RelativePathOffset { get; set; }
@@ -78,6 +83,8 @@ public class ArchiveFile
 
     public bool HasData => _buffer?.Length > 0;
 
+    public byte[] GetUnencryptedData() => _buffer;
+    
     public byte[] GetData()
     {
         Size = (uint)_buffer.Length;
@@ -112,5 +119,19 @@ public class ArchiveFile
         }
 
         return flags;
+    }
+
+    /// <summary>
+    /// This is needed if using parameterless constructor to deconstruct the UriAndTypeHash
+    /// </summary>
+    public void DeconstructUriAndTypeHash()
+    {
+        var tokens = RelativePath.Split('\\', '/');
+        var fileName = tokens.Last();
+        var index = fileName.IndexOf('.');
+        var type = index < 0 ? "" : fileName.Substring(index + 1);
+
+        UriHash = Cryptography.Hash64(Uri);
+        TypeHash = Cryptography.Hash64(type);
     }
 }

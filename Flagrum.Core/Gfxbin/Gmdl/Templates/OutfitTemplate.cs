@@ -58,7 +58,8 @@ public static class OutfitTemplate
                     ClusterCount = 1,
                     ClusterName = "CLUSTER_NAME",
                     Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name,
-                            Cryptography.HashFileUri64($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl")))
+                            Cryptography.HashFileUri64($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
+                            m.MaterialType))
                         .ToList()
                 }
             },
@@ -126,13 +127,13 @@ public static class OutfitTemplate
             // Does this even actually do anything in-game?
             Matrix = new Matrix(
                 new Vector3(100, 0, 0),
+                new Vector3(0, 0, -100),
                 new Vector3(0, 100, 0),
-                new Vector3(0, 0, 100),
                 new Vector3(0, 0, 0))
         };
     }
 
-    private static Mesh BuildMesh(string meshName, ulong materialHash)
+    private static Mesh BuildMesh(string meshName, ulong materialHash, MaterialType materialType)
     {
         return new Mesh
         {
@@ -161,22 +162,15 @@ public static class OutfitTemplate
             // i.e. Skinning_8Bones may allow 8 weights per vertex (e.g. BLENDWEIGHTS1 may work?)
             // Using the above types currently breaks the mod (no rigging and ghostlike appearance)
             // Perhaps other changes are needed to enable this?
-            VertexLayoutType = VertexLayoutType.Skinning_4Bones,
+            VertexLayoutType = materialType == MaterialType.OneWeight ? VertexLayoutType.Skinning_1Bones : VertexLayoutType.Skinning_4Bones,
 
             LowLodShadowCascadeNo = 2, // Always 2
             IsOrientedBB = true, // Always true
 
-            // For now just using values from a random mod to get things working
-            // NOTE: Unsure what this does but should probably be calculated for the specific mesh
-            OrientedBB = new OrientedBB(
-                new Vector3(0, 1.293f, 0.018f),
-                new Vector3(0, 0, -0.123f),
-                new Vector3(0, 0.272f, 0),
-                new Vector3(0.301f, 0, 0)
-            ),
-
             // These will always be the same, shouldn't need to ever change
             PrimitiveType = PrimitiveType.PrimitiveTypeTriangleList,
+            
+            MaterialType = materialType,
 
             // These shouldn't ever need to be changed
             Unknown1 = 0,

@@ -1,13 +1,198 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Archive.Binmod;
+using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Utilities;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Flagrum.Console;
 
+public class UselessLogger : ILogger
+{
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
+        
+    }
+
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return false;
+    }
+
+    public IDisposable BeginScope<TState>(TState state)
+    {
+        return default!;
+    }
+}
+
 public static class GfxbinTests
 {
+    public static void CheckMod()
+    {
+        var outPath = "C:\\Testing\\ModelReplacements\\SinglePlayerSword\\";
+        var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
+        var gfx = unpacker.UnpackFileByQuery("khopesh.fbx");
+        var gpu = unpacker.UnpackFileByQuery("khopesh.gpubin");
+        File.WriteAllBytes($"{outPath}khopesh.gmdl.gfxbin", gfx);
+        var reader = new ModelReader(gfx, gpu);
+        var model = reader.Read();
+        bool x = true;
+    }
+
+    public static void BuildMod2()
+    {
+        var btexConverterPath =
+            $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
+        
+        var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
+        var moFiles = unpacker.UnpackFilesByQuery("data://shader");
+        
+        var fbxDefault = unpacker.UnpackFileByQuery("material.gmtl");
+        unpacker = new Unpacker("C:\\Modding\\WeaponTesting\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924.earc");
+        var packer = unpacker.ToPacker();
+
+        var reader = new MaterialReader(fbxDefault);
+        var material = reader.Read();
+        var oldDependency = material.Header.Dependencies.FirstOrDefault(d => d.Path.EndsWith("_d.png"));
+        var oldIndex = material.Header.Hashes.IndexOf(ulong.Parse(oldDependency.PathHash));
+        var oldTexture = material.Textures.FirstOrDefault(t => t.Path == oldDependency.Path);
+        oldTexture.Path = "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/sourceimages/body_ashape_basecolor0_texture_b.btex";
+        oldTexture.PathHash = Cryptography.Hash32(oldTexture.Path);
+        oldTexture.ResourceFileHash = Cryptography.HashFileUri64(oldTexture.Path);
+        material.Header.Hashes[oldIndex] = oldTexture.ResourceFileHash;
+        oldDependency.Path = oldTexture.Path;
+        oldDependency.PathHash = oldTexture.ResourceFileHash.ToString();
+        var assetUri = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
+        assetUri.Path = "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/materials/";
+        var reference = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
+        reference.Path = "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/materials/body_ashape_mat.gmtl";
+        material.Name = "body_ashape_mat";
+        material.NameHash = Cryptography.Hash32(material.Name);
+        var writer = new MaterialWriter(material);
+
+        packer.RemoveFile("body_ashape_mat.gmtl");
+        packer.AddFile(writer.Write(), "data://mod/24d5d6ab-e8f4-443f-a5e1-a8830aff7924/materials/body_ashape_mat.gmtl");
+        foreach (var (uri, data) in moFiles)
+        {
+            packer.AddFile(data, uri);
+        }
+        
+        packer.WriteToFile("C:\\Modding\\WeaponTesting\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924.ffxvbinmod");
+    }
+    
+    public static void BuildMod()
+    {
+        //CheckMod();
+        
+        var btexConverterPath =
+            $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
+        
+        var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
+        var mod = new Binmod
+        {
+            Type = (int)BinmodType.Weapon,
+            Target = (int)WeaponSoloTarget.Sword,
+            GameMenuTitle = "Angery Sword",
+            WorkshopTitle = "Angery Sword",
+            Description = "So angry!",
+            Uuid = "33684db3-62c7-4a32-be4b-0deb7c293005",
+            Index = 17197479,
+            ModDirectoryName = "sword_1",
+            ModelName = "khopesh",
+            Attack = 30,
+            MaxHp = 93,
+            MaxMp = 19,
+            Critical = 2,
+            Vitality = 12
+        };
+        
+        // var builder = new BinmodBuilder(btexConverterPath, mod, previewImage);
+        //var fmd = File.ReadAllBytes("C:\\Users\\Kieran\\Desktop\\angery_sword.fmd");
+        // builder.AddFmd(btexConverterPath, fmd, new UselessLogger());
+        // builder.WriteToFile("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
+        
+        var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
+        var material = unpacker.UnpackFileByQuery("material.gmtl");
+        var packer = unpacker.ToPacker();
+        
+        packer.UpdateFile("index.modmeta", Modmeta.Build(mod));
+        var exml = EntityPackageBuilder.BuildExml(mod);
+        packer.UpdateFile("temp.ebex", exml);
+        
+        var tempFile = Path.GetTempFileName();
+        var tempFile2 = Path.GetTempFileName();
+        File.WriteAllBytes(tempFile, previewImage);
+        BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
+        var btex = File.ReadAllBytes(tempFile2);
+        
+        packer.UpdateFile("$preview.png.bin", previewImage);
+        packer.UpdateFile("$preview.png", btex);
+        
+        var fmd = File.ReadAllBytes("C:\\Users\\Kieran\\Desktop\\angery_sword.fmd");
+        using var memoryStream = new MemoryStream(fmd);
+        using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
+        
+        var dataEntry = archive.GetEntry("data.json");
+        using var dataStream = new MemoryStream();
+        var stream = dataEntry.Open();
+        stream.CopyTo(dataStream);
+        
+        var json = Encoding.UTF8.GetString(dataStream.ToArray());
+        var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
+        
+        var model = OutfitTemplate.Build(mod.ModDirectoryName, mod.ModelName, gpubin);
+        var replacer = new ModelReplacer(model, gpubin, BinmodTypeHelper.GetModmetaTargetName(mod.Type, mod.Target));
+        model = replacer.Replace();
+        
+        foreach (var bone in model.BoneHeaders)
+        {
+            bone.Name = "Bone";
+            bone.LodIndex = 4294967295;
+        }
+        
+        foreach (var mesh in model.MeshObjects[0].Meshes)
+        {
+            mesh.MaterialType = MaterialType.OneWeight;
+            mesh.BoneIds = new[] {0u};
+            for (var index = 0; index < mesh.WeightIndices[0].Count; index++)
+            {
+                var weightArray = mesh.WeightIndices[0][index];
+                for (var i = 0; i < weightArray.Length; i++)
+                {
+                    weightArray[i] = 0;
+                }
+            }
+        }
+        
+        var writer = new ModelWriter(model);
+        var (gfxData, gpuData) = writer.Write();
+        
+        var outPath = "C:\\Testing\\ModelReplacements\\SinglePlayerSword\\khopesh.gmdl.gfxbin";
+        File.WriteAllBytes(outPath, gfxData);
+        
+        packer.UpdateFile("khopesh.fbx", gfxData);
+        packer.UpdateFile("khopesh.gpubin", gpuData);
+        packer.RemoveFile("material.gmtl");
+        packer.AddFile(material, "data://mod/sword_1/materials/body_ashape_mat.gmtl");
+
+        var diffusePath =
+            "C:\\Modding\\WeaponTesting\\mod\\24d5d6ab-e8f4-443f-a5e1-a8830aff7924\\sourceimages\\body_ashape_basecolor0_texture_b.btex";
+        packer.UpdateFile("khopesh_d.png", File.ReadAllBytes(diffusePath));
+        
+        packer.WriteToFile("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\33684db3-62c7-4a32-be4b-0deb7c293005.ffxvbinmod");
+    }
+    
     public static void GetBoneTable()
     {
         var gfx = "C:\\Testing\\Exineris\\mod\\b376d00b-e6ae-497d-a004-485914158a9b\\ignis.gmdl.gfxbin";

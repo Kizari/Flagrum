@@ -127,10 +127,10 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
 
     # Link the mesh to the armature
     mod = mesh_object.modifiers.new(
-        type="ARMATURE", name="Armature")
+        type="ARMATURE", name=context.collection.name)
     mod.use_vertex_groups = True
 
-    armature = bpy.data.objects["Armature"]
+    armature = bpy.data.objects[context.collection.name]
     mod.object = armature
 
     mesh_object.parent = armature

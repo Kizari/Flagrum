@@ -200,7 +200,7 @@ public class BinaryWriter
         byteList.Add(0x00);
         var bytes = byteList.ToArray();
 
-        if (bytes.Length <= 32)
+        if (bytes.Length <= 15)
         {
             var format = (byte)(bytes.Length | 0xB0);
             _stream.WriteByte(format);

@@ -126,7 +126,7 @@ public class MaterialWriter
     private byte[] CreateInputBuffer()
     {
         var floatBuffer = new FloatBuffer(_material.InputsBufferSize);
-        foreach (var input in _material.InterfaceInputs.Where(u => u.InterfaceIndex == 0))
+        foreach (var input in _material.InterfaceInputs.Where(u => u.InterfaceIndex < _material.InterfaceCount))
         {
             floatBuffer.Put(input.GpuOffset, input.Values);
         }

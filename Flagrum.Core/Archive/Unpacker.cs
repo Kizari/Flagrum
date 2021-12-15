@@ -39,10 +39,29 @@ public class Unpacker
                 ReadFileData(match);
             }
 
-            return match.GetData();
+            return match.GetUnencryptedData();
         }
 
         return Array.Empty<byte>();
+    }
+
+    public Dictionary<string, byte[]> UnpackFilesByQuery(string query)
+    {
+        _files ??= ReadFileHeaders().ToList();
+
+        var result = new Dictionary<string, byte[]>();
+        var matches = _files.Where(f => f.Uri.Contains(query));
+        foreach (var match in matches)
+        {
+            if (!match.HasData)
+            {
+                ReadFileData(match);
+            }
+            
+            result.Add(match.Uri, match.GetUnencryptedData());
+        }
+
+        return result;
     }
 
     public Packer ToPacker()
@@ -54,12 +73,6 @@ public class Unpacker
             if (!file.HasData)
             {
                 ReadFileData(file);
-            }
-
-            if (file.RelativePath == null)
-            {
-                _stream.Seek(file.RelativePathOffset, SeekOrigin.Begin);
-                file.RelativePath = ReadString();
             }
         }
 
@@ -152,6 +165,11 @@ public class Unpacker
 
             _stream.Seek(file.UriOffset, SeekOrigin.Begin);
             file.Uri = ReadString();
+            
+            _stream.Seek(file.RelativePathOffset, SeekOrigin.Begin);
+            file.RelativePath = ReadString();
+            
+            file.DeconstructUriAndTypeHash();
 
             yield return file;
         }

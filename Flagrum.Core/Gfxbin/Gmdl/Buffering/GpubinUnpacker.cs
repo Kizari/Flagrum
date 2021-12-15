@@ -205,7 +205,13 @@ public class GpubinUnpacker
                             }
 
                             var weightIndexMap = mesh.WeightIndices[weightIndicesIndex];
-                            var weightIndices = new[] {ReadUShort(), ReadUShort(), ReadUShort(), ReadUShort()};
+                            var weightIndices = new[]
+                            {
+                                ReadWeightIndex(element.Format),
+                                ReadWeightIndex(element.Format),
+                                ReadWeightIndex(element.Format),
+                                ReadWeightIndex(element.Format)
+                            };
                             weightIndexMap.Add(weightIndices);
                             break;
                         default:
@@ -272,6 +278,12 @@ public class GpubinUnpacker
         var value = unchecked((sbyte)_currentBuffer[_currentBufferPosition]);
         _currentBufferPosition += sizeof(byte);
         return value;
+    }
+
+    private ushort ReadWeightIndex(VertexElementFormat format)
+    {
+        var (type, _) = _formatParameters[format];
+        return type == typeof(byte) ? ReadByte() : ReadUShort();
     }
 
     private void ReadPastVertexElement(VertexElementFormat format)

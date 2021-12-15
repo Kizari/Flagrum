@@ -95,48 +95,74 @@ public class ModelReplacer
                 //     }
                 // }
 
-                // This normalises weights to 255 over the first weight map only
-                for (var i = 0; i < mesh.VertexCount; i++)
+                if (mesh.MaterialType == MaterialType.OneWeight)
                 {
-                    for (var j = 0; j < 2; j++)
+                    for (var i = 0; i < mesh.VertexCount; i++)
                     {
-                        var sum = weightValues[j][i].Sum(s => s);
-                        if (sum != 0 && sum != 255)
+                        var weights = weightValues[0][i];
+                        for (var j = 0; j < weights.Length; j++)
                         {
-                            var difference = 255 - sum;
-                            var counter = 0;
-
-                            while (difference > 0)
+                            if (j == 0)
                             {
-                                var weight = weightValues[j][i];
-
-                                if (weight[counter] > 0 && weight[counter] < 255)
+                                if (weights[j] > 0)
                                 {
-                                    weight[counter]++;
-                                    difference--;
+                                    weights[j] = 255;
                                 }
-
-                                counter++;
-                                if (counter == weight.Length)
+                                else
                                 {
-                                    counter = 0;
+                                    weights[j] = 0;
                                 }
                             }
 
-                            while (difference < 0)
+                            weights[j] = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    // This normalises weights to 255 over the first weight map only
+                    for (var i = 0; i < mesh.VertexCount; i++)
+                    {
+                        for (var j = 0; j < 2; j++)
+                        {
+                            var sum = weightValues[j][i].Sum(s => s);
+                            if (sum != 0 && sum != 255)
                             {
-                                var weight = weightValues[j][i];
+                                var difference = 255 - sum;
+                                var counter = 0;
 
-                                if (weight[counter] > 0)
+                                while (difference > 0)
                                 {
-                                    weight[counter]--;
-                                    difference++;
+                                    var weight = weightValues[j][i];
+
+                                    if (weight[counter] > 0 && weight[counter] < 255)
+                                    {
+                                        weight[counter]++;
+                                        difference--;
+                                    }
+
+                                    counter++;
+                                    if (counter == weight.Length)
+                                    {
+                                        counter = 0;
+                                    }
                                 }
 
-                                counter++;
-                                if (counter == weight.Length)
+                                while (difference < 0)
                                 {
-                                    counter = 0;
+                                    var weight = weightValues[j][i];
+
+                                    if (weight[counter] > 0)
+                                    {
+                                        weight[counter]--;
+                                        difference++;
+                                    }
+
+                                    counter++;
+                                    if (counter == weight.Length)
+                                    {
+                                        counter = 0;
+                                    }
                                 }
                             }
                         }

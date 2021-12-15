@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Data;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
@@ -88,11 +89,52 @@ public static class MaterialBuilder
     public static Material FromTemplate(string templateName, string materialName, string modDirectoryName,
         List<MaterialInputData> inputs,
         List<MaterialTextureData> textures,
-        Dictionary<string, string> replacements)
+        Dictionary<string, string> replacements,
+        out MaterialType type,
+        out Dictionary<string, byte[]> extras)
     {
-        var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
-        var json = File.ReadAllText(templatePath);
-        var material = JsonConvert.DeserializeObject<Material>(json);
+        type = templateName switch
+        {
+            "BASIC_MATERIAL" => MaterialType.OneWeight,
+            //"NAMED_HUMAN_OUTFIT" => MaterialType.SixWeights,
+            //"NAMED_HUMAN_SKIN" => MaterialType.EightWeights,
+            _ => MaterialType.FourWeights
+        };
+
+        Material material;
+        // TODO: Remove this (keep contents of else block but remove if statement)
+        // if (templateName == "BASIC_MATERIAL")
+        // {
+        //     var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
+        //     extras = unpacker.UnpackFilesByQuery("data://shader");
+        //     var fbxDefault = unpacker.UnpackFileByQuery("material.gmtl");
+        //     var reader = new MaterialReader(fbxDefault);
+        //     material = reader.Read();
+        //     var oldDependency = material.Header.Dependencies.FirstOrDefault(d => d.Path.EndsWith("_d.png"));
+        //     var oldIndex = material.Header.Hashes.IndexOf(ulong.Parse(oldDependency.PathHash));
+        //     var oldTexture = material.Textures.FirstOrDefault(t => t.Path == oldDependency.Path);
+        //     oldTexture.Path = $"data://mod/{modDirectoryName}/sourceimages/{materialName.Replace("_mat", "")}_basecolor0_texture_b.btex";
+        //     oldTexture.PathHash = Cryptography.Hash32(oldTexture.Path);
+        //     oldTexture.ResourceFileHash = Cryptography.HashFileUri64(oldTexture.Path);
+        //     material.Header.Hashes[oldIndex] = oldTexture.ResourceFileHash;
+        //     oldDependency.Path = oldTexture.Path;
+        //     oldDependency.PathHash = oldTexture.ResourceFileHash.ToString();
+        //     var assetUri = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
+        //     assetUri.Path = $"data://mod/{modDirectoryName}/materials/";
+        //     var reference = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
+        //     reference.Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
+        //     material.Name = materialName;
+        //     material.NameHash = Cryptography.Hash32(material.Name);
+        //     material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
+        //     return material;
+        // }
+        // else
+        {
+            extras = new Dictionary<string, byte[]>();
+            var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
+            var json = File.ReadAllText(templatePath);
+            material = JsonConvert.DeserializeObject<Material>(json);
+        }
 
         material.Name = materialName;
         material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
@@ -130,18 +172,6 @@ public static class MaterialBuilder
             .OrderBy(h => h)
             .ToList();
 
-        // var match = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
-        // if (match != null)
-        // {
-        //     match.Path = $"data://mod/{modDirectoryName}/materials/";
-        // }
-        //
-        // match = material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
-        // if (match != null)
-        // {
-        //     match.Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
-        // }
-
         return material;
     }
 
@@ -168,7 +198,6 @@ public static class MaterialBuilder
             return;
         }
 
-        //match.HighTextureStreamingLevels = 0;
         match.Path = path;
         match.PathHash = Cryptography.Hash32(path);
         match.ResourceFileHash = Cryptography.HashFileUri64(path);

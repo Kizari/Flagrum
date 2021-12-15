@@ -26,6 +26,10 @@ public static class Program
             var arbitraryIndex = 0;
             boneTable = model.BoneHeaders.ToDictionary(b => arbitraryIndex++, b => b.Name);
         }
+        else if (model.BoneHeaders.Count == 1)
+        {
+            boneTable = model.BoneHeaders.ToDictionary(b => 0, b => b.Name);
+        }
         else
         {
             boneTable = model.BoneHeaders.ToDictionary(b => (int)b.UniqueIndex, b => b.Name);

@@ -46,11 +46,28 @@ public class Packer
 
     public void UpdateFile(string query, byte[] data)
     {
-        var match = _files.FirstOrDefault(f => f.Uri.Contains(query));
+        var match = _files.FirstOrDefault(f => f.Uri.EndsWith(query));
         if (match != null)
         {
             match.SetData(data);
         }
+        else
+        {
+            throw new ArgumentException($"Could not find file ending with \"{query}\" in the archive.",
+                nameof(query));
+        }
+    }
+
+    public void RemoveFile(string query)
+    {
+        var match = _files.FirstOrDefault(f => f.Uri.EndsWith(query));
+        if (match == null)
+        {
+            throw new ArgumentException($"Could not find file ending with \"{query}\" in the archive.",
+                nameof(query));
+        }
+
+        _files.Remove(match);
     }
 
     public void WriteToFile(string path)

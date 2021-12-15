@@ -336,7 +336,7 @@ public class MaterialReader
 
         foreach (var input in _material.InterfaceInputs)
         {
-            if (input.InterfaceIndex == 0)
+            if (input.InterfaceIndex < _material.InterfaceCount)
             {
                 var numberOfFloats = input.Size / 4;
                 if (numberOfFloats > 0)

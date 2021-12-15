@@ -68,6 +68,14 @@ public enum IndexType
     IndexTypeNum = 0x2
 }
 
+public enum MaterialType
+{
+    FourWeights,
+    SixWeights,
+    EightWeights,
+    OneWeight
+}
+
 public class Mesh
 {
     public string Name { get; set; }
@@ -110,6 +118,8 @@ public class Mesh
     public List<UVMap> UVMaps { get; set; } = new();
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<byte[]>> WeightValues { get; set; } = new();
+    
+    public MaterialType MaterialType { get; set; }
 
     // NOTE: Class contains unknowns
     public byte Unknown1 { get; set; }

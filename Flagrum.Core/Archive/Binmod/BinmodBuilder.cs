@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
@@ -70,7 +71,7 @@ public class BinmodBuilder
 
         var json = Encoding.UTF8.GetString(dataStream.ToArray());
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
-
+        
         foreach (var mesh in gpubin.Meshes)
         {
             var replacements = new Dictionary<string, string>();
@@ -180,45 +181,18 @@ public class BinmodBuilder
                     Name = p.Id,
                     Path = p.Uri
                 }).ToList(),
-                replacements);
-            
-            // var textureMatch = material.Textures.FirstOrDefault(t => t.Path == "data://character/nh/nh00/model_000/sourceimages/nh00_000_skin_02_b.tif");
-            // if (textureMatch != null)
-            // {
-            //     var dependencyMatch =
-            //         material.Header.Dependencies.FirstOrDefault(d => d.PathHash == textureMatch.ResourceFileHash.ToString());
-            //
-            //     var hashIndex = material.Header.Hashes.IndexOf(textureMatch.ResourceFileHash);
-            //     
-            //     textureMatch.Path = $"data://mod/{_mod.ModDirectoryName}/sourceimages/bodyshape_basecolor0_texture_b.btex";
-            //     textureMatch.PathHash = Cryptography.Hash32(textureMatch.Path);
-            //     textureMatch.ResourceFileHash = Cryptography.HashFileUri64(textureMatch.Path);
-            //
-            //     dependencyMatch.Path = textureMatch.Path;
-            //     dependencyMatch.PathHash = textureMatch.ResourceFileHash.ToString();
-            //     material.Header.Hashes[hashIndex] = textureMatch.ResourceFileHash;
-            // }
-            
-            logger.LogInformation($"Material Name: {material.Name} ({Cryptography.Hash32(material.Name)})");
-            logger.LogInformation($"Material Hash: {material.NameHash}");
-            logger.LogInformation($"Material Uri: {material.Uri}");
+                replacements,
+                out var materialType,
+                out var extras);
 
-            foreach (var dependency in material.Header.Dependencies)
+            // TODO: Remove this!
+            foreach (var (extraUri, extraData) in extras)
             {
-                logger.LogInformation($"{dependency.PathHash}: {dependency.Path}");
-            }
-
-            foreach (var texture in material.Textures)
-            {
-                logger.LogInformation($"{texture.NameHash}: {texture.Name}");
-                logger.LogInformation($"{texture.PathHash}: {texture.Path}");
-                logger.LogInformation($"{texture.ShaderGenNameHash}: {texture.ShaderGenName}");
-                logger.LogInformation($"{texture.ResourceFileHash}");
-                var path =
-                    $"data://mod/{_mod.Uuid}/sourceimages/{texture.ShaderGenName.ToLower()}{GetTextureSuffix(texture.ShaderGenName)}.btex";
-                logger.LogInformation($"{Cryptography.HashFileUri64(path)}: {path}");
+                _packer.AddFile(extraData, extraUri);
             }
             
+            mesh.MaterialType = materialType;
+
             var materialWriter = new MaterialWriter(material);
             AddFile(material.Uri, materialWriter.Write());
 
@@ -234,29 +208,68 @@ public class BinmodBuilder
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, _mod.ModelName, gpubin);
         var replacer = new ModelReplacer(model, gpubin, BinmodTypeHelper.GetModmetaTargetName(_mod.Type, _mod.Target));
         model = replacer.Replace();
-
-        logger.LogInformation("Model Name: " + model.Name);
-        logger.LogInformation($"Model Hash: {model.AssetHash}");
-        logger.LogInformation("\nModel Dependencies:");
-        foreach (var dependency in model.Header.Dependencies)
+        
+        // TODO: Remove this!
+        foreach (var bone in model.BoneHeaders)
         {
-            logger.LogInformation($"{dependency.PathHash}: {dependency.Path}");
-        }
-
-        logger.LogInformation("\nModel Materials:");
-        foreach (var mesh in model.MeshObjects[0].Meshes)
-        {
-            logger.LogInformation($"{mesh.DefaultMaterialHash}");
-
-            var materialPath = $"data://mod/{_mod.Uuid}/materials/{mesh.Name}_mat.gmtl";
-            logger.LogInformation($"{Cryptography.HashFileUri64(materialPath)}: {materialPath}");
+            bone.Name = "Bone";
+            bone.LodIndex = 4294967295;
         }
         
+        // TODO: Remove this!
+        foreach (var mesh in model.MeshObjects[0].Meshes)
+        {
+            mesh.BoneIds = new[] {0u};
+            for (var index = 0; index < mesh.WeightIndices[0].Count; index++)
+            {
+                var weightArray = mesh.WeightIndices[0][index];
+                for (var i = 0; i < weightArray.Length; i++)
+                {
+                    weightArray[i] = 0;
+                }
+            }
+            
+            // TODO: Move this into weapon template
+            // mesh.Flags = 262276;
+            // mesh.PartsId = 318770505;
+            // mesh.MeshParts = new List<MeshPart>
+            // {
+            //     new()
+            //     {
+            //         IndexCount = (uint)mesh.FaceIndices.Length,
+            //         PartsId = 318770505,
+            //         StartIndex = 0
+            //     }
+            // };
+        }
+        
+        // TODO: Move this into weapon template
+        // model.Parts = new List<ModelPart>
+        // {
+        //     new()
+        //     {
+        //         Flags = false,
+        //         Id = 318770505,
+        //         Name = "Base_Parts",
+        //         Unknown = ""
+        //     }
+        // };
+
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
 
         AddFile(GetDataPath($"{_mod.ModelName}.gmdl.gfxbin"), gfxData);
         AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
+
+        // foreach (var path in shaders)
+        // {
+        //     var location = path.Replace("data://",
+        //             "C:\\Users\\Kieran\\AppData\\Local\\SquareEnix\\FFXVMODTool\\LuminousStudio\\bin\\rt2\\pc\\")
+        //         .Replace('/', '\\')
+        //         .Replace(".tif", ".btex");
+        //     
+        //     AddFile(path, File.ReadAllBytes(location));
+        // }
     }
 
     private string GetDataPath(string relativePath)

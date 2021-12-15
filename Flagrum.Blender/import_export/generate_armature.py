@@ -2,6 +2,8 @@ import bpy
 from mathutils import Matrix, Vector
 from numpy.linalg import solve
 
+from .import_context import ImportContext
+
 
 def createEmptyTree(armature, context):
     miniscene = {}
@@ -164,11 +166,11 @@ def createBone(bone, armature, parent=None, per=[1, 2, 0, 3]):
         createBone(child, armature, new_bone, per)
 
 
-def generate_armature(context, armature_data):
-    armature_name = "Armature"
+def generate_armature(context: ImportContext, armature_data):
+    armature_name = context.collection.name
     armature = bpy.data.armatures.new(armature_name)
     armature_object = bpy.data.objects.new(armature_name, armature)
-    armature_object.data.name = "Armature"
+    armature_object.data.name = armature_name
     bpy.context.scene.collection.children.link(context.collection)
     context.collection.objects.link(armature_object)
     bpy.context.view_layer.objects.active = armature_object
