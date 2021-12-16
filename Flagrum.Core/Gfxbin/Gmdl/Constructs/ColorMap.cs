@@ -2,7 +2,7 @@
 
 namespace Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
-public struct ColorMap
+public class ColorMap
 {
     public IList<Color4> Colors;
 }

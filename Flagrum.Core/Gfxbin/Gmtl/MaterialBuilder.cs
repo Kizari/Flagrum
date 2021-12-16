@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
@@ -98,62 +97,15 @@ public static class MaterialBuilder
             //"BASIC_MATERIAL" => MaterialType.OneWeight,
             //"NAMED_HUMAN_OUTFIT" => MaterialType.SixWeights,
             //"NAMED_HUMAN_SKIN" => MaterialType.EightWeights,
+
+            // Currently only using this because despite others being more correct, the binmod loader
+            // tends to have issues if using other types
             _ => MaterialType.FourWeights
         };
 
-        Material material;
-        if (templateName == "BASIC_MATERIAL")
-        {
-            // var unpacker = new Unpacker("C:\\Testing\\ModelReplacements\\SinglePlayerSword\\sword_1.ffxvbinmod");
-            // extras = unpacker.UnpackFilesByQuery("data://shader");
-            // var fbxDefault = unpacker.UnpackFileByQuery("material.gmtl", out _);
-            // var reader = new MaterialReader(fbxDefault);
-            // material = reader.Read();
-            // var oldTexture = material.Textures.FirstOrDefault(t => t.Path.EndsWith("_d.png"));
-            // oldTexture.Path = $"data://mod/{modDirectoryName}/sourceimages/{materialName.Replace("_mat", "")}_basecolor0_texture_b.btex";
-            // oldTexture.PathHash = Cryptography.Hash32(oldTexture.Path);
-            // oldTexture.ResourceFileHash = Cryptography.HashFileUri64(oldTexture.Path);
-            // var newTexture = new MaterialTexture
-            // {
-            //     Name = "MRS0_Texture_TEX_Material0_",
-            //     NameHash = 850636012,
-            //     ShaderGenName = "MRS0_Texture",
-            //     ShaderGenNameHash = 480235761,
-            //     Path =
-            //         $"data://mod/{modDirectoryName}/sourceimages/{materialName.Replace("_mat", "")}_mrs0_texture_mrs.btex",
-            //     Flags = 1,
-            //     HighTextureStreamingLevels = -1,
-            //     Unknown2 = 163834998
-            // };
-            // newTexture.ResourceFileHash = Cryptography.HashFileUri64(newTexture.Path);
-            // newTexture.PathHash = Cryptography.Hash32(newTexture.Path);
-            // material.Textures.Add(newTexture);
-            // material.Name = materialName;
-            // material.NameHash = Cryptography.Hash32(material.Name);
-            // material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
-            // var basicDependencies = new List<DependencyPath>();
-            // basicDependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-            // basicDependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-            // basicDependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/materials/"});
-            // basicDependencies.Add(new DependencyPath { PathHash = "ref", Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl"});
-            // material.Header.Dependencies = basicDependencies.DistinctBy(d => d.PathHash).ToList();
-            // material.Header.Hashes = material.Header.Dependencies
-            //     .Where(d => ulong.TryParse(d.PathHash, out _))
-            //     .Select(d => ulong.Parse(d.PathHash))
-            //     .OrderBy(h => h)
-            //     .ToList();
-            // return material;
-            var materialReader =
-                new MaterialReader(
-                    "C:\\Modding\\WeaponTesting\\we51_100_basic_00_mat.gmtl.gfxbin");
-            material = materialReader.Read();
-        }
-        else
-        {
-            var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
-            var json = File.ReadAllText(templatePath);
-            material = JsonConvert.DeserializeObject<Material>(json);
-        }
+        var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
+        var json = File.ReadAllText(templatePath);
+        var material = JsonConvert.DeserializeObject<Material>(json);
 
         material.Name = materialName;
         material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
@@ -161,34 +113,33 @@ public static class MaterialBuilder
 
         foreach (var input in inputs)
         {
-            // TODO: Uncomment this
-            //SetInputValues(material, input.Name, input.Values);
+            SetInputValues(material, input.Name, input.Values);
         }
-        
+
         foreach (var texture in textures)
         {
             SetTexturePath(material, texture.Name, texture.Path);
         }
-        
+
         material.HighTexturePackAsset = "";
-        
+
         foreach (var (textureId, replacementUri) in replacements)
         {
             var match = material.Textures.FirstOrDefault(t => t.ShaderGenName == textureId);
-            // TODO: Remove null check and make proper template
-            if (match != null)
-            {
-                match.Path = replacementUri;
-                match.PathHash = Cryptography.Hash32(replacementUri);
-                match.ResourceFileHash = Cryptography.HashFileUri64(replacementUri);
-            }
+            match.Path = replacementUri;
+            match.PathHash = Cryptography.Hash32(replacementUri);
+            match.ResourceFileHash = Cryptography.HashFileUri64(replacementUri);
         }
 
         var dependencies = new List<DependencyPath>();
-        dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-        dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath { Path = s.Path, PathHash = s.ResourceFileHash.ToString() }));
-        dependencies.Add(new DependencyPath { PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/materials/"});
-        dependencies.Add(new DependencyPath { PathHash = "ref", Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl"});
+        dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath
+            {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
+        dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath
+            {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
+        dependencies.Add(
+            new DependencyPath {PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/materials/"});
+        dependencies.Add(new DependencyPath
+            {PathHash = "ref", Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl"});
         material.Header.Dependencies = dependencies.DistinctBy(d => d.PathHash).ToList();
         material.Header.Hashes = material.Header.Dependencies
             .Where(d => ulong.TryParse(d.PathHash, out _))
@@ -197,7 +148,7 @@ public static class MaterialBuilder
             .ToList();
 
         extras = new Dictionary<string, byte[]>();
-        
+
         return material;
     }
 

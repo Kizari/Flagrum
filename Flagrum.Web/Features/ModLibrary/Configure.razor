@@ -1,7 +1,6 @@
 ﻿@page "/mod/configure"
 @using Flagrum.Core.Utilities
 @using Flagrum.Web.Components.Controls.Data
-@using Flagrum.Web.Features.ModLibrary.Stats
 @using Flagrum.Core.Archive.Binmod
 @using Flagrum.Core.Gfxbin.Btex
 @using System.IO
@@ -14,137 +13,137 @@
 @inject ILogger<Configure> Logger
 
 <CascadingValue Value="this">
-<LoadingView Text="@LoadingText"
-             IsLoading="@IsLoading">
-<div class="p-6">
+    <LoadingView Text="@LoadingText"
+                 IsLoading="@IsLoading">
+        <div class="p-6">
 
-<div class="box row p-4">
-    <span class="flex-grow">@(Mod.GameMenuTitle == null ? Mod.WorkshopTitle : Mod.GameMenuTitle)</span>
-    <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!HasModelData || StatsTotal > 100)"/>
-    <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
-</div>
+            <div class="box row p-4">
+                <span class="flex-grow">@(Mod.GameMenuTitle ?? Mod.WorkshopTitle)</span>
+                <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!HasModelData || StatsTotal > 100)"/>
+                <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
+            </div>
 
-@if (!HasModelData)
-{
-    <div class="box row p-4 mt-6">
-        <label>TYPE</label>
-        <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged" CssClass="mx-4"/>
-        <label>TARGET</label>
-        <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" CssClass="ml-4"/>
-    </div>
+            @if (!HasModelData)
+            {
+                <div class="box row p-4 mt-6">
+                    <label>TYPE</label>
+                    <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged" CssClass="mx-4"/>
+                    <label>TARGET</label>
+                    <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" Placeholder="-- Select Target --" CssClass="ml-4"/>
+                </div>
 
-    @if (Mod.Target > -1)
-    {
-        @if (BinmodTypeHelper.GetModelCount(Mod.Type, Mod.Target) == 1)
-        {
-            <div class="box row p-4 mt-6">
-                <span class="flex-grow">
-                    Select FMD file with your model data
-                </span>
-                <BrowseButton Icon="folder"
-                              Text="Browse"
-                              AllowedExtensions=".fmd"
-                              OnFileSelected="OnModelSelected"
-                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
-            </div>
-        }
-        else
-        {
-            <div class="box row p-4 mt-6">
-                <span class="flex-grow">
-                    @(Model1Data == null ? "Select FMD file for first model" : Mod.Model1Name + ".fmd")
-                </span>
-                <BrowseButton Icon="folder"
-                              Text="Browse"
-                              AllowedExtensions=".fmd"
-                              OnFileSelected="OnModel1Selected"
-                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
-            </div>
-            <div class="box row p-4 mt-6">
-                <span class="flex-grow">
-                    @(Model1Data == null ? "Select FMD file for second model" : Mod.Model2Name + ".fmd")
-                </span>
-                <BrowseButton Icon="folder"
-                              Text="Browse"
-                              AllowedExtensions=".fmd"
-                              OnFileSelected="OnModel2Selected"
-                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
-            </div>
-        }
-    }
-}
-else
-{
-    <div class="box row p-5 mt-4">
-        @if (PreviewBase64 != null)
-        {
-            <img style="display:block;width:175px;height:175px;" src="images/@(ImageName).png"/>
-        }
-        <div class="flex-grow pl-6">
-            <table>
-                <tr>
-                    <td class="pb-1">Mod Type:</td>
-                    <td class="pb-1 pl-3">
-                        <strong>@BinmodTypeHelper.GetDisplayName((BinmodType)Mod.Type)</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="pb-1">Mod Target:</td>
-                    <td class="pb-1 pl-3">
-                        <strong>@(BinmodTypeHelper.GetTargets(Mod.Type)[Mod.Target])</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="pb-1">UUID:</td>
-                    <td class="pb-1 pl-3">
-                        <strong>@Mod.Uuid</strong>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="pb-1">Last Updated:</td>
-                    <td class="pb-1 pl-3">
-                        <strong>@(Mod.IsWorkshopMod ? "N/A" : Mod.LastUpdated == default ? "Not on Steam Workshop" : Mod.LastUpdated.ToString("d MMMM yyyy 'at' h:mm tt"))</strong>
-                    </td>
-                </tr>
-            </table>
-            <div class="row mt-6">
-                @if (!Mod.IsWorkshopMod)
+                @if (Mod.Target > -1)
                 {
-                    <BrowseButton Icon="image"
-                                  Text="Change Image"
-                                  AllowedExtensions=".png"
-                                  OnFileSelected="OnImageSelected"/>
-                    <BrowseButton Icon="view_in_ar"
-                                  Text="Change Model"
-                                  AllowedExtensions=".fmd"
-                                  BeforeFileLoaded="@(() => SetLoading("Loading Data"))"
-                                  OnFileSelected="OnModelSelected"
-                                  CssClass="ml-3"/>
+                    @if (BinmodTypeHelper.GetModelCount(Mod.Type, Mod.Target) == 1)
+                    {
+                        <div class="box row p-4 mt-6">
+                            <span class="flex-grow">
+                                Select FMD file with your model data
+                            </span>
+                            <BrowseButton Icon="folder"
+                                          Text="Browse"
+                                          AllowedExtensions=".fmd"
+                                          OnFileSelected="OnModelSelected"
+                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="box row p-4 mt-6">
+                            <span class="flex-grow">
+                                @(Model1Data == null ? "Select FMD file for first model" : Mod.Model1Name + ".fmd")
+                            </span>
+                            <BrowseButton Icon="folder"
+                                          Text="Browse"
+                                          AllowedExtensions=".fmd"
+                                          OnFileSelected="OnModel1Selected"
+                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
+                        </div>
+                        <div class="box row p-4 mt-6">
+                            <span class="flex-grow">
+                                @(Model1Data == null ? "Select FMD file for second model" : Mod.Model2Name + ".fmd")
+                            </span>
+                            <BrowseButton Icon="folder"
+                                          Text="Browse"
+                                          AllowedExtensions=".fmd"
+                                          OnFileSelected="OnModel2Selected"
+                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
+                        </div>
+                    }
                 }
+            }
+            else
+            {
+                <div class="box row p-5 mt-4">
+                    @if (PreviewBase64 != null)
+                    {
+                        <img style="display:block;width:175px;height:175px;" src="images/@(ImageName).png"/>
+                    }
+                    <div class="flex-grow pl-6">
+                        <table>
+                            <tr>
+                                <td class="pb-1">Mod Type:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@BinmodTypeHelper.GetDisplayName((BinmodType)Mod.Type)</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pb-1">Mod Target:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@(BinmodTypeHelper.GetTargets(Mod.Type)[Mod.Target])</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pb-1">UUID:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@Mod.Uuid</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pb-1">Last Updated:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@(Mod.IsWorkshopMod ? "N/A" : Mod.LastUpdated == default ? "Not on Steam Workshop" : Mod.LastUpdated.ToString("d MMMM yyyy 'at' h:mm tt"))</strong>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="row mt-6">
+                            @if (!Mod.IsWorkshopMod)
+                            {
+                                <BrowseButton Icon="image"
+                                              Text="Change Image"
+                                              AllowedExtensions=".png"
+                                              OnFileSelected="OnImageSelected"/>
+                                <BrowseButton Icon="view_in_ar"
+                                              Text="Change Model"
+                                              AllowedExtensions=".fmd"
+                                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"
+                                              OnFileSelected="OnModelSelected"
+                                              CssClass="ml-3"/>
+                            }
 
-                @if (!IsNew && !Mod.IsWorkshopMod)
+                            @if (!IsNew && !Mod.IsWorkshopMod)
+                            {
+                                <Button Icon="upload" Text="Upload to Workshop" OnClick="Upload" CssClass="ml-3"/>
+                                <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
+                            }
+                        </div>
+                    </div>
+                </div>
+                @if (Mod.Type is (int)BinmodType.Cloth or (int)BinmodType.StyleEdit)
                 {
-                    <Button Icon="upload" Text="Upload to Workshop" OnClick="Upload" CssClass="ml-3"/>
-                    <Button Icon="delete_forever" Text="Delete" OnClick="Delete" CssClass="ml-3"/>
+                    <Outfit/>
                 }
-            </div>
+                else if (Mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
+                {
+                    <Weapon/>
+                }
+                else
+                {
+                    <Replacement/>
+                }
+            }
         </div>
-    </div>
-    @if (Mod.Type is (int)BinmodType.Cloth or (int)BinmodType.StyleEdit)
-    {
-        <Outfit />
-    }
-    else if (Mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
-    {
-        <Weapon />
-    }
-    else
-    {
-        <Replacement />
-    }
-}
-</div>
-</LoadingView>
+    </LoadingView>
 </CascadingValue>
 
 @code
@@ -166,7 +165,7 @@ else
 
     protected override void OnInitialized()
     {
-        ModTypes = Enum.GetValues<BinmodType>().ToDictionary(t => (int)t, t => BinmodTypeHelper.GetDisplayName(t));
+        ModTypes = Enum.GetValues<BinmodType>().ToDictionary(t => (int)t, BinmodTypeHelper.GetDisplayName);
 
         Mod = AppState.ActiveMod?.Clone();
 
@@ -197,6 +196,7 @@ else
         IsNew = true;
 
         var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", previewImage);
         PreviewBase64 = Convert.ToBase64String(previewImage);
 
         Mod = new Binmod
@@ -212,6 +212,7 @@ else
 
     private void InitializeExistingMod()
     {
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
         PreviewBase64 = Convert.ToBase64String(Mod.PreviewBytes);
         HasModelData = true;
     }
@@ -331,10 +332,8 @@ else
         await Task.Run(() =>
         {
             var builder = new BinmodBuilder(Settings.BTexConverterPath, Mod, Convert.FromBase64String(PreviewBase64));
-            builder.AddFmd(Settings.BTexConverterPath, ModelData, Logger, Settings.GameDataDirectory);
+            builder.AddFmd(Settings.BTexConverterPath, ModelData);
             builder.WriteToFile(Mod.Path);
-
-            Mod.IsApplyToGame = false;
 
             if (Mod.Index == 0)
             {

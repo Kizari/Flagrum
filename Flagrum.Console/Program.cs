@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
+using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
 namespace Flagrum.Console;
@@ -25,16 +26,47 @@ public class Program
 
     public static void Main(string[] args)
     {
-        GfxbinTests.BuildGameAssetWeaponMod();
-        return;
-        var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
-        //var gfx = "C:\\Modding\\ModelReplacementTesting\\mod\\gladio_succulent\\mo00_001.gmdl.gfxbin";
-        var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
-        var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
-        var model = reader.Read();
-        var json = JsonConvert.SerializeObject(model.BoneHeaders);
-        File.WriteAllText("C:\\Modding\\ModelReplacementTesting\\bones.json", json);
-        var x = true;
+        var path = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\BASIC_MATERIAL.json";
+        var material = JsonConvert.DeserializeObject<Material>(File.ReadAllText(path));
+
+        material.Textures.Add(new MaterialTexture
+        {
+            ResourceFileHash = 2420523974290568125,
+            Name = "Emissive0_Texture_TEX_Material0_",
+            NameHash = 255212429,
+            ShaderGenName = "Emissive0_Texture",
+            ShaderGenNameHash = 3822196702,
+            Path = "data://shader/defaulttextures/white.tif",
+            PathHash = 3705256527,
+            Flags = 1,
+            HighTextureStreamingLevels = 0,
+            Unknown2 = 1662278111
+        });
+
+        material.Textures.Add(new MaterialTexture
+        {
+            ResourceFileHash = 2420523974290568125,
+            Name = "OpacityMask0_Texture_TEX_Material0_",
+            NameHash = 1122382789,
+            ShaderGenName = "OpacityMask0_Texture",
+            ShaderGenNameHash = 3887834006,
+            Path = "data://shader/defaulttextures/white.tif",
+            PathHash = 3705256527,
+            Flags = 1,
+            HighTextureStreamingLevels = 0,
+            Unknown2 = 1446710005
+        });
+        var result = JsonConvert.SerializeObject(material);
+        File.WriteAllText("C:\\Modding\\BASIC_MATERIAL.json", result);
+
+        // var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
+        // //var gfx = "C:\\Modding\\ModelReplacementTesting\\mod\\gladio_succulent\\mo00_001.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        // var json = JsonConvert.SerializeObject(model.BoneHeaders);
+        // File.WriteAllText("C:\\Modding\\ModelReplacementTesting\\bones.json", json);
+        // var x = true;
 
         //GfxbinTests.BuildMod2();
         // var gfx = "C:\\Modding\\Extractions\\angery_sword\\mod\\0e664ae0-1baa-4f96-8518-ad16d11d1141\\angery_sword.gmdl.gfxbin";

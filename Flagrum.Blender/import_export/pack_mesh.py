@@ -236,20 +236,24 @@ def _pack_weight_maps(mesh: Object, bone_table):
         weight_values[0].append([])
         weight_indices[1].append([])
         weight_values[1].append([])
-        counter = 0
         current = []
+
         for group in mesh_data.vertices[i].groups:
+            # Ignore zero weights as they have no influence on the model
+            if group.weight == 0:
+                continue
+
             subgroup = []
             bone_name = mesh.vertex_groups[group.group].name
-            if counter < 8:
-                if bone_name not in bone_table:
-                    continue
-                subgroup.append(bone_table[bone_name])
-                subgroup.append(int(group.weight * 255.0))
-            else:
-                break  # Luminous can only handle up to 8 weights per vertex
-            counter += 1
+
+            # Ignore custom vertex groups as they won't affect the game
+            if bone_name not in bone_table:
+                continue
+
+            subgroup.append(bone_table[bone_name])
+            subgroup.append(int(group.weight * 255.0))
             current.append(subgroup)
+
         record_counter = 0
         current.sort(key=_take_value, reverse=True)
         for record in current:

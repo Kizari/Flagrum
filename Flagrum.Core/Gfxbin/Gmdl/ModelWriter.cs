@@ -384,21 +384,25 @@ public class ModelWriter
             }
         }
 
-        count = 0;
-        foreach (var colorMap in mesh.ColorMaps)
+        for (var i = 0; i < mesh.ColorMaps.Count; i++)
         {
+            var colorMap = mesh.ColorMaps[i];
+            if (colorMap.Colors?.Any() != true)
+            {
+                continue;
+            }
+
             elements.Add(new VertexElementDescription
             {
                 Format = VertexElementFormat.XYZW8_UintN,
-                Semantic = $"COLOR{count}",
+                Semantic = $"COLOR{i}",
                 Offset = stride
             });
 
             stride += 4;
-            count++;
 
             // Luminous only supports up to COLOR3
-            if (count > 3)
+            if (i > 3)
             {
                 break;
             }
@@ -425,7 +429,7 @@ public class ModelWriter
                 vertexStream.Write(BitConverter.GetBytes(uv.V));
             }
 
-            foreach (var colorMap in mesh.ColorMaps)
+            foreach (var colorMap in mesh.ColorMaps.Where(m => m.Colors?.Any() == true))
             {
                 var color = colorMap.Colors[i];
                 vertexStream.WriteByte(color.R);

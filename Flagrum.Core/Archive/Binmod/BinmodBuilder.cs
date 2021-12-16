@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -7,24 +6,13 @@ using System.Linq;
 using System.Text;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
-using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
-using Flagrum.Core.Services.Logging;
 using Flagrum.Core.Utilities;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Flagrum.Core.Archive.Binmod;
-
-public enum Boye
-{
-    Noctis,
-    Prompto,
-    Ignis,
-    Gladiolus
-}
 
 public class BinmodBuilder
 {
@@ -60,7 +48,7 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(string btexConverterPath, byte[] fmd, ILogger logger, string gameDataDirectory)
+    public void AddFmd(string btexConverterPath, byte[] fmd)
     {
         using var memoryStream = new MemoryStream(fmd);
         using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
@@ -72,8 +60,7 @@ public class BinmodBuilder
 
         var json = Encoding.UTF8.GetString(dataStream.ToArray());
         var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
-        var dependencies = new List<string>();
-        
+
         foreach (var mesh in gpubin.Meshes)
         {
             var replacements = new Dictionary<string, string>();
@@ -100,6 +87,7 @@ public class BinmodBuilder
                         {
                             replacementUri = "data://shader/defaulttextures/gray.tif";
                         }
+
                         replacements.Add(textureId, replacementUri);
                         // mesh.Material.TextureData.Add(new TextureData
                         // {
@@ -118,8 +106,9 @@ public class BinmodBuilder
                     tempStream.CopyTo(textureStream);
 
                     var extension = filePath.Split('\\', '/').Last().Split('.').Last();
-                    var btexFileName = $"{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{GetTextureSuffix(textureId)}.btex";
-                    
+                    var btexFileName =
+                        $"{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{GetTextureSuffix(textureId)}.btex";
+
                     byte[] btexData;
 
                     if (extension.ToLower() == "btex")
@@ -192,7 +181,7 @@ public class BinmodBuilder
             {
                 _packer.AddFile(extraData, extraUri);
             }
-            
+
             mesh.MaterialType = materialType;
 
             var materialWriter = new MaterialWriter(material);
@@ -232,7 +221,7 @@ public class BinmodBuilder
                 }
             }
         }
-        
+
         // // TODO: Remove this!
         // foreach (var bone in model.BoneHeaders)
         // {
@@ -266,7 +255,7 @@ public class BinmodBuilder
         //     //     }
         //     // };
         // }
-        
+
         // TODO: Move this into weapon template
         // model.Parts = new List<ModelPart>
         // {
@@ -278,7 +267,7 @@ public class BinmodBuilder
         //         Unknown = ""
         //     }
         // };
-        
+
         // TODO: Remove this test code
         // var boneJson = File.ReadAllText("C:\\Modding\\ModelReplacementTesting\\bones.json");
         // var originalBones = JsonConvert.DeserializeObject<IEnumerable<BoneHeader>>(boneJson);
@@ -321,21 +310,23 @@ public class BinmodBuilder
             //         }
             //     }
             // }
-            if (_mod.Type != (int)BinmodType.Weapon)
+
+            // Ensure a white color AO color layer if no AO layer exists
+            // to avoid vantablack model replacements and snapshots
+            if (_mod.Type != (int)BinmodType.Weapon && mesh.ColorMaps.Count < 3)
             {
-                mesh.ColorMaps = new List<ColorMap>();
-                for (var i = 0; i < 4; i++)
+                while (mesh.ColorMaps.Count < 3)
                 {
-                    var colorMap = new ColorMap();
-                    colorMap.Colors = new List<Color4>();
-                    for (var j = 0; j < mesh.VertexPositions.Count(); j++)
-                    {
-                        colorMap.Colors.Add(new Color4 {R = 255, G = 255, B = 255, A = 255});
-                    }
-                    mesh.ColorMaps.Add(colorMap);
+                    mesh.ColorMaps.Add(new ColorMap());
+                }
+
+                mesh.ColorMaps[2].Colors = new List<Color4>();
+                for (var j = 0; j < mesh.VertexPositions.Count; j++)
+                {
+                    mesh.ColorMaps[2].Colors.Add(new Color4 {R = 255, G = 255, B = 255, A = 255});
                 }
             }
-            
+
             // mesh.Flags = 262276;
             // mesh.LodNear = 0.0f;
             // mesh.LodFar = 3.5f;
@@ -367,7 +358,7 @@ public class BinmodBuilder
             //     meshClones.Add(meshClone);
             // }
         }
-        
+
         //model.MeshObjects[0].Meshes.AddRange(meshClones);
 
         var writer = new ModelWriter(model);
@@ -385,7 +376,7 @@ public class BinmodBuilder
         //     
         //     AddFile(path, File.ReadAllBytes(location));
         // }
-        
+
         //AddGameAssets(dependencies, gameDataDirectory);
     }
 
@@ -428,7 +419,7 @@ public class BinmodBuilder
 
         return "";
     }
-    
+
     /// <summary>
     ///     Add a copy of a game asset to the archive
     ///     Asset will be read from the EARC and copied to the archive

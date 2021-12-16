@@ -115,7 +115,13 @@ class MaterialEditorPanel(Panel):
             if material.show_advanced:
                 for empty_string, prop in iterable_properties:
                     if not prop.is_relevant and prop.property_type == 'TEXTURE':
-                        layout.prop(data=active_material_data, property=prop.property_name)
+                        row = layout.row()
+                        row.label(text=prop.property_name)
+                        row.prop(data=active_material_data, property=prop.property_name, text="")
+                        texture_slot = row.operator(TextureSlotOperator.bl_idname, text="", icon='FILEBROWSER')
+                        texture_slot.property = prop.property_name
+                        texture_slot = row.operator(ClearTextureOperator.bl_idname, text="", icon='X')
+                        texture_slot.property = prop.property_name
                 for empty_string, prop in iterable_properties:
                     if not prop.is_relevant and prop.property_type == 'INPUT':
                         layout.prop(data=active_material_data, property=prop.property_name)
