@@ -1,0 +1,57 @@
+﻿@using Flagrum.Core.Archive.Binmod
+@inject AppStateService AppState
+
+@if (AppState.Mods.Any(m => m.IsWorkshopMod == IsWorkshopMod))
+{
+    @*<div class="mx-6 rounded bg-dark-600 p-3 shadow-md row mt-4 cursor-pointer" @onclick="Expand">
+        <span class="material-icons-outlined">@(IsExpanded ? "expand_less" : "expand_more")</span>
+        <span class="font-bold text-grey-400 ml-2">@Name</span>
+    </div>*@
+    <h5 class="font-display font-bold text-grey-300 mx-8">@Name</h5>
+    @if (IsExpanded)
+    {
+        <CascadingValue Value="this">
+            <div class="row flex-wrap px-4 ml-0.5 mb-10">
+                @foreach (var mod in Mods
+                    .Where(m => m.Target == Target)
+                    .OrderByDescending(m => m.IsApplyToGame)
+                    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle))
+                {
+                    <ModListingCard @key="mod.Uuid" Mod="@mod"/>
+                }
+            </div>
+        </CascadingValue>
+    }
+}
+
+@code
+{
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public bool IsWorkshopMod { get; set; }
+
+    [Parameter]
+    public int Target { get; set; }
+    
+    [Parameter]
+    public IEnumerable<Binmod> Mods { get; set; }
+
+    private bool IsExpanded { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        IsExpanded = !IsWorkshopMod;
+    }
+
+    private void Expand()
+    {
+        IsExpanded = !IsExpanded;
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
+}

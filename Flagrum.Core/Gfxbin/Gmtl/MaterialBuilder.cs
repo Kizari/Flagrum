@@ -89,8 +89,7 @@ public static class MaterialBuilder
         List<MaterialInputData> inputs,
         List<MaterialTextureData> textures,
         Dictionary<string, string> replacements,
-        out MaterialType type,
-        out Dictionary<string, byte[]> extras)
+        out MaterialType type)
     {
         type = templateName switch
         {
@@ -146,8 +145,6 @@ public static class MaterialBuilder
             .Select(d => ulong.Parse(d.PathHash))
             .OrderBy(h => h)
             .ToList();
-
-        extras = new Dictionary<string, byte[]>();
 
         return material;
     }

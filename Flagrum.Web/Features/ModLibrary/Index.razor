@@ -1,8 +1,8 @@
 ﻿@page "/"
-@using Flagrum.Core.Archive
+@using Flagrum.Core.Archive.Binmod
 @using Flagrum.Core.Utilities
 @using System.IO
-@using Flagrum.Core.Archive.Binmod
+@using Flagrum.Core.Archive
 
 @inject NavigationManager Navigation
 @inject Settings Settings
@@ -12,31 +12,91 @@
 <LoadingView Text="Loading Mods"
              IsLoading="IsLoading">
 
-    <div class="mx-6 mt-6">
-        <div class="row">
-            <h5 class="font-bold text-grey-300 ml-1 flex-grow">Local Mods</h5>
+    <div class="pt-6 pb-10">
+        <div class="row mx-8 mb-8">
+            @* <h3 class="font-bold text-grey-300 ml-1">Local Mods</h3> *@
+            <div class="bg-dark-600 shadow-md rounded row mt-1">
+                <ModTypeButtonGroup>
+                    <ModTypeButton Text="Local Mods" DefaultActive="true" OnSelected="() => SetLocal(true)"/>
+                    <ModTypeButton Text="Workshop Mods" OnSelected="() => SetLocal(false)"/>
+                </ModTypeButtonGroup>
+            </div>
+            <div class="bg-dark-600 shadow-md rounded row ml-10 mt-1">
+                <ModTypeButtonGroup>
+                    <ModTypeButton Text="All Mods" DefaultActive="true" OnSelected="() => Filter(-1)"/>
+                    <ModTypeButton Text="Outfits" OnSelected="() => Filter(BinmodType.Cloth)"/>
+                    <ModTypeButton Text="Weapons" OnSelected="() => Filter(BinmodType.Weapon)"/>
+                    <ModTypeButton Text="Replacements" OnSelected="() => Filter(BinmodType.Character)"/>
+                    <ModTypeButton Text="Comrades Styles" OnSelected="() => Filter(BinmodType.StyleEdit)"/>
+                    <ModTypeButton Text="Comrades Weapons" OnSelected="() => Filter(BinmodType.Multi_Weapon)"/>
+                </ModTypeButtonGroup>
+            </div>
+            <div class="flex-grow"></div>
             <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
         </div>
-    </div>
+        @*<div class="row flex-wrap px-4 ml-0.5 mb-16">
+            @foreach (var mod in AppState.Mods
+                .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
+                .OrderByDescending(m => m.IsApplyToGame)
+                .ThenBy(m => m.Type)
+                .ThenBy(m => m.Target)
+                .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle))
+            {
+                <ModListingCard @key="mod.Uuid" Mod="@mod"/>
+            }
+        </div>*@
+        <ModListingGroup Name="Noctis"
+                         Target="(int)OutfitSoloTarget.Noctis"
+                         IsWorkshopMod="!ShowLocalMods"
+                         Mods="AppState.Mods
+    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
+    .OrderByDescending(m => m.IsApplyToGame)
+    .ThenBy(m => m.Type)
+    .ThenBy(m => m.Target)
+    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
+        <ModListingGroup Name="Prompto"
+                         Target="(int)OutfitSoloTarget.Prompto"
+                         IsWorkshopMod="!ShowLocalMods"
+                         Mods="AppState.Mods
+    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
+    .OrderByDescending(m => m.IsApplyToGame)
+    .ThenBy(m => m.Type)
+    .ThenBy(m => m.Target)
+    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
+        <ModListingGroup Name="Ignis"
+                         Target="(int)OutfitSoloTarget.Ignis"
+                         IsWorkshopMod="!ShowLocalMods"
+                         Mods="AppState.Mods
+    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
+    .OrderByDescending(m => m.IsApplyToGame)
+    .ThenBy(m => m.Type)
+    .ThenBy(m => m.Target)
+    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
+        <ModListingGroup Name="Gladiolus"
+                         Target="(int)OutfitSoloTarget.Gladiolus"
+                         IsWorkshopMod="!ShowLocalMods"
+                         Mods="AppState.Mods
+    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
+    .OrderByDescending(m => m.IsApplyToGame)
+    .ThenBy(m => m.Type)
+    .ThenBy(m => m.Target)
+    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
+        
+        @* <ModListingGroup Name="Outfits" ModType="BinmodType.Cloth" IsWorkshopMod="false"/> *@
+        @* <ModListingGroup Name="Weapons" ModType="BinmodType.Weapon" IsWorkshopMod="false"/> *@
+        @* <ModListingGroup Name="Model Replacements" ModType="BinmodType.Character" IsWorkshopMod="false"/> *@
+        @* <ModListingGroup Name="Comrades Customisations" ModType="BinmodType.StyleEdit" IsWorkshopMod="false"/> *@
+        @* <ModListingGroup Name="Comrades Weapons" ModType="BinmodType.Multi_Weapon" IsWorkshopMod="false"/> *@
 
-    <div class="row flex-wrap px-4 ml-0.5">
-        @foreach (var mod in AppState.Mods.Where(m => !m.IsWorkshopMod))
-        {
-            <ModListingCard @key="mod.Uuid" Mod="@mod"/>
-        }
-    </div>
-
-    <div class="mx-6 mt-8">
-        <div class="row">
-            <h5 class="font-bold text-grey-300 ml-1 flex-grow">Workshop Mods</h5>
-        </div>
-    </div>
-
-    <div class="row flex-wrap px-4 ml-0.5 mb-8">
-        @foreach (var mod in AppState.Mods.Where(m => m.IsWorkshopMod))
-        {
-            <ModListingCard @key="mod.Uuid" Mod="@mod"/>
-        }
+        @* <div class="row mx-6 mt-16 mb-6"> *@
+        @*     <h3 class="font-bold text-grey-300 ml-1 flex-grow">Workshop Mods</h3> *@
+        @* </div> *@
+        @* *@
+        @* <ModListingGroup Name="Outfits" ModType="BinmodType.Cloth" IsWorkshopMod="true"/> *@
+        @* <ModListingGroup Name="Weapons" ModType="BinmodType.Weapon" IsWorkshopMod="true"/> *@
+        @* <ModListingGroup Name="Model Replacements" ModType="BinmodType.Character" IsWorkshopMod="true"/> *@
+        @* <ModListingGroup Name="Comrades Customisations" ModType="BinmodType.StyleEdit" IsWorkshopMod="true"/> *@
+        @* <ModListingGroup Name="Comrades Weapons" ModType="BinmodType.Multi_Weapon" IsWorkshopMod="true"/> *@
     </div>
 
 </LoadingView>
@@ -46,7 +106,11 @@
     [CascadingParameter]
     public MainLayout Parent { get; set; }
 
+    [Parameter]
+    public int ModType { get; set; } = -1;
+
     private bool IsLoading { get; set; } = true;
+    private bool ShowLocalMods { get; set; } = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,7 +168,7 @@
                         Logger.LogError(e, e.Message);
                     }
                 }
-                
+
                 var paths = AppState.Mods.Select(m => m.Path);
                 AppState.UnmanagedEntries = binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
             });
@@ -119,5 +183,23 @@
     {
         AppState.ActiveMod = null;
         Navigation.NavigateTo("/mod/configure");
+    }
+
+    private void Filter(BinmodType type)
+    {
+        ModType = (int)type;
+        StateHasChanged();
+    }
+
+    private void Filter(int type)
+    {
+        ModType = type;
+        StateHasChanged();
+    }
+
+    private void SetLocal(bool state)
+    {
+        ShowLocalMods = state;
+        StateHasChanged();
     }
 }

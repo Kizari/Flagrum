@@ -1,9 +1,15 @@
-﻿@using Microsoft.AspNetCore.Components
-
-<div class="box mt-4">
+﻿<div class="box mt-4">
     <EditForm Model="Parent">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
+                <tr>
+                    <td>
+                        <label>TITLE</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.WorkshopTitle"/>
+                    </td>
+                </tr>
                 <tr>
                     <td>
                         <label>DESCRIPTION</label>

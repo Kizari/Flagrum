@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -44,7 +43,7 @@ public class ConsoleLogger : ILogger
         // Console.ForegroundColor = configuration.Colors[logLevel];
         // Console.WriteLine($"[{logLevel.ToString()}] {formatter(state, exception)}");
         // Console.ForegroundColor = originalColor;
-        File.AppendAllText("C:\\Testing\\FlagrumLog.txt", formatter(state, exception) + "\r\n");
+        //File.AppendAllText("C:\\Testing\\FlagrumLog.txt", formatter(state, exception) + "\r\n");
     }
 
     public bool IsEnabled(LogLevel logLevel)

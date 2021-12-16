@@ -70,7 +70,7 @@ public class BinmodBuilder
                 {
                     if (MaterialBuilder.DefaultTextures.TryGetValue(textureId, out var replacement))
                     {
-                        string replacementUri;
+                        string replacementUri = null;
                         if (replacement == "white.btex" || replacement == "white-color.btex")
                         {
                             replacementUri = "data://shader/defaulttextures/white.tif";
@@ -85,16 +85,18 @@ public class BinmodBuilder
                         }
                         else
                         {
-                            replacementUri = "data://shader/defaulttextures/gray.tif";
+                            mesh.Material.TextureData.Add(new TextureData
+                            {
+                                Id = textureId,
+                                Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
+                                Data = MaterialBuilder.GetDefaultTextureData(replacement)
+                            });
                         }
 
-                        replacements.Add(textureId, replacementUri);
-                        // mesh.Material.TextureData.Add(new TextureData
-                        // {
-                        //     Id = textureId,
-                        //     Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
-                        //     Data = MaterialBuilder.GetDefaultTextureData(replacement)
-                        // });
+                        if (replacementUri != null)
+                        {
+                            replacements.Add(textureId, replacementUri);
+                        }
                     }
                 }
                 else
@@ -173,14 +175,7 @@ public class BinmodBuilder
                     Path = p.Uri
                 }).ToList(),
                 replacements,
-                out var materialType,
-                out var extras);
-
-            // TODO: Remove this!
-            foreach (var (extraUri, extraData) in extras)
-            {
-                _packer.AddFile(extraData, extraUri);
-            }
+                out var materialType);
 
             mesh.MaterialType = materialType;
 
@@ -222,95 +217,8 @@ public class BinmodBuilder
             }
         }
 
-        // // TODO: Remove this!
-        // foreach (var bone in model.BoneHeaders)
-        // {
-        //     bone.Name = "Bone";
-        //     bone.LodIndex = 4294967295;
-        // }
-        //
-        // // TODO: Remove this!
-        // foreach (var mesh in model.MeshObjects[0].Meshes)
-        // {
-        //     mesh.BoneIds = new[] {0u};
-        //     for (var index = 0; index < mesh.WeightIndices[0].Count; index++)
-        //     {
-        //         var weightArray = mesh.WeightIndices[0][index];
-        //         for (var i = 0; i < weightArray.Length; i++)
-        //         {
-        //             weightArray[i] = 0;
-        //         }
-        //     }
-        //     
-        //     // TODO: Move this into weapon template
-        //     // mesh.Flags = 262276;
-        //     // mesh.PartsId = 318770505;
-        //     // mesh.MeshParts = new List<MeshPart>
-        //     // {
-        //     //     new()
-        //     //     {
-        //     //         IndexCount = (uint)mesh.FaceIndices.Length,
-        //     //         PartsId = 318770505,
-        //     //         StartIndex = 0
-        //     //     }
-        //     // };
-        // }
-
-        // TODO: Move this into weapon template
-        // model.Parts = new List<ModelPart>
-        // {
-        //     new()
-        //     {
-        //         Flags = false,
-        //         Id = 318770505,
-        //         Name = "Base_Parts",
-        //         Unknown = ""
-        //     }
-        // };
-
-        // TODO: Remove this test code
-        // var boneJson = File.ReadAllText("C:\\Modding\\ModelReplacementTesting\\bones.json");
-        // var originalBones = JsonConvert.DeserializeObject<IEnumerable<BoneHeader>>(boneJson);
-        // var boneMap = new Dictionary<uint, uint>();
-        // foreach (var bone in model.BoneHeaders)
-        // {
-        //     var match = originalBones.FirstOrDefault(b => b.Name == bone.Name);
-        //     if (match == null)
-        //     {
-        //         boneMap.Add(bone.LodIndex >> 16, bone.LodIndex >> 16);
-        //     }
-        //     else
-        //     {
-        //         boneMap.Add(bone.LodIndex >> 16, match.UniqueIndex);
-        //     }
-        // }
-        //
-        // model.BoneHeaders = originalBones.ToList();
-
-        // model.Parts = new List<ModelPart>
-        // {
-        //     new()
-        //     {
-        //         Flags = false,
-        //         Id = 318770505,
-        //         Name = "Parts_Base",
-        //         Unknown = ""
-        //     }
-        // };
         foreach (var mesh in model.MeshObjects[0].Meshes)
         {
-            //mesh.BoneIds = Enumerable.Range(0, 2100).Select(i => (uint)i);
-            // foreach (var weightMap in mesh.WeightIndices)
-            // {
-            //     foreach (var vertexWeights in weightMap)
-            //     {
-            //         for (var i = 0; i < vertexWeights.Length; i++)
-            //         {
-            //             vertexWeights[i] = (ushort)boneMap[vertexWeights[i]];
-            //         }
-            //     }
-            // }
-
             // Ensure a white color AO color layer if no AO layer exists
             // to avoid vantablack model replacements and snapshots
             if (_mod.Type != (int)BinmodType.Weapon && mesh.ColorMaps.Count < 3)
@@ -326,58 +234,13 @@ public class BinmodBuilder
                     mesh.ColorMaps[2].Colors.Add(new Color4 {R = 255, G = 255, B = 255, A = 255});
                 }
             }
-
-            // mesh.Flags = 262276;
-            // mesh.LodNear = 0.0f;
-            // mesh.LodFar = 3.5f;
-            // mesh.PartsId = 318770505;
-            // mesh.VertexLayoutType = mesh.MaterialType switch
-            // {
-            //     MaterialType.OneWeight => VertexLayoutType.Skinning_1Bones,
-            //     MaterialType.SixWeights => VertexLayoutType.Skinning_6Bones,
-            //     _ => VertexLayoutType.Skinning_4Bones
-            // };
-            // mesh.MeshParts = new List<MeshPart>
-            // {
-            //     new()
-            //     {
-            //         IndexCount = (uint)mesh.FaceIndices.Length,
-            //         PartsId = 318770505,
-            //         StartIndex = 0
-            //     }
-            // };
-            //
-            // var meshCloneJson = JsonConvert.SerializeObject(mesh);
-            // var lodNears = new[] {0.0f, 3.5f, 10f, 25f, 45f, 65f, 85f};
-            // var lodFars = new[] {3.5f, 10f, 25f, 45f, 65f, 85f, 120f};
-            // for (int i = 1; i < 7; i++)
-            // {
-            //     var meshClone = JsonConvert.DeserializeObject<Mesh>(meshCloneJson);
-            //     meshClone.LodNear = lodNears[i];
-            //     meshClone.LodFar = lodFars[i];
-            //     meshClones.Add(meshClone);
-            // }
         }
-
-        //model.MeshObjects[0].Meshes.AddRange(meshClones);
 
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
 
         AddFile(GetDataPath($"{_mod.ModelName}.gmdl"), gfxData);
         AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
-
-        // foreach (var path in shaders)
-        // {
-        //     var location = path.Replace("data://",
-        //             "C:\\Users\\Kieran\\AppData\\Local\\SquareEnix\\FFXVMODTool\\LuminousStudio\\bin\\rt2\\pc\\")
-        //         .Replace('/', '\\')
-        //         .Replace(".tif", ".btex");
-        //     
-        //     AddFile(path, File.ReadAllBytes(location));
-        // }
-
-        //AddGameAssets(dependencies, gameDataDirectory);
     }
 
     private string GetDataPath(string relativePath)
@@ -418,69 +281,5 @@ public class BinmodBuilder
         }
 
         return "";
-    }
-
-    /// <summary>
-    ///     Add a copy of a game asset to the archive
-    ///     Asset will be read from the EARC and copied to the archive
-    /// </summary>
-    public void AddGameAssets(IEnumerable<string> paths, string dataDirectory)
-    {
-        dataDirectory += '\\';
-        var archiveDictionary = new Dictionary<string, List<string>>();
-
-        foreach (var uri in paths)
-        {
-            var path = uri.Replace("data://", dataDirectory).Replace('/', '\\');
-            var fileName = path.Split('\\').Last();
-            path = path.Replace(fileName, "autoexternal.earc");
-
-            while (!Directory.Exists(Path.GetDirectoryName(path)))
-            {
-                var newPath = "";
-                var tokens = path.Split('\\');
-                for (var i = 0; i < tokens.Length - 2; i++)
-                {
-                    newPath += tokens[i];
-
-                    if (i != tokens.Length - 3)
-                    {
-                        newPath += '\\';
-                    }
-                }
-
-                path = newPath + "\\autoexternal.earc";
-            }
-
-            if (!archiveDictionary.ContainsKey(path))
-            {
-                archiveDictionary.Add(path, new List<string>());
-            }
-
-            archiveDictionary[path].Add(uri);
-        }
-
-        foreach (var (archivePath, uriList) in archiveDictionary)
-        {
-            var unpacker = new Unpacker(archivePath);
-
-            foreach (var uri in uriList)
-            {
-                var fileData = unpacker.UnpackFileByQuery(uri, out var flags);
-                if (fileData.Length == 0)
-                {
-                    throw new InvalidOperationException($"URI {uri} must exist in game files!");
-                }
-
-                if (flags.HasFlag(ArchiveFileFlag.Compressed))
-                {
-                    _packer.AddCompressedFile(fileData, uri);
-                }
-                else
-                {
-                    _packer.AddFile(fileData, uri);
-                }
-            }
-        }
     }
 }

@@ -27,12 +27,12 @@ public static class Modmeta
 
         if (mod.Model2Name == null)
         {
-            builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl");
+            builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         }
         else
         {
-            builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.Model1Name}.gmdl");
-            builder.AppendLine($"modify_gmdl[1]=mod/{mod.ModDirectoryName}/{mod.Model2Name}.gmdl");
+            builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.Model1Name}.{mod.ModelExtension}");
+            builder.AppendLine($"modify_gmdl[1]=mod/{mod.ModDirectoryName}/{mod.Model2Name}.{mod.ModelExtension}");
         }
 
         builder.AppendLine($"name={mod.GameMenuTitle}");
@@ -52,11 +52,11 @@ public static class Modmeta
         builder.AppendLine($"vitality={mod.Vitality}");
         builder.AppendLine($"magic={mod.Magic}");
         builder.AppendLine($"spirit={mod.Spirit}");
-        builder.AppendLine($"bullet={mod.Ballistic}");
-        builder.AppendLine($"fire={mod.Fire}");
-        builder.AppendLine($"ice={mod.Ice}");
-        builder.AppendLine($"thunder={mod.Thunder}");
-        builder.AppendLine($"dark={mod.Dark}");
+        builder.AppendLine($"bullet={mod.Ballistic * -1}");
+        builder.AppendLine($"fire={mod.Fire * -1}");
+        builder.AppendLine($"ice={mod.Ice * -1}");
+        builder.AppendLine($"thunder={mod.Thunder * -1}");
+        builder.AppendLine($"dark={mod.Dark * -1}");
         return Encoding.UTF8.GetBytes(builder.ToString());
     }
 
@@ -71,7 +71,7 @@ public static class Modmeta
             builder.AppendLine($"origin_gmdl[{i}]={mod.OriginalGmdls[i]}");
         }
 
-        builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl");
+        builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         builder.AppendLine($"count_original_gmdls={mod.OriginalGmdls.Count}");
         builder.AppendLine($"type={BinmodTypeHelper.GetModmetaTargetName(mod.Type, mod.Target)}");
         builder.AppendLine($"title={mod.WorkshopTitle}");
@@ -95,12 +95,12 @@ public static class Modmeta
 
         if (mod.Model2Name == null)
         {
-            builder.AppendLine($"gmdl1={mod.ModelName}.gmdl");
+            builder.AppendLine($"gmdl1={mod.ModelName}.{mod.ModelExtension}");
         }
         else
         {
-            builder.AppendLine($"gmdl1={mod.Model1Name}.gmdl");
-            builder.AppendLine($"gmdl2={mod.Model2Name}.gmdl");
+            builder.AppendLine($"gmdl1={mod.Model1Name}.{mod.ModelExtension}");
+            builder.AppendLine($"gmdl2={mod.Model2Name}.{mod.ModelExtension}");
         }
 
         builder.AppendLine($"title={mod.WorkshopTitle}");
@@ -129,7 +129,7 @@ public static class Modmeta
         builder.AppendLine($"ischecked={(mod.IsWorkshopMod ? "True" : "False")}");
         builder.AppendLine($"isapplytogame={(mod.IsApplyToGame ? "True" : "False")}");
         builder.AppendLine($"itemplace={(mod.IsWorkshopMod ? "E_SteamWorkshop" : "E_Local")}");
-        builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl");
+        builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         builder.AppendLine($"name={mod.GameMenuTitle}");
         builder.AppendLine("help=");
         builder.AppendLine($"strength={mod.Strength}");
@@ -138,11 +138,11 @@ public static class Modmeta
         builder.AppendLine($"spirit={mod.Spirit}");
         builder.AppendLine($"hp_max={mod.MaxHp}");
         builder.AppendLine($"mp_max={mod.MaxMp}");
-        builder.AppendLine($"bullet={mod.Ballistic}");
-        builder.AppendLine($"fire={mod.Fire}");
-        builder.AppendLine($"ice={mod.Ice}");
-        builder.AppendLine($"thunder={mod.Thunder}");
-        builder.AppendLine($"dark={mod.Dark}");
+        builder.AppendLine($"bullet={mod.Ballistic * -1}");
+        builder.AppendLine($"fire={mod.Fire * -1}");
+        builder.AppendLine($"ice={mod.Ice * -1}");
+        builder.AppendLine($"thunder={mod.Thunder * -1}");
+        builder.AppendLine($"dark={mod.Dark * -1}");
         return Encoding.UTF8.GetBytes(builder.ToString());
     }
 }

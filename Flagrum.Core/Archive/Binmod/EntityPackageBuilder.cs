@@ -53,7 +53,7 @@ public static class EntityPackageBuilder
         builder.AppendLine(
             $"    <object objectIndex=\"4\" name=\"{mod.ModelName}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.ModelName}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine(
-            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl</sourcePath_>");
+            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine("  </objects>");
         builder.AppendLine("</package>");
@@ -94,12 +94,12 @@ public static class EntityPackageBuilder
         builder.AppendLine(
             $"    <object objectIndex=\"4\" name=\"{mod.Model1Name}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.Model1Name}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine(
-            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model1Name}.gmdl</sourcePath_>");
+            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model1Name}.{mod.ModelExtension}</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine(
             $"    <object objectIndex=\"5\" name=\"{mod.Model2Name}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.Model2Name}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine(
-            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model2Name}.gmdl</sourcePath_>");
+            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model2Name}.{mod.ModelExtension}</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine("  </objects>");
         builder.AppendLine("</package>");
@@ -143,7 +143,7 @@ public static class EntityPackageBuilder
         builder.AppendLine(
             $"    <object objectIndex=\"5\" name=\"{mod.ModelName}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.ModelName}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine(
-            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl</sourcePath_>");
+            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine("  </objects>");
         builder.AppendLine("</package>");
@@ -189,12 +189,12 @@ public static class EntityPackageBuilder
         builder.AppendLine(
             $"    <object objectIndex=\"5\" name=\"{mod.Model1Name}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.Model1Name}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine(
-            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model1Name}.gmdl</sourcePath_>");
+            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model1Name}.{mod.ModelExtension}</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine(
             $"    <object objectIndex=\"6\" name=\"{mod.Model2Name}\" type=\"Black.Entity.SkeletalModelEntity\" path=\"entities_.{mod.Model2Name}\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine(
-            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model2Name}.gmdl</sourcePath_>");
+            $"      <sourcePath_ type=\"string\">mod/{mod.ModDirectoryName}/{mod.Model2Name}.{mod.ModelExtension}</sourcePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine("  </objects>");
         builder.AppendLine("</package>");

@@ -52,6 +52,7 @@ public class Binmod
     public List<string> OriginalGmdls { get; set; }
     public int OriginalGmdlCount { get; set; }
     public string Gender { get; set; }
+    public string ModelExtension { get; set; } = "gmdl";
 
     public static Binmod FromModmetaBytes(byte[] buffer)
     {
@@ -110,19 +111,19 @@ public class Binmod
                         mod.MaxMp = int.Parse(value);
                         break;
                     case "bullet":
-                        mod.Ballistic = int.Parse(value);
+                        mod.Ballistic = int.Parse(value) * -1;
                         break;
                     case "fire":
-                        mod.Fire = int.Parse(value);
+                        mod.Fire = int.Parse(value) * -1;
                         break;
                     case "ice":
-                        mod.Ice = int.Parse(value);
+                        mod.Ice = int.Parse(value) * -1;
                         break;
                     case "thunder":
-                        mod.Thunder = int.Parse(value);
+                        mod.Thunder = int.Parse(value) * -1;
                         break;
                     case "dark":
-                        mod.Dark = int.Parse(value);
+                        mod.Dark = int.Parse(value) * -1;
                         break;
                     case "attack":
                         mod.Attack = int.Parse(value);
@@ -134,10 +135,12 @@ public class Binmod
                         mod.Type = BinmodTypeHelper.GetModmetaTypeFromName(value);
                         break;
                     case "gmdl1":
-                        mod.Model1Name = value.Replace(".fbx", "");
+                        mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
+                        mod.Model1Name = value.Replace(".fbx", "").Replace(".gmdl", "");
                         break;
                     case "gmdl2":
-                        mod.Model2Name = value.Replace(".fbx", "");
+                        mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
+                        mod.Model2Name = value.Replace(".fbx", "").Replace(".gmdl", "");
                         break;
                     case "count_original_gmdls":
                         mod.OriginalGmdlCount = int.Parse(value);
@@ -187,18 +190,24 @@ public class Binmod
                 {
                     if (property == "modify_gmdl[0]")
                     {
-                        mod.Model1Name = value.Split('/').Last().Replace(".fbx", "");
+                        mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
+                        mod.ModDirectoryName = value.Split('/')[1];
+                        mod.Model1Name = value.Split('/').Last().Replace(".fbx", "").Replace(".gmdl", "");
                     }
                     else if (property == "modify_gmdl[1]")
                     {
-                        mod.Model2Name = value.Split('/').Last().Replace(".fbx", "");
+                        mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
+                        mod.ModDirectoryName = value.Split('/')[1];
+                        mod.Model2Name = value.Split('/').Last().Replace(".fbx", "").Replace(".gmdl", "");
                     }
                 }
                 else
                 {
                     if (property == "modify_gmdl[0]")
                     {
-                        mod.ModelName = value.Split('/').Last().Replace(".fbx", "");
+                        mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
+                        mod.ModDirectoryName = value.Split('/')[1];
+                        mod.ModelName = value.Split('/').Last().Replace(".fbx", "").Replace(".gmdl", "");
                     }
                 }
             }
@@ -231,6 +240,7 @@ public class Binmod
             Index = Index,
             ModDirectoryName = ModDirectoryName,
             ModelName = ModelName,
+            ModelExtension = ModelExtension,
             IsApplyToGame = IsApplyToGame,
             Strength = Strength,
             Vitality = Vitality,
@@ -272,6 +282,7 @@ public class Binmod
         Index = mod.Index;
         ModDirectoryName = mod.ModDirectoryName;
         ModelName = mod.ModelName;
+        ModelExtension = mod.ModelExtension;
         IsApplyToGame = mod.IsApplyToGame;
         Strength = mod.Strength;
         Vitality = mod.Vitality;

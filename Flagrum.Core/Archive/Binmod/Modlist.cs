@@ -38,7 +38,7 @@ public class ModlistEntry
         return entries;
     }
 
-    public static void ToFile(string path, IEnumerable<Binmod> entries)
+    public static void ToFile(string path, IEnumerable<Binmod> entries, Dictionary<string, int> fixIdMap)
     {
         var orderedEntries = entries
             .OrderBy(e => e.IsWorkshopMod)
@@ -71,9 +71,11 @@ public class ModlistEntry
                 modPath = entry.Path.Split('\\').Last();
             }
 
+            fixIdMap.TryGetValue(modPath, out var fixId);
+
             builder.Append($"\"{modPath}\",");
             builder.Append($"\"{(entry.IsApplyToGame ? "True" : "False")}\",");
-            builder.Append($"\"{entry.Index}\",");
+            builder.Append($"\"{fixId}\",");
             builder.Append($"\"{(entry.IsWorkshopMod ? "True" : "False")}\"");
 
             if (entry != orderedEntries.Last())

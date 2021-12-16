@@ -1,0 +1,27 @@
+﻿<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code
+{
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private List<ModTypeButton> Children { get; } = new();
+
+    public void AddChild(ModTypeButton child)
+    {
+        Children.Add(child);
+    }
+
+    public void SelectChild(ModTypeButton selectedChild)
+    {
+        foreach (var child in Children.Where(child => child != selectedChild))
+        {
+            child.IsSelected = false;
+        }
+
+        selectedChild.IsSelected = true;
+        StateHasChanged();
+    }
+}

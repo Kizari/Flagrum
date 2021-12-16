@@ -4,7 +4,7 @@
 @inject JSInterop Interop
 @inject AppStateService AppState
 
-<div class="shadow-lg mx-2.5 mt-6 bg-grey-800">
+<div class="shadow-lg mx-3.5 mt-8 bg-grey-800">
     <div style="position:relative;width:180px;height:180px;background-repeat: no-repeat; background-size: contain; background-position: center; background-color: #000; background-image: url('images/@(Mod.Uuid).png');"
          id="@Mod.Uuid">
         <Checkbox CssStyle="margin-top:-7px;margin-right:-7px;position:absolute;top:-5px;right:-5px;"
@@ -20,7 +20,7 @@
         }
     </div>
     <div class="p-3 row">
-        <span class="text-sm font-display flex-grow"
+        <span class="text-sm text-grey-400 flex-grow"
               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">
             @(Mod.GameMenuTitle ?? Mod.WorkshopTitle)
         </span>
@@ -30,6 +30,9 @@
 
 @code
 {
+    [CascadingParameter]
+    public ModListingGroup Parent { get; set; }
+
     [Parameter]
     public Binmod Mod { get; set; }
 
@@ -43,5 +46,6 @@
     {
         Mod.IsApplyToGame = isEnabled;
         AppState.UpdateBinmodList();
+        Parent.CallStateHasChanged();
     }
 }

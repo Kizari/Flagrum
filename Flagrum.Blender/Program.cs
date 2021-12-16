@@ -26,17 +26,14 @@ public static class Program
             var arbitraryIndex = 0;
             boneTable = model.BoneHeaders.ToDictionary(b => arbitraryIndex++, b => b.Name);
         }
-        else if (model.BoneHeaders.Count == 1)
-        {
-            boneTable = model.BoneHeaders.ToDictionary(b => 0, b => b.Name);
-        }
         else
         {
-            boneTable = model.BoneHeaders.ToDictionary(b => (int)b.UniqueIndex, b => b.Name);
+            boneTable = model.BoneHeaders.ToDictionary(b => (int)(b.UniqueIndex == 65535 ? 0 : b.UniqueIndex),
+                b => b.Name);
         }
 
         Gpubin meshData;
-        
+
         if (inputPath.Contains("_$fcnd"))
         {
             meshData = new Gpubin

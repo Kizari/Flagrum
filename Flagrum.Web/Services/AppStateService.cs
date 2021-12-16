@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Flagrum.Core.Archive;
 using Flagrum.Core.Archive.Binmod;
 
 namespace Flagrum.Web.Services;
@@ -29,7 +28,12 @@ public class AppStateService
             IsApplyToGame = e.IsEnabled,
             Index = e.Index
         });
-        
-        ModlistEntry.ToFile(_settings.BinmodListPath, Mods.Union(fakeMods));
+
+        var entries = Mods.Union(fakeMods);
+
+        var modList = ModlistEntry.FromFile(_settings.BinmodListPath);
+        var fixIdMap = modList.ToDictionary(m => m.Path, m => m.Index);
+
+        ModlistEntry.ToFile(_settings.BinmodListPath, entries, fixIdMap);
     }
 }

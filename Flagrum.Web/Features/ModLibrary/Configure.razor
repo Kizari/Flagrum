@@ -285,7 +285,14 @@
 
     private void Save()
     {
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", Convert.FromBase64String(PreviewBase64));
+        var previewBytes = Convert.FromBase64String(PreviewBase64);
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", previewBytes);
+        Mod.PreviewBytes = previewBytes;
+
+        if (Mod.Type == (int)BinmodType.Character)
+        {
+            Mod.GameMenuTitle = null;
+        }
 
         if (ModelData == null)
         {
@@ -331,15 +338,10 @@
     {
         await Task.Run(() =>
         {
+            Mod.ModelExtension = "gmdl";
             var builder = new BinmodBuilder(Settings.BTexConverterPath, Mod, Convert.FromBase64String(PreviewBase64));
             builder.AddFmd(Settings.BTexConverterPath, ModelData);
             builder.WriteToFile(Mod.Path);
-
-            if (Mod.Index == 0)
-            {
-                var modList = ModlistEntry.FromFile(Settings.BinmodListPath).ToList();
-                Mod.Index = modList.Count > 1 ? modList.Max(m => m.Index) + 1 : 100000;
-            }
 
             if (AppState.ActiveMod == null)
             {

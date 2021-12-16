@@ -42,7 +42,8 @@ module.exports = {
     variants: {
         extend: {
             borderWidth: ["last"],
-            margin: ["first"]
+            margin: ["first"],
+            borderRadius: ["first", "last"]
         },
     },
     plugins: [],

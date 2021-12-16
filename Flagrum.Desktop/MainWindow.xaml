@@ -21,7 +21,19 @@
     </WindowChrome.WindowChrome>
     <Window.Template>
         <ControlTemplate>
-            <Border Background="#181512" Padding="{x:Static SystemParameters.WindowResizeBorderThickness}">
+            <Border Background="#181512">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Padding" Value="0" />
+                        <Style.Triggers>
+                            <DataTrigger
+                                Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}"
+                                Value="Maximized">
+                                <Setter Property="Padding" Value="7px 5px" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
                 <Grid Background="#181512">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="42" />
