@@ -30,14 +30,14 @@ public class ArchiveFile
     {
         RelativePath = uri.Replace("data://", "");
 
-        if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif") || RelativePath.EndsWith(".dds") || RelativePath.EndsWith(".png"))
+        if (RelativePath.EndsWith(".tga") || RelativePath.EndsWith(".tif") || RelativePath.EndsWith(".dds") ||
+            RelativePath.EndsWith(".png"))
         {
             RelativePath = RelativePath
                 .Replace(".tga", ".btex")
                 .Replace(".tif", ".btex")
                 .Replace(".dds", ".btex")
                 .Replace(".png", ".btex");
-            // TODO: Add other image types
         }
 
         if (RelativePath.EndsWith(".gmtl"))
@@ -87,8 +87,11 @@ public class ArchiveFile
 
     public bool HasData => _buffer?.Length > 0;
 
-    public byte[] GetUnencryptedData() => _buffer;
-    
+    public byte[] GetUnencryptedData()
+    {
+        return _buffer;
+    }
+
     public byte[] GetData()
     {
         Size = (uint)_buffer.Length;
@@ -113,20 +116,20 @@ public class ArchiveFile
     {
         var flags = ArchiveFileFlag.Autoload;
 
-         if (Uri.EndsWith(".modmeta") || Uri.EndsWith(".bin"))
-         {
-             flags |= ArchiveFileFlag.MaskProtected;
-         }
-         else
-         {
-             flags |= ArchiveFileFlag.Encrypted;
-         }
+        if (Uri.EndsWith(".modmeta") || Uri.EndsWith(".bin"))
+        {
+            flags |= ArchiveFileFlag.MaskProtected;
+        }
+        else
+        {
+            flags |= ArchiveFileFlag.Encrypted;
+        }
 
         return flags;
     }
 
     /// <summary>
-    /// This is needed if using parameterless constructor to deconstruct the UriAndTypeHash
+    ///     This is needed if using parameterless constructor to deconstruct the UriAndTypeHash
     /// </summary>
     public void DeconstructUriAndTypeHash()
     {

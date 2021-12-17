@@ -47,10 +47,10 @@ public class BinmodBuilder
         _packer.AddFile(exml, "data://$mod/temp.exml");
 
         var converter = new TextureConverter();
-        var btex = converter.Convert("$preview", "png", TextureType.Color, previewImage);
+        var btex = converter.Convert("$preview", "png", TextureType.Thumbnail, previewImage);
 
         _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
-        _packer.AddFile(btex, GetDataPath("$preview.btex"));
+        _packer.AddFile(btex, GetDataPath("$preview.png"));
     }
 
     public void WriteToFile(string outPath)
@@ -151,9 +151,10 @@ public class BinmodBuilder
                         {
                             textureType = TextureType.Greyscale;
                         }
-                        
+
                         var converter = new TextureConverter();
-                        btexData = converter.Convert(btexFileName.Replace(".btex", ""), extension, textureType, textureBytes);
+                        btexData = converter.Convert(btexFileName.Replace(".btex", ""), extension, textureType,
+                            textureBytes);
                     }
 
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";

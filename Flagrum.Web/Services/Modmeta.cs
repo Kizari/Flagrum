@@ -47,14 +47,14 @@ public class Modmeta
         }
 
         builder.AppendLine($"name={mod.GameMenuTitle}");
-        builder.AppendLine("help=");
+        builder.AppendLine($"help={mod.GameMenuDescription}");
         builder.AppendLine($"title={mod.WorkshopTitle}");
         builder.AppendLine($"desc={mod.Description?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"uuid={mod.Uuid}");
         builder.AppendLine($"itemid={mod.ItemId}");
-        builder.AppendLine($"ischecked={(mod.IsWorkshopMod ? "True" : "False")}");
+        builder.AppendLine("ischecked=False");
         builder.AppendLine($"isapplytogame={(mod.IsApplyToGame ? "True" : "False")}");
-        builder.AppendLine($"itemplace={(mod.IsWorkshopMod ? "E_SteamWorkshop" : "E_Local")}");
+        builder.AppendLine($"itemplace={(mod.IsUploaded ? "E_SteamWorkshop" : "E_Local")}");
         builder.AppendLine($"attack={mod.Attack}");
         builder.AppendLine($"hp_max={mod.MaxHp}");
         builder.AppendLine($"mp_max={mod.MaxMp}");
@@ -89,9 +89,9 @@ public class Modmeta
         builder.AppendLine($"desc={mod.Description?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"uuid={mod.Uuid}");
         builder.AppendLine($"itemid={mod.ItemId}");
-        builder.AppendLine($"ischecked={(mod.IsWorkshopMod ? "True" : "False")}");
+        builder.AppendLine("ischecked=False");
         builder.AppendLine($"isapplytogame={(mod.IsApplyToGame ? "True" : "False")}");
-        builder.AppendLine($"itemplace={(mod.IsWorkshopMod ? "E_SteamWorkshop" : "E_Local")}");
+        builder.AppendLine($"itemplace={(mod.IsUploaded ? "E_SteamWorkshop" : "E_Local")}");
         return Encoding.UTF8.GetBytes(builder.ToString());
     }
 
@@ -118,9 +118,9 @@ public class Modmeta
         builder.AppendLine($"desc={mod.Description?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"uuid={mod.Uuid}");
         builder.AppendLine($"itemid={mod.ItemId}");
-        builder.AppendLine($"ischecked={(mod.IsWorkshopMod ? "True" : "False")}");
+        builder.AppendLine("ischecked=False");
         builder.AppendLine($"isapplytogame={(mod.IsApplyToGame ? "True" : "False")}");
-        builder.AppendLine($"itemplace={(mod.IsWorkshopMod ? "E_SteamWorkshop" : "E_Local")}");
+        builder.AppendLine($"itemplace={(mod.IsUploaded ? "E_SteamWorkshop" : "E_Local")}");
         builder.AppendLine($"name={mod.GameMenuTitle}");
         builder.AppendLine($"gender={mod.Gender}");
         return Encoding.UTF8.GetBytes(builder.ToString());
@@ -137,12 +137,12 @@ public class Modmeta
         builder.AppendLine($"uuid={mod.Uuid}");
         builder.AppendLine($"type={_binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
         builder.AppendLine($"itemid={mod.ItemId}");
-        builder.AppendLine($"ischecked={(mod.IsWorkshopMod ? "True" : "False")}");
+        builder.AppendLine("ischecked=False");
         builder.AppendLine($"isapplytogame={(mod.IsApplyToGame ? "True" : "False")}");
-        builder.AppendLine($"itemplace={(mod.IsWorkshopMod ? "E_SteamWorkshop" : "E_Local")}");
+        builder.AppendLine($"itemplace={(mod.IsUploaded ? "E_SteamWorkshop" : "E_Local")}");
         builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         builder.AppendLine($"name={mod.GameMenuTitle}");
-        builder.AppendLine("help=");
+        builder.AppendLine($"help={mod.GameMenuDescription}");
         builder.AppendLine($"strength={mod.Strength}");
         builder.AppendLine($"vitality={mod.Vitality}");
         builder.AppendLine($"magic={mod.Magic}");

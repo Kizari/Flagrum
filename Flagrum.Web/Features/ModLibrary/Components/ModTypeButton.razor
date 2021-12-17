@@ -12,20 +12,17 @@
     public string Text { get; set; }
 
     [Parameter]
-    public Action OnSelected { get; set; }
-    
-    [Parameter]
-    public bool DefaultActive { get; set; }
+    public int Value { get; set; }
 
     public bool IsSelected { get; set; }
 
     protected override void OnInitialized()
     {
-        if (DefaultActive)
+        if (Parent.Target == Value)
         {
             IsSelected = true;
         }
-        
+
         Parent.AddChild(this);
     }
 
@@ -34,7 +31,6 @@
         if (!IsSelected)
         {
             Parent.SelectChild(this);
-            OnSelected?.Invoke();
         }
     }
 }

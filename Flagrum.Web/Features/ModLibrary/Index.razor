@@ -16,19 +16,20 @@
         <div class="row mx-8 mb-2">
             @* <h3 class="font-bold text-grey-300 ml-1">Local Mods</h3> *@
             <div class="bg-dark-600 shadow-md rounded row mt-1">
-                <ModTypeButtonGroup>
-                    <ModTypeButton Text="Local Mods" DefaultActive="true" OnSelected="() => SetLocal(true)"/>
-                    <ModTypeButton Text="Workshop Mods" OnSelected="() => SetLocal(false)"/>
+                <ModTypeButtonGroup Target="AppState.ActiveCategoryFilter" OnItemSelected="FilterCategory">
+                    <ModTypeButton Text="Local Mods" Value="0"/>
+                    <ModTypeButton Text="Workshop Mods" Value="1"/>
+                    <ModTypeButton Text="All Mods" Value="-1"/>
                 </ModTypeButtonGroup>
             </div>
             <div class="bg-dark-600 shadow-md rounded row ml-10 mt-1">
-                <ModTypeButtonGroup>
-                    <ModTypeButton Text="All Mods" DefaultActive="true" OnSelected="() => Filter(-1)"/>
-                    <ModTypeButton Text="Outfits" OnSelected="() => Filter(BinmodType.Cloth)"/>
-                    <ModTypeButton Text="Weapons" OnSelected="() => Filter(BinmodType.Weapon)"/>
-                    <ModTypeButton Text="Replacements" OnSelected="() => Filter(BinmodType.Character)"/>
-                    <ModTypeButton Text="Comrades Styles" OnSelected="() => Filter(BinmodType.StyleEdit)"/>
-                    <ModTypeButton Text="Comrades Weapons" OnSelected="() => Filter(BinmodType.Multi_Weapon)"/>
+                <ModTypeButtonGroup Target="AppState.ActiveModTypeFilter" OnItemSelected="FilterType">
+                    <ModTypeButton Text="All Mods" Value="-1"/>
+                    <ModTypeButton Text="Outfits" Value="(int)BinmodType.Cloth"/>
+                    <ModTypeButton Text="Weapons" Value="(int)BinmodType.Weapon"/>
+                    <ModTypeButton Text="Replacements" Value="(int)BinmodType.Character"/>
+                    <ModTypeButton Text="Comrades Styles" Value="(int)BinmodType.StyleEdit"/>
+                    <ModTypeButton Text="Comrades Weapons" Value="(int)BinmodType.Multi_Weapon"/>
                 </ModTypeButtonGroup>
             </div>
             <div class="flex-grow"></div>
@@ -36,7 +37,8 @@
         </div>
         <div class="row flex-wrap px-4 ml-0.5 mb-16">
             @foreach (var mod in AppState.Mods
-                .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
+                .Where(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1))
+                            && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter))
                 .OrderByDescending(m => m.IsApplyToGame)
                 .ThenBy(m => m.Type)
                 .ThenBy(m => m.Target)
@@ -106,11 +108,7 @@
     [CascadingParameter]
     public MainLayout Parent { get; set; }
 
-    [Parameter]
-    public int ModType { get; set; } = -1;
-
     private bool IsLoading { get; set; } = true;
-    private bool ShowLocalMods { get; set; } = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -185,21 +183,15 @@
         Navigation.NavigateTo("/mod/configure");
     }
 
-    private void Filter(BinmodType type)
+    private void FilterType(int type)
     {
-        ModType = (int)type;
+        AppState.ActiveModTypeFilter = type;
         StateHasChanged();
     }
 
-    private void Filter(int type)
+    private void FilterCategory(int category)
     {
-        ModType = type;
-        StateHasChanged();
-    }
-
-    private void SetLocal(bool state)
-    {
-        ShowLocalMods = state;
+        AppState.ActiveCategoryFilter = category;
         StateHasChanged();
     }
 }

@@ -7,6 +7,12 @@
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
+    [Parameter]
+    public int Target { get; set; }
+
+    [Parameter]
+    public Action<int> OnItemSelected { get; set; }
+
     private List<ModTypeButton> Children { get; } = new();
 
     public void AddChild(ModTypeButton child)
@@ -22,6 +28,7 @@
         }
 
         selectedChild.IsSelected = true;
+        OnItemSelected(selectedChild.Value);
         StateHasChanged();
     }
 }

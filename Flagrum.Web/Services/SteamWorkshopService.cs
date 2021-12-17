@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Timers;
+using Flagrum.Core.Archive;
 using Steamworks;
 
 namespace Flagrum.Web.Services;
@@ -10,7 +11,8 @@ public class SteamWorkshopService
     private const uint AppId = 637650;
     private readonly AppId_t _appId;
 
-    private readonly JSInterop _interop;
+    private readonly Modmeta _modmeta;
+
     private readonly Timer _timer;
     private Binmod _activeMod;
     private CallResult<CreateItemResult_t> _createItemCallback;
@@ -23,9 +25,9 @@ public class SteamWorkshopService
     private string _tempDirectory;
     private string _tempPreview;
 
-    public SteamWorkshopService(JSInterop interop)
+    public SteamWorkshopService(Modmeta modmeta)
     {
-        _interop = interop;
+        _modmeta = modmeta;
         _appId = new AppId_t(AppId);
         _timer = new Timer(1000);
         _timer.Elapsed += (sender, args) => SteamAPI.RunCallbacks();
@@ -95,6 +97,7 @@ public class SteamWorkshopService
         File.Copy(mod.Path, _tempBinmod);
 
         // dat file doesn't appear to have any content
+        // TODO: This is actually a timestamp, not the Item ID. See MO
         _tempDat = $"{_tempDirectory}\\{mod.ItemId}.dat";
         File.Create(_tempDat);
 
@@ -113,11 +116,12 @@ public class SteamWorkshopService
 
         if (result.m_eResult == EResult.k_EResultOK)
         {
-            _activeMod.IsUploaded = true;
             _activeMod.ItemId = result.m_nPublishedFileId.m_PublishedFileId;
-            _activeMod.Visibility =
-                (int)ERemoteStoragePublishedFileVisibility.k_ERemoteStoragePublishedFileVisibilityPrivate;
-            // TODO: Save changes to the modmeta
+
+            var unpacker = new Unpacker(_activeMod.Path);
+            var packer = unpacker.ToPacker();
+            packer.UpdateFile("index.modmeta", _modmeta.Build(_activeMod));
+            packer.WriteToFile(_activeMod.Path);
 
             Update(_activeMod, "", _onCreate);
         }
@@ -130,6 +134,13 @@ public class SteamWorkshopService
 
         if (result.m_eResult == EResult.k_EResultOK)
         {
+            _activeMod.IsUploaded = true;
+
+            var unpacker = new Unpacker(_activeMod.Path);
+            var packer = unpacker.ToPacker();
+            packer.UpdateFile("index.modmeta", _modmeta.Build(_activeMod));
+            packer.WriteToFile(_activeMod.Path);
+
             _activeMod.LastUpdated = DateTime.Now;
             _onUpdate();
 

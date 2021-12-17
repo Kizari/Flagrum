@@ -321,10 +321,10 @@
                 var png = Convert.FromBase64String(PreviewBase64);
 
                 var converter = new TextureConverter();
-                var btex = converter.Convert("$preview", "png", TextureType.Color, png);
+                var btex = converter.Convert("$preview", "png", TextureType.Thumbnail, png);
 
-                packer.UpdateFile("preview.png.bin", png);
-                packer.UpdateFile("preview.btex", btex);
+                packer.UpdateFile("$preview.png", btex);
+                packer.UpdateFile("$preview.png.bin", png);
                 Mod.PreviewBytes = png;
             }
 

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
 namespace Flagrum.Web.Services;
@@ -10,6 +9,7 @@ public class ModelReplacementTarget
 {
     public int Index { get; set; }
     public string Name { get; set; }
+    public string ModmetaName { get; set; }
     public IEnumerable<string> Models { get; set; }
 }
 
@@ -24,16 +24,16 @@ public class ModelReplacementPresets
 
     private List<ModelReplacementTarget> Replacements { get; set; }
 
-    public Dictionary<int, string> GetReplacementDictionary(string replacementsFilePath)
+    public Dictionary<int, string> GetReplacementDictionary()
     {
         BuildDictionary();
         return Replacements.ToDictionary(r => r.Index, r => r.Name);
     }
 
-    public Dictionary<int, string> GetReplacementModmetaDictionary(string replacementsFilePath)
+    public Dictionary<int, string> GetReplacementModmetaDictionary()
     {
         BuildDictionary();
-        return Replacements.ToDictionary(r => r.Index, r => r.Name.ToSafeString());
+        return Replacements.ToDictionary(r => r.Index, r => r.ModmetaName);
     }
 
     public IEnumerable<string> GetOriginalGmdls(int target)
@@ -61,6 +61,7 @@ public class ModelReplacementPresets
             {
                 Index = 0,
                 Name = "Noctis",
+                ModmetaName = "Noctis",
                 Models = new[]
                 {
                     "character/nh/nh00/model_000/nh00_000.gmdl",
@@ -102,6 +103,7 @@ public class ModelReplacementPresets
             {
                 Index = 1,
                 Name = "Prompto",
+                ModmetaName = "Prompto",
                 Models = new[]
                 {
                     "character/nh/nh02/model_000/nh02_000.gmdl",
@@ -127,6 +129,7 @@ public class ModelReplacementPresets
             {
                 Index = 2,
                 Name = "Ignis",
+                ModmetaName = "Ignis",
                 Models = new[]
                 {
                     "character/nh/nh03/model_000/nh03_000.gmdl",
@@ -160,6 +163,7 @@ public class ModelReplacementPresets
             {
                 Index = 3,
                 Name = "Gladiolus",
+                ModmetaName = "Gladiolus",
                 Models = new[]
                 {
                     "character/nh/nh01/model_000/nh01_000.gmdl",
@@ -180,6 +184,7 @@ public class ModelReplacementPresets
             {
                 Index = 4,
                 Name = "Lunafreya",
+                ModmetaName = "Lunafrena",
                 Models = new[]
                 {
                     "character/nh/nh04/model_000/nh04_000.gmdl",
@@ -194,6 +199,7 @@ public class ModelReplacementPresets
             {
                 Index = 5,
                 Name = "Ardyn",
+                ModmetaName = "Ardyn",
                 Models = new[]
                 {
                     "character/nh/nh05/model_000/nh05_000.gmdl",
@@ -206,6 +212,7 @@ public class ModelReplacementPresets
             {
                 Index = 6,
                 Name = "Ravus",
+                ModmetaName = "Ravus",
                 Models = new[]
                 {
                     "character/nh/nh08/model_000/nh08_000.gmdl",
@@ -217,6 +224,7 @@ public class ModelReplacementPresets
             {
                 Index = 7,
                 Name = "Gentiana",
+                ModmetaName = "Gentiana",
                 Models = new[]
                 {
                     "character/nh/nh09/model_000/nh09_000.gmdl",
@@ -229,6 +237,7 @@ public class ModelReplacementPresets
             {
                 Index = 8,
                 Name = "Aranea",
+                ModmetaName = "Aranea",
                 Models = new[]
                 {
                     "character/nh/nh10/model_000/nh10_000.gmdl",
@@ -240,6 +249,7 @@ public class ModelReplacementPresets
             {
                 Index = 9,
                 Name = "Cid",
+                ModmetaName = "Cid",
                 Models = new[]
                 {
                     "character/nh/nh11/model_000/nh11_000.gmdl",
@@ -250,6 +260,7 @@ public class ModelReplacementPresets
             {
                 Index = 10,
                 Name = "Iris",
+                ModmetaName = "Iris",
                 Models = new[]
                 {
                     "character/nh/nh12/model_000/nh12_000.gmdl"
@@ -259,6 +270,7 @@ public class ModelReplacementPresets
             {
                 Index = 11,
                 Name = "Cor",
+                ModmetaName = "Cor",
                 Models = new[]
                 {
                     "character/nh/nh13/model_000/nh13_000.gmdl",
@@ -270,6 +282,7 @@ public class ModelReplacementPresets
             {
                 Index = 12,
                 Name = "Cindy",
+                ModmetaName = "Cidney",
                 Models = new[]
                 {
                     "character/nh/nh19/model_000/nh19_000.gmdl"
@@ -278,7 +291,8 @@ public class ModelReplacementPresets
             new()
             {
                 Index = 13,
-                Name = "NPC_MALE",
+                Name = "Male Adult NPCs",
+                ModmetaName = "NPC_MALE",
                 Models = new[]
                 {
                     "character/um/common/model_000/um00_000.gmdl",
@@ -377,7 +391,8 @@ public class ModelReplacementPresets
             new()
             {
                 Index = 14,
-                Name = "NPC_MALE_CHILD",
+                Name = "Male Child NPCs",
+                ModmetaName = "NPC_MALE_CHILD",
                 Models = new[]
                 {
                     "character/uc/common/model_000/uc00_000.gmdl",
@@ -397,7 +412,8 @@ public class ModelReplacementPresets
             new()
             {
                 Index = 15,
-                Name = "NPC_FEMALE",
+                Name = "Female Adult NPCs",
+                ModmetaName = "NPC_FEMALE",
                 Models = new[]
                 {
                     "character/uw/common/model_000/uw00_000.gmdl",
@@ -457,7 +473,8 @@ public class ModelReplacementPresets
             new()
             {
                 Index = 16,
-                Name = "NPC_FEMALE_CHILD",
+                Name = "Female Child NPCs",
+                ModmetaName = "NPC_FEMALE_CHILD",
                 Models = new[]
                 {
                     "character/uc/uc00/model_001/uc00_001.gmdl",
@@ -475,6 +492,7 @@ public class ModelReplacementPresets
             {
                 Index = 17,
                 Name = "Sword",
+                ModmetaName = "Sword",
                 Models = new[]
                 {
                     "character/we/we01/model_000/we01_000.gmdl",
@@ -497,6 +515,7 @@ public class ModelReplacementPresets
             {
                 Index = 18,
                 Name = "Greatsword",
+                ModmetaName = "LargeSword",
                 Models = new[]
                 {
                     "character/we/we02/model_000/we02_000.gmdl",
@@ -514,6 +533,7 @@ public class ModelReplacementPresets
             {
                 Index = 19,
                 Name = "Spear",
+                ModmetaName = "Spear",
                 Models = new[]
                 {
                     "character/we/we03/model_000/we03_000.gmdl",
@@ -529,6 +549,7 @@ public class ModelReplacementPresets
             {
                 Index = 20,
                 Name = "Dagger",
+                ModmetaName = "Dagger",
                 Models = new[]
                 {
                     "character/we/we04/model_000/we04_000.gmdl",
@@ -555,6 +576,7 @@ public class ModelReplacementPresets
             {
                 Index = 21,
                 Name = "Gun",
+                ModmetaName = "Gun",
                 Models = new[]
                 {
                     "character/we/we05/model_000/we05_000.gmdl",
@@ -570,6 +592,7 @@ public class ModelReplacementPresets
             {
                 Index = 22,
                 Name = "Shield",
+                ModmetaName = "Shield",
                 Models = new[]
                 {
                     "character/we/we06/model_000/we06_000.gmdl",
@@ -584,6 +607,7 @@ public class ModelReplacementPresets
             {
                 Index = 23,
                 Name = "Crossbow",
+                ModmetaName = "Crossbow",
                 Models = new[]
                 {
                     "character/we/we22/model_000/we22_000.gmdl",
@@ -598,6 +622,7 @@ public class ModelReplacementPresets
             {
                 Index = 24,
                 Name = "Shuriken",
+                ModmetaName = "Shuriken",
                 Models = new[]
                 {
                     "character/we/we25/model_000/we25_000.gmdl",
@@ -612,6 +637,7 @@ public class ModelReplacementPresets
             {
                 Index = 25,
                 Name = "Mace",
+                ModmetaName = "Mace",
                 Models = new[]
                 {
                     "character/we/we28/model_000/we28_000.gmdl",
@@ -631,6 +657,7 @@ public class ModelReplacementPresets
             {
                 Index = 26,
                 Name = "Katana",
+                ModmetaName = "Katana",
                 Models = new[]
                 {
                     "character/we/we31/model_000/we31_000.gmdl",
@@ -646,6 +673,7 @@ public class ModelReplacementPresets
             {
                 Index = 27,
                 Name = "Magitek Suit (Noctis)",
+                ModmetaName = "Magitek_Noctis",
                 Models = new[]
                 {
                     "character/nh/nh00/model_092/nh00_092.gmdl"
@@ -655,6 +683,7 @@ public class ModelReplacementPresets
             {
                 Index = 28,
                 Name = "Magitek Suit (Prompto)",
+                ModmetaName = "Magitek_Prompto",
                 Models = new[]
                 {
                     "character/nh/nh02/model_092/nh02_092.gmdl"
@@ -664,6 +693,7 @@ public class ModelReplacementPresets
             {
                 Index = 29,
                 Name = "Magitek Suit (Ignis)",
+                ModmetaName = "Magitek_Ignis",
                 Models = new[]
                 {
                     "character/nh/nh03/model_092/nh03_092.gmdl"
@@ -673,6 +703,7 @@ public class ModelReplacementPresets
             {
                 Index = 30,
                 Name = "Magitek Suit (Gladiolus)",
+                ModmetaName = "Magitek_Gladiolus",
                 Models = new[]
                 {
                     "character/nh/nh01/model_092/nh01_092.gmdl"
@@ -682,12 +713,17 @@ public class ModelReplacementPresets
 
         var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
         var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
-        var indexCounter = 31;
-        Replacements.AddRange(custom.Select(e => new ModelReplacementTarget
+        var indexCounter = 99;
+        Replacements.AddRange(custom.Select(e =>
         {
-            Index = indexCounter++,
-            Name = e.Key,
-            Models = e.Value
+            indexCounter++;
+            return new ModelReplacementTarget
+            {
+                Index = indexCounter,
+                Name = e.Key,
+                ModmetaName = $"Custom_{indexCounter}",
+                Models = e.Value
+            };
         }));
     }
 }

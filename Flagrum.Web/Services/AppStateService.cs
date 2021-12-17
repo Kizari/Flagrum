@@ -17,6 +17,9 @@ public class AppStateService
     public IList<ModlistEntry> UnmanagedEntries { get; set; } = new List<ModlistEntry>();
     public bool IsModListInitialized { get; set; }
 
+    public int ActiveCategoryFilter { get; set; } = 0;
+    public int ActiveModTypeFilter { get; set; } = -1;
+
     public void UpdateBinmodList()
     {
         var fakeMods = UnmanagedEntries.Select(e => new Binmod

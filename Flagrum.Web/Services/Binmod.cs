@@ -22,6 +22,7 @@ public class Binmod
     public int Visibility { get; set; }
     public byte[] PreviewBytes { get; set; }
     public string GameMenuTitle { get; set; }
+    public string GameMenuDescription { get; set; }
     public string WorkshopTitle { get; set; }
     public string Description { get; set; }
     public IList<string> Tags { get; set; }
@@ -83,14 +84,17 @@ public class Binmod
                     case "itemid":
                         mod.ItemId = ulong.Parse(value);
                         break;
-                    case "ischecked":
-                        mod.IsUploaded = bool.Parse(value);
+                    case "itemplace":
+                        mod.IsUploaded = value == "E_SteamWorkshop";
                         break;
                     case "isapplytogame":
                         mod.IsApplyToGame = bool.Parse(value);
                         break;
                     case "name":
                         mod.GameMenuTitle = value;
+                        break;
+                    case "help":
+                        mod.GameMenuDescription = value;
                         break;
                     case "strength":
                         mod.Strength = int.Parse(value);

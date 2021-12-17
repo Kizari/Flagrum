@@ -105,7 +105,7 @@ public class BinmodTypeHelper
         {
             {
                 BinmodType.Character,
-                _modelReplacementPresets.GetReplacementDictionary(_settings.ReplacementsFilePath)
+                _modelReplacementPresets.GetReplacementDictionary()
             },
             {BinmodType.Cloth, Enum.GetValues<OutfitSoloTarget>().ToDictionary(t => (int)t, t => t.ToString())},
             {BinmodType.StyleEdit, Enum.GetValues<OutfitMultiTarget>().ToDictionary(t => (int)t, t => t.ToString())},
@@ -135,7 +135,7 @@ public class BinmodTypeHelper
         if (type == BinmodType.Weapon)
         {
             var target = (WeaponSoloTarget)binmodTarget;
-            if (target == WeaponSoloTarget.Dagger)
+            if (target is WeaponSoloTarget.Dagger or WeaponSoloTarget.Gun)
             {
                 return 2;
             }
@@ -143,7 +143,7 @@ public class BinmodTypeHelper
         else if (type == BinmodType.Multi_Weapon)
         {
             var target = (WeaponMultiTarget)binmodTarget;
-            if (target == WeaponMultiTarget.Dagger)
+            if (target is WeaponMultiTarget.Dagger or WeaponMultiTarget.Katana or WeaponMultiTarget.Shuriken)
             {
                 return 2;
             }
@@ -203,7 +203,7 @@ public class BinmodTypeHelper
         {
             {
                 BinmodType.Character,
-                _modelReplacementPresets.GetReplacementModmetaDictionary(_settings.ReplacementsFilePath)
+                _modelReplacementPresets.GetReplacementModmetaDictionary()
             },
             {
                 BinmodType.Cloth,

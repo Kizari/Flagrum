@@ -60,15 +60,28 @@ public class TextureConverter
         {
             case TextureType.Normal:
                 image = image.GenerateMipMaps(TEX_FILTER_FLAGS.LINEAR, 0);
-                image = image.Compress(DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL, 0.5f);
+                image = image.Compress(DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
+                    0.5f);
                 break;
             case TextureType.Greyscale:
                 image = image.GenerateMipMaps(TEX_FILTER_FLAGS.LINEAR, 0);
-                image = image.Compress(DXGI_FORMAT.BC4_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL, 0.5f);
+                image = image.Compress(DXGI_FORMAT.BC4_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
+                    0.5f);
+                break;
+            case TextureType.Thumbnail:
+                var metadata = image.GetMetadata();
+                if (!(metadata.Width == 600 && metadata.Height == 600))
+                {
+                    image = image.Resize(600, 600, TEX_FILTER_FLAGS.DEFAULT);
+                }
+
+                image = image.Compress(DXGI_FORMAT.BC1_UNORM,
+                    TEX_COMPRESS_FLAGS.SRGB_OUT | TEX_COMPRESS_FLAGS.PARALLEL, 0.5f);
                 break;
             default:
                 image = image.GenerateMipMaps(TEX_FILTER_FLAGS.SRGB, 0);
-                image = image.Compress(DXGI_FORMAT.BC1_UNORM, TEX_COMPRESS_FLAGS.SRGB | TEX_COMPRESS_FLAGS.PARALLEL,0.5f);
+                image = image.Compress(DXGI_FORMAT.BC1_UNORM, TEX_COMPRESS_FLAGS.SRGB | TEX_COMPRESS_FLAGS.PARALLEL,
+                    0.5f);
                 break;
         }
 

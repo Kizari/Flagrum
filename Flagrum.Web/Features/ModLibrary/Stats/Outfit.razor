@@ -1,13 +1,27 @@
 ﻿@using Flagrum.Web.Features.ModLibrary.Data
-@using Microsoft.AspNetCore.Components
-
 <div class="box mt-4">
     <EditForm Model="OutfitStats">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
                 <tr>
                     <td>
-                        <label>IN-GAME TITLE</label>
+                        <label>MOD TITLE</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.WorkshopTitle"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>MOD DESCRIPTION</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>GEAR MENU TITLE</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuTitle"/>
@@ -15,10 +29,10 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>DESCRIPTION</label>
+                        <label>GEAR MENU DESCRIPTION</label>
                     </td>
                     <td colspan="7" class="pl-4">
-                        <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
+                        <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuDescription"/>
                     </td>
                 </tr>
                 <tr>
@@ -114,7 +128,7 @@
 {
     [CascadingParameter]
     public Configure Parent { get; set; }
-    
+
     private OutfitStatsModel OutfitStats { get; set; }
 
     protected override void OnInitialized()
@@ -128,11 +142,11 @@
                 + (OutfitStats.Vitality ?? 0) * 0.2
                 + (OutfitStats.Magic ?? 0) * 0.2
                 + (OutfitStats.Spirit ?? 0) * 0.2
-                + OutfitStats.Fire ?? 0
-                + OutfitStats.Ice ?? 0
-                + OutfitStats.Thunder ?? 0
-                + OutfitStats.Dark ?? 0
-                + OutfitStats.Ballistic ?? 0);
+                + (OutfitStats.Fire ?? 0)
+                + (OutfitStats.Ice ?? 0)
+                + (OutfitStats.Thunder ?? 0)
+                + (OutfitStats.Dark ?? 0)
+                + (OutfitStats.Ballistic ?? 0));
             StateHasChanged();
         });
     }
