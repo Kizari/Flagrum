@@ -25,6 +25,7 @@ public class Program
 
     public static void Main(string[] args)
     {
+        BtexTests.Convert();
         // var path = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\BASIC_MATERIAL.json";
         // var material = JsonConvert.DeserializeObject<Material>(File.ReadAllText(path));
         //
@@ -58,12 +59,12 @@ public class Program
         // var result = JsonConvert.SerializeObject(material);
         // File.WriteAllText("C:\\Modding\\BASIC_MATERIAL.json", result);
 
-        var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
-        //var gfx = "C:\\Modding\\ModelReplacementTesting\\mod\\gladio_succulent\\mo00_001.gmdl.gfxbin";
-        var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
-        var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
-        var model = reader.Read();
-        var json = JsonConvert.SerializeObject(model.BoneHeaders);
+        // var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
+        // //var gfx = "C:\\Modding\\ModelReplacementTesting\\mod\\gladio_succulent\\mo00_001.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        // var json = JsonConvert.SerializeObject(model.BoneHeaders);
         // File.WriteAllText("C:\\Modding\\ModelReplacementTesting\\bones.json", json);
         // var x = true;
 

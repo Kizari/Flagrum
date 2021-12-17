@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Flagrum.Core.Archive.Binmod;
+namespace Flagrum.Web.Services;
 
 public enum ModVisibility
 {
@@ -54,7 +54,7 @@ public class Binmod
     public string Gender { get; set; }
     public string ModelExtension { get; set; } = "gmdl";
 
-    public static Binmod FromModmetaBytes(byte[] buffer)
+    public static Binmod FromModmetaBytes(byte[] buffer, BinmodTypeHelper binmodType)
     {
         try
         {
@@ -132,7 +132,7 @@ public class Binmod
                         mod.Critical = int.Parse(value);
                         break;
                     case "modtype":
-                        mod.Type = BinmodTypeHelper.GetModmetaTypeFromName(value);
+                        mod.Type = binmodType.GetModmetaTypeFromName(value);
                         break;
                     case "gmdl1":
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
@@ -156,7 +156,7 @@ public class Binmod
                 switch (property)
                 {
                     case "type":
-                        mod.Target = BinmodTypeHelper.GetBinmodTarget(mod.Type, value);
+                        mod.Target = binmodType.GetBinmodTarget(mod.Type, value);
                         break;
                 }
             }
@@ -183,7 +183,7 @@ public class Binmod
                 mod.OriginalGmdls = new List<string>(strings);
             }
 
-            var modelCount = BinmodTypeHelper.GetModelCount(mod.Type, mod.Target);
+            var modelCount = binmodType.GetModelCount(mod.Type, mod.Target);
             foreach (var (property, value) in properties)
             {
                 if (modelCount > 1)

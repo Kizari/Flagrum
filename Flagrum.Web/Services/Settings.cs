@@ -11,7 +11,6 @@ public class SettingsData
     public string GamePath { get; set; }
     public string BinmodListPath { get; set; }
     public string WorkshopPath { get; set; }
-    public string BTexConverterPath { get; set; }
 }
 
 public class Settings
@@ -41,7 +40,6 @@ public class Settings
             GamePath = settingsData.GamePath;
             BinmodListPath = settingsData.BinmodListPath;
             WorkshopPath = settingsData.WorkshopPath;
-            BTexConverterPath = settingsData.BTexConverterPath;
         }
 
         TempDirectory = "FlagrumDirectory\\tmp";
@@ -95,17 +93,6 @@ public class Settings
             }
         }
 
-        if (BTexConverterPath == null)
-        {
-            var btexConverterPath =
-                $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\squareenix\\ffxvmodtool\\luminousstudio\\luminous\\sdk\\bin\\BTexConverter.exe";
-
-            if (File.Exists(btexConverterPath))
-            {
-                BTexConverterPath = btexConverterPath;
-            }
-        }
-
         CheckIsReady();
         Save();
     }
@@ -118,11 +105,11 @@ public class Settings
     public string GamePath { get; private set; }
     public string BinmodListPath { get; private set; }
     public string WorkshopPath { get; private set; }
-    public string BTexConverterPath { get; private set; }
 
     public string ModDirectory => $"{Path.GetDirectoryName(BinmodListPath)}";
     public string WorkshopDirectory => $"{Path.GetDirectoryName(WorkshopPath)}\\content\\637650";
     public string GameDataDirectory => $"{Path.GetDirectoryName(GamePath)}\\datas";
+    public string ReplacementsFilePath => $"{FlagrumDirectory}\\replacements.json";
 
     public void SetGamePath(string path)
     {
@@ -145,18 +132,11 @@ public class Settings
         CheckIsReady();
     }
 
-    public void SetBTexConverterPath(string path)
-    {
-        BTexConverterPath = path;
-        Save();
-        CheckIsReady();
-    }
-
     private void CheckIsReady()
     {
         if (!IsReady)
         {
-            IsReady = GamePath != null && BinmodListPath != null && WorkshopPath != null && BTexConverterPath != null;
+            IsReady = GamePath != null && BinmodListPath != null && WorkshopPath != null;
         }
     }
 
@@ -166,8 +146,7 @@ public class Settings
         {
             GamePath = GamePath,
             WorkshopPath = WorkshopPath,
-            BinmodListPath = BinmodListPath,
-            BTexConverterPath = BTexConverterPath
+            BinmodListPath = BinmodListPath
         };
 
         File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(settingsData));

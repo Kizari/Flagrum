@@ -1,10 +1,17 @@
 ﻿using System.Text;
 
-namespace Flagrum.Core.Archive.Binmod;
+namespace Flagrum.Web.Services;
 
-public static class EntityPackageBuilder
+public class EntityPackageBuilder
 {
-    public static byte[] BuildExml(Binmod mod)
+    private readonly BinmodTypeHelper _binmodType;
+
+    public EntityPackageBuilder(BinmodTypeHelper binmodType)
+    {
+        _binmodType = binmodType;
+    }
+
+    public byte[] BuildExml(Binmod mod)
     {
         var type = (BinmodType)mod.Type;
 
@@ -16,12 +23,12 @@ public static class EntityPackageBuilder
                 : BuildMultiModelMultiPreview(mod);
         }
 
-        return BinmodTypeHelper.GetModelCount(mod.Type, mod.Target) > 1
+        return _binmodType.GetModelCount(mod.Type, mod.Target) > 1
             ? BuildMultiModelSinglePreview(mod)
             : BuildSingleModelSinglePreview(mod);
     }
 
-    private static byte[] BuildSingleModelSinglePreview(Binmod mod)
+    private byte[] BuildSingleModelSinglePreview(Binmod mod)
     {
         var builder = new StringBuilder();
         builder.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");

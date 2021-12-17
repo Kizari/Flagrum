@@ -1,5 +1,4 @@
-﻿@using Flagrum.Core.Archive.Binmod
-@inject AppStateService AppState
+﻿@inject AppStateService AppState
 
 @if (AppState.Mods.Any(m => m.IsWorkshopMod == IsWorkshopMod))
 {
@@ -34,7 +33,7 @@
 
     [Parameter]
     public int Target { get; set; }
-    
+
     [Parameter]
     public IEnumerable<Binmod> Mods { get; set; }
 

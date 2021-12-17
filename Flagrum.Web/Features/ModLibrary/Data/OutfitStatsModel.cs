@@ -1,6 +1,5 @@
 ﻿using System;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Archive.Binmod;
+using Flagrum.Web.Services;
 
 namespace Flagrum.Web.Features.ModLibrary.Data;
 

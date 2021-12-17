@@ -42,15 +42,6 @@
             </div>
             <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</small>
         </div>
-
-        <div class="box p-4">
-            <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">BTex Converter Path</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BTexConverterPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="BTexConverterPathClicked"/>
-            </div>
-            <small class="text-grey-600">Default C:\Users\[USERNAME]\AppData\Local\SquareEnix\FFXVMODTool\LuminousStudio\luminous\sdk\bin\BTexConverter.exe</small>
-        </div>
     </EditForm>
 
 </div>
@@ -70,7 +61,6 @@
         Data.GamePath = Settings.GamePath;
         Data.WorkshopPath = Settings.WorkshopPath;
         Data.BinmodListPath = Settings.BinmodListPath;
-        Data.BTexConverterPath = Settings.BTexConverterPath;
     }
 
     private void GamePathClicked()
@@ -107,19 +97,6 @@
             {
                 Data.WorkshopPath = path;
                 Settings.SetWorkshopPath(path);
-                InvokeAsync(StateHasChanged);
-                InvokeAsync(Layout.CallStateHasChanged);
-            });
-    }
-
-    private void BTexConverterPathClicked()
-    {
-        WpfService.OpenFileDialog(
-            "Application (*.exe)|*.exe",
-            path =>
-            {
-                Data.BTexConverterPath = path;
-                Settings.SetBTexConverterPath(path);
                 InvokeAsync(StateHasChanged);
                 InvokeAsync(Layout.CallStateHasChanged);
             });

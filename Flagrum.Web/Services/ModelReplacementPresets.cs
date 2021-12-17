@@ -1,28 +1,67 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Flagrum.Core.Utilities;
+using Newtonsoft.Json;
 
-namespace Flagrum.Core.Archive.Binmod;
+namespace Flagrum.Web.Services;
+
+public class ModelReplacementTarget
+{
+    public int Index { get; set; }
+    public string Name { get; set; }
+    public IEnumerable<string> Models { get; set; }
+}
 
 public class ModelReplacementPresets
 {
-    private static Dictionary<ModelReplacementTarget, string[]> Replacements { get; set; }
+    private readonly Settings _settings;
 
-    public static string[] GetOriginalGmdls(int target)
+    public ModelReplacementPresets(Settings settings)
     {
-        BuildDictionary();
-        return Replacements[(ModelReplacementTarget)target];
+        _settings = settings;
     }
 
-    private static void BuildDictionary()
+    private List<ModelReplacementTarget> Replacements { get; set; }
+
+    public Dictionary<int, string> GetReplacementDictionary(string replacementsFilePath)
+    {
+        BuildDictionary();
+        return Replacements.ToDictionary(r => r.Index, r => r.Name);
+    }
+
+    public Dictionary<int, string> GetReplacementModmetaDictionary(string replacementsFilePath)
+    {
+        BuildDictionary();
+        return Replacements.ToDictionary(r => r.Index, r => r.Name.ToSafeString());
+    }
+
+    public IEnumerable<string> GetOriginalGmdls(int target)
+    {
+        BuildDictionary();
+        return Replacements.First(r => r.Index == target).Models;
+    }
+
+    private void BuildDictionary()
     {
         if (Replacements != null)
         {
             return;
         }
 
-        Replacements = new Dictionary<ModelReplacementTarget, string[]>
+        if (!File.Exists(_settings.ReplacementsFilePath))
         {
+            var empty = new Dictionary<string, string[]>();
+            File.WriteAllText(_settings.ReplacementsFilePath, JsonConvert.SerializeObject(empty, Formatting.Indented));
+        }
+
+        Replacements = new List<ModelReplacementTarget>
+        {
+            new()
             {
-                ModelReplacementTarget.Noctis, new string[33]
+                Index = 0,
+                Name = "Noctis",
+                Models = new[]
                 {
                     "character/nh/nh00/model_000/nh00_000.gmdl",
                     "character/nh/nh00/model_001/nh00_001.gmdl",
@@ -59,25 +98,11 @@ public class ModelReplacementPresets
                     "character/nh/nh00/model_500/nh00_500.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Gladiolus, new string[12]
-                {
-                    "character/nh/nh01/model_000/nh01_000.gmdl",
-                    "character/nh/nh01/model_010/nh01_010.gmdl",
-                    "character/nh/nh01/model_011/nh01_011.gmdl",
-                    "character/nh/nh01/model_020/nh01_020.gmdl",
-                    "character/nh/nh01/model_030/nh01_030.gmdl",
-                    "character/nh/nh01/model_050/nh01_050.gmdl",
-                    "character/nh/nh01/model_081/nh01_081.gmdl",
-                    "character/nh/nh01/model_090/nh01_090.gmdl",
-                    "character/nh/nh01/model_092/nh01_092.gmdl",
-                    "character/nh/nh01/model_100/nh01_100.gmdl",
-                    "character/nh/nh01/model_200/nh01_200.gmdl",
-                    "character/nh/nh01/model_300/nh01_300.gmdl"
-                }
-            },
-            {
-                ModelReplacementTarget.Prompto, new string[17]
+                Index = 1,
+                Name = "Prompto",
+                Models = new[]
                 {
                     "character/nh/nh02/model_000/nh02_000.gmdl",
                     "character/nh/nh02/model_010/nh02_010.gmdl",
@@ -98,8 +123,11 @@ public class ModelReplacementPresets
                     "character/nh/nh02/model_300/nh02_300.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Ignis, new string[25]
+                Index = 2,
+                Name = "Ignis",
+                Models = new[]
                 {
                     "character/nh/nh03/model_000/nh03_000.gmdl",
                     "character/nh/nh03/model_001/nh03_001.gmdl",
@@ -128,8 +156,31 @@ public class ModelReplacementPresets
                     "character/nh/nh03/model_331/nh03_331.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Lunafrena, new string[6]
+                Index = 3,
+                Name = "Gladiolus",
+                Models = new[]
+                {
+                    "character/nh/nh01/model_000/nh01_000.gmdl",
+                    "character/nh/nh01/model_010/nh01_010.gmdl",
+                    "character/nh/nh01/model_011/nh01_011.gmdl",
+                    "character/nh/nh01/model_020/nh01_020.gmdl",
+                    "character/nh/nh01/model_030/nh01_030.gmdl",
+                    "character/nh/nh01/model_050/nh01_050.gmdl",
+                    "character/nh/nh01/model_081/nh01_081.gmdl",
+                    "character/nh/nh01/model_090/nh01_090.gmdl",
+                    "character/nh/nh01/model_092/nh01_092.gmdl",
+                    "character/nh/nh01/model_100/nh01_100.gmdl",
+                    "character/nh/nh01/model_200/nh01_200.gmdl",
+                    "character/nh/nh01/model_300/nh01_300.gmdl"
+                }
+            },
+            new()
+            {
+                Index = 4,
+                Name = "Lunafreya",
+                Models = new[]
                 {
                     "character/nh/nh04/model_000/nh04_000.gmdl",
                     "character/nh/nh04/model_010/nh04_010.gmdl",
@@ -139,8 +190,11 @@ public class ModelReplacementPresets
                     "character/nh/nh04/model_040/nh04_040.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Ardyn, new string[4]
+                Index = 5,
+                Name = "Ardyn",
+                Models = new[]
                 {
                     "character/nh/nh05/model_000/nh05_000.gmdl",
                     "character/nh/nh05/model_010/nh05_010.gmdl",
@@ -148,16 +202,22 @@ public class ModelReplacementPresets
                     "character/nh/nh05/model_010/nh05_101.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Ravus, new string[3]
+                Index = 6,
+                Name = "Ravus",
+                Models = new[]
                 {
                     "character/nh/nh08/model_000/nh08_000.gmdl",
                     "character/nh/nh08/model_001/nh08_001.gmdl",
                     "character/nh/nh08/model_100/nh08_100.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Gentiana, new string[4]
+                Index = 7,
+                Name = "Gentiana",
+                Models = new[]
                 {
                     "character/nh/nh09/model_000/nh09_000.gmdl",
                     "character/nh/nh09/model_010/nh09_010.gmdl",
@@ -165,43 +225,61 @@ public class ModelReplacementPresets
                     "character/nh/nh09/model_030/nh09_030.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Aranea, new string[3]
+                Index = 8,
+                Name = "Aranea",
+                Models = new[]
                 {
                     "character/nh/nh10/model_000/nh10_000.gmdl",
                     "character/nh/nh10/model_010/nh10_010.gmdl",
                     "character/nh/nh10/model_020/nh10_020.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Cid, new string[2]
+                Index = 9,
+                Name = "Cid",
+                Models = new[]
                 {
                     "character/nh/nh11/model_000/nh11_000.gmdl",
                     "character/nh/nh11/model_010/nh11_010.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Iris, new string[1]
+                Index = 10,
+                Name = "Iris",
+                Models = new[]
                 {
                     "character/nh/nh12/model_000/nh12_000.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Cor, new string[3]
+                Index = 11,
+                Name = "Cor",
+                Models = new[]
                 {
                     "character/nh/nh13/model_000/nh13_000.gmdl",
                     "character/nh/nh13/model_010/nh13_010.gmdl",
                     "character/nh/nh13/model_030/nh13_030.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Cidney, new string[1]
+                Index = 12,
+                Name = "Cindy",
+                Models = new[]
                 {
                     "character/nh/nh19/model_000/nh19_000.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.NPC_MALE, new string[91]
+                Index = 13,
+                Name = "NPC_MALE",
+                Models = new[]
                 {
                     "character/um/common/model_000/um00_000.gmdl",
                     "character/um/common/model_000/um00_000_common.gmdl",
@@ -296,8 +374,11 @@ public class ModelReplacementPresets
                     "character/nh/nh18/model_010/nh18_010.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.NPC_MALE_CHILD, new string[12]
+                Index = 14,
+                Name = "NPC_MALE_CHILD",
+                Models = new[]
                 {
                     "character/uc/common/model_000/uc00_000.gmdl",
                     "character/uc/common/model_000/uc00_000_common.gmdl",
@@ -313,8 +394,11 @@ public class ModelReplacementPresets
                     "character/nh/nh28/model_010/nh28_010.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.NPC_FEMALE, new string[52]
+                Index = 15,
+                Name = "NPC_FEMALE",
+                Models = new[]
                 {
                     "character/uw/common/model_000/uw00_000.gmdl",
                     "character/uw/common/model_000/uw00_000_common.gmdl",
@@ -370,8 +454,11 @@ public class ModelReplacementPresets
                     "character/nh/nh36/model_000/nh36_000.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.NPC_FEMALE_CHILD, new string[9]
+                Index = 16,
+                Name = "NPC_FEMALE_CHILD",
+                Models = new[]
                 {
                     "character/uc/uc00/model_001/uc00_001.gmdl",
                     "character/uc/uc00/model_011/uc00_011.gmdl",
@@ -384,8 +471,11 @@ public class ModelReplacementPresets
                     "character/uc/uc30/model_100/uc30_100.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Sword, new string[14]
+                Index = 17,
+                Name = "Sword",
+                Models = new[]
                 {
                     "character/we/we01/model_000/we01_000.gmdl",
                     "character/we/we01/model_001/we01_001.gmdl",
@@ -403,8 +493,11 @@ public class ModelReplacementPresets
                     "character/we/we68/model_000/we68_000.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.LargeSword, new string[9]
+                Index = 18,
+                Name = "Greatsword",
+                Models = new[]
                 {
                     "character/we/we02/model_000/we02_000.gmdl",
                     "character/we/we02/model_001/we02_001.gmdl",
@@ -417,8 +510,11 @@ public class ModelReplacementPresets
                     "character/xg/xg18/model_000/xg18_000.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Spear, new string[7]
+                Index = 19,
+                Name = "Spear",
+                Models = new[]
                 {
                     "character/we/we03/model_000/we03_000.gmdl",
                     "character/we/we03/model_100/we03_100.gmdl",
@@ -429,8 +525,11 @@ public class ModelReplacementPresets
                     "character/we/we53/model_000/we53_000.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Dagger, new string[18]
+                Index = 20,
+                Name = "Dagger",
+                Models = new[]
                 {
                     "character/we/we04/model_000/we04_000.gmdl",
                     "character/we/we04/model_100/we04_100.gmdl",
@@ -452,8 +551,11 @@ public class ModelReplacementPresets
                     "character/we/we54/model_001/we54_001.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Gun, new string[7]
+                Index = 21,
+                Name = "Gun",
+                Models = new[]
                 {
                     "character/we/we05/model_000/we05_000.gmdl",
                     "character/we/we05/model_100/we05_100.gmdl",
@@ -464,8 +566,11 @@ public class ModelReplacementPresets
                     "character/we/we05/model_700/we05_700.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Shield, new string[6]
+                Index = 22,
+                Name = "Shield",
+                Models = new[]
                 {
                     "character/we/we06/model_000/we06_000.gmdl",
                     "character/we/we06/model_100/we06_100.gmdl",
@@ -475,8 +580,11 @@ public class ModelReplacementPresets
                     "character/we/we06/model_500/we06_500.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Crossbow, new string[6]
+                Index = 23,
+                Name = "Crossbow",
+                Models = new[]
                 {
                     "character/we/we22/model_000/we22_000.gmdl",
                     "character/we/we22/model_001/we22_001.gmdl",
@@ -486,8 +594,11 @@ public class ModelReplacementPresets
                     "character/we/we22/model_111/we22_111.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Shuriken, new string[6]
+                Index = 24,
+                Name = "Shuriken",
+                Models = new[]
                 {
                     "character/we/we25/model_000/we25_000.gmdl",
                     "character/we/we25/model_001/we25_001.gmdl",
@@ -497,8 +608,11 @@ public class ModelReplacementPresets
                     "character/we/we25/model_111/we25_111.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Mace, new string[11]
+                Index = 25,
+                Name = "Mace",
+                Models = new[]
                 {
                     "character/we/we28/model_000/we28_000.gmdl",
                     "character/we/we28/model_001/we28_001.gmdl",
@@ -513,8 +627,11 @@ public class ModelReplacementPresets
                     "character/we/we67/model_002/we67_002.gmdl"
                 }
             },
+            new()
             {
-                ModelReplacementTarget.Katana, new string[7]
+                Index = 26,
+                Name = "Katana",
+                Models = new[]
                 {
                     "character/we/we31/model_000/we31_000.gmdl",
                     "character/we/we31/model_001/we31_001.gmdl",
@@ -524,7 +641,53 @@ public class ModelReplacementPresets
                     "character/we/we31/model_210/we31_210.gmdl",
                     "character/we/we31/model_211/we31_211.gmdl"
                 }
+            },
+            new()
+            {
+                Index = 27,
+                Name = "Magitek Suit (Noctis)",
+                Models = new[]
+                {
+                    "character/nh/nh00/model_092/nh00_092.gmdl"
+                }
+            },
+            new()
+            {
+                Index = 28,
+                Name = "Magitek Suit (Prompto)",
+                Models = new[]
+                {
+                    "character/nh/nh02/model_092/nh02_092.gmdl"
+                }
+            },
+            new()
+            {
+                Index = 29,
+                Name = "Magitek Suit (Ignis)",
+                Models = new[]
+                {
+                    "character/nh/nh03/model_092/nh03_092.gmdl"
+                }
+            },
+            new()
+            {
+                Index = 30,
+                Name = "Magitek Suit (Gladiolus)",
+                Models = new[]
+                {
+                    "character/nh/nh01/model_092/nh01_092.gmdl"
+                }
             }
         };
+
+        var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
+        var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
+        var indexCounter = 31;
+        Replacements.AddRange(custom.Select(e => new ModelReplacementTarget
+        {
+            Index = indexCounter++,
+            Name = e.Key,
+            Models = e.Value
+        }));
     }
 }

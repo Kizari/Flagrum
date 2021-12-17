@@ -1,19 +1,19 @@
 ﻿@page "/"
-@using Flagrum.Core.Archive.Binmod
-@using Flagrum.Core.Utilities
 @using System.IO
 @using Flagrum.Core.Archive
+@using Flagrum.Core.Utilities
 
 @inject NavigationManager Navigation
 @inject Settings Settings
 @inject AppStateService AppState
 @inject ILogger<Index> Logger
+@inject BinmodTypeHelper BinmodTypeHelper
 
 <LoadingView Text="Loading Mods"
              IsLoading="IsLoading">
 
     <div class="pt-6 pb-10">
-        <div class="row mx-8 mb-8">
+        <div class="row mx-8 mb-2">
             @* <h3 class="font-bold text-grey-300 ml-1">Local Mods</h3> *@
             <div class="bg-dark-600 shadow-md rounded row mt-1">
                 <ModTypeButtonGroup>
@@ -34,7 +34,7 @@
             <div class="flex-grow"></div>
             <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
         </div>
-        @*<div class="row flex-wrap px-4 ml-0.5 mb-16">
+        <div class="row flex-wrap px-4 ml-0.5 mb-16">
             @foreach (var mod in AppState.Mods
                 .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
                 .OrderByDescending(m => m.IsApplyToGame)
@@ -44,44 +44,44 @@
             {
                 <ModListingCard @key="mod.Uuid" Mod="@mod"/>
             }
-        </div>*@
-        <ModListingGroup Name="Noctis"
-                         Target="(int)OutfitSoloTarget.Noctis"
-                         IsWorkshopMod="!ShowLocalMods"
-                         Mods="AppState.Mods
-    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
-    .OrderByDescending(m => m.IsApplyToGame)
-    .ThenBy(m => m.Type)
-    .ThenBy(m => m.Target)
-    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
-        <ModListingGroup Name="Prompto"
-                         Target="(int)OutfitSoloTarget.Prompto"
-                         IsWorkshopMod="!ShowLocalMods"
-                         Mods="AppState.Mods
-    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
-    .OrderByDescending(m => m.IsApplyToGame)
-    .ThenBy(m => m.Type)
-    .ThenBy(m => m.Target)
-    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
-        <ModListingGroup Name="Ignis"
-                         Target="(int)OutfitSoloTarget.Ignis"
-                         IsWorkshopMod="!ShowLocalMods"
-                         Mods="AppState.Mods
-    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
-    .OrderByDescending(m => m.IsApplyToGame)
-    .ThenBy(m => m.Type)
-    .ThenBy(m => m.Target)
-    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
-        <ModListingGroup Name="Gladiolus"
-                         Target="(int)OutfitSoloTarget.Gladiolus"
-                         IsWorkshopMod="!ShowLocalMods"
-                         Mods="AppState.Mods
-    .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType))
-    .OrderByDescending(m => m.IsApplyToGame)
-    .ThenBy(m => m.Type)
-    .ThenBy(m => m.Target)
-    .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
-        
+        </div>
+        @*         <ModListingGroup Name="Noctis" *@
+        @*                          Target="(int)OutfitSoloTarget.Noctis" *@
+        @*                          IsWorkshopMod="!ShowLocalMods" *@
+        @*                          Mods="AppState.Mods *@
+        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
+        @*     .OrderByDescending(m => m.IsApplyToGame) *@
+        @*     .ThenBy(m => m.Type) *@
+        @*     .ThenBy(m => m.Target) *@
+        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
+        @*         <ModListingGroup Name="Prompto" *@
+        @*                          Target="(int)OutfitSoloTarget.Prompto" *@
+        @*                          IsWorkshopMod="!ShowLocalMods" *@
+        @*                          Mods="AppState.Mods *@
+        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
+        @*     .OrderByDescending(m => m.IsApplyToGame) *@
+        @*     .ThenBy(m => m.Type) *@
+        @*     .ThenBy(m => m.Target) *@
+        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
+        @*         <ModListingGroup Name="Ignis" *@
+        @*                          Target="(int)OutfitSoloTarget.Ignis" *@
+        @*                          IsWorkshopMod="!ShowLocalMods" *@
+        @*                          Mods="AppState.Mods *@
+        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
+        @*     .OrderByDescending(m => m.IsApplyToGame) *@
+        @*     .ThenBy(m => m.Type) *@
+        @*     .ThenBy(m => m.Target) *@
+        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
+        @*         <ModListingGroup Name="Gladiolus" *@
+        @*                          Target="(int)OutfitSoloTarget.Gladiolus" *@
+        @*                          IsWorkshopMod="!ShowLocalMods" *@
+        @*                          Mods="AppState.Mods *@
+        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
+        @*     .OrderByDescending(m => m.IsApplyToGame) *@
+        @*     .ThenBy(m => m.Type) *@
+        @*     .ThenBy(m => m.Target) *@
+        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
+
         @* <ModListingGroup Name="Outfits" ModType="BinmodType.Cloth" IsWorkshopMod="false"/> *@
         @* <ModListingGroup Name="Weapons" ModType="BinmodType.Weapon" IsWorkshopMod="false"/> *@
         @* <ModListingGroup Name="Model Replacements" ModType="BinmodType.Character" IsWorkshopMod="false"/> *@
@@ -130,7 +130,7 @@
                         {
                             var unpacker = new Unpacker(file);
                             var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta", out _);
-                            var mod = Binmod.FromModmetaBytes(modmetaBytes);
+                            var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper);
                             var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
 
                             if (mod == null)

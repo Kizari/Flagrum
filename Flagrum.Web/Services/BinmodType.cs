@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Flagrum.Core.Archive.Binmod;
+namespace Flagrum.Web.Services;
 
 public enum BinmodType
 {
@@ -54,78 +54,58 @@ public enum WeaponMultiTarget
     Shield
 }
 
-public enum ModelReplacementTarget
+public class BinmodTypeHelper
 {
-    Noctis,
-    Gladiolus,
-    Prompto,
-    Ignis,
-    Lunafrena,
-    Ardyn,
-    Ravus,
-    Gentiana,
-    Aranea,
-    Cid,
-    Iris,
-    Cor,
-    Cidney,
-    NPC_MALE,
-    NPC_MALE_CHILD,
-    NPC_FEMALE,
-    NPC_FEMALE_CHILD,
-    Sword,
-    LargeSword,
-    Spear,
-    Dagger,
-    Gun,
-    Shield,
-    Crossbow,
-    Shuriken,
-    Mace,
-    Katana
-}
+    private readonly ModelReplacementPresets _modelReplacementPresets;
+    private readonly Settings _settings;
 
-public static class BinmodTypeHelper
-{
-    private static Dictionary<BinmodType, string> TypeNames { get; set; }
-    private static Dictionary<string, BinmodType> TypeNamesReversed { get; set; }
-    private static Dictionary<BinmodType, Dictionary<int, string>> Targets { get; set; }
-    private static Dictionary<BinmodType, Dictionary<int, string>> ModmetaTargets { get; set; }
-    private static Dictionary<BinmodType, Dictionary<string, int>> ModmetaTargetsReversed { get; set; }
-    private static Dictionary<BinmodType, string> ModmetaTypes { get; set; }
-    private static Dictionary<string, BinmodType> ModmetaTypesReversed { get; set; }
+    public BinmodTypeHelper(
+        Settings settings,
+        ModelReplacementPresets presets)
+    {
+        _settings = settings;
+        _modelReplacementPresets = presets;
+    }
 
-    public static string GetModmetaTypeName(int type)
+    private Dictionary<BinmodType, string> TypeNames { get; set; }
+    private Dictionary<string, BinmodType> TypeNamesReversed { get; set; }
+    private Dictionary<BinmodType, Dictionary<int, string>> Targets { get; set; }
+    private Dictionary<BinmodType, Dictionary<int, string>> ModmetaTargets { get; set; }
+    private Dictionary<BinmodType, Dictionary<string, int>> ModmetaTargetsReversed { get; set; }
+    private Dictionary<BinmodType, string> ModmetaTypes { get; set; }
+    private Dictionary<string, BinmodType> ModmetaTypesReversed { get; set; }
+
+    public string GetModmetaTypeName(int type)
     {
         CreateModmetaTypes();
         return ModmetaTypes[(BinmodType)type];
     }
 
-    public static int GetModmetaTypeFromName(string name)
+    public int GetModmetaTypeFromName(string name)
     {
         CreateModmetaTypes();
         return (int)ModmetaTypesReversed[name];
     }
 
-    public static string GetDisplayName(BinmodType binmodType)
+    public string GetDisplayName(BinmodType binmodType)
     {
         CreateTypeNames();
         return TypeNames[binmodType];
     }
 
-    public static int FromName(string typeName)
+    public int FromName(string typeName)
     {
         CreateTypeNames();
         return (int)TypeNamesReversed[typeName];
     }
 
-    public static Dictionary<int, string> GetTargets(int type)
+    public Dictionary<int, string> GetTargets(int type)
     {
         Targets ??= new Dictionary<BinmodType, Dictionary<int, string>>
         {
             {
                 BinmodType.Character,
-                Enum.GetValues<ModelReplacementTarget>().ToDictionary(t => (int)t, t => t.ToString())
+                _modelReplacementPresets.GetReplacementDictionary(_settings.ReplacementsFilePath)
             },
             {BinmodType.Cloth, Enum.GetValues<OutfitSoloTarget>().ToDictionary(t => (int)t, t => t.ToString())},
             {BinmodType.StyleEdit, Enum.GetValues<OutfitMultiTarget>().ToDictionary(t => (int)t, t => t.ToString())},
@@ -136,19 +116,19 @@ public static class BinmodTypeHelper
         return Targets[(BinmodType)type];
     }
 
-    public static string GetModmetaTargetName(int binmodType, int binmodTarget)
+    public string GetModmetaTargetName(int binmodType, int binmodTarget)
     {
         CreateModmetaTargets();
         return ModmetaTargets[(BinmodType)binmodType][binmodTarget];
     }
 
-    public static int GetBinmodTarget(int binmodType, string targetName)
+    public int GetBinmodTarget(int binmodType, string targetName)
     {
         CreateModmetaTargets();
         return ModmetaTargetsReversed[(BinmodType)binmodType][targetName];
     }
 
-    public static int GetModelCount(int binmodType, int binmodTarget)
+    public int GetModelCount(int binmodType, int binmodTarget)
     {
         var type = (BinmodType)binmodType;
 
@@ -180,7 +160,7 @@ public static class BinmodTypeHelper
         return 1;
     }
 
-    private static void CreateModmetaTypes()
+    private void CreateModmetaTypes()
     {
         if (ModmetaTypes != null)
         {
@@ -193,7 +173,7 @@ public static class BinmodTypeHelper
         ModmetaTypesReversed = ModmetaTypes.ToDictionary(t => t.Value, t => t.Key);
     }
 
-    private static void CreateTypeNames()
+    private void CreateTypeNames()
     {
         if (TypeNames != null)
         {
@@ -212,7 +192,7 @@ public static class BinmodTypeHelper
         TypeNamesReversed = TypeNames.ToDictionary(t => t.Value, t => t.Key);
     }
 
-    private static void CreateModmetaTargets()
+    private void CreateModmetaTargets()
     {
         if (ModmetaTargets != null)
         {
@@ -223,7 +203,7 @@ public static class BinmodTypeHelper
         {
             {
                 BinmodType.Character,
-                Enum.GetValues<ModelReplacementTarget>().ToDictionary(t => (int)t, t => t.ToString())
+                _modelReplacementPresets.GetReplacementModmetaDictionary(_settings.ReplacementsFilePath)
             },
             {
                 BinmodType.Cloth,

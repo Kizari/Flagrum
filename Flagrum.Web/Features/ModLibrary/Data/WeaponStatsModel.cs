@@ -1,6 +1,5 @@
 ﻿using System;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Archive.Binmod;
+using Flagrum.Web.Services;
 
 namespace Flagrum.Web.Features.ModLibrary.Data;
 
@@ -9,8 +8,8 @@ public class WeaponStatsModel
     private readonly Binmod _mod;
     private readonly Action _onChange;
     private int? _attack;
-    private int? _critical;
     private int? _ballistic;
+    private int? _critical;
 
     private int? _dark;
 

@@ -12,6 +12,11 @@ public static class DependencyInjection
         services.AddScoped<SteamWorkshopService>();
         services.AddSingleton<AppStateService>();
         services.AddScoped<JSInterop>();
+        services.AddScoped<BinmodBuilder>();
+        services.AddScoped<BinmodTypeHelper>();
+        services.AddScoped<EntityPackageBuilder>();
+        services.AddScoped<ModelReplacementPresets>();
+        services.AddScoped<Modmeta>();
         return services;
     }
 }

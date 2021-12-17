@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Timers;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Archive.Binmod;
 using Steamworks;
 
 namespace Flagrum.Web.Services;
@@ -13,6 +11,7 @@ public class SteamWorkshopService
     private readonly AppId_t _appId;
 
     private readonly JSInterop _interop;
+    private readonly Timer _timer;
     private Binmod _activeMod;
     private CallResult<CreateItemResult_t> _createItemCallback;
     private bool _isInitialized;
@@ -23,7 +22,6 @@ public class SteamWorkshopService
     private string _tempDat;
     private string _tempDirectory;
     private string _tempPreview;
-    private readonly Timer _timer;
 
     public SteamWorkshopService(JSInterop interop)
     {

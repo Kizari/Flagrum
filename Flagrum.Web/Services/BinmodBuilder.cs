@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
@@ -12,27 +13,41 @@ using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
-namespace Flagrum.Core.Archive.Binmod;
+namespace Flagrum.Web.Services;
 
 public class BinmodBuilder
 {
-    private readonly Binmod _mod;
-    private readonly Packer _packer;
+    private readonly BinmodTypeHelper _binmodType;
+    private readonly EntityPackageBuilder _entityPackageBuilder;
+    private readonly Modmeta _modmeta;
+    private readonly Settings _settings;
 
-    public BinmodBuilder(string btexConverterPath, Binmod mod, byte[] previewImage)
+    private Binmod _mod;
+    private Packer _packer;
+
+    public BinmodBuilder(
+        Settings settings,
+        EntityPackageBuilder entityPackageBuilder,
+        Modmeta modmeta,
+        BinmodTypeHelper binmodType)
+    {
+        _settings = settings;
+        _entityPackageBuilder = entityPackageBuilder;
+        _modmeta = modmeta;
+        _binmodType = binmodType;
+    }
+
+    public void Initialise(Binmod mod, byte[] previewImage)
     {
         _mod = mod;
         _packer = new Packer();
-        _packer.AddFile(Modmeta.Build(_mod), GetDataPath("index.modmeta"));
+        _packer.AddFile(_modmeta.Build(_mod), GetDataPath("index.modmeta"));
 
-        var exml = EntityPackageBuilder.BuildExml(_mod);
+        var exml = _entityPackageBuilder.BuildExml(_mod);
         _packer.AddFile(exml, "data://$mod/temp.exml");
 
-        var tempFile = Path.GetTempFileName();
-        var tempFile2 = Path.GetTempFileName();
-        File.WriteAllBytes(tempFile, previewImage);
-        BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
-        var btex = File.ReadAllBytes(tempFile2);
+        var converter = new TextureConverter();
+        var btex = converter.Convert("$preview", "png", TextureType.Color, previewImage);
 
         _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
         _packer.AddFile(btex, GetDataPath("$preview.btex"));
@@ -48,7 +63,7 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(string btexConverterPath, byte[] fmd)
+    public void AddFmd(byte[] fmd)
     {
         using var memoryStream = new MemoryStream(fmd);
         using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
@@ -119,31 +134,26 @@ public class BinmodBuilder
                     }
                     else
                     {
-                        var tempPathOriginal = Path.GetTempFileName();
-                        File.WriteAllBytes(tempPathOriginal, textureStream.ToArray());
+                        var textureBytes = textureStream.ToArray();
 
-                        BtexConverter.TextureType textureType;
+                        TextureType textureType;
                         if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
                         {
-                            textureType = BtexConverter.TextureType.Normal;
+                            textureType = TextureType.Normal;
                         }
                         else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase)
                                  || textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase)
                                  || textureId.Contains("emissive", StringComparison.OrdinalIgnoreCase))
                         {
-                            textureType = BtexConverter.TextureType.Color;
+                            textureType = TextureType.Color;
                         }
                         else
                         {
-                            textureType = BtexConverter.TextureType.Greyscale;
+                            textureType = TextureType.Greyscale;
                         }
-
-                        var tempPath = Path.GetTempFileName();
-                        BtexConverter.Convert(btexConverterPath, tempPathOriginal, tempPath, textureType);
-
-                        btexData = File.ReadAllBytes(tempPath);
-                        File.Delete(tempPathOriginal);
-                        File.Delete(tempPath);
+                        
+                        var converter = new TextureConverter();
+                        btexData = converter.Convert(btexFileName.Replace(".btex", ""), extension, textureType, textureBytes);
                     }
 
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
@@ -192,7 +202,7 @@ public class BinmodBuilder
         }
 
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, _mod.ModelName, gpubin);
-        var replacer = new ModelReplacer(model, gpubin, BinmodTypeHelper.GetModmetaTargetName(_mod.Type, _mod.Target));
+        var replacer = new ModelReplacer(model, gpubin, _binmodType.GetModmetaTargetName(_mod.Type, _mod.Target));
         model = replacer.Replace();
 
         if (_mod.Type == (int)BinmodType.Weapon)

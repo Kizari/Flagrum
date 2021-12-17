@@ -6,7 +6,7 @@
         xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
         mc:Ignorable="d"
-        Title="Flagrum" Width="1052" Height="768"
+        Title="Flagrum" Width="1680" Height="1050"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         Background="#181512"
@@ -24,7 +24,7 @@
             <Border Background="#181512">
                 <Border.Style>
                     <Style TargetType="Border">
-                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Padding" Value="2px" />
                         <Style.Triggers>
                             <DataTrigger
                                 Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}"
