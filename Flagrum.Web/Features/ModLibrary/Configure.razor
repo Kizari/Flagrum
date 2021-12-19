@@ -1,9 +1,9 @@
 ﻿@page "/mod/configure"
 @using Flagrum.Core.Utilities
-@using Flagrum.Web.Components.Controls.Data
+@using Flagrum.Web.Features.ModLibrary.Data
+@using System.Diagnostics
 @using System.IO
 @using Flagrum.Core.Archive
-@using Flagrum.Core.Gfxbin.Btex
 
 @inject NavigationManager Navigation
 @inject JSInterop Interop
@@ -14,6 +14,7 @@
 @inject ModelReplacementPresets ReplacementPresets
 @inject BinmodBuilder BinmodBuilder
 @inject Modmeta Modmeta
+@inject IWpfService WpfService
 
 <CascadingValue Value="this">
     <LoadingView Text="@LoadingText"
@@ -21,64 +22,75 @@
         <div class="p-6">
 
             <div class="box row p-4">
-                <span class="flex-grow">@(Mod.GameMenuTitle ?? Mod.WorkshopTitle)</span>
-                <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!HasModelData || StatsTotal > 100)"/>
+                <span class="flex-grow">@(IsNew ? "New Mod" : (Mod.GameMenuTitle ?? Mod.WorkshopTitle))</span>
+                <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!CanSave || StatsTotal > 100)"/>
                 <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
             </div>
 
-            @if (!HasModelData)
+            @if (!CanSave)
             {
-                <div class="box row p-4 mt-6">
-                    <label>TYPE</label>
-                    <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged" CssClass="mx-4"/>
-                    <label>TARGET</label>
-                    <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" Placeholder="-- Select Target --" CssClass="ml-4"/>
+                <div class="row mt-6">
+                    <div class="box row p-4 mr-3 flex-grow">
+                        <label class="inline-block mr-3">TYPE</label>
+                        <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged"/>
+                    </div>
+                    <div class="box row p-4 ml-3 flex-grow">
+                        <label class="inline-block mr-3">TARGET</label>
+                        <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" Placeholder="-- Select Target --"/>
+                    </div>
+                    @if (Mod.Type == (int)BinmodType.StyleEdit)
+                    {
+                        <div class="box row p-4 ml-6 flex-grow">
+                            <label class="inline-block mr-3">VARIANT</label>
+                            <select value="@Mod.Gender"
+                                    @onchange="VariantChanged"
+                                    class="input bg-dark-550 w-full">
+                                <option value="">-- Select Variant --</option>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                            </select>
+                        </div>
+                    }
                 </div>
 
-                @if (Mod.Target > -1)
+                @if (Mod.Target > -1 && (Mod.Type != (int)BinmodType.StyleEdit || !string.IsNullOrEmpty(Mod.Gender)))
                 {
-                    @if (BinmodTypeHelper.GetModelCount(Mod.Type, Mod.Target) == 1)
+                    @if (ModelCount == 1)
                     {
                         <div class="box row p-4 mt-6">
                             <span class="flex-grow">
                                 Select FMD file with your model data
                             </span>
-                            <BrowseButton Icon="folder"
-                                          Text="Browse"
-                                          AllowedExtensions=".fmd"
-                                          OnFileSelected="OnModelSelected"
-                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
+                            <Button Icon="folder"
+                                    Text="Browse"
+                                    OnClick="() => SelectModel(0)"/>
                         </div>
                     }
                     else
                     {
                         <div class="box row p-4 mt-6">
                             <span class="flex-grow">
-                                @(Model1Data == null ? "Select FMD file for first model" : Mod.Model1Name + ".fmd")
+                                @(FmdFileNames[0] == null ? $"Select FMD file for {ModelNames[0]} model" : FmdFileNames[0])
                             </span>
-                            <BrowseButton Icon="folder"
-                                          Text="Browse"
-                                          AllowedExtensions=".fmd"
-                                          OnFileSelected="OnModel1Selected"
-                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
+                            <Button Icon="folder"
+                                    Text="Browse"
+                                    OnClick="() => SelectModel(0)"/>
                         </div>
                         <div class="box row p-4 mt-6">
                             <span class="flex-grow">
-                                @(Model1Data == null ? "Select FMD file for second model" : Mod.Model2Name + ".fmd")
+                                @(FmdFileNames[1] == null ? $"Select FMD file for {ModelNames[1]} model" : FmdFileNames[1])
                             </span>
-                            <BrowseButton Icon="folder"
-                                          Text="Browse"
-                                          AllowedExtensions=".fmd"
-                                          OnFileSelected="OnModel2Selected"
-                                          BeforeFileLoaded="@(() => SetLoading("Loading Data"))"/>
+                            <Button Icon="folder"
+                                    Text="Browse"
+                                    OnClick="() => SelectModel(1)"/>
                         </div>
                     }
                 }
             }
             else
             {
-                <div class="box row p-5 mt-4">
-                    @if (PreviewBase64 != null)
+                <div class="box row p-5 mt-6">
+                    @if (Mod.PreviewBytes != null)
                     {
                         <img style="display:block;width:175px;height:175px;" src="images/@(ImageName).png"/>
                     }
@@ -102,26 +114,38 @@
                                     <strong>@Mod.Uuid</strong>
                                 </td>
                             </tr>
-                            <tr>
-                                <td class="pb-1">Last Updated:</td>
-                                <td class="pb-1 pl-3">
-                                    <strong>@(Mod.IsWorkshopMod ? "N/A" : Mod.LastUpdated == default ? "Not on Steam Workshop" : Mod.LastUpdated.ToString("d MMMM yyyy 'at' h:mm tt"))</strong>
-                                </td>
-                            </tr>
                         </table>
-                        <div class="row mt-6">
+                        <div class="row @(Mod.IsWorkshopMod ? "mt-20" : "mt-14")">
                             @if (!Mod.IsWorkshopMod)
                             {
-                                <BrowseButton Icon="image"
-                                              Text="Change Image"
-                                              AllowedExtensions=".png"
-                                              OnFileSelected="OnImageSelected"/>
-                                <BrowseButton Icon="view_in_ar"
-                                              Text="Change Model"
-                                              AllowedExtensions=".fmd"
-                                              BeforeFileLoaded="@(() => SetLoading("Loading Data"))"
-                                              OnFileSelected="OnModelSelected"
-                                              CssClass="ml-3"/>
+                                <Button Icon="image"
+                                        Text="Change Image"
+                                        OnClick="SelectImage"/>
+                                @if (Mod.Type == (int)BinmodType.StyleEdit)
+                                {
+                                    <Button Icon="image"
+                                            Text="Change Thumbnail"
+                                            OnClick="SelectThumbnail"
+                                            CssClass="ml-3"/>
+                                }
+                                @if (ModelCount == 1)
+                                {
+                                    <Button Icon="view_in_ar"
+                                            Text="Change Model"
+                                            OnClick="() => SelectModel(0)"
+                                            CssClass="ml-3"/>
+                                }
+                                else
+                                {
+                                    <Button Icon="view_in_ar"
+                                            Text=@($"Change {ModelNames[0]} Model")
+                                            OnClick="() => SelectModel(0)"
+                                            CssClass="ml-3"/>
+                                    <Button Icon="view_in_ar"
+                                            Text=@($"Change {ModelNames[1]} Model")
+                                            OnClick="() => SelectModel(1)"
+                                            CssClass="ml-3"/>
+                                }
                             }
 
                             @if (!IsNew && !Mod.IsWorkshopMod)
@@ -131,14 +155,22 @@
                             }
                         </div>
                     </div>
+                    @if (Mod.ThumbnailBytes != null)
+                    {
+                        <img style="display:block;width:121px;height:175px;" src="images/@(ThumbnailName).png"/>
+                    }
                 </div>
-                @if (Mod.Type is (int)BinmodType.Cloth or (int)BinmodType.StyleEdit)
+                @if (Mod.Type == (int)BinmodType.Cloth)
                 {
                     <Outfit/>
                 }
                 else if (Mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
                 {
                     <Weapon/>
+                }
+                else if (Mod.Type == (int)BinmodType.StyleEdit)
+                {
+                    <StyleEdit />
                 }
                 else
                 {
@@ -153,21 +185,23 @@
 {
     public Binmod Mod { get; set; }
     public int StatsTotal { get; set; }
-    private string PreviewBase64 { get; set; }
     private bool IsNew { get; set; }
-    private bool HasModelData { get; set; }
-    private byte[] ModelData { get; set; }
-    private byte[] Model1Data { get; set; }
-    private byte[] Model2Data { get; set; }
-    private bool ImageHasChanged { get; set; }
+    private bool CanSave { get; set; }
     private string LoadingText { get; set; }
     private bool IsLoading { get; set; }
     private string ImageName { get; set; } = "current_preview";
+    private string ThumbnailName { get; set; } = "current_thumbnail";
     private Dictionary<int, string> ModTypes { get; set; }
     private Dictionary<int, string> ModTargets { get; set; }
+    private BuildContext BuildContext { get; set; }
+    private int ModelCount { get; set; } = 1;
+    private Dictionary<int, string> ModelNames { get; set; }
+    private bool[] HasSelectedDataForModel { get; } = new bool[2];
+    private string[] FmdFileNames { get; } = new string[2];
 
     protected override void OnInitialized()
     {
+        BuildContext = new BuildContext(Logger, StateHasChanged);
         ModTypes = Enum.GetValues<BinmodType>().ToDictionary(t => (int)t, BinmodTypeHelper.GetDisplayName);
 
         Mod = AppState.ActiveMod?.Clone();
@@ -182,9 +216,12 @@
         }
 
         ModTargets = BinmodTypeHelper.GetTargets(Mod.Type);
-        Logger.LogInformation($"Mod type is {Mod.Type}!");
-
         File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
+
+        if (Mod.ThumbnailBytes != null)
+        {
+            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", Mod.ThumbnailBytes);
+        }
     }
 
     private void SetLoading(string text)
@@ -197,16 +234,18 @@
     private void InitializeNewMod()
     {
         IsNew = true;
+        BuildContext.Flags |= BuildContextFlags.NeedsBuild | BuildContextFlags.PreviewImageChanged;
 
-        var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", previewImage);
-        PreviewBase64 = Convert.ToBase64String(previewImage);
+        var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
+        var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+        File.Copy(defaultPreviewPath, currentPreviewPath, true);
+        var previewBytes = File.ReadAllBytes(defaultPreviewPath);
+        BuildContext.ProcessPreviewImage(previewBytes);
 
         Mod = new Binmod
         {
-            GameMenuTitle = "New Mod",
             Uuid = Guid.NewGuid().ToString(),
-            PreviewBytes = previewImage,
+            PreviewBytes = previewBytes,
             IsApplyToGame = true
         };
 
@@ -215,9 +254,22 @@
 
     private void InitializeExistingMod()
     {
+        ModelNames = BinmodTypeHelper.GetModelNames(Mod.Type, Mod.Target);
+        ModelCount = BinmodTypeHelper.GetModelCount(Mod.Type, Mod.Target);
+        
+        BuildContext.ProcessPreviewImage(Mod.PreviewBytes);
         File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
-        PreviewBase64 = Convert.ToBase64String(Mod.PreviewBytes);
-        HasModelData = true;
+
+        if (Mod.Type == (int)BinmodType.StyleEdit)
+        {
+            BuildContext.ProcessThumbnailImage(Mod.ThumbnailBytes);
+            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", Mod.ThumbnailBytes);
+        }
+        
+        HasSelectedDataForModel[0] = true;
+        HasSelectedDataForModel[1] = true;
+        CanSave = true;
+        StateHasChanged();
     }
 
     private void Cancel()
@@ -225,60 +277,44 @@
         Navigation.NavigateTo("/");
     }
 
-    private async void OnImageSelected(InMemoryFile file)
+    private void SelectImage()
     {
-        PreviewBase64 = Convert.ToBase64String(file.Data);
-        await File.WriteAllBytesAsync($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", file.Data);
-        ImageHasChanged = true;
+        WpfService.OpenFileDialog(
+            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            path =>
+            {
+                BuildContext.ProcessPreviewImage(path, async data =>
+                {
+                    Mod.PreviewBytes = data;
 
-    // This jank is required or the UI won't update the image if the value hasn't changed
-        ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
-
-    // This appears to call weirdly and so needs InvokeAsync or it won't update either
-        await InvokeAsync(StateHasChanged);
+                    // This jank is required or the UI won't update the image if the value hasn't changed
+                    ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+        );
     }
-
-    private void OnModelSelected(InMemoryFile file)
+    
+    private void SelectThumbnail()
     {
-        Mod.ModDirectoryName = Mod.Uuid;
-        Mod.ModelName = file.FileName.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+        WpfService.OpenFileDialog(
+            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            path =>
+            {
+                BuildContext.ProcessThumbnailImage(path, async data =>
+                {
+                    Mod.ThumbnailBytes = data;
 
-        ModelData = file.Data;
-        HasModelData = true;
-        IsLoading = false;
-        StateHasChanged();
-    }
-
-    private void OnModel1Selected(InMemoryFile file)
-    {
-        Mod.Model1Name = file.FileName.Split('\\', '/').Last().Split('.')[0].ToSafeString();
-        Model1Data = file.Data;
-        CheckBothModelsSelected();
-    }
-
-    private void OnModel2Selected(InMemoryFile file)
-    {
-        Mod.Model2Name = file.FileName.Split('\\', '/').Last().Split('.')[0].ToSafeString();
-        Model2Data = file.Data;
-        CheckBothModelsSelected();
-    }
-
-    private void CheckBothModelsSelected()
-    {
-        if (Model1Data != null && Model2Data != null)
-        {
-            Mod.ModDirectoryName = Mod.Uuid;
-            HasModelData = true;
-        }
-
-        IsLoading = false;
-        StateHasChanged();
+                    // This jank is required or the UI won't update the image if the value hasn't changed
+                    ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+        );
     }
 
     private void Delete()
     {
-        SetLoading("Deleting Mod");
-
         AppState.Mods.Remove(AppState.ActiveMod);
         AppState.UpdateBinmodList();
         File.Delete(Mod.Path);
@@ -288,74 +324,75 @@
 
     private void Save()
     {
-        var previewBytes = Convert.FromBase64String(PreviewBase64);
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", previewBytes);
-        Mod.PreviewBytes = previewBytes;
-
         if (Mod.Type == (int)BinmodType.Character)
         {
             Mod.GameMenuTitle = null;
         }
+        
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", Mod.PreviewBytes);
 
-        if (ModelData == null)
+        if (Mod.Type == (int)BinmodType.StyleEdit)
+        {
+            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}_t.png", Mod.ThumbnailBytes);
+        }
+
+        if (BuildContext.Flags.HasFlag(BuildContextFlags.NeedsBuild))
+        {
+            SetLoading("Building Mod");
+            BuildAsync();
+        }
+        else
         {
             SetLoading("Saving");
             SaveAsync();
-            return;
         }
-
-        SetLoading("Building Mod");
-        BuildAsync();
     }
 
     private async void SaveAsync()
     {
-        await Task.Run(() =>
+        var unpacker = new Unpacker(Mod.Path);
+        var packer = unpacker.ToPacker();
+        
+        packer.UpdateFile("index.modmeta", Modmeta.Build(Mod));
+
+        if (BuildContext.Flags.HasFlag(BuildContextFlags.PreviewImageChanged))
         {
-            var unpacker = new Unpacker(Mod.Path);
-            var packer = unpacker.ToPacker();
-            packer.UpdateFile("index.modmeta", Modmeta.Build(Mod));
+            await BuildContext.WaitForPreviewData(Mod.Type == (int)BinmodType.StyleEdit);
+            packer.UpdateFile("$preview.png", BuildContext.PreviewBtex);
+            packer.UpdateFile("$preview.png.bin", BuildContext.PreviewImage);
 
-            if (ImageHasChanged)
+            if (Mod.Type == (int)BinmodType.StyleEdit)
             {
-                var png = Convert.FromBase64String(PreviewBase64);
-
-                var converter = new TextureConverter();
-                var btex = converter.Convert("$preview", "png", TextureType.Thumbnail, png);
-
-                packer.UpdateFile("$preview.png", btex);
-                packer.UpdateFile("$preview.png.bin", png);
-                Mod.PreviewBytes = png;
+                packer.UpdateFile("default.png", BuildContext.ThumbnailBtex);
             }
+        }
 
-            packer.WriteToFile(Mod.Path);
+        packer.WriteToFile(Mod.Path);
 
-            AppState.ActiveMod.UpdateFrom(Mod);
-            Navigation.NavigateTo("/");
-        });
+        AppState.ActiveMod.UpdateFrom(Mod);
+        Navigation.NavigateTo("/");
     }
 
     private async void BuildAsync()
     {
-        await Task.Run(() =>
+        await BuildContext.WaitForBuildData(Mod.Type == (int)BinmodType.StyleEdit);
+
+        Mod.ModelExtension = "gmdl";
+        BinmodBuilder.Initialise(Mod, BuildContext.PreviewImage, BuildContext.PreviewBtex, BuildContext.ThumbnailBtex);
+        BinmodBuilder.AddFmd(BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+        BinmodBuilder.WriteToFile(Mod.Path);
+
+        if (AppState.ActiveMod == null)
         {
-            Mod.ModelExtension = "gmdl";
-            BinmodBuilder.Initialise(Mod, Convert.FromBase64String(PreviewBase64));
-            BinmodBuilder.AddFmd(ModelData);
-            BinmodBuilder.WriteToFile(Mod.Path);
+            AppState.Mods.Add(Mod);
+        }
+        else
+        {
+            AppState.ActiveMod.UpdateFrom(Mod);
+        }
 
-            if (AppState.ActiveMod == null)
-            {
-                AppState.Mods.Add(Mod);
-            }
-            else
-            {
-                AppState.ActiveMod.UpdateFrom(Mod);
-            }
-
-            AppState.UpdateBinmodList();
-            Navigation.NavigateTo("/");
-        });
+        AppState.UpdateBinmodList();
+        Navigation.NavigateTo("/");
     }
 
     private void Upload()
@@ -376,5 +413,47 @@
         {
             Mod.OriginalGmdls = ReplacementPresets.GetOriginalGmdls(newTarget).ToList();
         }
+
+        ModelCount = BinmodTypeHelper.GetModelCount(Mod.Type, newTarget);
+        ModelNames = BinmodTypeHelper.GetModelNames(Mod.Type, newTarget);
+    }
+
+    private void VariantChanged(ChangeEventArgs e)
+    {
+        Mod.Gender = e.Value?.ToString();
+    }
+
+    private void SelectModel(int index)
+    {
+        WpfService.OpenFileDialog(
+            "Flagrum Model Data (*.fmd)|*.fmd",
+            path =>
+            {
+                FmdFileNames[index] = path.Split('\\', '/').Last();
+                BuildContext.ProcessFmd(index, path);
+                Mod.ModDirectoryName = Mod.Uuid;
+                Mod.ModelName = path.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+                HasSelectedDataForModel[index] = true;
+
+                if (ModelCount == 1)
+                {
+                    CanSave = true;
+                }
+                else
+                {
+                    CanSave = HasSelectedDataForModel[0] && HasSelectedDataForModel[1];
+                }
+
+                if (IsNew && Mod.ThumbnailBytes == null && CanSave)
+                {
+                    var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
+                    var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";
+                    File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
+                    var thumbnailBytes = File.ReadAllBytes(defaultThumbnailPath);
+                    Mod.ThumbnailBytes = thumbnailBytes;
+                    BuildContext.ProcessThumbnailImage(thumbnailBytes);
+                }
+            }
+        );
     }
 }

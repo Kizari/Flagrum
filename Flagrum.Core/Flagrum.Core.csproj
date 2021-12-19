@@ -129,9 +129,6 @@
         <Content Include="Resources\Materials\UNNAMED_HUMAN_SKIN.json">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="Resources\preview.btex">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
         <Content Include="Resources\preview.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -175,26 +172,18 @@
         <None Remove="Resources\Materials\UNNAMED_HUMAN_HAIR.json" />
         <None Remove="Resources\Materials\UNNAMED_HUMAN_SKIN.json" />
         <None Remove="Resources\Textures\black.btex" />
-        <Content Include="Resources\Textures\black.btex">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
         <None Remove="Resources\Textures\blue.btex" />
-        <Content Include="Resources\Textures\blue.btex">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
         <None Remove="Resources\Textures\teal.btex" />
         <Content Include="Resources\Textures\teal.btex">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <None Remove="Resources\Textures\white.btex" />
-        <Content Include="Resources\Textures\white.btex">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
         <None Remove="Resources\Textures\white-color.btex" />
-        <Content Include="Resources\Textures\white-color.btex">
+        <None Remove="Resources\Materials\FBX_DEFAULT.json" />
+        <None Remove="Resources\default.png" />
+        <Content Include="Resources\default.png">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <None Remove="Resources\Materials\FBX_DEFAULT.json" />
     </ItemGroup>
 
     <ItemGroup>

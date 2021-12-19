@@ -1,10 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Timers;
 using Flagrum.Core.Archive;
+using Microsoft.Extensions.Logging;
 using Steamworks;
 
 namespace Flagrum.Web.Services;
+
+public class WorkshopItemDetails
+{
+    public ModVisibility Visibility { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; }
+    public string ChangeNotes { get; set; }
+    public List<string> Tags { get; set; }
+}
 
 public class SteamWorkshopService
 {
@@ -12,22 +23,32 @@ public class SteamWorkshopService
     private readonly AppId_t _appId;
 
     private readonly Modmeta _modmeta;
+    private readonly AppStateService _appState;
+    private readonly ILogger<SteamWorkshopService> _logger;
+
+    private WorkshopItemDetails _currentDetails;
 
     private readonly Timer _timer;
-    private Binmod _activeMod;
     private CallResult<CreateItemResult_t> _createItemCallback;
     private bool _isInitialized;
     private Action _onCreate;
     private Action _onUpdate;
+    private Action<WorkshopItemDetails> _onQueryComplete;
     private CallResult<SubmitItemUpdateResult_t> _submitItemUpdateCallback;
+    private CallResult<SteamUGCQueryCompleted_t> _queryItemCallback;
     private string _tempBinmod;
     private string _tempDat;
     private string _tempDirectory;
     private string _tempPreview;
 
-    public SteamWorkshopService(Modmeta modmeta)
+    public SteamWorkshopService(
+        Modmeta modmeta,
+        AppStateService appState,
+        ILogger<SteamWorkshopService> logger)
     {
         _modmeta = modmeta;
+        _appState = appState;
+        _logger = logger;
         _appId = new AppId_t(AppId);
         _timer = new Timer(1000);
         _timer.Elapsed += (sender, args) => SteamAPI.RunCallbacks();
@@ -51,103 +72,129 @@ public class SteamWorkshopService
         return true;
     }
 
-    public void Publish(Binmod mod, Action onComplete)
+    public void Get(ulong itemId, Action<WorkshopItemDetails> onComplete)
     {
-        _activeMod = mod;
+        _onQueryComplete = onComplete;
+        
+        _timer.Start();
+        var fileId = new PublishedFileId_t(itemId);
+        _queryItemCallback = CallResult<SteamUGCQueryCompleted_t>.Create(OnQueryComplete);
+        var request = SteamUGC.CreateQueryUGCDetailsRequest(new[] { fileId }, 1);
+        _queryItemCallback.Set(SteamUGC.SendQueryUGCRequest(request));
+    }
+
+    public void Publish(WorkshopItemDetails details, Action onComplete)
+    {
+        _currentDetails = details;
         _onCreate = onComplete;
 
         _timer.Start();
         _createItemCallback = CallResult<CreateItemResult_t>.Create(OnCreate);
-        var call = SteamUGC.CreateItem(_appId, EWorkshopFileType.k_EWorkshopFileTypeFirst);
+        var call = SteamUGC.CreateItem(_appId, EWorkshopFileType.k_EWorkshopFileTypeCommunity);
         _createItemCallback.Set(call);
     }
 
-    public void Update(Binmod mod, string changeNote, Action onComplete)
+    public void Update(WorkshopItemDetails details, Action onComplete)
     {
-        File.AppendAllText("C:\\Testing\\log.txt", "Update called!\r\n");
-        _activeMod = mod;
+        _currentDetails = details;
         _onUpdate = onComplete;
 
-        if (mod.PreviewBytes.Length > 953673)
-        {
-            File.AppendAllText("C:\\Testing\\log.txt", "Preview file too big!\r\n");
-            // TODO: Show alert to user
-            return;
-        }
-
-        var fileId = new PublishedFileId_t(mod.ItemId);
+        var fileId = new PublishedFileId_t(_appState.ActiveMod.ItemId);
         var updateHandle = SteamUGC.StartItemUpdate(_appId, fileId);
 
-        SteamUGC.SetItemTitle(updateHandle, mod.WorkshopTitle);
-        SteamUGC.SetItemDescription(updateHandle, mod.Description);
-        SteamUGC.SetItemVisibility(updateHandle, (ERemoteStoragePublishedFileVisibility)mod.Visibility);
+        SteamUGC.SetItemTitle(updateHandle, details.Title);
+        SteamUGC.SetItemDescription(updateHandle, details.Description);
+        SteamUGC.SetItemVisibility(updateHandle, (ERemoteStoragePublishedFileVisibility)details.Visibility);
 
         _tempPreview = Path.GetTempFileName();
-        File.WriteAllBytes(_tempPreview, mod.PreviewBytes);
+        File.WriteAllBytes(_tempPreview, _appState.ActiveMod.PreviewBytes);
         SteamUGC.SetItemPreview(updateHandle, _tempPreview);
 
-        if (mod.Tags.Count > 0)
+        if (details.Tags.Count > 0)
         {
-            SteamUGC.SetItemTags(updateHandle, mod.Tags);
+            SteamUGC.SetItemTags(updateHandle, details.Tags);
         }
 
-        _tempDirectory = $"{Path.GetTempPath()}\\{mod.Uuid}";
+        _tempDirectory = $"{Path.GetTempPath()}\\{_appState.ActiveMod.Uuid}";
         Directory.CreateDirectory(_tempDirectory);
-        _tempBinmod = $"{_tempDirectory}\\{Path.GetFileName(mod.Path)}";
-        File.Copy(mod.Path, _tempBinmod);
-
-        // dat file doesn't appear to have any content
-        // TODO: This is actually a timestamp, not the Item ID. See MO
-        _tempDat = $"{_tempDirectory}\\{mod.ItemId}.dat";
-        File.Create(_tempDat);
+        _tempBinmod = $"{_tempDirectory}\\{Path.GetFileName(_appState.ActiveMod.Path)}";
+        File.Copy(_appState.ActiveMod.Path, _tempBinmod);
 
         SteamUGC.SetItemContent(updateHandle, _tempDirectory);
 
         _timer.Start();
         _submitItemUpdateCallback = CallResult<SubmitItemUpdateResult_t>.Create(OnUpdate);
-        var call = SteamUGC.SubmitItemUpdate(updateHandle, changeNote);
+        var call = SteamUGC.SubmitItemUpdate(updateHandle, details.ChangeNotes);
         _submitItemUpdateCallback.Set(call);
     }
 
     private void OnCreate(CreateItemResult_t result, bool error)
     {
         _timer.Stop();
-        File.AppendAllText("C:\\Testing\\log.txt", $"OnCreate called with result {result.m_eResult}\r\n");
+        _logger.LogInformation($"OnCreate called with result {result.m_eResult}\r\n");
 
         if (result.m_eResult == EResult.k_EResultOK)
         {
-            _activeMod.ItemId = result.m_nPublishedFileId.m_PublishedFileId;
+            _appState.ActiveMod.ItemId = result.m_nPublishedFileId.m_PublishedFileId;
 
-            var unpacker = new Unpacker(_activeMod.Path);
+            var unpacker = new Unpacker(_appState.ActiveMod.Path);
             var packer = unpacker.ToPacker();
-            packer.UpdateFile("index.modmeta", _modmeta.Build(_activeMod));
-            packer.WriteToFile(_activeMod.Path);
+            packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
+            packer.WriteToFile(_appState.ActiveMod.Path);
 
-            Update(_activeMod, "", _onCreate);
+            Update(_currentDetails, _onCreate);
         }
     }
 
     private void OnUpdate(SubmitItemUpdateResult_t result, bool error)
     {
         _timer.Stop();
-        File.AppendAllText("C:\\Testing\\log.txt", $"OnUpdate called with result {result.m_eResult}\r\n");
+        _logger.LogInformation($"OnUpdate called with result {result.m_eResult}\r\n");
 
         if (result.m_eResult == EResult.k_EResultOK)
         {
-            _activeMod.IsUploaded = true;
+            _appState.ActiveMod.IsUploaded = true;
 
-            var unpacker = new Unpacker(_activeMod.Path);
+            var unpacker = new Unpacker(_appState.ActiveMod.Path);
             var packer = unpacker.ToPacker();
-            packer.UpdateFile("index.modmeta", _modmeta.Build(_activeMod));
-            packer.WriteToFile(_activeMod.Path);
+            packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
+            packer.WriteToFile(_appState.ActiveMod.Path);
 
-            _activeMod.LastUpdated = DateTime.Now;
             _onUpdate();
 
             File.Delete(_tempPreview);
             File.Delete(_tempBinmod);
-            File.Delete(_tempDat);
             Directory.Delete(_tempDirectory);
+        }
+    }
+
+    private void OnQueryComplete(SteamUGCQueryCompleted_t result, bool error)
+    {
+        _timer.Stop();
+        _logger.LogInformation($"OnQueryComplete called with result {result.m_eResult}\r\n");
+
+        if (result.m_eResult == EResult.k_EResultOK)
+        {
+            SteamUGC.GetQueryUGCResult(result.m_handle, 0, out var details);
+
+            if (details.m_eResult == EResult.k_EResultFileNotFound)
+            {
+                _appState.ActiveMod.ItemId = 0;
+                _appState.ActiveMod.IsUploaded = false;
+                var unpacker = new Unpacker(_appState.ActiveMod.Path);
+                var packer = unpacker.ToPacker();
+                packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
+                packer.WriteToFile(_appState.ActiveMod.Path);
+
+                _onQueryComplete(new WorkshopItemDetails());
+                return;
+            }
+            
+            _onQueryComplete(new WorkshopItemDetails
+            {
+                Description = details.m_rgchDescription,
+                Visibility = (ModVisibility)(int)details.m_eVisibility
+            });
         }
     }
 }

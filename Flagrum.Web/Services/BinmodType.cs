@@ -160,6 +160,53 @@ public class BinmodTypeHelper
         return 1;
     }
 
+    public Dictionary<int, string> GetModelNames(int binmodType, int binmodTarget)
+    {
+        var type = (BinmodType)binmodType;
+
+        if (type == BinmodType.Weapon)
+        {
+            var target = (WeaponSoloTarget)binmodTarget;
+            if (target is WeaponSoloTarget.Dagger or WeaponSoloTarget.Gun)
+            {
+                return new Dictionary<int, string>
+                {
+                    {0, "Right"},
+                    {1, "Left"}
+                };
+            }
+        }
+        else if (type == BinmodType.Multi_Weapon)
+        {
+            var target = (WeaponMultiTarget)binmodTarget;
+            if (target is WeaponMultiTarget.Dagger or WeaponMultiTarget.Katana or WeaponMultiTarget.Shuriken)
+            {
+                return new Dictionary<int, string>
+                {
+                    {0, "Right"},
+                    {1, "Left"}
+                };
+            }
+        }
+        else if (type == BinmodType.StyleEdit)
+        {
+            var target = (OutfitMultiTarget)binmodTarget;
+            if (target != OutfitMultiTarget.Accessory)
+            {
+                return new Dictionary<int, string>
+                {
+                    {0, "Slim"},
+                    {1, "Chubby"}
+                };
+            }
+        }
+
+        return new Dictionary<int, string>
+        {
+            {0, "Model"}
+        };
+    }
+
     private void CreateModmetaTypes()
     {
         if (ModmetaTypes != null)

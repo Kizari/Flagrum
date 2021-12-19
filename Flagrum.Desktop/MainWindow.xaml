@@ -135,8 +135,9 @@
                             </Button.Style>
                         </Button>
                     </Grid>
-                    <blazor:BlazorWebView Grid.Row="1" x:Name="MainWebView" HostPage="{Binding HostPageUri}"
-                                          Services="{StaticResource services}" Background="#181512">
+                    <blazor:BlazorWebView x:Name="MainBlazorWebView" Grid.Row="1" HostPage="{Binding HostPageUri}"
+                                          Services="{StaticResource services}" Background="#181512"
+                                          Loaded="MainBlazorWebView_OnInitialized">
                         <blazor:BlazorWebView.RootComponents>
                             <blazor:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />
                         </blazor:BlazorWebView.RootComponents>

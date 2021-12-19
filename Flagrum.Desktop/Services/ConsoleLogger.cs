@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -25,6 +26,7 @@ public class ConsoleLoggerConfiguration
 public class ConsoleLogger : ILogger
 {
     private readonly Func<ConsoleLoggerConfiguration> _getCurrentConfiguration;
+    private readonly string _logFile;
     private readonly string _name;
 
     public ConsoleLogger(
@@ -33,6 +35,7 @@ public class ConsoleLogger : ILogger
     {
         _name = name;
         _getCurrentConfiguration = getCurrentConfiguration;
+        _logFile = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum\\Log.txt";
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
@@ -43,7 +46,7 @@ public class ConsoleLogger : ILogger
         // Console.ForegroundColor = configuration.Colors[logLevel];
         // Console.WriteLine($"[{logLevel.ToString()}] {formatter(state, exception)}");
         // Console.ForegroundColor = originalColor;
-        //File.AppendAllText("C:\\Testing\\FlagrumLog.txt", formatter(state, exception) + "\r\n");
+        File.AppendAllText(_logFile, formatter(state, exception) + "\r\n");
     }
 
     public bool IsEnabled(LogLevel logLevel)

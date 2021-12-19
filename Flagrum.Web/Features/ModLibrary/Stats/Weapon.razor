@@ -1,5 +1,5 @@
 ﻿@using Flagrum.Web.Features.ModLibrary.Data
-<div class="box mt-4">
+<div class="box mt-6">
     <EditForm Model="WeaponStats">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
@@ -8,7 +8,7 @@
                         <label>MOD TITLE</label>
                     </td>
                     <td colspan="7" class="pl-4">
-                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuTitle"/>
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.WorkshopTitle"/>
                     </td>
                 </tr>
                 <tr>

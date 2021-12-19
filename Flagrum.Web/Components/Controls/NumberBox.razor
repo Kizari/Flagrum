@@ -1,7 +1,7 @@
 ﻿@inherits InputBase<int?>
 
 <input type="text"
-       class="border m-0 p-2 text-grey-400 rounded @(CurrentValue != null && (CurrentValue < Min || CurrentValue > Max) ? "border-accent2-900 bg-error" : "border-grey-700 bg-dark-600")"
+       class="input @(CurrentValue != null && (CurrentValue < Min || CurrentValue > Max) ? "border-accent2-900 bg-error" : "border-grey-700 bg-dark-550")"
        style="@Style"
        @bind-value="@CurrentValueAsString"
        @bind-value:event="oninput"/>

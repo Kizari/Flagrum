@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
@@ -11,7 +7,7 @@ using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
-using Newtonsoft.Json;
+using Flagrum.Web.Features.ModLibrary.Data;
 
 namespace Flagrum.Web.Services;
 
@@ -37,7 +33,7 @@ public class BinmodBuilder
         _binmodType = binmodType;
     }
 
-    public void Initialise(Binmod mod, byte[] previewImage)
+    public void Initialise(Binmod mod, byte[] previewImage, byte[] previewBtex, byte[] thumbnailBtex)
     {
         _mod = mod;
         _packer = new Packer();
@@ -46,11 +42,13 @@ public class BinmodBuilder
         var exml = _entityPackageBuilder.BuildExml(_mod);
         _packer.AddFile(exml, "data://$mod/temp.exml");
 
-        var converter = new TextureConverter();
-        var btex = converter.Convert("$preview", "png", TextureType.Thumbnail, previewImage);
-
         _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
-        _packer.AddFile(btex, GetDataPath("$preview.png"));
+        _packer.AddFile(previewBtex, GetDataPath("$preview.png"));
+
+        if (mod.Type == (int)BinmodType.StyleEdit)
+        {
+            _packer.AddFile(thumbnailBtex, GetDataPath("default.png"));
+        }
     }
 
     public void WriteToFile(string outPath)
@@ -63,19 +61,8 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(byte[] fmd)
+    public void AddFmd(Gpubin gpubin, IEnumerable<FmdTexture> textures)
     {
-        using var memoryStream = new MemoryStream(fmd);
-        using var archive = new ZipArchive(memoryStream, ZipArchiveMode.Read);
-
-        var dataEntry = archive.GetEntry("data.json");
-        using var dataStream = new MemoryStream();
-        var stream = dataEntry.Open();
-        stream.CopyTo(dataStream);
-
-        var json = Encoding.UTF8.GetString(dataStream.ToArray());
-        var gpubin = JsonConvert.DeserializeObject<Gpubin>(json);
-
         foreach (var mesh in gpubin.Meshes)
         {
             var replacements = new Dictionary<string, string>();
@@ -116,46 +103,8 @@ public class BinmodBuilder
                 }
                 else
                 {
-                    var query = $"{mesh.Name}/{textureId}";
-                    var entry = archive.Entries.FirstOrDefault(e => e.FullName.Contains(query));
-                    using var textureStream = new MemoryStream();
-                    var tempStream = entry.Open();
-                    tempStream.CopyTo(textureStream);
-
-                    var extension = filePath.Split('\\', '/').Last().Split('.').Last();
                     var btexFileName =
-                        $"{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{GetTextureSuffix(textureId)}.btex";
-
-                    byte[] btexData;
-
-                    if (extension.ToLower() == "btex")
-                    {
-                        btexData = textureStream.ToArray();
-                    }
-                    else
-                    {
-                        var textureBytes = textureStream.ToArray();
-
-                        TextureType textureType;
-                        if (textureId.Contains("normal", StringComparison.OrdinalIgnoreCase))
-                        {
-                            textureType = TextureType.Normal;
-                        }
-                        else if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase)
-                                 || textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase)
-                                 || textureId.Contains("emissive", StringComparison.OrdinalIgnoreCase))
-                        {
-                            textureType = TextureType.Color;
-                        }
-                        else
-                        {
-                            textureType = TextureType.Greyscale;
-                        }
-
-                        var converter = new TextureConverter();
-                        btexData = converter.Convert(btexFileName.Replace(".btex", ""), extension, textureType,
-                            textureBytes);
-                    }
+                        $"{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{BtexHelper.GetSuffix(textureId)}.btex";
 
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
 
@@ -163,7 +112,7 @@ public class BinmodBuilder
                     {
                         Id = textureId,
                         Uri = uri,
-                        Data = btexData
+                        Data = textures.First(t => t.Mesh == mesh.Name && t.TextureSlot == textureId).Data
                     });
                 }
             }
@@ -257,40 +206,5 @@ public class BinmodBuilder
     private string GetDataPath(string relativePath)
     {
         return $"data://mod/{_mod.ModDirectoryName}/{relativePath}";
-    }
-
-    private string GetTextureSuffix(string textureId)
-    {
-        if (textureId.ToLower().Contains("normal"))
-        {
-            return "_n";
-        }
-
-        if (textureId.ToLower().Contains("basecolor"))
-        {
-            return "_b";
-        }
-
-        if (textureId.ToLower().Contains("mrs"))
-        {
-            return "_mrs";
-        }
-
-        if (textureId.ToLower().Contains("occlusion"))
-        {
-            return "_o";
-        }
-
-        if (textureId.ToLower().Contains("opacity"))
-        {
-            return "_a";
-        }
-
-        if (textureId.ToLower().Contains("emissive"))
-        {
-            return "_e";
-        }
-
-        return "";
     }
 }

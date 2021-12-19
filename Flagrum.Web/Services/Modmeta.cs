@@ -47,7 +47,7 @@ public class Modmeta
         }
 
         builder.AppendLine($"name={mod.GameMenuTitle}");
-        builder.AppendLine($"help={mod.GameMenuDescription}");
+        builder.AppendLine($"help={mod.GameMenuDescription?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"title={mod.WorkshopTitle}");
         builder.AppendLine($"desc={mod.Description?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"uuid={mod.Uuid}");
@@ -142,7 +142,7 @@ public class Modmeta
         builder.AppendLine($"itemplace={(mod.IsUploaded ? "E_SteamWorkshop" : "E_Local")}");
         builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         builder.AppendLine($"name={mod.GameMenuTitle}");
-        builder.AppendLine($"help={mod.GameMenuDescription}");
+        builder.AppendLine($"help={mod.GameMenuDescription?.Replace("\r\n", "\\n")?.Replace("\n", "\\n")}");
         builder.AppendLine($"strength={mod.Strength}");
         builder.AppendLine($"vitality={mod.Vitality}");
         builder.AppendLine($"magic={mod.Magic}");

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Services;
 
@@ -19,18 +20,16 @@ public class Binmod
     public int Type { get; set; }
     public int Target { get; set; } = -1;
     public ulong ItemId { get; set; }
-    public int Visibility { get; set; }
     public byte[] PreviewBytes { get; set; }
+    public byte[] ThumbnailBytes { get; set; }
     public string GameMenuTitle { get; set; }
     public string GameMenuDescription { get; set; }
     public string WorkshopTitle { get; set; }
     public string Description { get; set; }
-    public IList<string> Tags { get; set; }
     public string Uuid { get; set; }
     public string Path { get; set; }
     public bool IsUploaded { get; set; }
     public bool IsWorkshopMod { get; set; }
-    public DateTime LastUpdated { get; set; }
     public int Index { get; set; }
     public string ModDirectoryName { get; set; }
     public string ModelName { get; set; }
@@ -55,7 +54,7 @@ public class Binmod
     public string Gender { get; set; }
     public string ModelExtension { get; set; } = "gmdl";
 
-    public static Binmod FromModmetaBytes(byte[] buffer, BinmodTypeHelper binmodType)
+    public static Binmod FromModmetaBytes(byte[] buffer, BinmodTypeHelper binmodType, ILogger logger)
     {
         try
         {
@@ -220,6 +219,7 @@ public class Binmod
         }
         catch (Exception e)
         {
+            logger.LogError(e, "Failed to read binmod!");
             return null;
         }
     }
@@ -230,17 +230,14 @@ public class Binmod
         {
             Type = Type,
             ItemId = ItemId,
-            Visibility = Visibility,
             PreviewBytes = PreviewBytes,
             GameMenuTitle = GameMenuTitle,
             WorkshopTitle = WorkshopTitle,
             Description = Description,
-            Tags = Tags,
             Uuid = Uuid,
             Path = Path,
             IsUploaded = IsUploaded,
             IsWorkshopMod = IsWorkshopMod,
-            LastUpdated = LastUpdated,
             Index = Index,
             ModDirectoryName = ModDirectoryName,
             ModelName = ModelName,
@@ -272,17 +269,14 @@ public class Binmod
     {
         Type = mod.Type;
         ItemId = mod.ItemId;
-        Visibility = mod.Visibility;
         PreviewBytes = mod.PreviewBytes;
         GameMenuTitle = mod.GameMenuTitle;
         WorkshopTitle = mod.WorkshopTitle;
         Description = mod.Description;
-        Tags = mod.Tags;
         Uuid = mod.Uuid;
         Path = mod.Path;
         IsUploaded = mod.IsUploaded;
         IsWorkshopMod = mod.IsWorkshopMod;
-        LastUpdated = mod.LastUpdated;
         Index = mod.Index;
         ModDirectoryName = mod.ModDirectoryName;
         ModelName = mod.ModelName;

@@ -4,16 +4,16 @@
 @inject NavigationManager Navigation
 @inject JSInterop Interop
 
-<LoadingView Text="Uploading"
+<LoadingView Text="@LoadingText"
              IsLoading="IsLoading">
-    <EditForm Model="Mod">
+    <EditForm Model="Details">
         <div class="p-6">
 
             <div class="box row p-4">
                 <span class="flex-grow">
                     Upload to Steam Workshop
                 </span>
-                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish" IsDisabled="true"/>
+                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish" />
                 <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
             </div>
 
@@ -21,18 +21,10 @@
                 <table class="w-full">
                     <tr>
                         <td class="text-right pr-4" style="width: 150px;">
-                            <label class="block mb-2">MOD TITLE</label>
-                        </td>
-                        <td>
-                            <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.WorkshopTitle"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-right pr-4" style="width: 150px;">
                             <label class="block mt-4 mb-2">VISIBILITY</label>
                         </td>
                         <td class="pt-3">
-                            <EnumSelect @bind-Value="Visibility"/>
+                            <EnumSelect @bind-Value="Details.Visibility"/>
                         </td>
                     </tr>
                     <tr style="vertical-align: top; width: 150px;" class="pt-2">
@@ -40,7 +32,7 @@
                             <label class="block mt-4 mb-2">WORKSHOP DESCRIPTION</label>
                         </td>
                         <td class="pt-3">
-                            <Textbox Rows="6" Size="Textbox.Variant.Stretch" @bind-Value="Description"/>
+                            <Textbox Rows="12" Size="Textbox.Variant.Stretch" @bind-Value="Details.Description"/>
                         </td>
                     </tr>
                     <tr style="vertical-align: top; width: 150px;" class="pt-2">
@@ -48,7 +40,7 @@
                             <label class="block mt-4 mb-2">CHANGE NOTES</label>
                         </td>
                         <td class="pt-3">
-                            <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="ChangeNote"/>
+                            <Textbox Rows="5" Size="Textbox.Variant.Stretch" @bind-Value="Details.ChangeNotes"/>
                         </td>
                     </tr>
                 </table>
@@ -59,23 +51,54 @@
     </EditForm>
 </LoadingView>
 
+<Modal @ref="Modal" />
+
 @code
 {
-    private Binmod Mod { get; set; }
-    private string ChangeNote { get; set; }
-    private string Description { get; set; }
-    private bool IsLoading { get; set; }
+    private WorkshopItemDetails Details { get; set; } = new();
+    
+    private bool IsLoading { get; set; } = true;
+    private string LoadingText { get; set; } = "Contacting Steam";
+    
+    private Modal Modal { get; set; }
 
-    private ModVisibility Visibility
+    protected override void OnAfterRender(bool firstRender)
     {
-        get => (ModVisibility)Mod.Visibility;
-        set => Mod.Visibility = (int)value;
-    }
+        base.OnAfterRender(firstRender);
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        Mod = AppState.ActiveMod;
+        if (AppState.ActiveMod.PreviewBytes.Length > 953673)
+        {
+            Modal.Open("Error",
+                "Preview Image too Large",
+                "Change to a preview image of 953kb or less and try again.",
+                () => Navigation.NavigateTo("/mod/configure"));
+            return;
+        }
+
+        if (SteamWorkshop.Initialize())
+        {
+            if (AppState.ActiveMod.ItemId > 0)
+            {
+                SteamWorkshop.Get(AppState.ActiveMod.ItemId, result =>
+                {
+                    Details = result;
+                    IsLoading = false;
+                    InvokeAsync(StateHasChanged);
+                });
+            }
+            else
+            {
+                IsLoading = false;
+                StateHasChanged();
+            }
+        }
+        else
+        {
+            Modal.Open("Error",
+                "Unable to Connect to Steam",
+                "Please ensure that Steam is running on your computer and try again.",
+                () => Navigation.NavigateTo("/mod/configure"));
+        }
     }
 
     private void Cancel()
@@ -85,28 +108,22 @@
 
     private void Publish()
     {
+        LoadingText = "Uploading";
         IsLoading = true;
         StateHasChanged();
 
-        if (SteamWorkshop.Initialize())
+        if (AppState.ActiveMod.ItemId > 0)
         {
-            if (Mod.ItemId > 0)
-            {
-                SteamWorkshop.Update(Mod, ChangeNote, OnUploaded);
-            }
-            else
-            {
-                SteamWorkshop.Publish(Mod, OnUploaded);
-            }
+            SteamWorkshop.Update(Details, OnUploaded);
+        }
+        else
+        {
+            SteamWorkshop.Publish(Details, OnUploaded);
         }
     }
 
     private void OnUploaded()
     {
-        InvokeAsync(() =>
-        {
-            IsLoading = false;
-            StateHasChanged();
-        });
+        Navigation.NavigateTo("/");
     }
 }

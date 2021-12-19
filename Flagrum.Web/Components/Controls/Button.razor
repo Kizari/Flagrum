@@ -1,4 +1,4 @@
-﻿<div class="@(IsDisabled ? "bg-grey-800 text-grey-400" : "bg-accent2-900 text-grey-100 hover:bg-accent2-700") pl-1 pr-1.5 pt-1 pb-0.5 inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer @CssClass"
+﻿<div class="@(IsDisabled ? "bg-grey-800 text-grey-400" : "bg-accent2-900 text-grey-100 hover:bg-accent2-700") pl-1 pr-1.5 pt-1 pb-0.5 inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer transition-colors @CssClass"
      @onclick="HandleClick">
     <div>
         <span class="material-icons-outlined text-sm">@Icon</span>
@@ -29,7 +29,7 @@
     {
         if (!IsDisabled)
         {
-            OnClick();
+            OnClick?.Invoke();
         }
     }
 }

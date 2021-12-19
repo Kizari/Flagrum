@@ -1,6 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Roboto&family=Play&family=Material+Icons&family=Material+Icons+Outlined&display=swap');
-
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -28,7 +26,12 @@
     }
 
     .box {
-        @apply border border-grey-800 bg-dark rounded;
+        @apply bg-dark rounded shadow-md;
+    }
+
+    .input {
+        @apply bg-dark-550 m-0 p-2 text-grey-400 rounded-md;
+        outline: none;
     }
 
     .min-w-400 {
@@ -43,15 +46,31 @@
         text-align: right;
     }
 
-    .main-content-view::-webkit-scrollbar {
-        width: 15px;
+    div::-webkit-scrollbar {
+        width: 12px;
     }
 
-    .main-content-view::-webkit-scrollbar-track {
+    div::-webkit-scrollbar-track {
+        width: 12px;
         @apply bg-dark;
     }
 
-    .main-content-view::-webkit-scrollbar-thumb {
-        @apply bg-dark-600;
+    div::-webkit-scrollbar-thumb {
+        width: 8px;
+        @apply bg-grey-800 rounded-t-full rounded-b-full;
+    }
+
+    textarea::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+        width: 12px;
+        @apply bg-dark;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+        width: 8px;
+        @apply bg-grey-800 hover:bg-grey-700 rounded-t-full rounded-b-full;
     }
 }

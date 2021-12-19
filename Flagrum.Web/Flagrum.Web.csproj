@@ -40,18 +40,30 @@
         <Content Update="wwwroot\index.html">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <Reference Include="Steamworks.NET, Version=15.0.1.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\Users\Kieran\Downloads\Steamworks.NET-Standalone_15.0.1\Windows-x64\Steamworks.NET.dll</HintPath>
-        </Reference>
+        <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\Play-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 
     <ItemGroup>
         <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Reference Include="Steamworks.NET, Version=15.0.1.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\Steamworks.NET.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 </Project>

@@ -7,19 +7,24 @@ using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Archive;
 
-public class Unpacker
+public class Unpacker : IDisposable
 {
     private const ulong KeyMultiplier = 1103515245;
     private const ulong KeyAdditive = 12345;
     private readonly ArchiveHeader _header;
 
-    private readonly MemoryStream _stream;
+    private readonly FileStream _stream;
     private List<ArchiveFile> _files;
 
     public Unpacker(string archivePath)
     {
-        _stream = new MemoryStream(File.ReadAllBytes(archivePath));
+        _stream = new FileStream(archivePath, FileMode.Open, FileAccess.Read);
         _header = ReadHeader();
+    }
+
+    public void Dispose()
+    {
+        _stream?.Dispose();
     }
 
     /// <summary>
@@ -59,7 +64,7 @@ public class Unpacker
             {
                 ReadFileData(match);
             }
-            
+
             result.Add(match.Uri, match.GetUnencryptedData());
         }
 
@@ -78,7 +83,9 @@ public class Unpacker
             }
         }
 
-        return Packer.FromFileList(_files);
+        var packer = Packer.FromFileList(_files);
+        Dispose();
+        return packer;
     }
 
     private void ReadFileData(ArchiveFile file)
@@ -167,10 +174,10 @@ public class Unpacker
 
             _stream.Seek(file.UriOffset, SeekOrigin.Begin);
             file.Uri = ReadString();
-            
+
             _stream.Seek(file.RelativePathOffset, SeekOrigin.Begin);
             file.RelativePath = ReadString();
-            
+
             file.DeconstructUriAndTypeHash();
 
             yield return file;

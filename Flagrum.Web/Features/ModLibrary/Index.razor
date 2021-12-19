@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Collections.Concurrent
 @using System.IO
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Utilities
@@ -8,13 +9,13 @@
 @inject AppStateService AppState
 @inject ILogger<Index> Logger
 @inject BinmodTypeHelper BinmodTypeHelper
+@inject JSInterop Interop
 
 <LoadingView Text="Loading Mods"
              IsLoading="IsLoading">
 
-    <div class="pt-6 pb-10">
-        <div class="row mx-8 mb-2">
-            @* <h3 class="font-bold text-grey-300 ml-1">Local Mods</h3> *@
+    <div class="pt-6">
+        <div class="row mx-7 mb-2">
             <div class="bg-dark-600 shadow-md rounded row mt-1">
                 <ModTypeButtonGroup Target="AppState.ActiveCategoryFilter" OnItemSelected="FilterCategory">
                     <ModTypeButton Text="Local Mods" Value="0"/>
@@ -35,70 +36,11 @@
             <div class="flex-grow"></div>
             <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
         </div>
-        <div class="row flex-wrap px-4 ml-0.5 mb-16">
-            @foreach (var mod in AppState.Mods
-                .Where(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1))
-                            && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter))
-                .OrderByDescending(m => m.IsApplyToGame)
-                .ThenBy(m => m.Type)
-                .ThenBy(m => m.Target)
-                .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle))
-            {
-                <ModListingCard @key="mod.Uuid" Mod="@mod"/>
-            }
-        </div>
-        @*         <ModListingGroup Name="Noctis" *@
-        @*                          Target="(int)OutfitSoloTarget.Noctis" *@
-        @*                          IsWorkshopMod="!ShowLocalMods" *@
-        @*                          Mods="AppState.Mods *@
-        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
-        @*     .OrderByDescending(m => m.IsApplyToGame) *@
-        @*     .ThenBy(m => m.Type) *@
-        @*     .ThenBy(m => m.Target) *@
-        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
-        @*         <ModListingGroup Name="Prompto" *@
-        @*                          Target="(int)OutfitSoloTarget.Prompto" *@
-        @*                          IsWorkshopMod="!ShowLocalMods" *@
-        @*                          Mods="AppState.Mods *@
-        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
-        @*     .OrderByDescending(m => m.IsApplyToGame) *@
-        @*     .ThenBy(m => m.Type) *@
-        @*     .ThenBy(m => m.Target) *@
-        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
-        @*         <ModListingGroup Name="Ignis" *@
-        @*                          Target="(int)OutfitSoloTarget.Ignis" *@
-        @*                          IsWorkshopMod="!ShowLocalMods" *@
-        @*                          Mods="AppState.Mods *@
-        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
-        @*     .OrderByDescending(m => m.IsApplyToGame) *@
-        @*     .ThenBy(m => m.Type) *@
-        @*     .ThenBy(m => m.Target) *@
-        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
-        @*         <ModListingGroup Name="Gladiolus" *@
-        @*                          Target="(int)OutfitSoloTarget.Gladiolus" *@
-        @*                          IsWorkshopMod="!ShowLocalMods" *@
-        @*                          Mods="AppState.Mods *@
-        @*     .Where(m => m.IsWorkshopMod != ShowLocalMods && (ModType == -1 || m.Type == ModType)) *@
-        @*     .OrderByDescending(m => m.IsApplyToGame) *@
-        @*     .ThenBy(m => m.Type) *@
-        @*     .ThenBy(m => m.Target) *@
-        @*     .ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/> *@
-
-        @* <ModListingGroup Name="Outfits" ModType="BinmodType.Cloth" IsWorkshopMod="false"/> *@
-        @* <ModListingGroup Name="Weapons" ModType="BinmodType.Weapon" IsWorkshopMod="false"/> *@
-        @* <ModListingGroup Name="Model Replacements" ModType="BinmodType.Character" IsWorkshopMod="false"/> *@
-        @* <ModListingGroup Name="Comrades Customisations" ModType="BinmodType.StyleEdit" IsWorkshopMod="false"/> *@
-        @* <ModListingGroup Name="Comrades Weapons" ModType="BinmodType.Multi_Weapon" IsWorkshopMod="false"/> *@
-
-        @* <div class="row mx-6 mt-16 mb-6"> *@
-        @*     <h3 class="font-bold text-grey-300 ml-1 flex-grow">Workshop Mods</h3> *@
-        @* </div> *@
-        @* *@
-        @* <ModListingGroup Name="Outfits" ModType="BinmodType.Cloth" IsWorkshopMod="true"/> *@
-        @* <ModListingGroup Name="Weapons" ModType="BinmodType.Weapon" IsWorkshopMod="true"/> *@
-        @* <ModListingGroup Name="Model Replacements" ModType="BinmodType.Character" IsWorkshopMod="true"/> *@
-        @* <ModListingGroup Name="Comrades Customisations" ModType="BinmodType.StyleEdit" IsWorkshopMod="true"/> *@
-        @* <ModListingGroup Name="Comrades Weapons" ModType="BinmodType.Multi_Weapon" IsWorkshopMod="true"/> *@
+        <CascadingValue Value="this">
+            <div class="row flex-wrap px-4 ml-0.5 mb-10">
+                <ModListingGroup Mods="AppState.Mods.Where(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1)) && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter)).OrderByDescending(m => m.IsApplyToGame).ThenBy(m => m.Type).ThenBy(m => m.Target).ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
+            </div>
+        </CascadingValue>
     </div>
 
 </LoadingView>
@@ -108,65 +50,47 @@
     [CascadingParameter]
     public MainLayout Parent { get; set; }
 
-    private bool IsLoading { get; set; } = true;
+    private bool IsLoading { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async void OnInitialized()
     {
         if (!AppState.IsModListInitialized)
         {
             await Task.Run(() =>
             {
                 var binmodList = ModlistEntry.FromFile(Settings.BinmodListPath);
+                var localMods = Directory.GetFiles(Settings.ModDirectory, "*.ffxvbinmod", SearchOption.TopDirectoryOnly);
+                var workshopMods = Directory.GetFiles(Settings.WorkshopDirectory, "*.ffxvbinmod", SearchOption.AllDirectories);
+                var allMods = localMods.Union(workshopMods);
+                var mods = new ConcurrentBag<Binmod>();
 
-                foreach (var file in Directory.EnumerateFiles(Settings.ModDirectory)
-                    .Union(Directory.EnumerateDirectories(Settings.WorkshopDirectory)
-                        .SelectMany(Directory.EnumerateFiles)))
+                Parallel.ForEach(allMods, file =>
                 {
-                    try
+                    using var unpacker = new Unpacker(file);
+                    var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta", out _);
+                    var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper, Logger);
+                    var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
+                    var binmodListing = binmodList.FirstOrDefault(e => file.Contains(e.Path.Replace('/', '\\')));
+
+                    if (mod == null)
                     {
-                        if (file.EndsWith(".ffxvbinmod"))
-                        {
-                            var unpacker = new Unpacker(file);
-                            var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta", out _);
-                            var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper);
-                            var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
-
-                            if (mod == null)
-                            {
-                                continue;
-                            }
-
-                            var binmodListing = binmodList.FirstOrDefault(e => file.Contains(e.Path.Replace('/', '\\')));
-
-                            if (mod == null || binmodListing == null)
-                            {
-                                continue;
-                            }
-
-                            mod.Description = mod.Description.Replace("\\n", "\n");
-                            mod.IsWorkshopMod = file.Contains(Settings.WorkshopDirectory);
-                            mod.IsUploaded = binmodListing.IsWorkshopMod;
-                            mod.LastUpdated = default;
-                            mod.Index = binmodListing.Index;
-                            mod.IsApplyToGame = binmodListing.IsEnabled;
-                            mod.Path = file;
-                            mod.PreviewBytes = previewBytes;
-                            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{mod.Uuid}.png", previewBytes);
-
-    // TODO: Get tags from a file
-                            mod.Tags = new List<string>();
-    // TODO: Get visibility from a file
-                            mod.Visibility = 0;
-
-                            AppState.Mods.Add(mod);
-                        }
+                        Logger.LogWarning($"Could not read modmeta from {file}");
+                        return;
                     }
-                    catch (Exception e)
-                    {
-                        Logger.LogError(e, e.Message);
-                    }
-                }
 
+                    mod.Description = mod.Description?.Replace("\\n", "\n");
+                    mod.GameMenuDescription = mod.GameMenuDescription?.Replace("\\n", "\n");
+                    mod.IsWorkshopMod = binmodListing.IsWorkshopMod;
+                    mod.Index = binmodListing.Index;
+                    mod.IsApplyToGame = binmodListing.IsEnabled;
+                    mod.Path = file;
+                    mod.PreviewBytes = previewBytes;
+                    File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{mod.Uuid}.png", previewBytes);
+
+                    mods.Add(mod);
+                });
+
+                AppState.Mods = mods.ToList();
                 var paths = AppState.Mods.Select(m => m.Path);
                 AppState.UnmanagedEntries = binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
             });
@@ -174,7 +98,7 @@
             AppState.IsModListInitialized = true;
         }
 
-        IsLoading = false;
+        StateHasChanged();
     }
 
     private void Create()

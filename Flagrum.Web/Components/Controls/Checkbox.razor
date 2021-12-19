@@ -1,5 +1,6 @@
 ﻿<div style="width: 24px; height: 24px; @CssStyle"
-     class="@(IsChecked ? "bg-accent1-600" : "bg-dark") border rounded-full @(IsChecked ? "border-accent1-200" : "border-grey-700") cursor-pointer text-center"
+     class="transition-colors @(IsChecked ? "bg-accent1-600" : "bg-dark hover:bg-grey-800") border rounded-full @(IsChecked ? "border-accent1-200" : "border-grey-700") cursor-pointer text-center"
+     @onclick:stopPropagation="true"
      @onclick="Toggle">
     <span class="material-icons-outlined text-accent1-100 text-sm @(IsChecked ? "" : "hidden")">check</span>
 </div>

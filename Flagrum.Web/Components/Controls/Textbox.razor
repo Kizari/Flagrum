@@ -3,7 +3,7 @@
 @if (Rows > 0)
 {
     <textarea rows="@Rows"
-           class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
+           class="input bg-dark-550"
            style="@Style"
             readonly="@IsReadOnly"
            @bind-value="@CurrentValueAsString"
@@ -13,7 +13,7 @@
 else
 {
     <input type="text"
-           class="border border-grey-700 bg-dark-600 m-0 p-2 text-grey-400 rounded"
+           class="input bg-dark-550"
            style="@Style"
            readonly="@IsReadOnly"
            @bind-value="@CurrentValueAsString"

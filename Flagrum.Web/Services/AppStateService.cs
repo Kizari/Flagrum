@@ -13,7 +13,7 @@ public class AppStateService
     }
 
     public Binmod ActiveMod { get; set; }
-    public IList<Binmod> Mods { get; } = new List<Binmod>();
+    public IList<Binmod> Mods { get; set; } = new List<Binmod>();
     public IList<ModlistEntry> UnmanagedEntries { get; set; } = new List<ModlistEntry>();
     public bool IsModListInitialized { get; set; }
 

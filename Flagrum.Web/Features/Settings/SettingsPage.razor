@@ -16,7 +16,7 @@
     }
 
     <EditForm Model="Data">
-        <div class="box p-4 mb-4">
+        <div class="box p-4 mb-6">
             <div class="row mb-3">
                 <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
@@ -25,7 +25,7 @@
             <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe</small>
         </div>
 
-        <div class="box p-4 mb-4">
+        <div class="box p-4 mb-6">
             <div class="row mb-3">
                 <span class="mr-3" style="width: 250px;">Binmod List Path</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
@@ -34,7 +34,7 @@
             <small class="text-grey-600">Default C:\Users\[USERNAME]\Documents\My Games\FINAL FANTASY XV\Steam\[STEAM_USER_ID]\mod\binmod.list</small>
         </div>
 
-        <div class="box p-4 mb-4">
+        <div class="box p-4 mb-2">
             <div class="row mb-3">
                 <span class="mr-3" style="width: 250px;">Workshop ACF Path</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.WorkshopPath" IsReadOnly="true"/>

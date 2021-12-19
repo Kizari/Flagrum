@@ -4,7 +4,7 @@
 
 <select value="@CurrentValueAsString"
         @onchange="OnChange"
-        class="border border-grey-700 m-0 p-2 bg-dark-600 text-grey-400 rounded w-full">
+        class="input bg-dark-550 w-full">
     @foreach (var item in Enum.GetValues(typeof(TEnum)))
     {
         <option value="@item" class="text-grey-400">@item.ToString()</option>

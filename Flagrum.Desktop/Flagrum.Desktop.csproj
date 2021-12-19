@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.10.2068" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0" />
     </ItemGroup>
@@ -20,6 +20,12 @@
 
     <ItemGroup>
       <None Remove="flagrumHeader.png" />
+      <None Update="steam_appid.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="steam_api64.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

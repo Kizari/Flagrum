@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
 using System.Windows;
 using Flagrum.Desktop.Services;
 using Flagrum.Web.Services;
+using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -22,6 +25,21 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        var flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
+        if (!Directory.Exists(flagrumDirectory))
+        {
+            Directory.CreateDirectory(flagrumDirectory);
+        }
+
+        var logFile = $"{flagrumDirectory}\\Log.txt";
+
+        if (File.Exists(logFile))
+        {
+            File.Delete(logFile);
+        }
+
+        File.Create(logFile);
+
         var services = new ServiceCollection();
 
         services.AddLogging(builder =>
@@ -62,5 +80,11 @@ public partial class MainWindow : Window
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void MainBlazorWebView_OnInitialized(object? sender, EventArgs e)
+    {
+        var webView = (BlazorWebView)sender;
+        webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
     }
 }

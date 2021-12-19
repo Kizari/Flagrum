@@ -1,47 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 
-namespace Flagrum.Desktop
+namespace Flagrum.Desktop;
+
+/// <summary>
+///     Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    public App()
     {
-        public App() : base()
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) => DumpCrash((Exception)e.ExceptionObject);
+        Current.DispatcherUnhandledException += (sender, e) => DumpCrash(e.Exception);
+        TaskScheduler.UnobservedTaskException += (sender, e) => DumpCrash(e.Exception);
+    }
+
+    private void DumpCrash(Exception? exception)
+    {
+        var flagrum = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Flagrum";
+
+        if (!Directory.Exists(flagrum))
         {
-            Dispatcher.UnhandledException += DispatcherOnUnhandledException;
+            Directory.CreateDirectory(flagrum);
         }
 
-        private void DispatcherOnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        using var writer = new StreamWriter($"{flagrum}\\crash.txt");
+        while (exception != null)
         {
-            var flagrum = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Flagrum";
+            writer.WriteLine(exception.GetType().FullName);
+            writer.WriteLine("Message: " + exception.Message);
+            writer.WriteLine("Stack Trace: " + exception.StackTrace);
 
-            if (!Directory.Exists(flagrum))
-            {
-                Directory.CreateDirectory(flagrum);
-            }
-
-            Exception exception = e.Exception;
-
-            using (var writer = new StreamWriter($"{flagrum}\\crash.txt"))
-            {
-                while (exception != null)
-                {
-                    writer.WriteLine(exception.GetType().FullName);
-                    writer.WriteLine("Message: " + exception.Message);
-                    writer.WriteLine("Stack Trace: " + exception.StackTrace);
-
-                    exception = exception.InnerException;
-                }
-            }
+            exception = exception.InnerException;
         }
     }
 }
