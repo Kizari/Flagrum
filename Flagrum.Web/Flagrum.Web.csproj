@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -64,6 +65,14 @@
         <Reference Include="Steamworks.NET, Version=15.0.1.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>..\Steamworks.NET.dll</HintPath>
         </Reference>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Content Remove="package.json" />
+      <None Include="package.json" />
+      <Content Remove="package-lock.json" />
+      <None Include="package-lock.json" />
     </ItemGroup>
 
 </Project>

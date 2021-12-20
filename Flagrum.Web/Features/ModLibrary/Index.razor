@@ -78,6 +78,12 @@
                         return;
                     }
 
+                    if (binmodListing == null)
+                    {
+                        Logger.LogWarning($"Could not find binmod.list entry for {file}");
+                        return;
+                    }
+
                     mod.Description = mod.Description?.Replace("\\n", "\n");
                     mod.GameMenuDescription = mod.GameMenuDescription?.Replace("\\n", "\n");
                     mod.IsWorkshopMod = binmodListing.IsWorkshopMod;

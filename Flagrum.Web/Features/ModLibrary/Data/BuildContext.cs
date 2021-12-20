@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -11,7 +10,6 @@ using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Services;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -61,7 +59,7 @@ public class BuildContext
 
     public async Task WaitForPreviewData(bool needsThumbnail)
     {
-        while (PreviewBtex == null || (needsThumbnail && ThumbnailBtex == null))
+        while (PreviewBtex == null || needsThumbnail && ThumbnailBtex == null)
         {
             await Task.Delay(100);
         }
@@ -69,7 +67,7 @@ public class BuildContext
 
     public async Task WaitForBuildData(bool needsThumbnail)
     {
-        while (Fmds[0] == null || PreviewBtex == null || (needsThumbnail && ThumbnailBtex == null))
+        while (Fmds[0] == null || PreviewBtex == null || needsThumbnail && ThumbnailBtex == null)
         {
             await Task.Delay(100);
         }
@@ -83,7 +81,7 @@ public class BuildContext
         await Task.Run(async () =>
         {
             var fmd = new FmdData();
-            
+
             await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
             using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
@@ -129,7 +127,7 @@ public class BuildContext
                 texture.Data = converter.Convert(data.Name, data.Extension, data.Type, data.Data);
                 fmd.Textures.Add(texture);
             });
-            
+
             Fmds[index] = fmd;
         });
     }
@@ -170,7 +168,7 @@ public class BuildContext
                 image);
         });
     }
-    
+
     public async void ProcessThumbnailImage(string file, Func<byte[], Task> onUpdate)
     {
         Flags |= BuildContextFlags.PreviewImageChanged;
@@ -180,13 +178,13 @@ public class BuildContext
             await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read);
             var buffer = new byte[stream.Length];
             stream.Read(buffer);
-            PreviewImage = buffer;
+            ThumbnailImage = buffer;
 
             await File.WriteAllBytesAsync($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", buffer);
             await onUpdate(buffer);
 
             var converter = new TextureConverter();
-            PreviewBtex = converter.Convert(
+            ThumbnailBtex = converter.Convert(
                 "default",
                 file.Split('.').Last(),
                 TextureType.Thumbnail,
@@ -199,8 +197,8 @@ public class BuildContext
         await Task.Run(() =>
         {
             var converter = new TextureConverter();
-            PreviewImage = image;
-            PreviewBtex = converter.Convert(
+            ThumbnailImage = image;
+            ThumbnailBtex = converter.Convert(
                 "default",
                 "png",
                 TextureType.Thumbnail,

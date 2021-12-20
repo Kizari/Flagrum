@@ -61,8 +61,15 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
-    public void AddFmd(Gpubin gpubin, IEnumerable<FmdTexture> textures)
+    public void AddFmd(int modelIndex, Gpubin gpubin, IEnumerable<FmdTexture> textures)
     {
+        var modelNamePrefix = modelIndex switch
+        {
+            0 => _mod.Model1Name + "_",
+            1 => _mod.Model2Name + "_",
+            _ => string.Empty
+        };
+
         foreach (var mesh in gpubin.Meshes)
         {
             var replacements = new Dictionary<string, string>();
@@ -73,26 +80,25 @@ public class BinmodBuilder
                     if (MaterialBuilder.DefaultTextures.TryGetValue(textureId, out var replacement))
                     {
                         string replacementUri = null;
-                        if (replacement == "white.btex" || replacement == "white-color.btex")
+                        switch (replacement)
                         {
-                            replacementUri = "data://shader/defaulttextures/white.tif";
-                        }
-                        else if (replacement == "blue.btex")
-                        {
-                            replacementUri = "data://shader/defaulttextures/lightblue.tif";
-                        }
-                        else if (replacement == "black.btex")
-                        {
-                            replacementUri = "data://shader/defaulttextures/black.tif";
-                        }
-                        else
-                        {
-                            mesh.Material.TextureData.Add(new TextureData
-                            {
-                                Id = textureId,
-                                Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
-                                Data = MaterialBuilder.GetDefaultTextureData(replacement)
-                            });
+                            case "white.btex" or "white-color.btex":
+                                replacementUri = "data://shader/defaulttextures/white.tif";
+                                break;
+                            case "blue.btex":
+                                replacementUri = "data://shader/defaulttextures/lightblue.tif";
+                                break;
+                            case "black.btex":
+                                replacementUri = "data://shader/defaulttextures/black.tif";
+                                break;
+                            default:
+                                mesh.Material.TextureData.Add(new TextureData
+                                {
+                                    Id = textureId,
+                                    Uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{replacement}",
+                                    Data = MaterialBuilder.GetDefaultTextureData(replacement)
+                                });
+                                break;
                         }
 
                         if (replacementUri != null)
@@ -104,7 +110,7 @@ public class BinmodBuilder
                 else
                 {
                     var btexFileName =
-                        $"{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{BtexHelper.GetSuffix(textureId)}.btex";
+                        $"{modelNamePrefix}{mesh.Name.ToSafeString()}_{textureId.ToSafeString()}{BtexHelper.GetSuffix(textureId)}.btex";
 
                     var uri = $"data://mod/{_mod.ModDirectoryName}/sourceimages/{btexFileName}";
 
@@ -122,7 +128,7 @@ public class BinmodBuilder
 
             var material = MaterialBuilder.FromTemplate(
                 mesh.Material.Id,
-                $"{mesh.Name}_mat",
+                $"{modelNamePrefix}{mesh.Name}_mat",
                 _mod.ModDirectoryName,
                 mesh.Material.Inputs.Select(p => new MaterialInputData
                 {
@@ -151,7 +157,14 @@ public class BinmodBuilder
             }
         }
 
-        var model = OutfitTemplate.Build(_mod.ModDirectoryName, _mod.ModelName, gpubin);
+        var modelName = modelIndex switch
+        {
+            0 => _mod.Model1Name,
+            1 => _mod.Model2Name,
+            _ => _mod.ModelName
+        };
+
+        var model = OutfitTemplate.Build(_mod.ModDirectoryName, modelName, modelNamePrefix, gpubin);
         var replacer = new ModelReplacer(model, gpubin, _binmodType.GetModmetaTargetName(_mod.Type, _mod.Target));
         model = replacer.Replace();
 
@@ -199,8 +212,8 @@ public class BinmodBuilder
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
 
-        AddFile(GetDataPath($"{_mod.ModelName}.gmdl"), gfxData);
-        AddFile(GetDataPath($"{_mod.ModelName}.gpubin"), gpuData);
+        AddFile(GetDataPath($"{modelName}.gmdl"), gfxData);
+        AddFile(GetDataPath($"{modelName}.gpubin"), gpuData);
     }
 
     private string GetDataPath(string relativePath)

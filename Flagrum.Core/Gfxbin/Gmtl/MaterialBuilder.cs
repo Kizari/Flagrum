@@ -125,9 +125,12 @@ public static class MaterialBuilder
         foreach (var (textureId, replacementUri) in replacements)
         {
             var match = material.Textures.FirstOrDefault(t => t.ShaderGenName == textureId);
-            match.Path = replacementUri;
-            match.PathHash = Cryptography.Hash32(replacementUri);
-            match.ResourceFileHash = Cryptography.HashFileUri64(replacementUri);
+            if (match != null)
+            {
+                match.Path = replacementUri;
+                match.PathHash = Cryptography.Hash32(replacementUri);
+                match.ResourceFileHash = Cryptography.HashFileUri64(replacementUri);
+            }
         }
 
         var dependencies = new List<DependencyPath>();

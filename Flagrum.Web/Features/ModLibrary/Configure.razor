@@ -1,7 +1,6 @@
 ﻿@page "/mod/configure"
 @using Flagrum.Core.Utilities
 @using Flagrum.Web.Features.ModLibrary.Data
-@using System.Diagnostics
 @using System.IO
 @using Flagrum.Core.Archive
 
@@ -22,7 +21,7 @@
         <div class="p-6">
 
             <div class="box row p-4">
-                <span class="flex-grow">@(IsNew ? "New Mod" : (Mod.GameMenuTitle ?? Mod.WorkshopTitle))</span>
+                <span class="flex-grow">@(IsNew ? "New Mod" : Mod.GameMenuTitle ?? Mod.WorkshopTitle)</span>
                 <Button Icon="save" Text="Save" OnClick="Save" IsDisabled="@(!CanSave || StatsTotal > 100)"/>
                 <Button Icon="cancel" Text="Cancel" CssClass="ml-3" OnClick="Cancel"/>
             </div>
@@ -170,7 +169,7 @@
                 }
                 else if (Mod.Type == (int)BinmodType.StyleEdit)
                 {
-                    <StyleEdit />
+                    <StyleEdit/>
                 }
                 else
                 {
@@ -256,7 +255,13 @@
     {
         ModelNames = BinmodTypeHelper.GetModelNames(Mod.Type, Mod.Target);
         ModelCount = BinmodTypeHelper.GetModelCount(Mod.Type, Mod.Target);
-        
+
+        if (ModelCount > 1)
+        {
+            Mod.Model1Name = ModelNames[0].ToSafeString();
+            Mod.Model2Name = ModelNames[1].ToSafeString();
+        }
+
         BuildContext.ProcessPreviewImage(Mod.PreviewBytes);
         File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", Mod.PreviewBytes);
 
@@ -265,7 +270,7 @@
             BuildContext.ProcessThumbnailImage(Mod.ThumbnailBytes);
             File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", Mod.ThumbnailBytes);
         }
-        
+
         HasSelectedDataForModel[0] = true;
         HasSelectedDataForModel[1] = true;
         CanSave = true;
@@ -287,14 +292,14 @@
                 {
                     Mod.PreviewBytes = data;
 
-                    // This jank is required or the UI won't update the image if the value hasn't changed
+    // This jank is required or the UI won't update the image if the value hasn't changed
                     ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
                     await InvokeAsync(StateHasChanged);
                 });
             }
-        );
+            );
     }
-    
+
     private void SelectThumbnail()
     {
         WpfService.OpenFileDialog(
@@ -305,12 +310,12 @@
                 {
                     Mod.ThumbnailBytes = data;
 
-                    // This jank is required or the UI won't update the image if the value hasn't changed
+    // This jank is required or the UI won't update the image if the value hasn't changed
                     ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
                     await InvokeAsync(StateHasChanged);
                 });
             }
-        );
+            );
     }
 
     private void Delete()
@@ -328,7 +333,7 @@
         {
             Mod.GameMenuTitle = null;
         }
-        
+
         File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", Mod.PreviewBytes);
 
         if (Mod.Type == (int)BinmodType.StyleEdit)
@@ -352,7 +357,7 @@
     {
         var unpacker = new Unpacker(Mod.Path);
         var packer = unpacker.ToPacker();
-        
+
         packer.UpdateFile("index.modmeta", Modmeta.Build(Mod));
 
         if (BuildContext.Flags.HasFlag(BuildContextFlags.PreviewImageChanged))
@@ -379,7 +384,17 @@
 
         Mod.ModelExtension = "gmdl";
         BinmodBuilder.Initialise(Mod, BuildContext.PreviewImage, BuildContext.PreviewBtex, BuildContext.ThumbnailBtex);
-        BinmodBuilder.AddFmd(BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+
+        if (ModelCount > 1)
+        {
+            BinmodBuilder.AddFmd(0, BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+            BinmodBuilder.AddFmd(1, BuildContext.Fmds[1].Gpubin, BuildContext.Fmds[1].Textures);
+        }
+        else
+        {
+            BinmodBuilder.AddFmd(-1, BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+        }
+
         BinmodBuilder.WriteToFile(Mod.Path);
 
         if (AppState.ActiveMod == null)
@@ -416,6 +431,12 @@
 
         ModelCount = BinmodTypeHelper.GetModelCount(Mod.Type, newTarget);
         ModelNames = BinmodTypeHelper.GetModelNames(Mod.Type, newTarget);
+
+        if (ModelCount > 1)
+        {
+            Mod.Model1Name = ModelNames[0].ToSafeString();
+            Mod.Model2Name = ModelNames[1].ToSafeString();
+        }
     }
 
     private void VariantChanged(ChangeEventArgs e)
@@ -433,6 +454,7 @@
                 BuildContext.ProcessFmd(index, path);
                 Mod.ModDirectoryName = Mod.Uuid;
                 Mod.ModelName = path.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+
                 HasSelectedDataForModel[index] = true;
 
                 if (ModelCount == 1)
@@ -454,6 +476,6 @@
                     BuildContext.ProcessThumbnailImage(thumbnailBytes);
                 }
             }
-        );
+            );
     }
 }

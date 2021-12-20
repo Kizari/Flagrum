@@ -9,9 +9,9 @@ namespace Flagrum.Core.Gfxbin.Gmdl.Templates;
 
 public static class OutfitTemplate
 {
-    public static Model Build(string modDirectoryName, string modelName, Gpubin gpubin)
+    public static Model Build(string modDirectoryName, string modelName, string modelNamePrefix, Gpubin gpubin)
     {
-        var header = BuildHeader(modDirectoryName, modelName, gpubin);
+        var header = BuildHeader(modDirectoryName, modelName, modelNamePrefix, gpubin);
         var allVertices = gpubin.Meshes
             .SelectMany(m => m.VertexPositions)
             .ToList();
@@ -58,7 +58,8 @@ public static class OutfitTemplate
                     ClusterCount = 1,
                     ClusterName = "CLUSTER_NAME",
                     Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name,
-                            Cryptography.HashFileUri64($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
+                            Cryptography.HashFileUri64(
+                                $"data://mod/{modDirectoryName}/materials/{modelNamePrefix}{m.Name.ToSafeString()}_mat.gmtl"),
                             m.MaterialType))
                         .ToList()
                 }
@@ -71,7 +72,8 @@ public static class OutfitTemplate
         };
     }
 
-    private static GfxbinHeader BuildHeader(string modDirectoryName, string modelName, Gpubin gpubin)
+    private static GfxbinHeader BuildHeader(string modDirectoryName, string modelName, string modelNamePrefix,
+        Gpubin gpubin)
     {
         var basePath = $"data://mod/{modDirectoryName}";
         var gpubinUri = $"{basePath}/{modelName}.gpubin";
@@ -79,8 +81,9 @@ public static class OutfitTemplate
 
         var materials =
             gpubin.Meshes.Select(m => (
-                    hash: Cryptography.HashFileUri64($"data://mod/{modDirectoryName}/materials/{m.Name.ToLower()}_mat.gmtl"),
-                    uri: $"{basePath}/materials/{m.Name.ToLower()}_mat.gmtl"
+                hash: Cryptography.HashFileUri64(
+                    $"data://mod/{modDirectoryName}/materials/{modelNamePrefix}{m.Name.ToSafeString()}_mat.gmtl"),
+                uri: $"{basePath}/materials/{modelNamePrefix}{m.Name.ToSafeString()}_mat.gmtl"
             ));
 
         var dependencies = new List<DependencyPath>();
@@ -153,19 +156,15 @@ public static class OutfitTemplate
             LodNear = 0, // Not currently dealing with LODs
             LodFar = 0, // Not currently dealing with LODs
             LodFade = 0, // Not currently dealing with LODs
-            PartsId = 0, // Not used by binmods
-            MeshParts = new List<MeshPart>(), // Leave empty, not used by binmods
-            BreakableBoneIndex = 4294967295, // Not sure what this does, leave as default
+            PartsId = 0, // Not currently supporting parts system
+            MeshParts = new List<MeshPart>(), // Leave empty, not currently supporting parts system
+            BreakableBoneIndex = 4294967295, // This appears to always be the same, equivalent to ushort.MaxValue
 
-            // Will need material editor to generate a hash for us to put here
-            // These will almost certainly correspond to the hashes in the GfxbinHeader of this file
             DefaultMaterialHash = materialHash,
             DrawPriorityOffset = 0, // Always 0
 
-            // NOTE: Currently suspecting that this may control the weight limit of the vertices
-            // i.e. Skinning_8Bones may allow 8 weights per vertex (e.g. BLENDWEIGHTS1 may work?)
-            // Using the above types currently breaks the mod (no rigging and ghostlike appearance)
-            // Perhaps other changes are needed to enable this?
+            // Using anything other than Skinning_4Bones appears to break things (no rigging and ghostlike appearance)
+            // We suspect this is a limitation of binmods, but currently unsure
             VertexLayoutType = materialType switch
             {
                 MaterialType.OneWeight => VertexLayoutType.Skinning_1Bones,
@@ -177,7 +176,7 @@ public static class OutfitTemplate
 
             // These will always be the same, shouldn't need to ever change
             PrimitiveType = PrimitiveType.PrimitiveTypeTriangleList,
-            
+
             MaterialType = materialType,
 
             // These shouldn't ever need to be changed

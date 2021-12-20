@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Gfxbin.Gmdl;
-using Newtonsoft.Json;
 
 namespace Flagrum.Console;
 
@@ -25,7 +23,7 @@ public class Program
 
     public static void Main(string[] args)
     {
-        BtexTests.Convert();
+        //BtexTests.Convert();
         // var path = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\BASIC_MATERIAL.json";
         // var material = JsonConvert.DeserializeObject<Material>(File.ReadAllText(path));
         //

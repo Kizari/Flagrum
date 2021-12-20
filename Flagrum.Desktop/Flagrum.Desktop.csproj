@@ -6,6 +6,8 @@
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
+        <DebugType>embedded</DebugType>
+        <AssemblyName>Flagrum</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,6 +27,7 @@
       </None>
       <None Update="steam_api64.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </None>
     </ItemGroup>
 
