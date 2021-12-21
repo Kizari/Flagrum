@@ -466,7 +466,7 @@
                     CanSave = HasSelectedDataForModel[0] && HasSelectedDataForModel[1];
                 }
 
-                if (IsNew && Mod.ThumbnailBytes == null && CanSave)
+                if (IsNew && Mod.ThumbnailBytes == null && CanSave && Mod.Type == (int)BinmodType.StyleEdit)
                 {
                     var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
                     var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";

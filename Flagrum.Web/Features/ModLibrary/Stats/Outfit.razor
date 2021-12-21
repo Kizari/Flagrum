@@ -1,6 +1,6 @@
 ﻿@using Flagrum.Web.Features.ModLibrary.Data
 <div class="box mt-6">
-    <EditForm Model="OutfitStats">
+    <EditForm Model="Stats">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
                 <tr>
@@ -40,25 +40,25 @@
                         <label>MAX HP</label>
                     </td>
                     <td>
-                        <NumberBox @bind-Value="OutfitStats.MaxHp"/>
+                        <NumberBox @bind-Value="Stats[Stat.MaxHp].Value"/>
                     </td>
                     <td>
                         <label>MAX MP</label>
                     </td>
                     <td>
-                        <NumberBox @bind-Value="OutfitStats.MaxMp"/>
+                        <NumberBox @bind-Value="Stats[Stat.MaxMp].Value"/>
                     </td>
                     <td>
                         <label>FIRE RES</label>
                     </td>
                     <td>
-                        <NumberBox Max="100" @bind-Value="OutfitStats.Fire"/>
+                        <NumberBox Max="100" @bind-Value="Stats[Stat.Fire].Value"/>
                     </td>
                     <td>
                         <label>ICE RES</label>
                     </td>
                     <td>
-                        <NumberBox Max="100" @bind-Value="OutfitStats.Ice"/>
+                        <NumberBox Max="100" @bind-Value="Stats[Stat.Ice].Value"/>
                     </td>
                 </tr>
                 <tr>
@@ -66,25 +66,25 @@
                         <label>STRENGTH</label>
                     </td>
                     <td>
-                        <NumberBox @bind-Value="OutfitStats.Strength"/>
+                        <NumberBox @bind-Value="Stats[Stat.Strength].Value"/>
                     </td>
                     <td>
                         <label>VITALITY</label>
                     </td>
                     <td>
-                        <NumberBox @bind-Value="OutfitStats.Vitality"/>
+                        <NumberBox @bind-Value="Stats[Stat.Vitality].Value"/>
                     </td>
                     <td>
                         <label>THUNDER RES</label>
                     </td>
                     <td>
-                        <NumberBox Max="100" @bind-Value="OutfitStats.Thunder"/>
+                        <NumberBox Max="100" @bind-Value="Stats[Stat.Thunder].Value"/>
                     </td>
                     <td>
                         <label>DARK RES</label>
                     </td>
                     <td>
-                        <NumberBox Max="100" @bind-Value="OutfitStats.Dark"/>
+                        <NumberBox Max="100" @bind-Value="Stats[Stat.Dark].Value"/>
                     </td>
                 </tr>
                 <tr>
@@ -92,19 +92,19 @@
                         <label>MAGIC</label>
                     </td>
                     <td>
-                        <NumberBox @bind-Value="OutfitStats.Magic"/>
+                        <NumberBox @bind-Value="Stats[Stat.Magic].Value"/>
                     </td>
                     <td>
                         <label>SPIRIT</label>
                     </td>
                     <td>
-                        <NumberBox @bind-Value="OutfitStats.Spirit"/>
+                        <NumberBox @bind-Value="Stats[Stat.Spirit].Value"/>
                     </td>
                     <td>
                         <label>BALLISTIC RES</label>
                     </td>
                     <td>
-                        <NumberBox Max="100" @bind-Value="OutfitStats.Ballistic"/>
+                        <NumberBox Max="100" @bind-Value="Stats[Stat.Ballistic].Value"/>
                     </td>
                     <td></td>
                     <td></td>
@@ -129,25 +129,114 @@
     [CascadingParameter]
     public Configure Parent { get; set; }
 
-    private OutfitStatsModel OutfitStats { get; set; }
+    private Dictionary<Stat, StatsModel> Stats { get; set; }
 
     protected override void OnInitialized()
     {
-        OutfitStats = new OutfitStatsModel(Parent.Mod, () =>
+        Stats = new Dictionary<Stat, StatsModel>
         {
-            Parent.StatsTotal = (int)(
-                (OutfitStats.MaxHp ?? 0) * 0.2
-                + (OutfitStats.MaxMp ?? 0) * 0.2
-                + (OutfitStats.Strength ?? 0) * 0.2
-                + (OutfitStats.Vitality ?? 0) * 0.2
-                + (OutfitStats.Magic ?? 0) * 0.2
-                + (OutfitStats.Spirit ?? 0) * 0.2
-                + (OutfitStats.Fire ?? 0)
-                + (OutfitStats.Ice ?? 0)
-                + (OutfitStats.Thunder ?? 0)
-                + (OutfitStats.Dark ?? 0)
-                + (OutfitStats.Ballistic ?? 0));
+            {
+                Stat.MaxHp, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.MaxHp, () => Parent.Mod.MaxHp, v =>
+                {
+                    Parent.Mod.MaxHp = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.MaxMp, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.MaxMp, () => Parent.Mod.MaxMp, v =>
+                {
+                    Parent.Mod.MaxMp = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Strength, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Strength, () => Parent.Mod.Strength, v =>
+                {
+                    Parent.Mod.Strength = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Vitality, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Vitality, () => Parent.Mod.Vitality, v =>
+                {
+                    Parent.Mod.Vitality = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Magic, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Magic, () => Parent.Mod.Magic, v =>
+                {
+                    Parent.Mod.Magic = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Spirit, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Spirit, () => Parent.Mod.Spirit, v =>
+                {
+                    Parent.Mod.Spirit = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Fire, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Fire, () => Parent.Mod.Fire, v =>
+                {
+                    Parent.Mod.Fire = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Ice, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Ice, () => Parent.Mod.Ice, v =>
+                {
+                    Parent.Mod.Ice = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Thunder, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Thunder, () => Parent.Mod.Thunder, v =>
+                {
+                    Parent.Mod.Thunder = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Dark, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Dark, () => Parent.Mod.Dark, v =>
+                {
+                    Parent.Mod.Dark = v;
+                    UpdateStatCount();
+                })
+            },
+            {
+                Stat.Ballistic, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Ballistic, () => Parent.Mod.Ballistic, v =>
+                {
+                    Parent.Mod.Ballistic = v;
+                    UpdateStatCount();
+                })
+            }
+        };
+
+        if (Parent.Mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
+        {
+            Stats.Add(Stat.Attack, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Attack, () => Parent.Mod.Attack, v =>
+            {
+                Parent.Mod.Attack = v;
+                UpdateStatCount();
+            }));
+            Stats.Add(Stat.Critical, StatsModel.Create(Parent.Mod.Type, Parent.Mod.Target, Stat.Critical, () => Parent.Mod.Critical, v =>
+            {
+                Parent.Mod.Critical = v;
+                UpdateStatCount();
+            }));
+        }
+
+        UpdateStatCount();
+    }
+
+    private void UpdateStatCount()
+    {
+        if (Stats != null)
+        {
+            Parent.StatsTotal = Stats.Sum(s => s.Value.Cost);
             StateHasChanged();
-        });
+        }
     }
 }

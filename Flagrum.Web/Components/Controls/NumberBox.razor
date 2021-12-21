@@ -4,7 +4,7 @@
        class="input @(CurrentValue != null && (CurrentValue < Min || CurrentValue > Max) ? "border-accent2-900 bg-error" : "border-grey-700 bg-dark-550")"
        style="@Style"
        @bind-value="@CurrentValueAsString"
-       @bind-value:event="oninput"/>
+       @bind-value:event="onchange"/>
 
 @code
 {
@@ -22,7 +22,7 @@
     public int Min { get; set; }
 
     [Parameter]
-    public int Max { get; set; } = 500;
+    public int Max { get; set; }
 
     private string Style => Size switch
     {

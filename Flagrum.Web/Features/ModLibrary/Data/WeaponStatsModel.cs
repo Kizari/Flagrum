@@ -57,7 +57,7 @@ public class WeaponStatsModel
         set
         {
             _maxHp = value;
-            _mod.MaxHp = value ?? 0;
+            _mod.MaxHp = _maxHp ?? 0;
             _onChange();
         }
     }
