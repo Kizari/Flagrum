@@ -66,38 +66,41 @@
     {
         base.OnAfterRender(firstRender);
 
-        if (AppState.ActiveMod.PreviewBytes.Length > 953673)
+        if (firstRender)
         {
-            Modal.Open("Error",
-                "Preview Image too Large",
-                "Change to a preview image of 953kb or less and try again.",
-                () => Navigation.NavigateTo("/mod/configure"));
-            return;
-        }
-
-        if (SteamWorkshop.Initialize())
-        {
-            if (AppState.ActiveMod.ItemId > 0)
+            if (AppState.ActiveMod.PreviewBytes.Length > 953673)
             {
-                SteamWorkshop.Get(AppState.ActiveMod.ItemId, result =>
+                Modal.Open("Error",
+                    "Preview Image too Large",
+                    "Change to a preview image of 953kb or less and try again.",
+                    () => Navigation.NavigateTo("/mod/configure"));
+                return;
+            }
+
+            if (SteamWorkshop.Initialize())
+            {
+                if (AppState.ActiveMod.ItemId > 0)
                 {
-                    Details = result;
+                    SteamWorkshop.Get(AppState.ActiveMod.ItemId, result =>
+                    {
+                        Details = result;
+                        IsLoading = false;
+                        InvokeAsync(StateHasChanged);
+                    });
+                }
+                else
+                {
                     IsLoading = false;
-                    InvokeAsync(StateHasChanged);
-                });
+                    StateHasChanged();
+                }
             }
             else
             {
-                IsLoading = false;
-                StateHasChanged();
+                Modal.Open("Error",
+                    "Unable to Connect to Steam",
+                    "Please ensure that Steam is running on your computer and try again.",
+                    () => Navigation.NavigateTo("/mod/configure"));
             }
-        }
-        else
-        {
-            Modal.Open("Error",
-                "Unable to Connect to Steam",
-                "Please ensure that Steam is running on your computer and try again.",
-                () => Navigation.NavigateTo("/mod/configure"));
         }
     }
 

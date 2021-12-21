@@ -14,30 +14,36 @@
 <LoadingView Text="Loading Mods"
              IsLoading="IsLoading">
 
-    <div class="pt-6">
-        <div class="row mx-7 mb-2">
-            <div class="bg-dark-600 shadow-md rounded row mt-1">
-                <ModTypeButtonGroup Target="AppState.ActiveCategoryFilter" OnItemSelected="FilterCategory">
-                    <ModTypeButton Text="Local Mods" Value="0"/>
-                    <ModTypeButton Text="Workshop Mods" Value="1"/>
-                    <ModTypeButton Text="All Mods" Value="-1"/>
-                </ModTypeButtonGroup>
+    <div>
+        <div class="flex flex-row items-start px-7 pb-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+            <div class="flex flex-row flex-wrap flex-grow">
+                <div class="bg-dark-600 shadow-md rounded row mt-5 mr-6">
+                    <ModTypeButtonGroup Target="AppState.ActiveCategoryFilter" OnItemSelected="FilterCategory">
+                        <ModTypeButton Text="Local Mods" Value="0"/>
+                        <ModTypeButton Text="Workshop Mods" Value="1"/>
+                        <ModTypeButton Text="All Mods" Value="-1"/>
+                    </ModTypeButtonGroup>
+                </div>
+                <div class="bg-dark-600 shadow-md rounded row mt-5 mr-6">
+                    <ModTypeButtonGroup Target="AppState.ActiveModTypeFilter" OnItemSelected="FilterType">
+                        <ModTypeButton Text="All Mods" Value="-1"/>
+                        <ModTypeButton Text="Outfits" Value="(int)BinmodType.Cloth"/>
+                        <ModTypeButton Text="Weapons" Value="(int)BinmodType.Weapon"/>
+                        <ModTypeButton Text="Replacements" Value="(int)BinmodType.Character"/>
+                        <ModTypeButton Text="Comrades Styles" Value="(int)BinmodType.StyleEdit"/>
+                        <ModTypeButton Text="Comrades Weapons" Value="(int)BinmodType.Multi_Weapon"/>
+                    </ModTypeButtonGroup>
+                </div>
+                <div class="flex-grow"></div>
+                <div class="bg-dark-600 shadow-md rounded row mt-5 px-4">
+                    <span class="text-accent1-200 font-display text-lg">@AppState.Mods.Count(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1)) && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter))
+                        &nbsp;&nbsp;/&nbsp;&nbsp;@AppState.Mods.Count(m => AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter)&nbsp;&nbsp;/&nbsp;&nbsp;@Limits[AppState.ActiveModTypeFilter]</span>
+                </div>
             </div>
-            <div class="bg-dark-600 shadow-md rounded row ml-10 mt-1">
-                <ModTypeButtonGroup Target="AppState.ActiveModTypeFilter" OnItemSelected="FilterType">
-                    <ModTypeButton Text="All Mods" Value="-1"/>
-                    <ModTypeButton Text="Outfits" Value="(int)BinmodType.Cloth"/>
-                    <ModTypeButton Text="Weapons" Value="(int)BinmodType.Weapon"/>
-                    <ModTypeButton Text="Replacements" Value="(int)BinmodType.Character"/>
-                    <ModTypeButton Text="Comrades Styles" Value="(int)BinmodType.StyleEdit"/>
-                    <ModTypeButton Text="Comrades Weapons" Value="(int)BinmodType.Multi_Weapon"/>
-                </ModTypeButtonGroup>
-            </div>
-            <div class="flex-grow"></div>
-            <Button Icon="add" Text="Create New Mod" OnClick="Create"/>
         </div>
         <CascadingValue Value="this">
             <div class="row flex-wrap px-4 ml-0.5 mb-10">
+                <NewCard />
                 <ModListingGroup Mods="AppState.Mods.Where(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1)) && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter)).OrderByDescending(m => m.IsApplyToGame).ThenBy(m => m.Type).ThenBy(m => m.Target).ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
             </div>
         </CascadingValue>
@@ -51,6 +57,16 @@
     public MainLayout Parent { get; set; }
 
     private bool IsLoading { get; set; }
+
+    private Dictionary<int, int> Limits { get; } = new()
+    {
+        {-1, 50 + 999 + 100 + 100 + 999},
+        {(int)BinmodType.Cloth, 50},
+        {(int)BinmodType.Character, 999},
+        {(int)BinmodType.Weapon, 100},
+        {(int)BinmodType.Multi_Weapon, 100},
+        {(int)BinmodType.StyleEdit, 999}
+    };
 
     protected override async void OnInitialized()
     {

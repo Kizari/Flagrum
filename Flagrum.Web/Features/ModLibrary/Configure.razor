@@ -3,6 +3,7 @@
 @using Flagrum.Web.Features.ModLibrary.Data
 @using System.IO
 @using Flagrum.Core.Archive
+@using Flagrum.Core.Gfxbin.Gmdl
 
 @inject NavigationManager Navigation
 @inject JSInterop Interop
@@ -387,8 +388,23 @@
 
         if (ModelCount > 1)
         {
-            BinmodBuilder.AddFmd(0, BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
-            BinmodBuilder.AddFmd(1, BuildContext.Fmds[1].Gpubin, BuildContext.Fmds[1].Textures);
+            if (BuildContext.Fmds[0] == null)
+            {
+                BinmodBuilder.AddModelFromExisting(Mod, 0);
+            }
+            else
+            {
+                BinmodBuilder.AddFmd(0, BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+            }
+
+            if (BuildContext.Fmds[1] == null)
+            {
+                BinmodBuilder.AddModelFromExisting(Mod, 1);
+            }
+            else
+            {
+                BinmodBuilder.AddFmd(1, BuildContext.Fmds[1].Gpubin, BuildContext.Fmds[1].Textures);
+            }
         }
         else
         {
@@ -475,7 +491,6 @@
                     Mod.ThumbnailBytes = thumbnailBytes;
                     BuildContext.ProcessThumbnailImage(thumbnailBytes);
                 }
-            }
-            );
+            });
     }
 }

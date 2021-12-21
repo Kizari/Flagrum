@@ -56,6 +56,7 @@ public class BuildContext
     public byte[] ThumbnailImage { get; private set; }
     public byte[] ThumbnailBtex { get; private set; }
     public FmdData[] Fmds { get; } = new FmdData[2];
+    public bool[] NeedsWaitFmd { get; set; } = new bool[2];
 
     public async Task WaitForPreviewData(bool needsThumbnail)
     {
@@ -67,7 +68,7 @@ public class BuildContext
 
     public async Task WaitForBuildData(bool needsThumbnail)
     {
-        while (Fmds[0] == null || PreviewBtex == null || needsThumbnail && ThumbnailBtex == null)
+        while ((NeedsWaitFmd[0] && Fmds[0] == null) || (NeedsWaitFmd[1] && Fmds[1] == null) || PreviewBtex == null || needsThumbnail && ThumbnailBtex == null)
         {
             await Task.Delay(100);
         }
@@ -75,6 +76,7 @@ public class BuildContext
 
     public async void ProcessFmd(int index, string path)
     {
+        NeedsWaitFmd[index] = true;
         Flags |= BuildContextFlags.NeedsBuild;
         _stateChanged();
 

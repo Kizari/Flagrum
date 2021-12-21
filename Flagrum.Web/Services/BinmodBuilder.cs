@@ -61,6 +61,42 @@ public class BinmodBuilder
         _packer.AddFile(data, uri);
     }
 
+    public void AddModelFromExisting(Binmod mod, int index)
+    {
+        using var unpacker = new Unpacker(mod.Path);
+        var modelName = index == 0 ? mod.Model1Name : mod.Model2Name;
+        
+        var gmdl = unpacker.UnpackFileByQuery($"{modelName}.gmdl", out var gmdlUri);
+        var gpubin = unpacker.UnpackFileByQuery($"{modelName}.gpubin", out var gpubinUri);
+        var reader = new ModelReader(gmdl, gpubin);
+        var model = reader.Read();
+
+        var materialPaths = model.Header.Dependencies
+            .Where(d => d.Path.EndsWith(".gmtl"))
+            .Select(d => d.Path);
+
+        foreach (var material in materialPaths)
+        {
+            var data = unpacker.UnpackFileByQuery(material, out var materialUri);
+            var materialReader = new MaterialReader(data);
+            var materialObject = materialReader.Read();
+            var texturePaths = materialObject.Textures
+                .Where(t => t.Path.StartsWith("data://mod"))
+                .Select(t => t.Path);
+
+            foreach (var texture in texturePaths)
+            {
+                var textureData = unpacker.UnpackFileByQuery(texture, out var textureUri);
+                _packer.AddFile(textureData, textureUri);
+            }
+            
+            _packer.AddFile(data, materialUri);
+        }
+        
+        _packer.AddFile(gmdl, gmdlUri);
+        _packer.AddFile(gpubin, gpubinUri);
+    }
+
     public void AddFmd(int modelIndex, Gpubin gpubin, IEnumerable<FmdTexture> textures)
     {
         var modelNamePrefix = modelIndex switch
