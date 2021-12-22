@@ -77,6 +77,11 @@ public class StatsModel
                 Stat.Attack => 3.0,
                 Stat.MaxHp => 3.0,
                 Stat.MaxMp => 0.2,
+                Stat.Fire => 0.2,
+                Stat.Ice => 0.2,
+                Stat.Thunder => 0.2,
+                Stat.Dark => 0.2,
+                Stat.Ballistic => 0.2,
                 _ => 1.0
             },
 
@@ -84,6 +89,11 @@ public class StatsModel
             {
                 Stat.Attack => 2.0,
                 Stat.MaxHp => 5.0,
+                Stat.Fire => 0.2,
+                Stat.Ice => 0.2,
+                Stat.Thunder => 0.2,
+                Stat.Dark => 0.2,
+                Stat.Ballistic => 0.2,
                 _ => 1.0
             },
 
@@ -109,13 +119,13 @@ public class StatsModel
         switch (stat)
         {
             case Stat.Fire:
-                return -100;
+                return type == BinmodType.Cloth ? -100 : -20;
             case Stat.Ice:
-                return -100;
+                return type == BinmodType.Cloth ? -100 : -20;
             case Stat.Thunder:
-                return -100;
+                return type == BinmodType.Cloth ? -100 : -20;
             case Stat.Dark:
-                return -100;
+                return type == BinmodType.Cloth ? -100 : -20;
             case Stat.MaxHp:
                 if (type == BinmodType.Weapon && target == (int)WeaponSoloTarget.Large_Sword)
                 {
@@ -163,7 +173,7 @@ public class StatsModel
                     return 5;
                 }
 
-                return -100;
+                return type == BinmodType.Cloth ? -100 : -20;
             case Stat.Attack:
                 if (type == BinmodType.Weapon)
                 {

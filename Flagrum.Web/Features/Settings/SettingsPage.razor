@@ -20,7 +20,7 @@
             <div class="row mb-3">
                 <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="GamePathClicked"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
             </div>
             <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe</small>
         </div>
@@ -29,7 +29,7 @@
             <div class="row mb-3">
                 <span class="mr-3" style="width: 250px;">Binmod List Path</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="BinmodListPathClicked"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
             </div>
             <small class="text-grey-600">Default C:\Users\[USERNAME]\Documents\My Games\FINAL FANTASY XV\Steam\[STEAM_USER_ID]\mod\binmod.list</small>
         </div>
@@ -38,7 +38,7 @@
             <div class="row mb-3">
                 <span class="mr-3" style="width: 250px;">Workshop ACF Path</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.WorkshopPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClick="WorkshopPathClicked"/>
+                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="WorkshopPathClicked"/>
             </div>
             <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</small>
         </div>
@@ -63,9 +63,9 @@
         Data.BinmodListPath = Settings.BinmodListPath;
     }
 
-    private void GamePathClicked()
+    private async Task GamePathClicked()
     {
-        WpfService.OpenFileDialog(
+        await WpfService.OpenFileDialogAsync(
             "Application (*.exe)|*.exe",
             path =>
             {
@@ -76,9 +76,9 @@
             });
     }
 
-    private void BinmodListPathClicked()
+    private async Task BinmodListPathClicked()
     {
-        WpfService.OpenFileDialog(
+        await WpfService.OpenFileDialogAsync(
             "Binmod List (*.list)|*.list",
             path =>
             {
@@ -89,9 +89,9 @@
             });
     }
 
-    private void WorkshopPathClicked()
+    private async Task WorkshopPathClicked()
     {
-        WpfService.OpenFileDialog(
+        await WpfService.OpenFileDialogAsync(
             "Workshop Manifest (*.acf)|*.acf",
             path =>
             {

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 using Flagrum.Web.Services;
 using Microsoft.Win32;
 
@@ -6,14 +8,23 @@ namespace Flagrum.Desktop.Services;
 
 public class WpfService : IWpfService
 {
-    public void OpenFileDialog(string filter, Action<string> onFileSelected)
+    private readonly MainWindow _window;
+    
+    public WpfService(MainWindow window)
+    {
+        _window = window;
+    }
+    
+    public async Task OpenFileDialogAsync(string filter, Action<string> onFileSelected)
     {
         var dialog = new OpenFileDialog
         {
             Filter = filter
         };
-
-        if (dialog.ShowDialog() == true)
+        
+        var result = await _window.Dispatcher.InvokeAsync(() => dialog.ShowDialog());
+        
+        if (result == true)
         {
             onFileSelected(dialog.FileName);
         }

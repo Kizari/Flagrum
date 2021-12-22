@@ -114,19 +114,19 @@ public class Binmod
                         mod.MaxMp = int.Parse(value);
                         break;
                     case "bullet":
-                        mod.Ballistic = int.Parse(value) * -1;
+                        mod.Ballistic = (int)(int.Parse(value) * -0.2);
                         break;
                     case "fire":
-                        mod.Fire = int.Parse(value) * -1;
+                        mod.Fire = (int)(int.Parse(value) * -0.2);
                         break;
                     case "ice":
-                        mod.Ice = int.Parse(value) * -1;
+                        mod.Ice = (int)(int.Parse(value) * -0.2);
                         break;
                     case "thunder":
-                        mod.Thunder = int.Parse(value) * -1;
+                        mod.Thunder = (int)(int.Parse(value) * -0.2);
                         break;
                     case "dark":
-                        mod.Dark = int.Parse(value) * -1;
+                        mod.Dark = (int)(int.Parse(value) * -0.2);
                         break;
                     case "attack":
                         mod.Attack = int.Parse(value);
@@ -154,14 +154,10 @@ public class Binmod
                 }
             }
 
-            foreach (var (property, value) in properties)
+            var target = properties.FirstOrDefault(p => p.Key == "type").Value;
+            if (target != string.Empty)
             {
-                switch (property)
-                {
-                    case "type":
-                        mod.Target = binmodType.GetBinmodTarget(mod.Type, value);
-                        break;
-                }
+                mod.Target = binmodType.GetBinmodTarget(mod.Type, target);
             }
 
             var type = (BinmodType)mod.Type;

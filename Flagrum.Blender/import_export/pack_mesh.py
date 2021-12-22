@@ -39,6 +39,9 @@ def pack_mesh():
             bpy.context.collection.objects.link(mesh_copy)
             bpy.context.view_layer.objects.active = mesh_copy
 
+            # Apply any outstanding transformations
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
             # Make sure all verts are selected otherwise some of the bmesh operations shit themselves
             for vertex in mesh_copy.data.vertices:
                 vertex.select = True
@@ -46,12 +49,15 @@ def pack_mesh():
             bpy.ops.object.mode_set(mode='EDIT')
             bmesh_copy = bmesh.from_edit_mesh(mesh_copy.data)
 
+            # Merge doubles to prevent any issues caused by mixed doubles or incompatible double placement
+            bmesh.ops.remove_doubles(bmesh_copy, verts=bmesh_copy.verts[:], dist=0.0001)
+
             # Clear seams as we need to use them for splitting
             for edge in bmesh_copy.edges:
                 if edge.seam:
                     edge.seam = False
 
-            # Select all verts and UV verts as seams_from_islands relies on this to function
+            # Select all UV verts as seams_from_islands relies on this to function
             uv_layer = bmesh_copy.loops.layers.uv.verify()
             for face in bmesh_copy.faces:
                 for loop in face.loops:
@@ -315,7 +321,13 @@ def _pack_uv_maps(mesh: Object):
         uv_map = UVMap()
         uv_map.UVs = []
         for i in range(len(mesh_data.vertices)):
-            uv_map.UVs.append(coords[counter][i])
+            if i in coords[counter]:
+                uv_map.UVs.append(coords[counter][i])
+            else:
+                origin = UV()
+                origin.U = 0.0
+                origin.V = 0.0
+                uv_map.UVs.append(origin)
         uv_maps.append(uv_map)
         counter += 1
 

@@ -8,7 +8,7 @@
 
     <div class="box p-4 row">
         <span class="flex-grow">Select file to inspect</span>
-        <Button Icon="folder" Text="Browse" OnClick="BrowseClicked"/>
+        <Button Icon="folder" Text="Browse" OnClickAsync="BrowseClicked"/>
     </div>
 
     @if (Object != null)
@@ -24,9 +24,9 @@
 {
     private object Object { get; set; }
 
-    private void BrowseClicked()
+    private async Task BrowseClicked()
     {
-        Wpf.OpenFileDialog(
+        await Wpf.OpenFileDialogAsync(
             "Game Model (*.gmdl.gfxbin)|*.gmdl.gfxbin|" +
             "Game Material (*.gmtl.gfxbin)|*.gmtl.gfxbin", // +
     //"Asset Archive (*.earc)|*.earc|" +

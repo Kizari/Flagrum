@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
+using Microsoft.Web.WebView2.Core;
 
 namespace Flagrum.Desktop;
 
@@ -52,7 +53,7 @@ public partial class MainWindow : Window
             builder.Services.Configure(configure);
         });
 
-        services.AddScoped<IWpfService, WpfService>();
+        services.AddScoped<IWpfService, WpfService>(services => new WpfService(this));
         services.AddBlazorWebView();
         services.AddFlagrum();
         Resources.Add("services", services.BuildServiceProvider());

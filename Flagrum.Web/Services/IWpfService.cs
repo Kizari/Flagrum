@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Flagrum.Web.Services;
 
 public interface IWpfService
 {
-    void OpenFileDialog(string filter, Action<string> onFileSelected);
+    Task OpenFileDialogAsync(string filter, Action<string> onFileSelected);
 }

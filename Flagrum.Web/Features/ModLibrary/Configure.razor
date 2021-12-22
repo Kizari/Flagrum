@@ -3,7 +3,6 @@
 @using Flagrum.Web.Features.ModLibrary.Data
 @using System.IO
 @using Flagrum.Core.Archive
-@using Flagrum.Core.Gfxbin.Gmdl
 
 @inject NavigationManager Navigation
 @inject JSInterop Interop
@@ -120,12 +119,12 @@
                             {
                                 <Button Icon="image"
                                         Text="Change Image"
-                                        OnClick="SelectImage"/>
+                                        OnClickAsync="SelectImage"/>
                                 @if (Mod.Type == (int)BinmodType.StyleEdit)
                                 {
                                     <Button Icon="image"
                                             Text="Change Thumbnail"
-                                            OnClick="SelectThumbnail"
+                                            OnClickAsync="SelectThumbnail"
                                             CssClass="ml-3"/>
                                 }
                                 @if (ModelCount == 1)
@@ -283,9 +282,9 @@
         Navigation.NavigateTo("/");
     }
 
-    private void SelectImage()
+    private async Task SelectImage()
     {
-        WpfService.OpenFileDialog(
+        await WpfService.OpenFileDialogAsync(
             "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
             path =>
             {
@@ -297,13 +296,12 @@
                     ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
                     await InvokeAsync(StateHasChanged);
                 });
-            }
-            );
+            });
     }
 
-    private void SelectThumbnail()
+    private async Task SelectThumbnail()
     {
-        WpfService.OpenFileDialog(
+        await WpfService.OpenFileDialogAsync(
             "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
             path =>
             {
@@ -315,8 +313,7 @@
                     ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
                     await InvokeAsync(StateHasChanged);
                 });
-            }
-            );
+            });
     }
 
     private void Delete()
@@ -440,6 +437,11 @@
 
     private void ModTargetChanged(int newTarget)
     {
+        if (newTarget == -1)
+        {
+            return;
+        }
+
         if (Mod.Type == (int)BinmodType.Character)
         {
             Mod.OriginalGmdls = ReplacementPresets.GetOriginalGmdls(newTarget).ToList();
@@ -460,9 +462,9 @@
         Mod.Gender = e.Value?.ToString();
     }
 
-    private void SelectModel(int index)
+    private async Task SelectModel(int index)
     {
-        WpfService.OpenFileDialog(
+        await WpfService.OpenFileDialogAsync(
             "Flagrum Model Data (*.fmd)|*.fmd",
             path =>
             {

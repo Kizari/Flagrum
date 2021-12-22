@@ -20,35 +20,28 @@ public class ModelReplacementPresets
     public ModelReplacementPresets(Settings settings)
     {
         _settings = settings;
+        BuildDictionary();
     }
 
     private List<ModelReplacementTarget> Replacements { get; set; }
 
     public Dictionary<int, string> GetReplacementDictionary()
     {
-        BuildDictionary();
         return Replacements.ToDictionary(r => r.Index, r => r.Name);
     }
 
     public Dictionary<int, string> GetReplacementModmetaDictionary()
     {
-        BuildDictionary();
         return Replacements.ToDictionary(r => r.Index, r => r.ModmetaName);
     }
 
     public IEnumerable<string> GetOriginalGmdls(int target)
     {
-        BuildDictionary();
         return Replacements.First(r => r.Index == target).Models;
     }
 
     private void BuildDictionary()
     {
-        if (Replacements != null)
-        {
-            return;
-        }
-
         if (!File.Exists(_settings.ReplacementsFilePath))
         {
             var empty = new Dictionary<string, string[]>();
@@ -716,13 +709,15 @@ public class ModelReplacementPresets
         var indexCounter = 99;
         Replacements.AddRange(custom.Select(e =>
         {
+            var (name, models) = e;
             indexCounter++;
+
             return new ModelReplacementTarget
             {
                 Index = indexCounter,
-                Name = e.Key,
+                Name = name,
                 ModmetaName = $"Custom_{indexCounter}",
-                Models = e.Value
+                Models = models
             };
         }));
     }

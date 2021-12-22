@@ -18,6 +18,9 @@
 
     [Parameter]
     public Action OnClick { get; set; }
+    
+    [Parameter]
+    public Func<Task> OnClickAsync { get; set; }
 
     [Parameter]
     public string CssClass { get; set; }
@@ -25,11 +28,18 @@
     [Parameter]
     public bool IsDisabled { get; set; }
 
-    private void HandleClick()
+    private async Task HandleClick()
     {
         if (!IsDisabled)
         {
-            OnClick?.Invoke();
+            if (OnClickAsync == null)
+            {
+                OnClick?.Invoke();
+            }
+            else
+            {
+                await OnClickAsync();
+            }
         }
     }
 }

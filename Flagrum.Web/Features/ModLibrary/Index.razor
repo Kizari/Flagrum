@@ -17,7 +17,7 @@
     <div>
         <div class="flex flex-row items-start px-7 pb-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
             <div class="flex flex-row flex-wrap flex-grow">
-                <div class="bg-dark-600 shadow-md rounded row mt-5 mr-6">
+                <div class="bg-dark-600 shadow-md rounded row mt-5 mr-10">
                     <ModTypeButtonGroup Target="AppState.ActiveCategoryFilter" OnItemSelected="FilterCategory">
                         <ModTypeButton Text="Local Mods" Value="0"/>
                         <ModTypeButton Text="Workshop Mods" Value="1"/>
@@ -36,14 +36,16 @@
                 </div>
                 <div class="flex-grow"></div>
                 <div class="bg-dark-600 shadow-md rounded row mt-5 px-4">
-                    <span class="text-accent1-200 font-display text-lg">@AppState.Mods.Count(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1)) && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter))
-                        &nbsp;&nbsp;/&nbsp;&nbsp;@AppState.Mods.Count(m => AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter)&nbsp;&nbsp;/&nbsp;&nbsp;@Limits[AppState.ActiveModTypeFilter]</span>
+                    <span class="text-accent1-200 font-display text-lg">
+                        @AppState.Mods.Count(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1)) && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter))
+                        &nbsp;&nbsp;/&nbsp;&nbsp;@AppState.Mods.Count(m => AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter)&nbsp;&nbsp;/&nbsp;&nbsp;@Limits[AppState.ActiveModTypeFilter]
+                    </span>
                 </div>
             </div>
         </div>
         <CascadingValue Value="this">
             <div class="row flex-wrap px-4 ml-0.5 mb-10">
-                <NewCard />
+                <NewCard/>
                 <ModListingGroup Mods="AppState.Mods.Where(m => (AppState.ActiveCategoryFilter == -1 || m.IsWorkshopMod == (AppState.ActiveCategoryFilter == 1)) && (AppState.ActiveModTypeFilter == -1 || m.Type == AppState.ActiveModTypeFilter)).OrderByDescending(m => m.IsApplyToGame).ThenBy(m => m.Type).ThenBy(m => m.Target).ThenBy(m => m.GameMenuTitle ?? m.WorkshopTitle)"/>
             </div>
         </CascadingValue>
@@ -121,12 +123,6 @@
         }
 
         StateHasChanged();
-    }
-
-    private void Create()
-    {
-        AppState.ActiveMod = null;
-        Navigation.NavigateTo("/mod/configure");
     }
 
     private void FilterType(int type)
