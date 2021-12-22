@@ -493,6 +493,8 @@
                     Mod.ThumbnailBytes = thumbnailBytes;
                     BuildContext.ProcessThumbnailImage(thumbnailBytes);
                 }
+
+                InvokeAsync(StateHasChanged);
             });
     }
 }
