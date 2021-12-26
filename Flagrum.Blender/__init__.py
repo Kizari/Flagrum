@@ -4,9 +4,9 @@ from bpy.utils import register_class, unregister_class
 
 from .import_export.menu import ImportOperator, ExportOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
-from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, ClearTextureOperator
+from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, ClearTextureOperator, MaterialImportOperator
 from .panel.normals_panel import UseCustomNormalsOperator, TransferFCNDOperator, FCNDSettings, NormalsPanel
-from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator
+from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, NormaliseWeightsOperator
 
 bl_info = {
     "name": "Flagrum",
@@ -25,6 +25,7 @@ classes = (
     TextureSlotOperator,
     ClearTextureOperator,
     MaterialResetOperator,
+    MaterialImportOperator,
     MaterialEditorPanel,
     MaterialSettings,
     FCNDSettings,
@@ -32,6 +33,7 @@ classes = (
     UseCustomNormalsOperator,
     DeleteUnusedBonesOperator,
     DeleteUnusedVGroupsOperator,
+    NormaliseWeightsOperator,
     CleanupPanel,
     NormalsPanel
 )

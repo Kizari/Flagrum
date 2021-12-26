@@ -120,6 +120,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void MainBlazorWebView_OnInitialized(object? sender, EventArgs e)
     {
+        if (sender == null)
+        {
+            return;
+        }
+
         var webView = (BlazorWebView)sender;
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
     }

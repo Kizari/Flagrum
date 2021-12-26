@@ -12,15 +12,35 @@ from ..entities import Gpubin
 class Interop:
 
     @staticmethod
-    def import_mesh(gfxbin_path):
-        tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
+    def run_command(command):
         flagrum_path = join(dirname(__file__), "..", "lib", "Flagrum.Blender.exe")
-        command = "\"" + flagrum_path + "\" import -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
+        command = "\"" + flagrum_path + "\" " + command
         process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         (output, err) = process.communicate()
         status = process.wait()
         print(output)
         print(err)
+
+    @staticmethod
+    def import_material_inputs(gfxbin_path) -> dict[str, list[float]]:
+        tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
+        command = "material -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
+        Interop.run_command(command)
+
+        import_file = open(tempfile_path, mode='r')
+        import_data = import_file.read()
+
+        data: dict[str, list[float]] = json.loads(import_data)
+
+        import_file.close()
+        os.remove(tempfile_path)
+        return data
+
+    @staticmethod
+    def import_mesh(gfxbin_path):
+        tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
+        command = "import -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
+        Interop.run_command(command)
 
         import_file = open(tempfile_path, mode='r')
         import_data = import_file.read()

@@ -1,5 +1,6 @@
 ﻿using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmtl;
 using Newtonsoft.Json;
 
 namespace Flagrum.Blender;
@@ -14,6 +15,32 @@ public static class Program
         var parameterOutput = args[3];
         var outputPath = args[4];
 
+        switch (command)
+        {
+            case "import":
+                Import(inputPath, outputPath);
+                break;
+            case "material":
+                Material(inputPath, outputPath);
+                break;
+        }
+    }
+
+    private static void Material(string inputPath, string outputPath)
+    {
+        var reader = new MaterialReader(inputPath);
+        var material = reader.Read();
+
+        var result = material.InterfaceInputs
+            .Where(i => i.InterfaceIndex == 0)
+            .ToDictionary(i => i.ShaderGenName, i => i.Values);
+        
+        var json = JsonConvert.SerializeObject(result);
+        File.WriteAllText(outputPath, json);
+    }
+
+    private static void Import(string inputPath, string outputPath)
+    {
         var gfxbin = File.ReadAllBytes(inputPath);
         var gpubin = File.ReadAllBytes(inputPath.Replace(".gmdl.gfxbin", ".gpubin"));
         var reader = new ModelReader(gfxbin, gpubin);

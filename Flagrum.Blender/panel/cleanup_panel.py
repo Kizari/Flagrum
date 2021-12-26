@@ -1,5 +1,46 @@
 ﻿import bpy
-from bpy.types import Panel, Operator
+from bpy.types import Panel, Operator, Mesh
+
+
+class NormaliseWeightsOperator(Operator):
+    bl_idname = "flagrum.cleanup_normalise_weights"
+    bl_label = "Normalise Weights"
+    bl_description = "Limits weights to 4 per vertex and normalises existing weights to ensure a consistent result " \
+                     "with the exporter "
+
+    @classmethod
+    def poll(cls, context):
+        selected_meshes = []
+        for obj in context.view_layer.objects.selected:
+            if obj.type == 'MESH':
+                selected_meshes.append(obj)
+        return len(selected_meshes) > 0
+
+    def execute(self, context):
+        for obj in context.view_layer.objects.selected:
+            if obj.type == 'MESH':
+                mesh_data: Mesh = obj.data
+                for vertex in mesh_data.vertices:
+                    weights = vertex.groups.items().copy()
+                    weights.sort(key=lambda g: g[1].weight, reverse=True)
+                    total_weight = 0
+                    for i in range(len(weights)):
+                        group = weights[i][1]
+                        total_weight += group.weight
+                        if i == 3:
+                            break
+                    for i in range(len(weights)):
+                        group = weights[i][1]
+                        if i > 3:
+                            obj.vertex_groups[group.group].remove([vertex.index])
+                            continue
+                        if group.weight > 0:
+                            normalised_weight = group.weight / total_weight
+                            obj.vertex_groups[group.group].add([vertex.index], normalised_weight, 'REPLACE')
+                        else:
+                            obj.vertex_groups[group.group].remove([vertex.index])
+
+        return {'FINISHED'}
 
 
 class DeleteUnusedVGroupsOperator(Operator):
@@ -82,3 +123,4 @@ class CleanupPanel(Panel):
         layout = self.layout
         layout.operator(DeleteUnusedBonesOperator.bl_idname)
         layout.operator(DeleteUnusedVGroupsOperator.bl_idname)
+        layout.operator(NormaliseWeightsOperator.bl_idname)

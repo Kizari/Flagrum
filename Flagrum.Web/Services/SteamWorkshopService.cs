@@ -37,7 +37,6 @@ public class SteamWorkshopService
     private CallResult<SubmitItemUpdateResult_t> _submitItemUpdateCallback;
     private CallResult<SteamUGCQueryCompleted_t> _queryItemCallback;
     private string _tempBinmod;
-    private string _tempDat;
     private string _tempDirectory;
     private string _tempPreview;
 

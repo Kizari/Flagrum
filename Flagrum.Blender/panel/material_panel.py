@@ -5,6 +5,7 @@ from bpy.types import Panel, Operator
 from bpy_extras.io_utils import ImportHelper
 
 from .material_data import material_properties
+from ..import_export.interop import Interop
 
 
 class TextureSlotOperator(Operator, ImportHelper):
@@ -47,6 +48,40 @@ class ClearTextureOperator(Operator):
                 data = property_definition
 
         setattr(data, self.property, "")
+        return {'FINISHED'}
+
+
+class MaterialImportOperator(Operator, ImportHelper):
+    """Select a material from the local file system"""
+    bl_idname = "flagrum.material_import"
+    bl_label = "Import Defaults from GMTL"
+    filename_ext = ".gmtl.gfxbin"
+
+    filter_glob: StringProperty(
+        default="*.gmtl.gfxbin",
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context):
+        import_dict = Interop.import_material_inputs(self.filepath)
+
+        material = context.view_layer.objects.active.flagrum_material
+
+        for input_name in import_dict:
+            values = import_dict[input_name]
+
+            data = None
+            for property_definition in material.property_collection:
+                if property_definition.material_id == material.preset:
+                    data = property_definition
+
+            if data is not None:
+                if len(values) > 1:
+                    setattr(data, input_name, values)
+                else:
+                    setattr(data, input_name, values[0])
+
+        # context.area.tag_redraw()
         return {'FINISHED'}
 
 
@@ -94,8 +129,9 @@ class MaterialEditorPanel(Panel):
 
         if active_material_data is not None:
             layout.operator(MaterialResetOperator.bl_idname)
+            layout.operator(MaterialImportOperator.bl_idname)
             iterable_properties = active_material_data.property_collection.items().copy()
-            iterable_properties.sort(key=lambda p: p[1].importance)
+            iterable_properties.sort(key=lambda p: (p[1].importance, p[1].property_name))
             for empty_string, prop in iterable_properties:
                 if prop.is_relevant and prop.property_type == 'TEXTURE':
                     row = layout.row()
