@@ -12,6 +12,10 @@ public enum VertexLayoutType
     Skinning_1Bones = 0x8,
     Skinning_6Bones = 0x10,
     BoneIndices16 = 0x20,
+    // This is a test entry for Comrades, the name is an assumption
+    BoneIndices32 = 0x21,
+    // This is a test entry for Comrades, the name is an assumption
+    BoneIndices64 = 0x22,
     Skinning_Any = 0x1B
 }
 
@@ -73,7 +77,8 @@ public enum MaterialType
     FourWeights,
     SixWeights,
     EightWeights,
-    OneWeight
+    OneWeight,
+    Avatara
 }
 
 public class Mesh

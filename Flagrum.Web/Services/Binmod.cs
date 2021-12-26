@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Flagrum.Core.Archive;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Services;
@@ -114,19 +115,19 @@ public class Binmod
                         mod.MaxMp = int.Parse(value);
                         break;
                     case "bullet":
-                        mod.Ballistic = (int)(int.Parse(value) * -0.2);
+                        mod.Ballistic = int.Parse(value) * -1;
                         break;
                     case "fire":
-                        mod.Fire = (int)(int.Parse(value) * -0.2);
+                        mod.Fire = int.Parse(value) * -1;
                         break;
                     case "ice":
-                        mod.Ice = (int)(int.Parse(value) * -0.2);
+                        mod.Ice = int.Parse(value) * -1;
                         break;
                     case "thunder":
-                        mod.Thunder = (int)(int.Parse(value) * -0.2);
+                        mod.Thunder = int.Parse(value) * -1;
                         break;
                     case "dark":
-                        mod.Dark = (int)(int.Parse(value) * -0.2);
+                        mod.Dark = int.Parse(value) * -1;
                         break;
                     case "attack":
                         mod.Attack = int.Parse(value);
@@ -257,7 +258,8 @@ public class Binmod
             Model2Name = Model2Name,
             OriginalGmdls = OriginalGmdls,
             OriginalGmdlCount = OriginalGmdlCount,
-            Gender = Gender
+            Gender = Gender,
+            ThumbnailBytes = ThumbnailBytes
         };
     }
 
@@ -297,5 +299,6 @@ public class Binmod
         OriginalGmdls = mod.OriginalGmdls;
         OriginalGmdlCount = mod.OriginalGmdlCount;
         Gender = mod.Gender;
+        ThumbnailBytes = mod.ThumbnailBytes;
     }
 }

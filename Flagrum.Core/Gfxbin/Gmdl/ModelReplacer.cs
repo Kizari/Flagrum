@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flagrum.Core.Gfxbin.Characters;
+using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmdl.Templates;
 
 namespace Flagrum.Core.Gfxbin.Gmdl;
 
@@ -13,15 +14,20 @@ namespace Flagrum.Core.Gfxbin.Gmdl;
 /// </summary>
 public class ModelReplacer
 {
-    private readonly string _boye;
     private readonly Gpubin _gpubin;
     private readonly Model _model;
+    private readonly int _modTarget;
+    private readonly int _modType;
+    private readonly string _modVariant;
 
-    public ModelReplacer(Model originalModel, Gpubin replacementData, string boye)
+    public ModelReplacer(Model originalModel, Gpubin replacementData, int modType, int modTarget,
+        string modVariant = null)
     {
         _model = originalModel;
         _gpubin = replacementData;
-        _boye = boye;
+        _modType = modType;
+        _modTarget = modTarget;
+        _modVariant = modVariant;
     }
 
     public Model Replace()
@@ -227,9 +233,31 @@ public class ModelReplacer
                     }
                 }
 
-                mesh.BoneIds = boneIds.Distinct().OrderBy(i => i);
-                usedIndices.AddRange(boneIds.Distinct().Select(i => (ushort)i));
+                if (_modType == (int)BinmodType.StyleEdit)
+                {
+                    mesh.BoneIds = Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i);
+                }
+                else
+                {
+                    mesh.BoneIds = boneIds.Distinct().OrderBy(i => i);
+                    usedIndices.AddRange(boneIds.Distinct().Select(i => (ushort)i));
+                }
             }
+        }
+
+        if (_modType == (int)BinmodType.StyleEdit)
+        {
+            _model.BoneHeaders = _gpubin.BoneTable
+                .Select(kvp =>
+                {
+                    var (boneIndex, boneName) = kvp;
+                    boneIndex = ushort.MaxValue;
+                    var lodIndex = ((uint)boneIndex << 16) | 0xFFFF;
+                    return new BoneHeader {LodIndex = lodIndex, Name = boneName};
+                })
+                .ToList();
+
+            return _model;
         }
 
         // Create arbitrary indices for the bones
@@ -239,7 +267,7 @@ public class ModelReplacer
         var indexMap = usedIndices.ToDictionary(i => i, i => count++);
 
         // Need to use indices of preloaded bones to prevent rigging issues
-        foreach (var bone in Character.GetPreloadedBones(_boye.ToUpper()))
+        foreach (var bone in PreloadedBones.Get(_modType, _modTarget, _modVariant))
         {
             var match = _gpubin.BoneTable.FirstOrDefault(p => p.Value == bone.Name);
             if (match.Value != null)

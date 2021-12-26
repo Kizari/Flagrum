@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Flagrum.Core.Archive;
 
 namespace Flagrum.Web.Services;
 
@@ -63,11 +64,11 @@ public class Modmeta
 
     private void AddResistances(Binmod mod, StringBuilder builder)
     {
-        builder.AppendLine($"bullet={mod.Ballistic * -5}");
-        builder.AppendLine($"fire={mod.Fire * -5}");
-        builder.AppendLine($"ice={mod.Ice * -5}");
-        builder.AppendLine($"thunder={mod.Thunder * -5}");
-        builder.AppendLine($"dark={mod.Dark * -5}");
+        builder.AppendLine($"bullet={mod.Ballistic * -1}");
+        builder.AppendLine($"fire={mod.Fire * -1}");
+        builder.AppendLine($"ice={mod.Ice * -1}");
+        builder.AppendLine($"thunder={mod.Thunder * -1}");
+        builder.AppendLine($"dark={mod.Dark * -1}");
     }
 
     private void AddWeaponInfo(Binmod mod, StringBuilder builder)
@@ -117,8 +118,8 @@ public class Modmeta
     private void AddMultiOutfitInfo(Binmod mod, StringBuilder builder)
     {
         builder.AppendLine($"type={_binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
-        builder.AppendLine("thumbnail1=default.png");
-        builder.AppendLine("thumbnail2=default.png");
+        builder.AppendLine($"thumbnail1=mod/{mod.ModDirectoryName}/default.png");
+        builder.AppendLine($"thumbnail2=mod/{mod.ModDirectoryName}/default.png");
 
         if (mod.Model2Name == null)
         {
@@ -126,8 +127,8 @@ public class Modmeta
         }
         else
         {
-            builder.AppendLine($"gmdl1={mod.Model1Name}.{mod.ModelExtension}");
-            builder.AppendLine($"gmdl2={mod.Model2Name}.{mod.ModelExtension}");
+            builder.AppendLine($"gmdl1=mod/{mod.ModDirectoryName}/{mod.Model1Name}.{mod.ModelExtension}");
+            builder.AppendLine($"gmdl2=mod/{mod.ModDirectoryName}/{mod.Model2Name}.{mod.ModelExtension}");
         }
 
         AddModInfo(mod, builder);

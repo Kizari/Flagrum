@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
@@ -106,9 +105,7 @@ public static class MaterialBuilder
         var json = File.ReadAllText(templatePath);
         var material = JsonConvert.DeserializeObject<Material>(json);
 
-        material.Name = materialName;
-        material.Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
-        material.NameHash = Cryptography.Hash32(materialName);
+        material.UpdateName(modDirectoryName, materialName);
 
         foreach (var input in inputs)
         {
@@ -117,7 +114,7 @@ public static class MaterialBuilder
 
         foreach (var texture in textures)
         {
-            SetTexturePath(material, texture.Name, texture.Path);
+            material.UpdateTexture(texture.Name, texture.Path);
         }
 
         material.HighTexturePackAsset = "";
@@ -133,21 +130,14 @@ public static class MaterialBuilder
             }
         }
 
-        var dependencies = new List<DependencyPath>();
-        dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath
-            {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
-        dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath
-            {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
-        dependencies.Add(
-            new DependencyPath {PathHash = "asset_uri", Path = $"data://mod/{modDirectoryName}/materials/"});
-        dependencies.Add(new DependencyPath
-            {PathHash = "ref", Path = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl"});
-        material.Header.Dependencies = dependencies.DistinctBy(d => d.PathHash).ToList();
-        material.Header.Hashes = material.Header.Dependencies
-            .Where(d => ulong.TryParse(d.PathHash, out _))
-            .Select(d => ulong.Parse(d.PathHash))
-            .OrderBy(h => h)
-            .ToList();
+        var problems =
+            material.Textures.Where(t => t.Path.StartsWith("data://character") && !t.Path.Contains("/common/"));
+        foreach (var texture in problems)
+        {
+            material.UpdateTexture(texture.Name, "data://shader/defaulttextures/white.tif");
+        }
+
+        material.RegenerateDependencyTable();
 
         return material;
     }
@@ -159,25 +149,12 @@ public static class MaterialBuilder
 
         if (match == null)
         {
+            return;
             throw new ArgumentException($"Input {inputName} was not found in material {material.Name}.",
                 nameof(inputName));
         }
 
         match.Values = values;
-    }
-
-    private static void SetTexturePath(Material material, string name, string path)
-    {
-        var match = material.Textures.FirstOrDefault(t => t.ShaderGenName == name);
-
-        if (match == null)
-        {
-            return;
-        }
-
-        match.Path = path;
-        match.PathHash = Cryptography.Hash32(path);
-        match.ResourceFileHash = Cryptography.HashFileUri64(path);
     }
 
     public static byte[] GetDefaultTextureData(string name)

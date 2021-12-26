@@ -11,8 +11,6 @@
         ResizeMode="CanResize"
         Background="#181512"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
-    <Window.Resources>
-    </Window.Resources>
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="64"
                       GlassFrameThickness="0"
@@ -135,13 +133,35 @@
                             </Button.Style>
                         </Button>
                     </Grid>
-                    <blazor:BlazorWebView x:Name="MainBlazorWebView" Grid.Row="1" HostPage="{Binding HostPageUri}"
-                                          Services="{StaticResource services}" Background="#181512"
-                                          Loaded="MainBlazorWebView_OnInitialized">
-                        <blazor:BlazorWebView.RootComponents>
-                            <blazor:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />
-                        </blazor:BlazorWebView.RootComponents>
-                    </blazor:BlazorWebView>
+                    <ContentPresenter Grid.Row="1" Content="{Binding}">
+                        <ContentPresenter.Resources>
+                            <DataTemplate x:Key="BlazorWebViewTemplate">
+                                <blazor:BlazorWebView x:Name="MainBlazorWebView" HostPage="{Binding HostPageUri}"
+                                                      Services="{StaticResource services}" Background="#181512"
+                                                      Loaded="MainBlazorWebView_OnInitialized">
+                                    <blazor:BlazorWebView.RootComponents>
+                                        <blazor:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />
+                                    </blazor:BlazorWebView.RootComponents>
+                                </blazor:BlazorWebView>
+                            </DataTemplate>
+                            <DataTemplate x:Key="LoadingTemplate">
+                                <Label>Loading</Label>
+                            </DataTemplate>
+                        </ContentPresenter.Resources>
+                        <ContentPresenter.Style>
+                            <Style TargetType="{x:Type ContentPresenter}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasWebView2Runtime}" Value="True">
+                                        <Setter Property="ContentTemplate"
+                                                Value="{StaticResource BlazorWebViewTemplate}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HasWebView2Runtime}" Value="False">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource LoadingTemplate}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentPresenter.Style>
+                    </ContentPresenter>
                 </Grid>
             </Border>
         </ControlTemplate>

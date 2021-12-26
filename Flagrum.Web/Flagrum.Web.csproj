@@ -6,28 +6,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
-        <PackageReference Include="DirectXTexNet" Version="1.0.3" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Scriban" Version="5.0.0" />
-        <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
-        <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
+        <PackageReference Include="Blazored.LocalStorage" Version="4.1.5"/>
+        <PackageReference Include="DirectXTexNet" Version="1.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <PackageReference Include="Scriban" Version="5.0.0"/>
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0"/>
+        <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6"/>
     </ItemGroup>
 
     <ItemGroup>
-        <SupportedPlatform Include="browser" />
+        <SupportedPlatform Include="browser"/>
     </ItemGroup>
 
-
     <ItemGroup>
-        <_ContentIncludedByDefault Remove="Components\StandardGroupRenderer.razor" />
-        <_ContentIncludedByDefault Remove="Components\StandardNodeRenderer.razor" />
-        <_ContentIncludedByDefault Remove="Components\StandardPortRenderer.razor" />
-        <_ContentIncludedByDefault Remove="Layout\MainLayout.razor" />
-        <_ContentIncludedByDefault Remove="Layout\NodeExplorer.razor" />
-        <_ContentIncludedByDefault Remove="Layout\TypeTreeComponent.razor" />
+        <_ContentIncludedByDefault Remove="Components\StandardGroupRenderer.razor"/>
+        <_ContentIncludedByDefault Remove="Components\StandardNodeRenderer.razor"/>
+        <_ContentIncludedByDefault Remove="Components\StandardPortRenderer.razor"/>
+        <_ContentIncludedByDefault Remove="Layout\MainLayout.razor"/>
+        <_ContentIncludedByDefault Remove="Layout\NodeExplorer.razor"/>
+        <_ContentIncludedByDefault Remove="Layout\TypeTreeComponent.razor"/>
     </ItemGroup>
 
 
@@ -42,22 +41,22 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Update="wwwroot\fonts\Play-Regular.ttf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
+        <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj"/>
     </ItemGroup>
 
 
@@ -69,10 +68,10 @@
 
 
     <ItemGroup>
-      <Content Remove="package.json" />
-      <None Include="package.json" />
-      <Content Remove="package-lock.json" />
-      <None Include="package-lock.json" />
+        <Content Remove="package.json"/>
+        <None Include="package.json"/>
+        <Content Remove="package-lock.json"/>
+        <None Include="package-lock.json"/>
     </ItemGroup>
 
 </Project>

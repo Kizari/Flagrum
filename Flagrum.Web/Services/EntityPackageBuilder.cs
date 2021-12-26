@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Flagrum.Core.Archive;
 
 namespace Flagrum.Web.Services;
 
@@ -132,7 +133,7 @@ public class EntityPackageBuilder
         builder.AppendLine("      </entities_>");
         builder.AppendLine("    </object>");
         builder.AppendLine(
-            "    <object objectIndex=\"1\" name=\"index\" type=\"Black.Entity.Data.UnknownResource\" path=\"entities_.default\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
+            "    <object objectIndex=\"1\" name=\"default\" type=\"Black.Entity.Data.UnknownResource\" path=\"entities_.default\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine($"      <filePath_ type=\"string\">mod/{mod.ModDirectoryName}/default.png</filePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine(
@@ -178,7 +179,7 @@ public class EntityPackageBuilder
         builder.AppendLine("      </entities_>");
         builder.AppendLine("    </object>");
         builder.AppendLine(
-            "    <object objectIndex=\"1\" name=\"index\" type=\"Black.Entity.Data.UnknownResource\" path=\"entities_.default\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
+            "    <object objectIndex=\"1\" name=\"default\" type=\"Black.Entity.Data.UnknownResource\" path=\"entities_.default\" owner=\"\" ownerIndex=\"0\" ownerPath=\"entities_\">");
         builder.AppendLine($"      <filePath_ type=\"string\">mod/{mod.ModDirectoryName}/default.png</filePath_>");
         builder.AppendLine("    </object>");
         builder.AppendLine(

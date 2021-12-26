@@ -65,7 +65,7 @@ public class BinmodBuilder
     {
         using var unpacker = new Unpacker(mod.Path);
         var modelName = index == 0 ? mod.Model1Name : mod.Model2Name;
-        
+
         var gmdl = unpacker.UnpackFileByQuery($"{modelName}.gmdl", out var gmdlUri);
         var gpubin = unpacker.UnpackFileByQuery($"{modelName}.gpubin", out var gpubinUri);
         var reader = new ModelReader(gmdl, gpubin);
@@ -89,10 +89,10 @@ public class BinmodBuilder
                 var textureData = unpacker.UnpackFileByQuery(texture, out var textureUri);
                 _packer.AddFile(textureData, textureUri);
             }
-            
+
             _packer.AddFile(data, materialUri);
         }
-        
+
         _packer.AddFile(gmdl, gmdlUri);
         _packer.AddFile(gpubin, gpubinUri);
     }
@@ -201,10 +201,10 @@ public class BinmodBuilder
         };
 
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, modelName, modelNamePrefix, gpubin);
-        var replacer = new ModelReplacer(model, gpubin, _binmodType.GetModmetaTargetName(_mod.Type, _mod.Target));
+        var replacer = new ModelReplacer(model, gpubin, _mod.Type, _mod.Target, _mod.Gender);
         model = replacer.Replace();
 
-        if (_mod.Type == (int)BinmodType.Weapon)
+        if (_mod.Type == (int)BinmodType.Weapon || _mod.Type == (int)BinmodType.Multi_Weapon)
         {
             foreach (var bone in model.BoneHeaders)
             {
@@ -230,7 +230,8 @@ public class BinmodBuilder
         {
             // Ensure a white color AO color layer if no AO layer exists
             // to avoid vantablack model replacements and snapshots
-            if (_mod.Type != (int)BinmodType.Weapon && mesh.ColorMaps.Count < 3)
+            if (_mod.Type != (int)BinmodType.Weapon && _mod.Type != (int)BinmodType.Multi_Weapon &&
+                mesh.ColorMaps.Count < 3)
             {
                 while (mesh.ColorMaps.Count < 3)
                 {

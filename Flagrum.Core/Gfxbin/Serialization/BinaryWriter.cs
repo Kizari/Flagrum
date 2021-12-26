@@ -100,7 +100,7 @@ public class BinaryWriter
             _stream.WriteByte(bytes[0]);
             return;
         }
-        
+
         _stream.WriteByte((byte)TypeFormat.Uint16);
         _stream.Write(BitConverter.GetBytes(value));
     }
@@ -245,13 +245,14 @@ public class BinaryWriter
         // NOTE: Unsure what the correct threshold is for this lower bound
         // Unsure if it matters if the engine will read the value correctly anyway?
         //if (stringBuffer.Length <= 0x7F)
-        if (stringBuffer.Length <= 0xBF)
+        if (stringBuffer.Length is <= 0xBF and >= 0xA0)
         {
             var format = (byte)(stringBuffer.Length | 0xA0);
             WriteByte(format);
         }
         else if (stringBuffer.Length <= byte.MaxValue)
         {
+            WriteByte((byte)TypeFormat.Str8);
             WriteByte((byte)stringBuffer.Length);
         }
         else if (stringBuffer.Length <= ushort.MaxValue)

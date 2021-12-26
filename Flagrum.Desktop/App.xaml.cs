@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 
+//using Squirrel;
+
 namespace Flagrum.Desktop;
 
 /// <summary>
@@ -15,6 +17,16 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => DumpCrash((Exception)e.ExceptionObject);
         Current.DispatcherUnhandledException += (sender, e) => DumpCrash(e.Exception);
         TaskScheduler.UnobservedTaskException += (sender, e) => DumpCrash(e.Exception);
+
+// #if !DEBUG
+//         using var manager = new UpdateManager("");
+//         {
+//             SquirrelAwareApp.HandleEvents(
+//                 onInitialInstall: v => manager.CreateShortcutForThisExe(),
+//                 onAppUpdate: v => manager.CreateShortcutForThisExe(),
+//                 onAppUninstall: v => manager.RemoveShortcutForThisExe());
+//         }
+// #endif
     }
 
     private void DumpCrash(Exception? exception)

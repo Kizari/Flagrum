@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows;
@@ -16,23 +18,38 @@ namespace Flagrum.Desktop;
 /// <summary>
 ///     Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, INotifyPropertyChanged
 {
+    private readonly string flagrumDirectory;
+    private readonly string logFile;
+
 #if DEBUG
     public string HostPageUri { get; } = "wwwroot/index.html";
 #else
     public string HostPageUri { get; } = "wwwroot/_content/Flagrum.Web/index.html";
 #endif
 
+    private bool _hasWebView2Runtime;
+
+    public bool HasWebView2Runtime
+    {
+        get => _hasWebView2Runtime;
+        set
+        {
+            _hasWebView2Runtime = value;
+            OnPropertyChanged(nameof(HasWebView2Runtime));
+        }
+    }
+
     public MainWindow()
     {
-        var flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
+        flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
         if (!Directory.Exists(flagrumDirectory))
         {
             Directory.CreateDirectory(flagrumDirectory);
         }
 
-        var logFile = $"{flagrumDirectory}\\Log.txt";
+        logFile = $"{flagrumDirectory}\\Log.txt";
 
         if (File.Exists(logFile))
         {
@@ -40,6 +57,16 @@ public partial class MainWindow : Window
         }
 
         File.Create(logFile);
+
+        try
+        {
+            CoreWebView2Environment.GetAvailableBrowserVersionString();
+            HasWebView2Runtime = true;
+        }
+        catch (WebView2RuntimeNotFoundException e)
+        {
+            InstallWebView2Runtime();
+        }
 
         var services = new ServiceCollection();
 
@@ -61,6 +88,21 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    private async void InstallWebView2Runtime()
+    {
+        var start = new ProcessStartInfo
+        {
+            FileName = "MicrosoftEdgeWebview2Setup.exe",
+            Arguments = "/silent /install",
+            WindowStyle = ProcessWindowStyle.Hidden
+        };
+
+        var process = new Process {StartInfo = start};
+        process.Start();
+        await process.WaitForExitAsync();
+        await Dispatcher.InvokeAsync(() => HasWebView2Runtime = true);
+    }
+
     private void Minimize_Click(object sender, RoutedEventArgs e)
     {
         WindowState = WindowState.Minimized;
@@ -68,14 +110,7 @@ public partial class MainWindow : Window
 
     private void Maximize_Click(object sender, RoutedEventArgs e)
     {
-        if (WindowState == WindowState.Maximized)
-        {
-            WindowState = WindowState.Normal;
-        }
-        else
-        {
-            WindowState = WindowState.Maximized;
-        }
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
@@ -87,5 +122,12 @@ public partial class MainWindow : Window
     {
         var webView = (BlazorWebView)sender;
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

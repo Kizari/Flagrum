@@ -168,11 +168,12 @@ public static class OutfitTemplate
             VertexLayoutType = materialType switch
             {
                 MaterialType.OneWeight => VertexLayoutType.Skinning_1Bones,
+                //MaterialType.Avatara => VertexLayoutType.BoneIndices64,
                 _ => VertexLayoutType.Skinning_4Bones
             },
 
             LowLodShadowCascadeNo = 2, // Always 2
-            IsOrientedBB = true, // Always true
+            IsOrientedBB = true,
 
             // These will always be the same, shouldn't need to ever change
             PrimitiveType = PrimitiveType.PrimitiveTypeTriangleList,

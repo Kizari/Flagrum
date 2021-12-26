@@ -16,13 +16,37 @@ public class Program
         paths.AddRange(Directory.EnumerateFiles(directory).Select(f =>
         {
             var result = f.Replace("C:\\Testing\\ModelReplacements\\mo-sword\\", "data://").Replace('\\', '/');
-            return (f,
-                result.Contains("/wetness/") ? result.Replace(".btex", ".tga") : result.Replace(".btex", ".tif"));
+            return (f, result.Contains("/wetness/")
+                ? result.Replace(".btex", ".tga")
+                : result.Replace(".btex", ".tif"));
         }));
     }
 
     public static void Main(string[] args)
     {
+        //GfxbinTests.CheckModel();
+        GfxbinTests.CheckMaterialDefaults();
+        // var gfx = @"C:\Modding\Extractions\character\am\am50\model_010\am50_010.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        // bool x = true;
+
+        // var gfx = @"C:\Modding\character\am\am00\model_001\am00_001.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        // var builder = new StringBuilder();
+        // builder.AppendLine("new List<BoneHeader>");
+        // builder.AppendLine("{");
+        // foreach (var bone in model.BoneHeaders)
+        // {
+        //     builder.AppendLine("    new() { Name = \"" + bone.Name + "\", LodIndex = " + bone.LodIndex + " },");
+        // }
+        //
+        // builder.AppendLine("};");
+        // File.WriteAllText(@"C:\Modding\boneTable.cs", builder.ToString());
+
         //BtexTests.Convert();
         // var path = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\BASIC_MATERIAL.json";
         // var material = JsonConvert.DeserializeObject<Material>(File.ReadAllText(path));
@@ -125,9 +149,10 @@ public class Program
 
         // var reader =
         //     new MaterialReader(
-        //         "C:\\Modding\\Extractions\\angery_sword\\mod\\96ec9564-657c-493a-8561-70f3989784b8\\materials\\body_ashape_mat.gmtl");
+        //         @"C:\Modding\Extractions\character\am\am50\model_010\materials\am50_010_cloth_00_mat.gmtl.gfxbin");
         //
         // var material = reader.Read();
+        // bool x = true;
         //
         // foreach (var dependency in material.Header.Dependencies)
         // {

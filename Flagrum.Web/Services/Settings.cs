@@ -42,7 +42,7 @@ public class Settings
             WorkshopPath = settingsData.WorkshopPath;
         }
 
-        TempDirectory = "FlagrumDirectory\\tmp";
+        TempDirectory = $"{FlagrumDirectory}\\tmp";
         if (!Directory.Exists(TempDirectory))
         {
             Directory.CreateDirectory(TempDirectory);
@@ -53,18 +53,21 @@ public class Settings
             var basePath =
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\My Games\\FINAL FANTASY XV\\Steam";
 
-            foreach (var directory in Directory.EnumerateDirectories(basePath))
+            if (Directory.Exists(basePath))
             {
-                foreach (var subdirectory in Directory.EnumerateDirectories(directory))
+                foreach (var directory in Directory.EnumerateDirectories(basePath))
                 {
-                    if (subdirectory.EndsWith("\\mod"))
+                    foreach (var subdirectory in Directory.EnumerateDirectories(directory))
                     {
-                        var binmodList = Directory.EnumerateFiles(subdirectory)
-                            .FirstOrDefault(f => f.ToLower().EndsWith("\\binmod.list"));
-
-                        if (binmodList != null)
+                        if (subdirectory.EndsWith("\\mod"))
                         {
-                            BinmodListPath = binmodList;
+                            var binmodList = Directory.EnumerateFiles(subdirectory)
+                                .FirstOrDefault(f => f.ToLower().EndsWith("\\binmod.list"));
+
+                            if (binmodList != null)
+                            {
+                                BinmodListPath = binmodList;
+                            }
                         }
                     }
                 }

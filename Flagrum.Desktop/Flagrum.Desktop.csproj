@@ -8,37 +8,51 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <AssemblyName>Flagrum</AssemblyName>
+        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <FileVersion>1.0.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0" />
+        <PackageReference Include="Clowd.Squirrel" Version="2.6.34-pre"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Web\Flagrum.Web.csproj" />
+        <ProjectReference Include="..\Flagrum.Web\Flagrum.Web.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="flagrumHeader.png" />
-      <None Update="steam_appid.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="steam_api64.dll">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </None>
+        <None Remove="flagrumHeader.png"/>
+        <None Update="steam_appid.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="steam_api64.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Resources\flagrum-titlebar.png" />
+        <None Remove="Resources\flagrum-titlebar.png"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Resource Include="flagrum-titlebar.png">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Resource>
+        <Resource Include="flagrum-titlebar.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
+        <None Remove="Resources\spinner.png"/>
     </ItemGroup>
+
+    <PropertyGroup>
+        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+    </PropertyGroup>
+
+    <Target Name="CopyDependencies" AfterTargets="Publish">
+        <ItemGroup>
+            <ExternalDependencies Include="$(SolutionDir)\Dependencies\**\*.*"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(ExternalDependencies)" DestinationFiles="@(ExternalDependencies->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')"/>
+    </Target>
 
 </Project>

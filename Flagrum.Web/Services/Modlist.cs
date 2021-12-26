@@ -18,6 +18,11 @@ public class ModlistEntry
     {
         var entries = new List<ModlistEntry>();
 
+        if (!File.Exists(path))
+        {
+            return entries;
+        }
+
         using (var reader = new StreamReader(path))
         {
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))

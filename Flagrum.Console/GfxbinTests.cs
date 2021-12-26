@@ -16,7 +16,16 @@
 // using Microsoft.Extensions.Logging;
 // using Newtonsoft.Json;
 //
-// namespace Flagrum.Console;
+
+using System.IO;
+using System.Linq;
+using System.Text;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmtl;
+
+namespace Flagrum.Console;
+
 //
 // public class UselessLogger : ILogger
 // {
@@ -34,8 +43,154 @@
 //     }
 // }
 //
-// public static class GfxbinTests
-// {
+public static class GfxbinTests
+{
+    // public static void BuildGameAssetMod()
+    //  {
+    //      var previewImage = File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png");
+    //      var mod = new Binmod
+    //      {
+    //          Type = (int)BinmodType.StyleEdit,
+    //          Target = (int)OutfitMultiTarget.Gloves,
+    //          GameMenuTitle = "Default Outfit",
+    //          WorkshopTitle = "Default Outfit",
+    //          Description = "So default!",
+    //          Uuid = "2fd5d8d5-0e1a-4ac5-8d80-a7a8ccb2715e",
+    //          Index = 17120955,
+    //          ModDirectoryName = "2fd5d8d5-0e1a-4ac5-8d80-a7a8ccb2715e",
+    //          Model1Name = "slim",
+    //          Model2Name = "chubby"
+    //      };
+    //
+    //      var packer = new Packer();
+    //
+    //      packer.AddFile(Modmeta.Build(mod), $"data://mod/{mod.ModDirectoryName}/index.modmeta");
+    //      var exml = EntityPackageBuilder.BuildExml(mod);
+    //      packer.AddFile(exml, "data://$mod/temp.ebex");
+    //
+    //      var tempFile = Path.GetTempFileName();
+    //      var tempFile2 = Path.GetTempFileName();
+    //      File.WriteAllBytes(tempFile, previewImage);
+    //      BtexConverter.Convert(btexConverterPath, tempFile, tempFile2, BtexConverter.TextureType.Thumbnail);
+    //      var btex = File.ReadAllBytes(tempFile2);
+    //
+    //      packer.AddFile(previewImage, $"data://mod/{mod.ModDirectoryName}/$preview.png.bin");
+    //      packer.AddFile(btex, $"data://mod/{mod.ModDirectoryName}/$preview.png");
+    //
+    //      foreach (var texturePath in Directory.EnumerateFiles("C:\\Modding\\GameAssetTesting\\nh00_010\\sourceimages"))
+    //      {
+    //          packer.AddFile(File.ReadAllBytes(texturePath), texturePath
+    //              .Replace("C:\\Modding\\GameAssetTesting\\nh00_010", $"data://mod/{mod.ModDirectoryName}")
+    //              .Replace('\\', '/')
+    //              .Replace(".btex", ".tif"));
+    //      }
+    //
+    //      var gfx = "C:\\Users\\Kieran\\Desktop\\Mods\\Noctis\\character\\nh\\nh00\\model_010\\nh00_010.gmdl.gfxbin";
+    //      var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+    //      var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+    //      var model = reader.Read();
+    //      var reference = model.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref");
+    //      var assetUri = model.Header.Dependencies.FirstOrDefault(d => d.PathHash == "asset_uri");
+    //      reference.Path = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl";
+    //      assetUri.Path = $"data://mod/{mod.ModDirectoryName}/";
+    //      var gpubin = model.Header.Dependencies.FirstOrDefault(d => d.Path.EndsWith(".gpubin"));
+    //      var index = model.Header.Hashes.IndexOf(ulong.Parse(gpubin.PathHash));
+    //      gpubin.Path = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
+    //      var gpubinHash = Cryptography.HashFileUri64(gpubin.Path);
+    //      gpubin.PathHash = gpubinHash.ToString();
+    //      model.Header.Hashes[index] = gpubinHash;
+    //      model.AssetHash = gpubinHash;
+    //      model.Header.Dependencies.Clear();
+    //
+    //      foreach (var materialPath in Directory.EnumerateFiles("C:\\Modding\\GameAssetTesting\\nh00_010\\materials"))
+    //      {
+    //          var materialUri = materialPath
+    //              .Replace("C:\\Modding\\GameAssetTesting\\nh00_010", $"data://mod/{mod.ModDirectoryName}")
+    //              .Replace('\\', '/')
+    //              .Replace(".gmtl.gfxbin", ".gmtl");
+    //
+    //          model.Header.Dependencies.Add(new DependencyPath
+    //              {Path = materialUri, PathHash = Cryptography.HashFileUri64(materialUri).ToString()});
+    //
+    //          var materialReader = new MaterialReader(materialPath);
+    //          var material = materialReader.Read();
+    //          var oldMaterialHash =
+    //              Cryptography.HashFileUri64(material.Header.Dependencies.FirstOrDefault(d => d.PathHash == "ref").Path);
+    //          var matchingMeshes = model.MeshObjects[0].Meshes.Where(m => m.DefaultMaterialHash == oldMaterialHash);
+    //          if (!matchingMeshes.Any())
+    //          {
+    //              throw new Exception("REEEEEEE");
+    //          }
+    //
+    //          foreach (var matchingMesh in matchingMeshes)
+    //          {
+    //              matchingMesh.DefaultMaterialHash = Cryptography.HashFileUri64(materialUri);
+    //          }
+    //
+    //          foreach (var texture in material.Textures.Where(t => t.Path.Contains("character/nh/nh00")))
+    //          {
+    //              texture.Path = texture.Path.Replace("data://character/nh/nh00", "data://mod");
+    //              texture.PathHash = Cryptography.Hash32(texture.Path);
+    //              texture.ResourceFileHash = Cryptography.HashFileUri64(texture.Path);
+    //          }
+    //
+    //          var dependencies = new List<DependencyPath>();
+    //          dependencies.AddRange(material.ShaderBinaries.Where(s => s.ResourceFileHash > 0).Select(s =>
+    //              new DependencyPath {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
+    //          dependencies.AddRange(material.Textures.Where(s => s.ResourceFileHash > 0).Select(s => new DependencyPath
+    //              {Path = s.Path, PathHash = s.ResourceFileHash.ToString()}));
+    //          dependencies.Add(new DependencyPath
+    //              {PathHash = "asset_uri", Path = $"data://mod/{mod.ModDirectoryName}/materials/"});
+    //          dependencies.Add(new DependencyPath {PathHash = "ref", Path = materialUri});
+    //          material.Header.Dependencies = dependencies
+    //              .DistinctBy(d => d.PathHash)
+    //              .OrderBy(d => d.PathHash)
+    //              .ToList();
+    //          material.Header.Hashes = material.Header.Dependencies
+    //              .Where(d => ulong.TryParse(d.PathHash, out _))
+    //              .Select(d => ulong.Parse(d.PathHash))
+    //              .OrderBy(h => h)
+    //              .ToList();
+    //
+    //          var materialWriter = new MaterialWriter(material);
+    //          packer.AddFile(materialWriter.Write(), materialUri);
+    //      }
+    //
+    //      var gpubinPath = $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin";
+    //      model.Header.Dependencies.Add(new DependencyPath
+    //          {Path = gpubinPath, PathHash = Cryptography.HashFileUri64(gpubinPath).ToString()});
+    //      model.Header.Dependencies.Add(reference);
+    //      model.Header.Dependencies.Add(assetUri);
+    //      model.Header.Dependencies = model.Header.Dependencies
+    //          .OrderBy(d => d.PathHash)
+    //          .ToList();
+    //      model.Header.Hashes = model.Header.Dependencies
+    //          .Where(d => ulong.TryParse(d.PathHash, out _))
+    //          .Select(d => ulong.Parse(d.PathHash))
+    //          .OrderBy(h => h)
+    //          .ToList();
+    //
+    //      var writer = new ModelWriter(model);
+    //      var (gfxData, gpuData) = writer.Write();
+    //
+    //      packer.AddFile(gfxData, $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gmdl.gfxbin");
+    //      packer.AddFile(gpuData, $"data://mod/{mod.ModDirectoryName}/{mod.ModelName}.gpubin");
+    //      packer.WriteToFile($"C:\\Modding\\{mod.Uuid}.ffxvbinmod");
+    //  }
+    public static void CheckModel()
+    {
+        var unpacker =
+            new Unpacker(
+                @"C:\Users\Kieran\Documents\My Games\FINAL FANTASY XV\Steam\76561198079211203\mod\2fd5d8d5-0e1a-4ac5-8d80-a7a8ccb2715e.ffxvbinmod");
+        var gfx = unpacker.UnpackFileByQuery("slim.gmdl", out _);
+        var gpu = unpacker.UnpackFileByQuery("slim.gpubin", out _);
+        //File.WriteAllBytes(@"C:\Modding\slim.gmdl.gfxbin", gfx);
+        //File.WriteAllBytes(@"C:\Modding\slim.gpubin", gpu);
+        var reader = new ModelReader(gfx, gpu);
+        var model = reader.Read();
+        var x = true;
+    }
+
 //     public static void Add010ToMod()
 //     {
 //         var modDirectoryName = "d0120e15-3b15-4821-845c-c7d6b94b1a72";
@@ -632,29 +787,30 @@
 //         }
 //     }
 //
-//     public static void CheckMaterialDefaults()
-//     {
-//         //var path =
-//         //C:\\Testing\\character\\nh\\nh01\\model_000\\materials\\nh01_000_skin_00_mat.gmtl.gfxbin";
-//         var path =
-//             "C:\\Users\\Kieran\\Desktop\\character\\nh\\nh02\\model_000\\materials\\nh02_000_eye_00_mat.gmtl.gfxbin";
-//         var reader = new MaterialReader(path);
-//         var material = reader.Read();
-//
-//         // var builder = new StringBuilder();
-//         // foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
-//         // {
-//         //     builder.AppendLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
-//         // }
-//
-//         var builder = new StringBuilder();
-//         foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
-//         {
-//             builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
-//         }
-//
-//         File.WriteAllText("C:\\Testing\\nh02_000_eye_00_mat_texture_defaults.txt", builder.ToString());
-//     }
+    public static void CheckMaterialDefaults()
+    {
+        var path = @"C:\Modding\Extractions\character\am\am50\model_010\materials\am50_010_cloth_00_mat.gmtl.gfxbin";
+        var reader = new MaterialReader(path);
+        var material = reader.Read();
+
+        var builder = new StringBuilder();
+        foreach (var input in material.InterfaceInputs.Where(i => i.InterfaceIndex == 0))
+        {
+            builder.AppendLine($"{input.ShaderGenName}: {string.Join(", ", input.Values)}");
+        }
+
+        File.WriteAllText(@"C:\Modding\" + path.Split('\\').Last().Replace(".gmtl.gfxbin", "_input_defaults.txt"),
+            builder.ToString());
+
+        builder = new StringBuilder();
+        foreach (var texture in material.Textures.Where(t => !t.Path.EndsWith(".sb")))
+        {
+            builder.AppendLine($"{texture.Name}\n{texture.Path}\n\n");
+        }
+
+        File.WriteAllText(@"C:\Modding\" + path.Split('\\').Last().Replace(".gmtl.gfxbin", "_texture_defaults.txt"),
+            builder.ToString());
+    }
 //
 //     public static void Compare()
 //     {
@@ -838,4 +994,4 @@
 //             // }
 //         }
 //     }
-// }
+}

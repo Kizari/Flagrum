@@ -1,5 +1,5 @@
 ﻿using System;
-using Flagrum.Web.Services;
+using Flagrum.Core.Archive;
 
 namespace Flagrum.Web.Features.ModLibrary.Data;
 
@@ -77,11 +77,6 @@ public class StatsModel
                 Stat.Attack => 3.0,
                 Stat.MaxHp => 3.0,
                 Stat.MaxMp => 0.2,
-                Stat.Fire => 0.2,
-                Stat.Ice => 0.2,
-                Stat.Thunder => 0.2,
-                Stat.Dark => 0.2,
-                Stat.Ballistic => 0.2,
                 _ => 1.0
             },
 
@@ -89,11 +84,6 @@ public class StatsModel
             {
                 Stat.Attack => 2.0,
                 Stat.MaxHp => 5.0,
-                Stat.Fire => 0.2,
-                Stat.Ice => 0.2,
-                Stat.Thunder => 0.2,
-                Stat.Dark => 0.2,
-                Stat.Ballistic => 0.2,
                 _ => 1.0
             },
 
@@ -105,6 +95,11 @@ public class StatsModel
                 Stat.Vitality => 5.0,
                 Stat.Magic => 5.0,
                 Stat.Spirit => 5.0,
+                Stat.Fire => 5.0,
+                Stat.Ice => 5.0,
+                Stat.Thunder => 5.0,
+                Stat.Dark => 5.0,
+                Stat.Ballistic => 5.0,
                 _ => 1.0
             },
 
@@ -119,13 +114,13 @@ public class StatsModel
         switch (stat)
         {
             case Stat.Fire:
-                return type == BinmodType.Cloth ? -100 : -20;
+                return type == BinmodType.Cloth ? -500 : -100;
             case Stat.Ice:
-                return type == BinmodType.Cloth ? -100 : -20;
+                return type == BinmodType.Cloth ? -500 : -100;
             case Stat.Thunder:
-                return type == BinmodType.Cloth ? -100 : -20;
+                return type == BinmodType.Cloth ? -500 : -100;
             case Stat.Dark:
-                return type == BinmodType.Cloth ? -100 : -20;
+                return type == BinmodType.Cloth ? -500 : -100;
             case Stat.MaxHp:
                 if (type == BinmodType.Weapon && target == (int)WeaponSoloTarget.Large_Sword)
                 {
@@ -173,7 +168,7 @@ public class StatsModel
                     return 5;
                 }
 
-                return type == BinmodType.Cloth ? -100 : -20;
+                return type == BinmodType.Cloth ? -500 : -100;
             case Stat.Attack:
                 if (type == BinmodType.Weapon)
                 {
