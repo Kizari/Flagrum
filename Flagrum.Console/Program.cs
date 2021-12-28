@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Console.Utilities;
 
 namespace Flagrum.Console;
 
@@ -24,8 +25,14 @@ public class Program
 
     public static void Main(string[] args)
     {
-        //GfxbinTests.CheckModel();
-        GfxbinTests.CheckMaterialDefaults();
+        //MaterialsToTemplates.Run();
+        //GfxbinTests.CheckMaterial();
+        // GfxbinTests.CheckModel();
+        GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh01_010_cloth_00_mat.gmtl.gfxbin");
+        // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh01_010_skin_00_mat.gmtl.gfxbin");
+        // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh02_010_skin_01_mat.gmtl.gfxbin");
+        // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh03_010_skin_00_mat.gmtl.gfxbin");
+        
         // var gfx = @"C:\Modding\Extractions\character\am\am50\model_010\am50_010.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));

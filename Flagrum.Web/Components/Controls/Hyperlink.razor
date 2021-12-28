@@ -1,0 +1,16 @@
+﻿@using System.Diagnostics
+<span @onclick="OnClick" class="text-accent1-200 mt-2 inline-block underline cursor-pointer hover:text-white">@Text</span>
+
+@code
+{
+    [Parameter] public string Text { get; set; }
+    [Parameter] public string Uri { get; set; }
+    
+    private void OnClick()
+    {
+        Process.Start(new ProcessStartInfo(Uri)
+        {
+            UseShellExecute = true
+        });
+    }
+}

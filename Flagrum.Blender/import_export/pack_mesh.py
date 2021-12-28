@@ -72,6 +72,9 @@ def pack_mesh():
             # Triangulate faces as Luminous only supports tris
             bmesh.ops.triangulate(bmesh_copy, faces=bmesh_copy.faces, quad_method='FIXED', ngon_method='EAR_CLIP')
 
+            # Delete any loose vertices
+            bmesh.ops.delete(bmesh_copy, geom=[v for v in bmesh_copy.verts if not v.link_faces], context='VERTS')
+
             # Apply the changes to the cloned mesh
             bmesh.update_edit_mesh(mesh_copy.data)
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -197,6 +200,7 @@ def _pack_normals_and_tangents(mesh: Object):
             tangent = Normal()
             converted_normal = conversion_matrix @ Vector(vertex.normal)
             converted_tangent = conversion_matrix @ Vector(vertex.tangent)
+            bitangent_sign = int(vertex.bitangent_sign)
             normal.X = int(converted_normal[0] * 127.0)
             normal.Y = int(converted_normal[1] * 127.0)
             normal.Z = int(converted_normal[2] * 127.0)
@@ -204,7 +208,7 @@ def _pack_normals_and_tangents(mesh: Object):
             tangent.X = int(converted_tangent[0] * 127.0)
             tangent.Y = int(converted_tangent[1] * 127.0)
             tangent.Z = int(converted_tangent[2] * 127.0)
-            tangent.W = -127
+            tangent.W = 127 * bitangent_sign
             normals_dict[vertex.vertex_index] = normal
             tangents_dict[vertex.vertex_index] = tangent
 

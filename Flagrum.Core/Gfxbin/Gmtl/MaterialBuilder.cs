@@ -20,7 +20,7 @@ public static class MaterialBuilder
         {"Occlusion0Texture", "white.btex"},
         {"MRS0_Texture", "teal.btex"},
         {"Texture0", "white.btex"},
-        {"SSSMask_Texture", "white.btex"},
+        //{"SSSMask_Texture", "white.btex"},
         {"OpacityMask0_Texture", "white.btex"},
         {"Transparency0_Texture", "white.btex"},
         {"Transparency0Texture", "white.btex"},
@@ -34,7 +34,7 @@ public static class MaterialBuilder
         {"BaseColor1_Texture", "white-color.btex"},
         {"BaseColor1_Texture0", "white-color.btex"},
         {"BaseColor2_Texture", "white-color.btex"},
-        {"BloodTexture_Mask", "white.btex"},
+        //{"BloodTexture_Mask", "white.btex"},
         {"DirtField_mask", "white.btex"},
         {"DropsMask_Texture", "white.btex"},
         {"DustColorMaskTex", "white.btex"},
@@ -42,7 +42,7 @@ public static class MaterialBuilder
         {"Emissive2_Texture", "black.btex"},
         {"Emissive3_Texture", "black.btex"},
         {"FazzMask0_Texture", "white.btex"},
-        {"IceMask_Texture", "white.btex"},
+        //{"IceMask_Texture", "white.btex"},
         {"MuliMask_Texture_Detail", "black.btex"},
         {"MultiMask_Texture_Lip", "black.btex"},
         {"MultiMask_Texture_Manicure", "black.btex"},
@@ -79,8 +79,8 @@ public static class MaterialBuilder
         {"Occlusion_Texture_Detail", "white.btex"},
         {"Occlusion1_Texture", "white.btex"},
         {"OpacityMask1_Texture", "white.btex"},
-        {"StoneMask_Texture", "white.btex"},
-        {"SweatTexture_Mask", "white.btex"},
+        //{"StoneMask_Texture", "white.btex"},
+        //{"SweatTexture_Mask", "white.btex"},
         {"wipersMask_Texture", "white.btex"}
     };
 

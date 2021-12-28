@@ -191,6 +191,17 @@ public static class GfxbinTests
         var x = true;
     }
 
+    public static void CheckMaterial()
+    {
+        var unpacker =
+            new Unpacker(
+                @"C:\Users\Kieran\Documents\My Games\FINAL FANTASY XV\Steam\76561198079211203\mod\4d0d078e-3042-4814-bd15-845b6b5b7b89.ffxvbinmod");
+        var gfx = unpacker.UnpackFileByQuery("full_mat.gmtl", out var uri);
+        var reader = new MaterialReader(gfx);
+        var material = reader.Read();
+        var x = true;
+    }
+
 //     public static void Add010ToMod()
 //     {
 //         var modDirectoryName = "d0120e15-3b15-4821-845c-c7d6b94b1a72";
@@ -787,9 +798,8 @@ public static class GfxbinTests
 //         }
 //     }
 //
-    public static void CheckMaterialDefaults()
+    public static void CheckMaterialDefaults(string path)
     {
-        var path = @"C:\Modding\Extractions\character\am\am50\model_010\materials\am50_010_cloth_00_mat.gmtl.gfxbin";
         var reader = new MaterialReader(path);
         var material = reader.Read();
 
