@@ -5,7 +5,7 @@
 @using System.IO
 
 @inject NavigationManager Navigation
-@inject Settings Settings
+@inject SettingsService Settings
 @inject AppStateService AppState
 @inject ILogger<Index> Logger
 @inject BinmodTypeHelper BinmodTypeHelper
@@ -113,18 +113,12 @@
                         return;
                     }
 
-                    if (mod.Type == (int)BinmodType.StyleEdit)
-                    {
-                        mod.ThumbnailBytes = unpacker.UnpackFileByQuery("default.png", out _);
-                    }
-
                     mod.Description = mod.Description?.Replace("\\n", "\n");
                     mod.GameMenuDescription = mod.GameMenuDescription?.Replace("\\n", "\n");
                     mod.IsWorkshopMod = binmodListing.IsWorkshopMod;
                     mod.Index = binmodListing.Index;
                     mod.IsApplyToGame = binmodListing.IsEnabled;
                     mod.Path = file;
-                    mod.PreviewBytes = previewBytes;
                     File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{mod.Uuid}.png", previewBytes);
 
                     mods.Add(mod);
@@ -135,10 +129,26 @@
                 AppState.UnmanagedEntries = binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
             });
 
+            ClearOldImages();
             AppState.IsModListInitialized = true;
         }
 
         StateHasChanged();
+    }
+
+    private async void ClearOldImages()
+    {
+        await Task.Run(() =>
+        {
+            var exceptions = AppState.Mods.Select(m => $"{IOHelper.GetWebRoot()}\\images\\{m.Uuid}.png");
+            foreach (var image in Directory.EnumerateFiles($"{IOHelper.GetWebRoot()}\\images"))
+            {
+                if (!exceptions.Contains(image))
+                {
+                    File.Delete(image);
+                }
+            }
+        });
     }
 
     private void FilterType(int type)

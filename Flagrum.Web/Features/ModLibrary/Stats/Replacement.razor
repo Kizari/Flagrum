@@ -1,4 +1,5 @@
-﻿<div class="box mt-6">
+﻿@using Index = Flagrum.Web.Features.ModLibrary.Editor.Index
+<div class="box mt-6">
     <EditForm Model="Parent">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
@@ -26,5 +27,5 @@
 @code
 {
     [CascadingParameter]
-    public Configure Parent { get; set; }
+    public Index Parent { get; set; }
 }

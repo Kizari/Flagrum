@@ -129,7 +129,7 @@ class MaterialEditorPanel(Panel):
 
         if active_material_data is not None:
             layout.operator(MaterialResetOperator.bl_idname)
-            layout.operator(MaterialImportOperator.bl_idname)
+            # layout.operator(MaterialImportOperator.bl_idname)
             iterable_properties = active_material_data.property_collection.items().copy()
             iterable_properties.sort(key=lambda p: (p[1].importance, p[1].property_name))
             for empty_string, prop in iterable_properties:

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -9,11 +10,39 @@ public enum TextureType
     Color,
     Greyscale,
     Normal,
+    Preview,
     Thumbnail
 }
 
 public static class BtexConverter
 {
+    public static byte[] BtexToDds(byte[] btex)
+    {
+        // Remove SEDB header
+        var withoutSedb = new byte[btex.Length - 128];
+        Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
+
+        var btexHeader = ReadBtexHeader(withoutSedb);
+        var ddsHeader = new DdsHeader
+        {
+            Height = btexHeader.Height,
+            Width = btexHeader.Width,
+            PitchOrLinearSize = btexHeader.Pitch,
+            Depth = btexHeader.Depth,
+            MipMapCount = btexHeader.MipMapCount,
+            Flags = DDSFlags.Texture | DDSFlags.Pitch | DDSFlags.Depth | DDSFlags.MipMapCount,
+            PixelFormat = new PixelFormat(),
+            DX10Header = new DX10
+            {
+                ArraySize = btexHeader.ArraySize,
+                Format = BtexFormatToDX10Format(btexHeader.Format),
+                ResourceDimension = btexHeader.Dimension + 1u
+            }
+        };
+
+        return WriteDds(ddsHeader, btexHeader.Data);
+    }
+
     public static byte[] DdsToBtex(TextureType type, string fileName, byte[] dds)
     {
         var ddsHeader = ReadDdsHeader(dds, out var ddsContent);
@@ -42,7 +71,7 @@ public static class BtexConverter
             btexHeader.MipMaps.Add(new BtexMipMap
             {
                 Offset = i == 0 ? 0 : btexHeader.MipMaps[i - 1].Offset + btexHeader.MipMaps[i - 1].Size,
-                Size = (uint)(type == TextureType.Thumbnail
+                Size = (uint)(type == TextureType.Preview
                     ? Math.Max(GetBlockSize(type), width * height * GetBlockSize(type))
                     : Math.Max(GetBlockSize(type) * 4, CalculatePitch(width, type) * height))
             });
@@ -63,6 +92,53 @@ public static class BtexConverter
         writer.Write(sedbHeader.ToBytes());
         writer.Write(btex);
         return stream.ToArray();
+    }
+
+    private static byte[] WriteDds(DdsHeader header, byte[] data)
+    {
+        using var memoryStream = new MemoryStream();
+        using var writer = new BinaryWriter(memoryStream, Encoding.UTF8);
+
+        writer.Write(542327876);
+        writer.Write(header.p_Size);
+        writer.Write((uint)header.Flags);
+        writer.Write(header.Height);
+        writer.Write(header.Width);
+        writer.Write(header.PitchOrLinearSize);
+        writer.Write(header.Depth);
+        writer.Write(header.MipMapCount);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(0);
+        writer.Write(header.PixelFormat.Size);
+        writer.Write((uint)header.PixelFormat.Flags);
+        writer.Write(header.PixelFormat.FourCC);
+        writer.Write(header.PixelFormat.RGBBitCount);
+        writer.Write(header.PixelFormat.RBitMask);
+        writer.Write(header.PixelFormat.GBitMask);
+        writer.Write(header.PixelFormat.BBitMask);
+        writer.Write(header.PixelFormat.ABitMask);
+        writer.Write(header.p_Caps);
+        writer.Write(header.p_Caps2);
+        writer.Write(header.p_Caps3);
+        writer.Write(header.p_Caps4);
+        writer.Write(0);
+        writer.Write(header.DX10Header.Format);
+        writer.Write(header.DX10Header.ResourceDimension);
+        writer.Write(header.DX10Header.MiscFlags);
+        writer.Write(header.DX10Header.ArraySize);
+        writer.Write(header.DX10Header.MiscFlags2);
+        writer.Write(data);
+
+        return memoryStream.ToArray();
     }
 
     private static byte[] WriteBtex(BtexHeader header)
@@ -153,12 +229,28 @@ public static class BtexConverter
         };
     }
 
+    private static uint BtexFormatToDX10Format(ushort format)
+    {
+        return format switch
+        {
+            0x0B => 28,
+            0x19 => 74,
+            0x1A => 77,
+            0x21 => 80,
+            0x22 => 83,
+            0x23 => 95,
+            0x24 => 98,
+            0x18 => 71,
+            _ => 71
+        };
+    }
+
     private static byte ImageFlagsForType(TextureType type)
     {
         return type switch
         {
             TextureType.Color => 49,
-            TextureType.Thumbnail => 33,
+            TextureType.Preview or TextureType.Thumbnail => 33,
             _ => 17
         };
     }
@@ -167,7 +259,7 @@ public static class BtexConverter
     {
         return type switch
         {
-            TextureType.Thumbnail => Math.Max(1, (width * (GetBlockSize(type) * 8) + 7) / 8),
+            TextureType.Preview or TextureType.Thumbnail => Math.Max(1, (width * (GetBlockSize(type) * 8) + 7) / 8),
             _ => Math.Max(1, (width + 3) / 4 * GetBlockSize(type))
         };
     }
@@ -180,6 +272,74 @@ public static class BtexConverter
             TextureType.Greyscale => 2,
             _ => 4
         };
+    }
+
+    private static BtexHeader ReadBtexHeader(byte[] btex)
+    {
+        var header = new BtexHeader();
+        using var memoryStream = new MemoryStream(btex);
+        using var reader = new BinaryReader(memoryStream, Encoding.UTF8);
+
+        // Skip BTEX tag
+        memoryStream.Seek(4, SeekOrigin.Begin);
+
+        header.HeaderSize = reader.ReadUInt32();
+        header.p_ImageFileSize = reader.ReadUInt32();
+        header.p_Version = reader.ReadUInt16();
+        header.p_Platform = reader.ReadByte();
+        header.p_Flags = reader.ReadByte();
+
+        header.p_ImageCount = reader.ReadUInt16();
+        header.p_ImageHeaderStride = reader.ReadUInt16();
+        header.p_ImageHeaderOffset = reader.ReadUInt32();
+
+        memoryStream.Seek(header.p_ImageHeaderOffset, SeekOrigin.Begin);
+
+        header.Width = reader.ReadUInt16();
+        header.Height = reader.ReadUInt16();
+        header.Pitch = reader.ReadUInt16();
+        header.Format = reader.ReadUInt16();
+        header.MipMapCount = reader.ReadByte();
+        header.Depth = reader.ReadByte();
+        header.Dimension = reader.ReadByte();
+        header.p_ImageFlags = reader.ReadByte();
+        header.p_SurfaceCount = reader.ReadUInt16();
+        header.p_SurfaceHeaderStride = reader.ReadUInt16();
+
+        header.p_PlatformDataOffset = reader.ReadUInt32();
+        header.p_SurfaceHeaderOffset = reader.ReadUInt32();
+        header.p_NameOffset = reader.ReadUInt32();
+        header.p_PlatformDataSize = reader.ReadUInt32();
+
+        header.p_HighTextureMipLevels = reader.ReadByte();
+        memoryStream.Seek(3, SeekOrigin.Current); // Skip padding
+        header.p_HighTextureDataSizeByte = reader.ReadUInt32();
+        memoryStream.Seek(8, SeekOrigin.Current); // Skip padding
+
+        header.p_TileMode = reader.ReadUInt32();
+        header.ArraySize = reader.ReadUInt16();
+
+        memoryStream.Seek(header.p_ImageHeaderOffset + header.p_NameOffset, SeekOrigin.Begin);
+
+        var nameBytes = new List<byte>();
+        byte current = 0x00;
+
+        do
+        {
+            current = reader.ReadByte();
+
+            if (current != 0x00)
+            {
+                nameBytes.Add(current);
+            }
+        } while (current != 0x00);
+
+        header.p_Name = Encoding.UTF8.GetString(nameBytes.ToArray());
+
+        memoryStream.Seek(header.HeaderSize, SeekOrigin.Begin);
+
+        header.Data = reader.ReadBytes((int)(memoryStream.Length - memoryStream.Position));
+        return header;
     }
 
     private static DdsHeader ReadDdsHeader(byte[] dds, out byte[] content)

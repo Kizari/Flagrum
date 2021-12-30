@@ -21,8 +21,6 @@ public class Binmod
     public int Type { get; set; }
     public int Target { get; set; } = -1;
     public ulong ItemId { get; set; }
-    public byte[] PreviewBytes { get; set; }
-    public byte[] ThumbnailBytes { get; set; }
     public string GameMenuTitle { get; set; }
     public string GameMenuDescription { get; set; }
     public string WorkshopTitle { get; set; }
@@ -54,6 +52,31 @@ public class Binmod
     public int OriginalGmdlCount { get; set; }
     public string Gender { get; set; }
     public string ModelExtension { get; set; } = "gmdl";
+
+    public byte[] GetPreviewPng()
+    {
+        using var unpacker = new Unpacker(Path);
+        return unpacker.UnpackFileByQuery("$preview.png.bin", out _);
+    }
+
+    /// <summary>
+    ///     Check if the thumbnail PNG is present in the current archive
+    /// </summary>
+    /// <param name="data">Contains PNG data if true, or BTEX data if false</param>
+    /// <returns>True if default.png.bin is present in the archive</returns>
+    public bool HasThumbnailPng(out byte[] data)
+    {
+        using var unpacker = new Unpacker(Path);
+
+        if (unpacker.HasFile($"data://mod/{ModDirectoryName}/default.png.bin"))
+        {
+            data = unpacker.UnpackFileByQuery("default.png.bin", out _);
+            return true;
+        }
+
+        data = unpacker.UnpackFileByQuery("default.png", out _);
+        return false;
+    }
 
     public static Binmod FromModmetaBytes(byte[] buffer, BinmodTypeHelper binmodType, ILogger logger)
     {
@@ -227,7 +250,6 @@ public class Binmod
         {
             Type = Type,
             ItemId = ItemId,
-            PreviewBytes = PreviewBytes,
             GameMenuTitle = GameMenuTitle,
             WorkshopTitle = WorkshopTitle,
             Description = Description,
@@ -258,8 +280,7 @@ public class Binmod
             Model2Name = Model2Name,
             OriginalGmdls = OriginalGmdls,
             OriginalGmdlCount = OriginalGmdlCount,
-            Gender = Gender,
-            ThumbnailBytes = ThumbnailBytes
+            Gender = Gender
         };
     }
 
@@ -267,7 +288,6 @@ public class Binmod
     {
         Type = mod.Type;
         ItemId = mod.ItemId;
-        PreviewBytes = mod.PreviewBytes;
         GameMenuTitle = mod.GameMenuTitle;
         WorkshopTitle = mod.WorkshopTitle;
         Description = mod.Description;
@@ -299,6 +319,5 @@ public class Binmod
         OriginalGmdls = mod.OriginalGmdls;
         OriginalGmdlCount = mod.OriginalGmdlCount;
         Gender = mod.Gender;
-        ThumbnailBytes = mod.ThumbnailBytes;
     }
 }

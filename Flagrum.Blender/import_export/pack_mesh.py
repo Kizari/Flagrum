@@ -129,8 +129,21 @@ def _pack_normals_and_tangents_v2(mesh: Object, custom_data):
     for i in range(size):
         normal = Normal()
         tangent = Normal()
-        converted_normal = conversion_matrix @ Vector(normals_dict[i][0])
-        converted_tangent = conversion_matrix @ Vector(tangents_dict[i][0])
+
+        normal_vector = Vector(normals_dict[i][0])
+        for j in range(len(normals_dict[i])):
+            if j > 0:
+                normal_vector += Vector(normals_dict[i][j])
+        normal_vector.normalize()
+
+        tangent_vector = Vector(tangents_dict[i][0])
+        for j in range(len(tangents_dict[i])):
+            if j > 0:
+                tangent_vector += Vector(tangents_dict[i][j])
+        tangent_vector.normalize()
+
+        converted_normal = conversion_matrix @ normal_vector
+        converted_tangent = conversion_matrix @ tangent_vector
         normal.X = int(converted_normal[0] * 127.0)
         normal.Y = int(converted_normal[1] * 127.0)
         normal.Z = int(converted_normal[2] * 127.0)

@@ -13,7 +13,7 @@
                 <span class="flex-grow">
                     Upload to Steam Workshop
                 </span>
-                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish" />
+                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish"/>
                 <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
             </div>
 
@@ -51,15 +51,15 @@
     </EditForm>
 </LoadingView>
 
-<Modal @ref="Modal" />
+<Modal @ref="Modal"/>
 
 @code
 {
     private WorkshopItemDetails Details { get; set; } = new();
-    
+
     private bool IsLoading { get; set; } = true;
     private string LoadingText { get; set; } = "Contacting Steam";
-    
+
     private Modal Modal { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
@@ -68,7 +68,7 @@
 
         if (firstRender)
         {
-            if (AppState.ActiveMod.PreviewBytes.Length > 953673)
+            if (AppState.ActiveMod.GetPreviewPng().Length > 953673)
             {
                 Modal.Open("Error",
                     "Preview Image too Large",

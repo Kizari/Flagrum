@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Web.WebView2.Core;
+using Squirrel;
 
 namespace Flagrum.Desktop;
 
@@ -127,6 +128,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var webView = (BlazorWebView)sender;
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
+        Update();
+    }
+
+    private async void Update()
+    {
+        try
+        {
+            using var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum");
+            var result = await manager;
+            result?.UpdateApp();
+        }
+        catch
+        {
+            // Server can't be reached, ignore update for now
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

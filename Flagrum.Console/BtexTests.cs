@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Web.Services;
-using TextureType = Flagrum.Core.Gfxbin.Btex.TextureType;
 
 namespace Flagrum.Console;
 
@@ -15,7 +15,7 @@ public static class BtexTests
         var outputPath = $"C:\\Modding\\BTex\\{name}.btex";
 
         var converter = new TextureConverter();
-        var btex = converter.Convert(name, "png", TextureType.Greyscale, File.ReadAllBytes(inputPath));
+        var btex = converter.ToBtex(name, "png", TextureType.Greyscale, File.ReadAllBytes(inputPath));
         File.WriteAllBytes(outputPath, btex);
         System.Console.WriteLine((DateTime.Now - timer).TotalMilliseconds);
     }

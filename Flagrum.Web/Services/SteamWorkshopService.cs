@@ -21,21 +21,21 @@ public class SteamWorkshopService
 {
     private const uint AppId = 637650;
     private readonly AppId_t _appId;
-
-    private readonly Modmeta _modmeta;
     private readonly AppStateService _appState;
     private readonly ILogger<SteamWorkshopService> _logger;
 
-    private WorkshopItemDetails _currentDetails;
+    private readonly Modmeta _modmeta;
 
     private readonly Timer _timer;
     private CallResult<CreateItemResult_t> _createItemCallback;
+
+    private WorkshopItemDetails _currentDetails;
     private bool _isInitialized;
     private Action _onCreate;
-    private Action _onUpdate;
     private Action<WorkshopItemDetails> _onQueryComplete;
-    private CallResult<SubmitItemUpdateResult_t> _submitItemUpdateCallback;
+    private Action _onUpdate;
     private CallResult<SteamUGCQueryCompleted_t> _queryItemCallback;
+    private CallResult<SubmitItemUpdateResult_t> _submitItemUpdateCallback;
     private string _tempBinmod;
     private string _tempDirectory;
     private string _tempPreview;
@@ -74,11 +74,11 @@ public class SteamWorkshopService
     public void Get(ulong itemId, Action<WorkshopItemDetails> onComplete)
     {
         _onQueryComplete = onComplete;
-        
+
         _timer.Start();
         var fileId = new PublishedFileId_t(itemId);
         _queryItemCallback = CallResult<SteamUGCQueryCompleted_t>.Create(OnQueryComplete);
-        var request = SteamUGC.CreateQueryUGCDetailsRequest(new[] { fileId }, 1);
+        var request = SteamUGC.CreateQueryUGCDetailsRequest(new[] {fileId}, 1);
         _queryItemCallback.Set(SteamUGC.SendQueryUGCRequest(request));
     }
 
@@ -106,7 +106,7 @@ public class SteamWorkshopService
         SteamUGC.SetItemVisibility(updateHandle, (ERemoteStoragePublishedFileVisibility)details.Visibility);
 
         _tempPreview = Path.GetTempFileName();
-        File.WriteAllBytes(_tempPreview, _appState.ActiveMod.PreviewBytes);
+        File.WriteAllBytes(_tempPreview, _appState.ActiveMod.GetPreviewPng());
         SteamUGC.SetItemPreview(updateHandle, _tempPreview);
 
         if (details.Tags.Count > 0)
@@ -188,7 +188,7 @@ public class SteamWorkshopService
                 _onQueryComplete(new WorkshopItemDetails());
                 return;
             }
-            
+
             _onQueryComplete(new WorkshopItemDetails
             {
                 Description = details.m_rgchDescription,

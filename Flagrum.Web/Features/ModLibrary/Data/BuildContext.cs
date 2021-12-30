@@ -127,7 +127,7 @@ public class BuildContext
                 var converter = new TextureConverter();
                 texture.Mesh = data.Mesh;
                 texture.TextureSlot = data.TextureSlot;
-                texture.Data = converter.Convert(data.Name, data.Extension, data.Type, data.Data);
+                texture.Data = converter.ToBtex(data.Name, data.Extension, data.Type, data.Data);
                 fmd.Textures.Add(texture);
             });
 
@@ -135,7 +135,7 @@ public class BuildContext
         });
     }
 
-    public async void ProcessPreviewImage(string file, Func<byte[], Task> onUpdate)
+    public async void ProcessPreviewImage(string file, Func<Task> onUpdate)
     {
         Flags |= BuildContextFlags.PreviewImageChanged;
 
@@ -147,13 +147,13 @@ public class BuildContext
             PreviewImage = buffer;
 
             await File.WriteAllBytesAsync($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", buffer);
-            await onUpdate(buffer);
+            await onUpdate();
 
             var converter = new TextureConverter();
-            PreviewBtex = converter.Convert(
+            PreviewBtex = converter.ToBtex(
                 "$preview",
                 file.Split('.').Last(),
-                TextureType.Thumbnail,
+                TextureType.Preview,
                 buffer);
         });
     }
@@ -164,15 +164,15 @@ public class BuildContext
         {
             var converter = new TextureConverter();
             PreviewImage = image;
-            PreviewBtex = converter.Convert(
+            PreviewBtex = converter.ToBtex(
                 "$preview",
                 "png",
-                TextureType.Thumbnail,
+                TextureType.Preview,
                 image);
         });
     }
 
-    public async void ProcessThumbnailImage(string file, Func<byte[], Task> onUpdate)
+    public async void ProcessThumbnailImage(string file, Func<Task> onUpdate)
     {
         ThumbnailBtex = null;
         Flags |= BuildContextFlags.PreviewImageChanged;
@@ -185,10 +185,10 @@ public class BuildContext
             ThumbnailImage = buffer;
 
             await File.WriteAllBytesAsync($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", buffer);
-            await onUpdate(buffer);
+            await onUpdate();
 
             var converter = new TextureConverter();
-            ThumbnailBtex = converter.Convert(
+            ThumbnailBtex = converter.ToBtex(
                 "default",
                 file.Split('.').Last(),
                 TextureType.Thumbnail,
@@ -202,7 +202,7 @@ public class BuildContext
         {
             var converter = new TextureConverter();
             ThumbnailImage = image;
-            ThumbnailBtex = converter.Convert(
+            ThumbnailBtex = converter.ToBtex(
                 "default",
                 "png",
                 TextureType.Thumbnail,

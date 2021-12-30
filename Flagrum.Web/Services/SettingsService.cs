@@ -13,9 +13,9 @@ public class SettingsData
     public string WorkshopPath { get; set; }
 }
 
-public class Settings
+public class SettingsService
 {
-    public Settings()
+    public SettingsService()
     {
         var imagesDirectory = $"{IOHelper.GetWebRoot()}\\images";
         if (!Directory.Exists(imagesDirectory))

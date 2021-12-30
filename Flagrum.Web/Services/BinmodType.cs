@@ -8,10 +8,10 @@ namespace Flagrum.Web.Services;
 public class BinmodTypeHelper
 {
     private readonly ModelReplacementPresets _modelReplacementPresets;
-    private readonly Settings _settings;
+    private readonly SettingsService _settings;
 
     public BinmodTypeHelper(
-        Settings settings,
+        SettingsService settings,
         ModelReplacementPresets presets)
     {
         _settings = settings;
@@ -102,7 +102,7 @@ public class BinmodTypeHelper
         else if (type == BinmodType.StyleEdit)
         {
             var target = (OutfitMultiTarget)binmodTarget;
-            if (target != OutfitMultiTarget.Accessory)
+            if (target is not OutfitMultiTarget.Accessory and not OutfitMultiTarget.Hair)
             {
                 return 2;
             }

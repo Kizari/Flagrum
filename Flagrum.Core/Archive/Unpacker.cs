@@ -27,6 +27,12 @@ public class Unpacker : IDisposable
         _stream?.Dispose();
     }
 
+    public bool HasFile(string uri)
+    {
+        _files ??= ReadFileHeaders().ToList();
+        return _files.Any(f => f.Uri == uri);
+    }
+
     /// <summary>
     ///     Retrieves the data for one file in the archive
     /// </summary>

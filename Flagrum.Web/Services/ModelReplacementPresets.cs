@@ -15,9 +15,9 @@ public class ModelReplacementTarget
 
 public class ModelReplacementPresets
 {
-    private readonly Settings _settings;
+    private readonly SettingsService _settings;
 
-    public ModelReplacementPresets(Settings settings)
+    public ModelReplacementPresets(SettingsService settings)
     {
         _settings = settings;
         BuildDictionary();

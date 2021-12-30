@@ -16,13 +16,13 @@ public class BinmodBuilder
     private readonly BinmodTypeHelper _binmodType;
     private readonly EntityPackageBuilder _entityPackageBuilder;
     private readonly Modmeta _modmeta;
-    private readonly Settings _settings;
+    private readonly SettingsService _settings;
 
     private Binmod _mod;
     private Packer _packer;
 
     public BinmodBuilder(
-        Settings settings,
+        SettingsService settings,
         EntityPackageBuilder entityPackageBuilder,
         Modmeta modmeta,
         BinmodTypeHelper binmodType)
@@ -33,7 +33,8 @@ public class BinmodBuilder
         _binmodType = binmodType;
     }
 
-    public void Initialise(Binmod mod, byte[] previewImage, byte[] previewBtex, byte[] thumbnailBtex)
+    public void Initialise(Binmod mod, byte[] previewImage, byte[] previewBtex, byte[] thumbnailImage,
+        byte[] thumbnailBtex)
     {
         _mod = mod;
         _packer = new Packer();
@@ -47,6 +48,7 @@ public class BinmodBuilder
 
         if (mod.Type == (int)BinmodType.StyleEdit)
         {
+            _packer.AddFile(thumbnailImage, GetDataPath("default.png.bin"));
             _packer.AddFile(thumbnailBtex, GetDataPath("default.png"));
         }
     }

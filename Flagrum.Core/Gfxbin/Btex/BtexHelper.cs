@@ -53,6 +53,15 @@ public static class BtexHelper
             return "_e";
         }
 
+        if (textureId.ToLower().StartsWith("multimask_texture"))
+        {
+            var index = textureId.Substring("multimask_texture".Length);
+            if (int.TryParse(index, out _))
+            {
+                return "_mm" + index;
+            }
+        }
+
         return "";
     }
 }

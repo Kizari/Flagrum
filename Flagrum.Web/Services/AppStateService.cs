@@ -5,9 +5,9 @@ namespace Flagrum.Web.Services;
 
 public class AppStateService
 {
-    private readonly Settings _settings;
+    private readonly SettingsService _settings;
 
-    public AppStateService(Settings settings)
+    public AppStateService(SettingsService settings)
     {
         _settings = settings;
     }
