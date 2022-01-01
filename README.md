@@ -31,17 +31,11 @@ Most notably:
 
 Flagrum is split into two vital components. The Flagrum desktop application that creates and manages the mods, and the Flagrum Blender add-on that facilitates the Flagrum materials and the export of models to Flagrum's FMD format.
 
-**Flagrum Desktop Application**
-
-Please download the one-click installer from the releases page.
-
-**Flagrum Blender Add-on**
-
-Please download the latest zip from the releases page and "install from zip" from Blender's add-on menu.
+Please find the latest builds and installation instructions on the [Releases Page](https://github.com/Kizari/Flagrum/Releases/latest).
 
 ## Usage
 
-We have a great list of resources over at the Flagrum Wiki that cover the usage of Flagrum and the Flagrum Blender Add-on.
+We have a great list of resources over at the [Flagrum Wiki](https://github.com/Kizari/Flagrum/Wiki) that cover the usage of Flagrum and the Flagrum Blender Add-on.
 
 ## Contributions
 
