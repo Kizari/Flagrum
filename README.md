@@ -15,8 +15,8 @@ Most notably:
 * Support for MRS textures (no need to split by channel)
 * Fixed in-game preview images for mods (including Comrades thumbnails)
 * Support for Vertex Colours
-* Support for colour variants on Comrades styles
 * Proper support for alpha and emission
+* Partial support for colour variants on Comrades hairstyles
 
 As well as these key features, Flagrum also greatly simplifies the
 old modding workflow and increases the speed of developing mods.

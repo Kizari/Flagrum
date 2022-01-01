@@ -19,6 +19,5 @@ Flagrum.Web to enable the use of Steam Workshop in Flagrum.
 ### Publishing Installer
 
 ```
-C:\Users\Kieran\.nuget\packages\clowd.squirrel\2.6.34-pre\tools\Squirrel.exe pack --packName "Flagrum"
---packVersion "1.0.0" --packAuthors "Exineris" --packDirectory "C:\Code\Flagrum\Flagrum.Desktop\bin\Release\net6.0-windows\publish"
+C:\Users\Kieran\.nuget\packages\clowd.squirrel\2.6.34-pre\tools\Squirrel.exe pack --packName "Flagrum" --packVersion "1.0.0" --packAuthors "Exineris" --packDirectory "C:\Code\Flagrum\Flagrum.Desktop\bin\Release\net6.0-windows\publish\win-x64" --releaseDir "C:\Modding\Publish\Releases" --setupIcon "C:\Code\Flagrum\Flagrum.Desktop\Resources\Flagrum.ico" --splashImage "C:\Code\Flagrum\Splash.png"
 ```

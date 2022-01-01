@@ -93,7 +93,7 @@ public class Mesh
     public PrimitiveType PrimitiveType { get; set; }
 
     public uint FaceIndexBufferOffset { get; set; }
-    public int[,] FaceIndices { get; set; }
+    public uint[,] FaceIndices { get; set; }
 
     public uint VertexCount { get; set; }
     public IList<VertexStreamDescription> VertexStreamDescriptions { get; set; }

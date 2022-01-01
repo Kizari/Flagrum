@@ -13,14 +13,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Clowd.Squirrel" Version="2.6.34-pre"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
+      <None Remove="loading.gif" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Web\Flagrum.Web.csproj"/>
+        <PackageReference Include="Clowd.Squirrel" Version="2.6.34-pre" />
+        <PackageReference Include="FontAwesome5" Version="2.1.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Flagrum.Web\Flagrum.Web.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -45,17 +50,21 @@
         <Resource Include="flagrum-titlebar.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
+        <Content Include="Resources\loading.gif">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <PropertyGroup>
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
 
     <Target Name="CopyDependencies" AfterTargets="Publish">
         <ItemGroup>
-            <ExternalDependencies Include="$(SolutionDir)\Dependencies\**\*.*"/>
+            <ExternalDependencies Include="$(SolutionDir)\Dependencies\**\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(ExternalDependencies)" DestinationFiles="@(ExternalDependencies->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')"/>
+        <Copy SourceFiles="@(ExternalDependencies)" DestinationFiles="@(ExternalDependencies->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
     </Target>
 
 </Project>

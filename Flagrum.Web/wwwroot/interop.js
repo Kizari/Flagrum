@@ -58,5 +58,26 @@ window.interop = {
         }
 
         image.src = `images/${modId}.png`;
+    },
+
+    initialiseBmcButton: function (id) {
+        let button = document.getElementById(id);
+        let C = document.querySelector('script[data-name="bmc-button"]');
+        button.innerHTML = bmcBtnWidget(
+            C.attributes["data-text"].value,
+            C.attributes["data-slug"].value,
+            C.attributes["data-color"].value,
+            C.attributes["data-emoji"].value,
+            C.attributes["data-font"].value,
+            C.attributes["data-font-color"]
+                ? C.attributes["data-font-color"].value
+                : void 0,
+            C.attributes["data-outline-color"]
+                ? C.attributes["data-outline-color"].value
+                : void 0,
+            C.attributes["data-coffee-color"]
+                ? C.attributes["data-coffee-color"].value
+                : void 0
+        );
     }
 }

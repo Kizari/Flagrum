@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
+        xmlns:fa5="http://schemas.fontawesome.com/icons/"
         mc:Ignorable="d"
         Title="Flagrum" Width="1680" Height="1050"
         WindowStartupLocation="CenterScreen"
@@ -145,7 +146,10 @@
                                 </blazor:BlazorWebView>
                             </DataTemplate>
                             <DataTemplate x:Key="LoadingTemplate">
-                                <Label>Loading</Label>
+                                <StackPanel VerticalAlignment="Center">
+                                    <fa5:SvgAwesome Icon="Solid_SyncAlt" Spin="True" SpinDuration="2" Foreground="LightGray" Width="80" Height="80" />
+                                    <Label Foreground="LightGray" HorizontalAlignment="Center" FontSize="18pt" Margin="0, 20, 0, 100">Installing Additional Dependencies</Label>
+                                </StackPanel>
                             </DataTemplate>
                         </ContentPresenter.Resources>
                         <ContentPresenter.Style>

@@ -2,6 +2,9 @@
 using System.IO;
 using System.Linq;
 using Flagrum.Console.Utilities;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmtl;
 
 namespace Flagrum.Console;
 
@@ -25,10 +28,22 @@ public class Program
 
     public static void Main(string[] args)
     {
+        using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\me\me01\model_010\materials\autoexternal.earc");
+        var gmtls = unpacker.UnpackFilesByQuery(".gmtl");
+        foreach (var (name, data) in gmtls)
+        {
+            var reader = new MaterialReader(data);
+            var material = reader.Read();
+        }
+        //var gfx = @"C:\Users\Kieran\Desktop\character\aw\aw90\model_010\aw90_010.gmdl.gfxbin";
+        //var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        //var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        //var model = reader.Read();
+        //bool x = true;
         //MaterialsToTemplates.Run();
         //GfxbinTests.CheckMaterial();
         // GfxbinTests.CheckModel();
-        GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh01_010_cloth_00_mat.gmtl.gfxbin");
+        //GfxbinTests.CheckMaterialDefaults(@"C:\Users\Kieran\Downloads\me01_010_monbasic_mat_00.gmtl.gfxbin");
         // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh01_010_skin_00_mat.gmtl.gfxbin");
         // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh02_010_skin_01_mat.gmtl.gfxbin");
         // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh03_010_skin_00_mat.gmtl.gfxbin");

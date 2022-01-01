@@ -51,7 +51,7 @@
     </EditForm>
 </LoadingView>
 
-<Modal @ref="Modal"/>
+<AlertModal @ref="Modal"/>
 
 @code
 {
@@ -60,7 +60,7 @@
     private bool IsLoading { get; set; } = true;
     private string LoadingText { get; set; } = "Contacting Steam";
 
-    private Modal Modal { get; set; }
+    private AlertModal Modal { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {

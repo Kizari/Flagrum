@@ -235,7 +235,14 @@ public class ModelReplacer
 
                 if (_modType == (int)BinmodType.StyleEdit)
                 {
-                    mesh.BoneIds = Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i);
+                    if (_gpubin.BoneTable.Count > 1)
+                    {
+                        mesh.BoneIds = Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i);
+                    }
+                    else
+                    {
+                        mesh.BoneIds = new[] { 0u };
+                    }
                 }
                 else
                 {

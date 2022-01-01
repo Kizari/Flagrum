@@ -10,11 +10,11 @@ public class GpubinPacker
 
     private readonly MemoryStream _gpubinStream = new();
 
-    public (uint offset, uint size) PackFaceIndices(int[,] faceIndices, IndexType faceIndexType)
+    public (uint offset, uint size) PackFaceIndices(uint[,] faceIndices, IndexType faceIndexType)
     {
         var stream = new MemoryStream();
 
-        Func<int, byte[]> pack = faceIndexType switch
+        Func<uint, byte[]> pack = faceIndexType switch
         {
             IndexType.IndexType32 => BitConverter.GetBytes,
             IndexType.IndexType16 => index => BitConverter.GetBytes((ushort)index),

@@ -1,0 +1,39 @@
+﻿<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Title</span>
+        <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="text-center w-full">
+            <h3 class="mb-4 text-grey-300">@Heading</h3>
+            <span class="block mb-20">
+                @Subtext
+            </span>
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    private Modal Modal { get; set; }
+
+    private string Title { get; set; }
+    private string Heading { get; set; }
+    private string Subtext { get; set; }
+    private Action OnClose { get; set; }
+
+    public void Open(string title, string heading, string subtext, Action onClose)
+    {
+        Title = title;
+        Heading = heading;
+        Subtext = subtext;
+        OnClose = onClose;
+
+        Modal.Open();
+    }
+
+    public void Close()
+    {
+        Modal.Close(OnClose);
+    }
+}

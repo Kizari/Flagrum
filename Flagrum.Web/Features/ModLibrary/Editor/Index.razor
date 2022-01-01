@@ -87,7 +87,7 @@
                             <tr>
                                 <td class="pb-1">Mod Target:</td>
                                 <td class="pb-1 pl-3">
-                                    <strong>@(BinmodTypeHelper.GetTargets(Mod.Type)[Mod.Target])</strong>
+                                    <strong>@BinmodTypeHelper.GetTargetName(Mod.Type, Mod.Target)</strong>
                                 </td>
                             </tr>
                             <tr>
@@ -162,3 +162,11 @@
         </div>
     </LoadingView>
 </CascadingValue>
+
+<PromptModal Title="Delete Mod"
+             @ref="DeleteModal"
+             Heading="Are you sure?"
+             Subtext="This action cannot be undone!"
+             YesText="Delete"
+             NoText="Cancel"
+             OnYes="OnDelete" />

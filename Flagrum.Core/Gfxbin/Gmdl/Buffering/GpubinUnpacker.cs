@@ -76,15 +76,15 @@ public class GpubinUnpacker
         };
     }
 
-    public int[,] UnpackFaceIndices(int gpubinOffset, int faceIndicesCount, IndexType faceIndexType)
+    public uint[,] UnpackFaceIndices(int gpubinOffset, int faceIndicesCount, IndexType faceIndexType)
     {
         var faceCount = faceIndicesCount / 3; // All faces are tris on gmdl meshes
-        var faceIndices = new int[faceCount, 3];
+        var faceIndices = new uint[faceCount, 3];
 
-        Func<int, int> unpack = faceIndexType switch
+        Func<int, uint> unpack = faceIndexType switch
         {
-            IndexType.IndexType32 => index => BitConverter.ToInt32(_gpubin, gpubinOffset + 4 * index),
-            IndexType.IndexType16 => index => BitConverter.ToInt16(_gpubin, gpubinOffset + 2 * index),
+            IndexType.IndexType32 => index => BitConverter.ToUInt32(_gpubin, gpubinOffset + 4 * index),
+            IndexType.IndexType16 => index => BitConverter.ToUInt16(_gpubin, gpubinOffset + 2 * index),
             _ => throw new ArgumentException("Provided face index type not supported.", nameof(faceIndexType))
         };
 

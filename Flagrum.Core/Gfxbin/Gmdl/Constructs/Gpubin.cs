@@ -15,7 +15,7 @@ public class Gpubin
 public class GpubinMesh
 {
     public string Name { get; set; }
-    public int[,] FaceIndices { get; set; }
+    public uint[,] FaceIndices { get; set; }
     public List<Vector3> VertexPositions { get; set; } = new();
     public List<Normal> Normals { get; set; } = new();
     public List<Normal> Tangents { get; set; } = new();

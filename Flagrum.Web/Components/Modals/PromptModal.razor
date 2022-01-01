@@ -1,0 +1,38 @@
+﻿<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Title</span>
+    </HeaderView>
+    <BodyView>
+        <div class="text-center w-full">
+            <h3 class="mb-4 text-grey-300">@Heading</h3>
+            <span class="block mb-10">
+                @Subtext
+            </span>
+            <Button Text="@YesText" OnClick="() => Close(true)" CssClass="mr-1.5 mb-10" />
+            <Button Text="@NoText" OnClick="() => Close(false)" CssClass="ml-1.5 mb-10" />
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    private Modal Modal { get; set; }
+
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Heading { get; set; }
+    [Parameter] public string Subtext { get; set; }
+    [Parameter] public string YesText { get; set; } = "Yes";
+    [Parameter] public string NoText { get; set; } = "No";
+    [Parameter] public Action OnYes { get; set; }
+    [Parameter] public Action OnNo { get; set; }
+
+    public void Open()
+    {
+        Modal.Open();
+    }
+
+    public void Close(bool isYes)
+    {
+        Modal.Close(isYes ? OnYes : OnNo);
+    }
+}

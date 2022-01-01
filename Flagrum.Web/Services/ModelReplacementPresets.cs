@@ -704,21 +704,29 @@ public class ModelReplacementPresets
             }
         };
 
-        var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
-        var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
-        var indexCounter = 99;
-        Replacements.AddRange(custom.Select(e =>
+        try
         {
-            var (name, models) = e;
-            indexCounter++;
-
-            return new ModelReplacementTarget
+            var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
+            var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
+            var indexCounter = 99;
+            Replacements.AddRange(custom.Select(e =>
             {
-                Index = indexCounter,
-                Name = name,
-                ModmetaName = $"Custom_{indexCounter}",
-                Models = models
-            };
-        }));
+                var (name, models) = e;
+                indexCounter++;
+
+                return new ModelReplacementTarget
+                {
+                    Index = indexCounter,
+                    Name = name,
+                    ModmetaName = $"Custom_{indexCounter}",
+                    Models = models
+                };
+            }));
+        }
+        catch
+        {
+            // Can just continue as normal if the JSON is malformed
+            // User just won't have custom presets until they fix it
+        }
     }
 }

@@ -42,6 +42,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    public string SpinnerPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Resources\loading.gif");
+
     public MainWindow()
     {
         flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";

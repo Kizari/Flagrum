@@ -26,6 +26,9 @@ public class BinmodTypeHelper
     private Dictionary<BinmodType, string> ModmetaTypes { get; set; }
     private Dictionary<string, BinmodType> ModmetaTypesReversed { get; set; }
 
+    private Dictionary<int, string> TemporaryModmetaTargets { get; set; } = new();
+    private Dictionary<string, int> TemporaryModmetaTargetsReversed { get; set; } = new();
+
     public string GetModmetaTypeName(int type)
     {
         CreateModmetaTypes();
@@ -67,16 +70,53 @@ public class BinmodTypeHelper
         return Targets[(BinmodType)type];
     }
 
+    public string GetTargetName(int binmodType, int binmodTarget)
+    {
+        var targets = GetTargets(binmodType);
+        if (targets.TryGetValue(binmodTarget, out var value))
+        {
+            return value;
+        }
+        else
+        {
+            return TemporaryModmetaTargets[binmodTarget];
+        }
+    }
+
     public string GetModmetaTargetName(int binmodType, int binmodTarget)
     {
         CreateModmetaTargets();
-        return ModmetaTargets[(BinmodType)binmodType][binmodTarget];
+        var dictionary = ModmetaTargets[(BinmodType)binmodType];
+        if (dictionary.TryGetValue(binmodTarget, out var value))
+        {
+            return value;
+        }
+        else
+        {
+            return TemporaryModmetaTargets[binmodTarget];
+        }
     }
 
     public int GetBinmodTarget(int binmodType, string targetName)
     {
         CreateModmetaTargets();
-        return ModmetaTargetsReversed[(BinmodType)binmodType][targetName];
+        var dictionary = ModmetaTargetsReversed[(BinmodType)binmodType];
+        if (dictionary.TryGetValue(targetName, out var value))
+        {
+            return value;
+        }
+        else
+        {
+            var id = 100000;
+            if (TemporaryModmetaTargets.Count > 0)
+            {
+                id = TemporaryModmetaTargets.Max(t => t.Key) + 1;
+            }
+
+            TemporaryModmetaTargets.Add(id, targetName);
+            TemporaryModmetaTargetsReversed.Add(targetName, id);
+            return id;
+        }
     }
 
     public int GetModelCount(int binmodType, int binmodTarget)

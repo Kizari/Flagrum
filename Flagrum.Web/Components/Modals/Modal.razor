@@ -1,37 +1,31 @@
 ﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.4)">
-    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="width: 600px; height: 400px">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="width: 400px; height: 300px">
         <div class="rounded-t-lg bg-grey-700 p-3 row">
-            <span class="text-grey-300 flex-grow">@Title</span>
-            <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
+            @HeaderView
         </div>
-        <div class="rounded-b-lg p-6 flex flex-row h-full items-center">
-            <div class="text-center w-full">
-                <h3 class="mb-4 text-grey-300">@Heading</h3>
-                <span class="block mb-20">
-                    @Subtext
-                </span>
+        <div class="@(FooterView == null ? "rounded-b-lg" : "") p-6 flex flex-row h-full items-center">
+            @BodyView
+        </div>
+        @if (FooterView != null)
+        {
+            <div class="rounded-b-lg bg-grey-700 p-3 row">
+                @FooterView
             </div>
-        </div>
+        }
     </div>
 </div>
 
 @code
 {
-    private string Title { get; set; }
-    private string Heading { get; set; }
-    private string Subtext { get; set; }
-    private Action OnClose { get; set; }
-    
+    [Parameter] public RenderFragment HeaderView { get; set; }
+    [Parameter] public RenderFragment BodyView { get; set; }
+    [Parameter] public RenderFragment FooterView { get; set; }
+
     private string Display { get; set; } = "hidden";
     private string Opacity { get; set; } = "opacity-0";
 
-    public async void Open(string title, string heading, string subtext, Action onClose)
+    public async void Open()
     {
-        Title = title;
-        Heading = heading;
-        Subtext = subtext;
-        OnClose = onClose;
-        
         Display = "flex";
         StateHasChanged();
 
@@ -41,11 +35,12 @@
         StateHasChanged();
     }
     
-    public async void Close()
+    public async void Close(Action onClose = null)
     {
         Opacity = "opacity-0";
         StateHasChanged();
-        OnClose?.Invoke();
+
+        onClose?.Invoke();
 
         await Task.Delay(200);
         Display = "hidden";

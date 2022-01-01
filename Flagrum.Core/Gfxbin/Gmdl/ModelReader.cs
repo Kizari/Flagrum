@@ -113,12 +113,21 @@ public class ModelReader
         var meshObjectCount = (int)_reader.Read();
         for (var i = 0; i < meshObjectCount; i++)
         {
+            // NOTE: Seems to be a random bool here for MeshObjects after the first
+            // Not sure what it does
+            if (i > 0)
+            {
+                _ = _reader.ReadBool();
+            }
+
             var meshObject = new MeshObject
             {
-                Name = _reader.ReadString(),
-                ClusterCount = (int)_reader.Read(),
-                ClusterName = _reader.ReadString()
+                Name = _reader.ReadString()
             };
+
+            var clusterCount = _reader.Read();
+            meshObject.ClusterCount = clusterCount is byte b ? b : (int)clusterCount;
+            meshObject.ClusterName = _reader.ReadString();
 
             var meshCount = _reader.ReadUint();
 

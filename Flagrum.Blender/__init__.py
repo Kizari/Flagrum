@@ -59,7 +59,8 @@ def register():
 
 
 def unregister():
-    bpy.types.Object.flagrum_material = None
+    del bpy.types.Object.flagrum_custom_normal_data
+    del bpy.types.Object.flagrum_material
     bpy.types.TOPBAR_MT_file_import.remove(export_menu_item)
     bpy.types.TOPBAR_MT_file_import.remove(import_menu_item)
     for cls in reversed(classes):

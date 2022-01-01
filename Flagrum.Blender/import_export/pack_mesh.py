@@ -49,9 +49,6 @@ def pack_mesh():
             bpy.ops.object.mode_set(mode='EDIT')
             bmesh_copy = bmesh.from_edit_mesh(mesh_copy.data)
 
-            # Merge doubles to prevent any issues caused by mixed doubles or incompatible double placement
-            bmesh.ops.remove_doubles(bmesh_copy, verts=bmesh_copy.verts[:], dist=0.0001)
-
             # Clear seams as we need to use them for splitting
             for edge in bmesh_copy.edges:
                 if edge.seam:

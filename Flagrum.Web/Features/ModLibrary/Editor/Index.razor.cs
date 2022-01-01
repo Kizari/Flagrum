@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
+using Flagrum.Web.Components.Modals;
 using Flagrum.Web.Features.ModLibrary.Data;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components;
@@ -39,6 +40,7 @@ public partial class Index : ComponentBase
     private Dictionary<int, string> ModelNames { get; set; }
     private bool[] HasSelectedDataForModel { get; } = new bool[2];
     private string[] FmdFileNames { get; } = new string[2];
+    private PromptModal DeleteModal { get; set; }
 
     protected override void OnInitialized()
     {
@@ -170,6 +172,11 @@ public partial class Index : ComponentBase
     }
 
     private void Delete()
+    {
+        DeleteModal.Open();
+    }
+
+    private void OnDelete()
     {
         AppState.Mods.Remove(AppState.ActiveMod);
         AppState.UpdateBinmodList();
