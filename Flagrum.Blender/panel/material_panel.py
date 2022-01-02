@@ -6,6 +6,7 @@ from bpy_extras.io_utils import ImportHelper
 
 from .material_data import material_properties
 from ..import_export.interop import Interop
+from .. import addon_updater_ops
 
 
 class TextureSlotOperator(Operator, ImportHelper):
@@ -28,7 +29,7 @@ class TextureSlotOperator(Operator, ImportHelper):
             if property_definition.material_id == material.preset:
                 data = property_definition
 
-        setattr(data, self.property, bpy.path.relpath(self.filepath))
+        setattr(data, self.property, self.filepath)
         context.area.tag_redraw()
         return {'FINISHED'}
 
@@ -117,6 +118,9 @@ class MaterialEditorPanel(Panel):
 
     def draw(self, context):
         layout = self.layout
+
+        addon_updater_ops.check_for_update_background()
+
         active_object = context.view_layer.objects.active
         material = active_object.flagrum_material
 
@@ -124,6 +128,8 @@ class MaterialEditorPanel(Panel):
         for property_definition in material.property_collection:
             if property_definition.material_id == material.preset:
                 active_material_data = property_definition
+
+        addon_updater_ops.update_notice_box_ui(self, context)
 
         layout.prop(data=material, property="preset")
 

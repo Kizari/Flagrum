@@ -390,19 +390,19 @@ def _pack_material(mesh: Object):
     for prop in material_data.property_collection:
         property_value = getattr(material_data, prop.property_name)
 
-        if prop.property_type == 'TEXTURE':
-            if property_value == '':
-                data.Textures[prop.property_name] = property_value
-            else:
+        if type(property_value) is str:
+            if property_value.startswith("//"):
                 data.Textures[prop.property_name] = bpy.path.abspath(property_value)
-        else:  # If it's not a texture, it's an input
-            if type(property_value) is not float:
-                array = []
-                for value in property_value:
-                    array.append(value)
-                data.Inputs[prop.property_name] = array
             else:
-                # Put in an array to make handling the JSON easier
-                data.Inputs[prop.property_name] = [property_value]
+                data.Textures[prop.property_name] = property_value
+        elif type(property_value) is not float:
+            array = []
+            for value in property_value:
+                array.append(value)
+            data.Inputs[prop.property_name] = array
+        else:
+            # Put in an array to make handling the JSON easier
+            data.Inputs[prop.property_name] = [property_value]
+            
 
     return data

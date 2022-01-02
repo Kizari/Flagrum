@@ -1,7 +1,9 @@
 import bpy
-from bpy.props import PointerProperty, CollectionProperty
+from bpy.props import PointerProperty, CollectionProperty, BoolProperty, IntProperty
 from bpy.utils import register_class, unregister_class
+from bpy.types import AddonPreferences
 
+from . import addon_updater_ops
 from .import_export.menu import ImportOperator, ExportOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, ClearTextureOperator, MaterialImportOperator
@@ -10,14 +12,61 @@ from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, Delete
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
     "category": "Import-Export",
 }
 
+
+@addon_updater_ops.make_annotations
+class FlagrumPreferences(AddonPreferences):
+    bl_idname = __package__
+
+    auto_check_update = BoolProperty(
+        name = "Auto-check for Update",
+        description = "If enabled, auto-check for updates using an interval",
+        default = True,
+    )
+
+    updater_interval_months = IntProperty(
+        name='Months',
+        description = "Number of months between checking for updates",
+        default=0,
+        min=0
+    )
+
+    updater_interval_days = IntProperty(
+        name='Days',
+        description = "Number of days between checking for updates",
+        default=0,
+        min=0,
+    )
+
+    updater_interval_hours = IntProperty(
+        name='Hours',
+        description = "Number of hours between checking for updates",
+        default=1,
+        min=0,
+        max=23
+    )
+
+    updater_interval_minutes = IntProperty(
+        name='Minutes',
+        description = "Number of minutes between checking for updates",
+        default=0,
+        min=0,
+        max=59
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        addon_updater_ops.update_settings_ui(self, context)
+
+
 classes = (
+    FlagrumPreferences,
     ImportOperator,
     ExportOperator,
     FlagrumMaterialProperty,
@@ -50,6 +99,7 @@ def export_menu_item(self, context):
 
 
 def register():
+    addon_updater_ops.register(bl_info)
     for cls in classes:
         register_class(cls)
     bpy.types.TOPBAR_MT_file_import.append(import_menu_item)
@@ -65,6 +115,7 @@ def unregister():
     bpy.types.TOPBAR_MT_file_import.remove(import_menu_item)
     for cls in reversed(classes):
         unregister_class(cls)
+    addon_updater_ops.unregister()
 
 
 if __name__ == "__main__":
