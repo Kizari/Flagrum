@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -29,6 +30,8 @@ public class ConsoleLogger : ILogger
     private readonly string _logFile;
     private readonly string _name;
 
+    private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+
     public ConsoleLogger(
         string name,
         Func<ConsoleLoggerConfiguration> getCurrentConfiguration)
@@ -46,7 +49,15 @@ public class ConsoleLogger : ILogger
         // Console.ForegroundColor = configuration.Colors[logLevel];
         // Console.WriteLine($"[{logLevel.ToString()}] {formatter(state, exception)}");
         // Console.ForegroundColor = originalColor;
-        File.AppendAllText(_logFile, formatter(state, exception) + "\r\n");
+        _lock.Wait();
+        try
+        {
+            File.AppendAllText(_logFile, formatter(state, exception) + "\r\n");
+        }
+        finally
+        {
+            _lock.Release();
+        }
     }
 
     public bool IsEnabled(LogLevel logLevel)

@@ -11,16 +11,14 @@ namespace Flagrum.Web.Services;
 public class WorkshopItemDetails
 {
     public ModVisibility Visibility { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public string ChangeNotes { get; set; }
-    public List<string> Tags { get; set; }
+    public string Description { get; set; } = "";
+    public string ChangeNotes { get; set; } = "";
+    public List<string> Tags { get; set; } = new();
 }
 
 public class SteamWorkshopService
 {
     private const uint AppId = 637650;
-    private readonly AppId_t _appId;
     private readonly AppStateService _appState;
     private readonly ILogger<SteamWorkshopService> _logger;
 
@@ -48,7 +46,6 @@ public class SteamWorkshopService
         _modmeta = modmeta;
         _appState = appState;
         _logger = logger;
-        _appId = new AppId_t(AppId);
         _timer = new Timer(1000);
         _timer.Elapsed += (sender, args) => SteamAPI.RunCallbacks();
     }
@@ -89,7 +86,8 @@ public class SteamWorkshopService
 
         _timer.Start();
         _createItemCallback = CallResult<CreateItemResult_t>.Create(OnCreate);
-        var call = SteamUGC.CreateItem(_appId, EWorkshopFileType.k_EWorkshopFileTypeCommunity);
+        var appId = new AppId_t(AppId);
+        var call = SteamUGC.CreateItem(appId, EWorkshopFileType.k_EWorkshopFileTypeCommunity);
         _createItemCallback.Set(call);
     }
 
@@ -99,9 +97,10 @@ public class SteamWorkshopService
         _onUpdate = onComplete;
 
         var fileId = new PublishedFileId_t(_appState.ActiveMod.ItemId);
-        var updateHandle = SteamUGC.StartItemUpdate(_appId, fileId);
+        var appId = new AppId_t(AppId);
+        var updateHandle = SteamUGC.StartItemUpdate(appId, fileId);
 
-        SteamUGC.SetItemTitle(updateHandle, details.Title);
+        SteamUGC.SetItemTitle(updateHandle, _appState.ActiveMod.WorkshopTitle);
         SteamUGC.SetItemDescription(updateHandle, details.Description);
         SteamUGC.SetItemVisibility(updateHandle, (ERemoteStoragePublishedFileVisibility)details.Visibility);
 

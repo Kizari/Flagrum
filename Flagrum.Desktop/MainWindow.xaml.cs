@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using Flagrum.Desktop.Services;
 using Flagrum.Web.Services;
@@ -130,21 +131,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         var webView = (BlazorWebView)sender;
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
-        Update();
-    }
-
-    private async void Update()
-    {
-        try
-        {
-            using var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum");
-            var result = await manager;
-            result?.UpdateApp();
-        }
-        catch
-        {
-            // Server can't be reached, ignore update for now
-        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -152,5 +138,18 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    protected override void OnInitialized(EventArgs e)
+    {
+        base.OnInitialized(e);
+
+        Task.Run(async () =>
+        {
+            using (var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum").Result)
+            {
+                await manager.UpdateApp();
+            }
+        });
     }
 }

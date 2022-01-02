@@ -280,7 +280,8 @@ public class Binmod
             Model2Name = Model2Name,
             OriginalGmdls = OriginalGmdls,
             OriginalGmdlCount = OriginalGmdlCount,
-            Gender = Gender
+            Gender = Gender,
+            GameMenuDescription = GameMenuDescription
         };
     }
 
@@ -319,5 +320,6 @@ public class Binmod
         OriginalGmdls = mod.OriginalGmdls;
         OriginalGmdlCount = mod.OriginalGmdlCount;
         Gender = mod.Gender;
+        GameMenuDescription = mod.GameMenuDescription;
     }
 }
