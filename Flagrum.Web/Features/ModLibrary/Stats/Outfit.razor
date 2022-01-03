@@ -44,12 +44,20 @@
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.MaxHp].Value"/>
                     </td>
-                    <td>
-                        <label>MAX MP</label>
-                    </td>
-                    <td>
-                        <NumberBox @bind-Value="Stats[Stat.MaxMp].Value"/>
-                    </td>
+                    @if (Parent.Mod.Target == (int)OutfitSoloTarget.Noctis)
+                    {
+                        <td>
+                            <label>MAX MP</label>
+                        </td>
+                        <td>
+                            <NumberBox @bind-Value="Stats[Stat.MaxMp].Value"/>
+                        </td>
+                    }
+                    else
+                    {
+                        <td></td>
+                        <td></td>
+                    }
                     <td>
                         <label>FIRE RES %</label>
                     </td>

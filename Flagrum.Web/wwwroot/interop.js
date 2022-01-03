@@ -79,5 +79,15 @@ window.interop = {
                 ? C.attributes["data-coffee-color"].value
                 : void 0
         );
+    },
+
+    applyHtmlToElement: function (id, html, dotNetObject) {
+        window.interop.currentReference = dotNetObject;
+        let element = document.getElementById(id);
+        element.innerHTML = html;
+    },
+
+    openDotNetLink: function (uri) {
+        window.interop.currentReference.invokeMethodAsync("OpenLink", uri);
     }
 }

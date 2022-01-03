@@ -27599,6 +27599,23 @@ input:checked + .slider:before {
   flex: 1 0 auto;
 }
 
+.hyperlink {
+  margin-top: 0.5rem;
+  display: inline-block;
+  cursor: pointer;
+  --tw-text-opacity: 1;
+  color: rgba(225, 217, 183, var(--tw-text-opacity));
+}
+
+.hyperlink:hover {
+  --tw-text-opacity: 1;
+  color: rgba(255, 255, 255, var(--tw-text-opacity));
+}
+
+.hyperlink {
+  text-decoration: underline;
+}
+
 .glow {
   box-shadow: 0 0 3px 4px #783b4a;
   -webkit-box-shadow: 0 0 3px 4px #783b4a;

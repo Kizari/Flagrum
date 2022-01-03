@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Flagrum.Web.Services;
@@ -50,5 +51,10 @@ public class JSInterop
     public async Task InitialiseBmcButton(string id)
     {
         await _jsRuntime.InvokeVoidAsync("interop.initialiseBmcButton", id);
+    }
+
+    public async Task ApplyHtmlToElement(string id, string html, object reference)
+    {
+        await _jsRuntime.InvokeVoidAsync("interop.applyHtmlToElement", id, html, reference);
     }
 }

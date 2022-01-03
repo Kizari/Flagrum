@@ -205,6 +205,11 @@ public class Binmod
 
                 mod.OriginalGmdls = new List<string>(strings);
             }
+            else if (type == BinmodType.Cloth && mod.Target != (int)OutfitSoloTarget.Noctis)
+            {
+                // No point having MP on any characters that aren't Noctis as they can't make use of it
+                mod.MaxMp = 0;
+            }
 
             var modelCount = binmodType.GetModelCount(mod.Type, mod.Target);
             foreach (var (property, value) in properties)

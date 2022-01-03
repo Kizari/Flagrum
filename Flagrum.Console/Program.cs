@@ -28,14 +28,15 @@ public class Program
 
     public static void Main(string[] args)
     {
-        GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh05_000_skin_00_mat.gmtl.gfxbin");
-        //using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\me\me01\model_010\materials\autoexternal.earc");
-        //var gmtls = unpacker.UnpackFilesByQuery(".gmtl");
-        //foreach (var (name, data) in gmtls)
-        //{
-        //    var reader = new MaterialReader(data);
-        //    var material = reader.Read();
-        //}
+        //GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh05_000_skin_00_mat.gmtl.gfxbin");
+        using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\me\me01\model_010\materials\autoexternal.earc");
+        var gmtls = unpacker.UnpackFilesByQuery(".gmtl");
+        foreach (var (name, data) in gmtls)
+        {
+            var reader = new MaterialReader(data);
+            var material = reader.Read();
+        }
+        bool x = true;
         //var gfx = @"C:\Users\Kieran\Desktop\character\aw\aw90\model_010\aw90_010.gmdl.gfxbin";
         //var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         //var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
@@ -48,7 +49,7 @@ public class Program
         // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh01_010_skin_00_mat.gmtl.gfxbin");
         // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh02_010_skin_01_mat.gmtl.gfxbin");
         // GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh03_010_skin_00_mat.gmtl.gfxbin");
-        
+
         // var gfx = @"C:\Modding\Extractions\character\am\am50\model_010\am50_010.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));

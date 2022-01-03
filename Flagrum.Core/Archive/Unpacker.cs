@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using Flagrum.Core.Utilities;
@@ -125,7 +126,11 @@ public class Unpacker : IDisposable
             }
         }
 
-        if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
+        if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
+        {
+            buffer = Decompress(file.Size, file.Key, buffer);
+        }
+        else if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
         {
             buffer = Cryptography.Decrypt(buffer);
         }
@@ -140,6 +145,63 @@ public class Unpacker : IDisposable
         {
             file.SetData(buffer);
         }
+    }
+
+    private byte[] Decompress(uint fileSize, ushort key, byte[] data)
+    {
+        var chunkSize = 512 * 1024;
+        var chunks = fileSize / chunkSize;
+
+        // If the integer division wasn't even, add 1 more chunk
+        if (fileSize % chunkSize != 0)
+        {
+            chunks++;
+        }
+
+        using var memoryStream = new MemoryStream(data);
+        using var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress);
+        using var outputStream = new MemoryStream();
+
+        for (int index = 0; index < chunks; index++)
+        {
+            // Align the bytes
+            if (index > 0)
+            {
+                int offset = 4 - (int)(memoryStream.Position % 4);
+
+                if (offset > 3)
+                {
+                    offset = 0;
+                }
+
+                memoryStream.Seek(offset, SeekOrigin.Current);
+            }
+
+            // Read the data sizes
+            var buffer = new byte[4];
+            memoryStream.Read(buffer, 0, 4);
+            var compressedSize = BitConverter.ToUInt32(buffer);
+            buffer = new byte[4];
+            memoryStream.Read(buffer, 0, 4);
+            var decompressedSize = BitConverter.ToUInt32(buffer);
+
+            if (index == 0 && key > 0)
+            {
+                var chunkKey = (ArchiveFile.MasterChunkKeyA * key) + ArchiveFile.MasterChunkKeyB;
+
+                var compressedKey = (uint)(chunkKey >> 32);
+                var uncompressedKey = (uint)(chunkKey & 0xFFFFFFFF);
+
+                compressedSize ^= compressedKey;
+                decompressedSize ^= uncompressedKey;
+            }
+
+            buffer = new byte[decompressedSize];
+            zlibStream.Read(buffer, 0, (int)decompressedSize);
+            outputStream.Write(buffer);
+        }
+
+        return outputStream.ToArray();
     }
 
     private IEnumerable<ArchiveFile> ReadFileHeaders()

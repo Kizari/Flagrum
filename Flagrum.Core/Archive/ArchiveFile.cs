@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using Flagrum.Core.Utilities;
 
@@ -22,6 +24,8 @@ public class ArchiveFile
 {
     public const uint HeaderSize = 40;
     public const ulong HeaderHash = 14695981039346656037;
+    public const ulong MasterChunkKeyA = unchecked(0x10E64D70C2A29A69);
+    public const ulong MasterChunkKeyB = unchecked(0xC63D3dC167E);
     private byte[] _buffer;
 
     public ArchiveFile() { }

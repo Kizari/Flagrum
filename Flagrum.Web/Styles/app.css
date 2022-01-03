@@ -15,6 +15,10 @@
         flex: 1 0 auto;
     }
 
+    .hyperlink {
+        @apply text-accent1-200 mt-2 inline-block underline cursor-pointer hover:text-white;
+    }
+
     .glow {
         box-shadow: 0 0 3px 4px #783b4a;
         -webkit-box-shadow: 0 0 3px 4px #783b4a;

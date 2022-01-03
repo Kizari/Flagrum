@@ -1,22 +1,31 @@
 ﻿@page "/tutorials"
+@using System.Diagnostics
 
-<div class="py-8 px-10">
-    <h2 class="text-grey-300 mb-2">Tutorials</h2>
-    <span>
-        We have curated a selection of tutorials to help with the usage of Flagrum and the creation of Flagrum mods.<br />
-        This list will be updated over time as new tutorials are available and as Flagrum evolves, so please
-        check back from time to time.
-    </span>
+@inject JSInterop Interop
+
+<div class="py-8 px-10" id="@_id">
     
-    <h4 class="text-grey-300 mt-8 mb-4">Flagrum Tutorials</h4>
-    
-    <Hyperlink Text="Interface Tutorial by ImpatientTraveler" Uri="https://github.com/Kizari/Flagrum/wiki/Interface-Tutorial" /><br/>
-    <Hyperlink Text="General Usage Tutorial by ImpatientTraveler" Uri="https://github.com/Kizari/Flagrum/wiki/General-Usage-Tutorial" /><br/>
-    <Hyperlink Text="Custom Model Replacements Tutorial by Kizari" Uri="https://github.com/Kizari/Flagrum/wiki/Custom-Model-Replacements-Tutorial" />
-    
-    <h4 class="text-grey-300 mt-8 mb-4">3D Modelling Tutorials</h4>
-    
-    <Hyperlink Text="Ambient Occlusion (AO) and Texture Baking Tutorial by ImpatientTraveler" Uri="https://github.com/Kizari/Flagrum/wiki/Ambient-Occlusion-(AO)-and-Texture-Baking-Tutorial" /><br/>
-    <Hyperlink Text="Metalness/Roughness/Specularity (MRS) Tutorial by ImpatientTraveler" Uri="https://github.com/Kizari/Flagrum/wiki/Metalness-Roughness-Specularity-(MRS)-Tutorial" /><br/>
-    <Hyperlink Text="Vertex Colours Tutorial by ImpatientTraveler" Uri="https://github.com/Kizari/Flagrum/wiki/Vertex-Colours-Tutorial" />
 </div>
+
+@code
+{
+    private readonly string _id = Guid.NewGuid().ToString();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var path = @"C:\Code\Flagrum\Flagrum.Web\Features\Information\Markup\Tutorials.html";
+            var html = System.IO.File.ReadAllText(path);
+            await Interop.ApplyHtmlToElement(_id, html, DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable] public void OpenLink(string uri)
+    {
+        Process.Start(new ProcessStartInfo(uri)
+        {
+            UseShellExecute = true
+        });
+    }
+}
