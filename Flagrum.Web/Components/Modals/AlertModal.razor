@@ -1,4 +1,4 @@
-﻿<Modal @ref="Modal">
+﻿<Modal @ref="Modal" Width="@Width" Height="@Height">
     <HeaderView>
         <span class="text-grey-300 flex-grow">@Title</span>
         <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
@@ -21,13 +21,18 @@
     private string Heading { get; set; }
     private string Subtext { get; set; }
     private Action OnClose { get; set; }
+    private int Width { get; set; } = 400;
+    private int Height { get; set; } = 300;
 
-    public void Open(string title, string heading, string subtext, Action onClose)
+    public void Open(string title, string heading, string subtext, Action onClose, int width = 400, int height = 300)
     {
         Title = title;
         Heading = heading;
         Subtext = subtext;
         OnClose = onClose;
+        Width = width;
+        Height = height;
+        StateHasChanged();
 
         Modal.Open();
     }

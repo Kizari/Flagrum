@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Flagrum.Web.Services;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Flagrum.Desktop.Services;
 
@@ -19,6 +20,38 @@ public class WpfService : IWpfService
         var dialog = new OpenFileDialog
         {
             Filter = filter
+        };
+
+        var result = await _window.Dispatcher.InvokeAsync(() => dialog.ShowDialog());
+
+        if (result == true)
+        {
+            onFileSelected(dialog.FileName);
+        }
+    }
+
+    public async Task OpenFolderDialogAsync(string initialDirectory, Action<string> onFolderSelected)
+    {
+        var dialog = new CommonOpenFileDialog
+        {
+            InitialDirectory = initialDirectory,
+            IsFolderPicker = true
+        };
+
+        var result = await _window.Dispatcher.InvokeAsync(() => dialog.ShowDialog());
+
+        if (result == CommonFileDialogResult.Ok)
+        {
+            onFolderSelected(dialog.FileName);
+        }
+    }
+
+    public async Task OpenSaveFileDialogAsync(string defaultName, string filter, Action<string> onFileSelected)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = filter,
+            FileName = defaultName
         };
 
         var result = await _window.Dispatcher.InvokeAsync(() => dialog.ShowDialog());

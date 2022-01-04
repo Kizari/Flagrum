@@ -1,14 +1,16 @@
 import bpy
 from bpy.props import PointerProperty, CollectionProperty, BoolProperty, IntProperty
-from bpy.utils import register_class, unregister_class
 from bpy.types import AddonPreferences
+from bpy.utils import register_class, unregister_class
 
 from . import addon_updater_ops
 from .import_export.menu import ImportOperator, ExportOperator
+from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, \
+    NormaliseWeightsOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
-from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, ClearTextureOperator, MaterialImportOperator
+from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, \
+    ClearTextureOperator, MaterialImportOperator
 from .panel.normals_panel import UseCustomNormalsOperator, TransferFCNDOperator, FCNDSettings, NormalsPanel
-from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, NormaliseWeightsOperator
 
 bl_info = {
     "name": "Flagrum",
@@ -25,28 +27,28 @@ class FlagrumPreferences(AddonPreferences):
     bl_idname = __package__
 
     auto_check_update = BoolProperty(
-        name = "Auto-check for Update",
-        description = "If enabled, auto-check for updates using an interval",
-        default = True,
+        name="Auto-check for Update",
+        description="If enabled, auto-check for updates using an interval",
+        default=True,
     )
 
     updater_interval_months = IntProperty(
         name='Months',
-        description = "Number of months between checking for updates",
+        description="Number of months between checking for updates",
         default=0,
         min=0
     )
 
     updater_interval_days = IntProperty(
         name='Days',
-        description = "Number of days between checking for updates",
+        description="Number of days between checking for updates",
         default=0,
         min=0,
     )
 
     updater_interval_hours = IntProperty(
         name='Hours',
-        description = "Number of hours between checking for updates",
+        description="Number of hours between checking for updates",
         default=1,
         min=0,
         max=23
@@ -54,14 +56,13 @@ class FlagrumPreferences(AddonPreferences):
 
     updater_interval_minutes = IntProperty(
         name='Minutes',
-        description = "Number of minutes between checking for updates",
+        description="Number of minutes between checking for updates",
         default=0,
         min=0,
         max=59
     )
 
     def draw(self, context):
-        layout = self.layout
         addon_updater_ops.update_settings_ui(self, context)
 
 

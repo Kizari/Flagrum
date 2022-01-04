@@ -14,6 +14,7 @@ public class WorkshopItemDetails
     public string Description { get; set; } = "";
     public string ChangeNotes { get; set; } = "";
     public List<string> Tags { get; set; } = new();
+    public byte[] PreviewBytes { get; set; }
 }
 
 public class SteamWorkshopService
@@ -105,7 +106,7 @@ public class SteamWorkshopService
         SteamUGC.SetItemVisibility(updateHandle, (ERemoteStoragePublishedFileVisibility)details.Visibility);
 
         _tempPreview = Path.GetTempFileName();
-        File.WriteAllBytes(_tempPreview, _appState.ActiveMod.GetPreviewPng());
+        File.WriteAllBytes(_tempPreview, details.PreviewBytes);
         SteamUGC.SetItemPreview(updateHandle, _tempPreview);
 
         if (details.Tags.Count > 0)

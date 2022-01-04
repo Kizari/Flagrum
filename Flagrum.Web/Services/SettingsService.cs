@@ -11,6 +11,7 @@ public class SettingsData
     public string GamePath { get; set; }
     public string BinmodListPath { get; set; }
     public string WorkshopPath { get; set; }
+    public string LastVersionNotes { get; set; }
 }
 
 public class SettingsService
@@ -40,6 +41,7 @@ public class SettingsService
             GamePath = settingsData.GamePath;
             BinmodListPath = settingsData.BinmodListPath;
             WorkshopPath = settingsData.WorkshopPath;
+            LastVersionNotes = settingsData.LastVersionNotes;
         }
 
         TempDirectory = $"{FlagrumDirectory}\\tmp";
@@ -108,11 +110,13 @@ public class SettingsService
     public string GamePath { get; private set; }
     public string BinmodListPath { get; private set; }
     public string WorkshopPath { get; private set; }
+    public string LastVersionNotes { get; private set; }
 
     public string ModDirectory => $"{Path.GetDirectoryName(BinmodListPath)}";
     public string WorkshopDirectory => $"{Path.GetDirectoryName(WorkshopPath)}\\content\\637650";
     public string GameDataDirectory => $"{Path.GetDirectoryName(GamePath)}\\datas";
     public string ReplacementsFilePath => $"{FlagrumDirectory}\\replacements.json";
+    public string StatePath => $"{FlagrumDirectory}\\state.json";
 
     public void SetGamePath(string path)
     {
@@ -135,6 +139,12 @@ public class SettingsService
         CheckIsReady();
     }
 
+    public void SetLastVersionNotes(string version)
+    {
+        LastVersionNotes = version;
+        Save();
+    }
+
     private void CheckIsReady()
     {
         if (!IsReady)
@@ -149,7 +159,8 @@ public class SettingsService
         {
             GamePath = GamePath,
             WorkshopPath = WorkshopPath,
-            BinmodListPath = BinmodListPath
+            BinmodListPath = BinmodListPath,
+            LastVersionNotes = LastVersionNotes
         };
 
         File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(settingsData));

@@ -144,17 +144,13 @@ public class BuildContext
             await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read);
             var buffer = new byte[stream.Length];
             stream.Read(buffer);
-            PreviewImage = buffer;
 
             await File.WriteAllBytesAsync($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", buffer);
             await onUpdate();
 
             var converter = new TextureConverter();
-            PreviewBtex = converter.ToBtex(
-                "$preview",
-                file.Split('.').Last(),
-                TextureType.Preview,
-                buffer);
+            PreviewBtex = converter.ConvertPreview("$preview", buffer, out var jpeg);
+            PreviewImage = jpeg;
         });
     }
 
@@ -163,12 +159,8 @@ public class BuildContext
         await Task.Run(() =>
         {
             var converter = new TextureConverter();
-            PreviewImage = image;
-            PreviewBtex = converter.ToBtex(
-                "$preview",
-                "png",
-                TextureType.Preview,
-                image);
+            PreviewBtex = converter.ConvertPreview("$preview", image, out var jpeg);
+            PreviewImage = jpeg;
         });
     }
 

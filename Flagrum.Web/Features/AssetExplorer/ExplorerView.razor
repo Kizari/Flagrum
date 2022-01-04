@@ -1,0 +1,114 @@
+﻿@using System.IO
+@using Flagrum.Web.Features.AssetExplorer.Data
+
+@foreach (var item in Items)
+{
+    <CascadingValue Value="this">
+        <ExplorerItemRow Item="item" Indent="Indent + 2" />
+    </CascadingValue>
+}
+
+@code
+{
+    private string _previousDirectory;
+    
+    [Parameter] public string Path { get; set; }
+    [Parameter] public int Indent { get; set; }
+    [Parameter] public bool Directories { get; set; }
+    [Parameter] public string InitialPath { get; set; }
+
+    private List<ExplorerItem> Items { get; } = new();
+    private ExplorerItemRow SelectedItem { get; set; }
+
+    public event EventHandler InitialLoad;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            InitialLoad?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Path == _previousDirectory)
+        {
+            return;
+        }
+        
+        Items.Clear();
+        
+        if (Directories)
+        {
+            if (Path == string.Empty)
+            {
+                foreach (var drive in DriveInfo.GetDrives())
+                {
+                    Items.Add(new ExplorerItem
+                    {
+                        Name = $"Local Disk ({drive.Name[..^1]})",
+                        Path = drive.Name,
+                        Type = ExplorerItemType.Directory,
+                        IsExpandable = true
+                    });
+                }
+            }
+            else
+            {
+                foreach (var directory in Directory.EnumerateDirectories(Path))
+                {
+                    try
+                    {
+                        Items.Add(new ExplorerItem
+                        {
+                            Name = directory.Split('\\')[^1],
+                            Path = directory,
+                            Type = ExplorerItemType.Directory,
+                            IsExpandable = Directory.GetDirectories(directory).Length > 0
+                        });
+                    }
+                    catch
+                    {
+                        // Just don't add to the view
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (var file in Directory.EnumerateFiles(Path))
+            {
+                var name = file.Split('\\').Last();
+
+                var tokens = name.Split('.').Select(t => t.ToLower()).ToArray();
+                var extension = tokens[^1] == "gfxbin"
+                    ? string.Join('.', tokens[^2..])
+                    : tokens[^1];
+
+                var type = ExtensionToType(extension);
+            
+                if (type != ExplorerItemType.Unsupported)
+                {
+                    Items.Add(new ExplorerItem
+                    {
+                        Name = name,
+                        Path = file,
+                        Type = type
+                    });
+                }
+            }
+        }
+
+        _previousDirectory = Path;
+        StateHasChanged();
+    }
+
+    private ExplorerItemType ExtensionToType(string extension) => extension?.ToLower() switch
+    {
+        "btex" => ExplorerItemType.Texture,
+        "gmtl.gfxbin" => ExplorerItemType.Material,
+        null or "" => ExplorerItemType.Directory,
+        _ => ExplorerItemType.Unsupported
+    };
+}

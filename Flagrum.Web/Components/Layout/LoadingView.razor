@@ -4,7 +4,7 @@
         <span class="block text-accent1-200 font-display font-bold mt-4 mr-2">@Text</span>
     </div>
 </div>
-<div class="@(IsLoading ? "hidden" : "block")">
+<div class="@CssClass @(IsLoading ? "hidden" : "block")">
     @ChildContent
 </div>
 
@@ -18,4 +18,7 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string CssClass { get; set; }
 }

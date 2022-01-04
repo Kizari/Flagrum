@@ -8,8 +8,8 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <AssemblyName>Flagrum</AssemblyName>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <FileVersion>1.0.0</FileVersion>
+        <AssemblyVersion>1.1.0</AssemblyVersion>
+        <FileVersion>1.1.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,6 +19,7 @@
     <ItemGroup>
         <PackageReference Include="Clowd.Squirrel" Version="2.6.34-pre" />
         <PackageReference Include="FontAwesome5" Version="2.1.6" />
+        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0" />

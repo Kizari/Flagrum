@@ -1,31 +1,5 @@
 ﻿@page "/tutorials"
-@using System.Diagnostics
 
-@inject JSInterop Interop
-
-<div class="py-8 px-10" id="@_id">
-    
+<div class="py-8 px-10">
+    <MarkupView MarkupPath="Features/Information/Markup/Tutorials.html" />
 </div>
-
-@code
-{
-    private readonly string _id = Guid.NewGuid().ToString();
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var path = @"C:\Code\Flagrum\Flagrum.Web\Features\Information\Markup\Tutorials.html";
-            var html = System.IO.File.ReadAllText(path);
-            await Interop.ApplyHtmlToElement(_id, html, DotNetObjectReference.Create(this));
-        }
-    }
-
-    [JSInvokable] public void OpenLink(string uri)
-    {
-        Process.Start(new ProcessStartInfo(uri)
-        {
-            UseShellExecute = true
-        });
-    }
-}

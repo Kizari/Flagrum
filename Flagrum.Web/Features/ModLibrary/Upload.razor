@@ -68,15 +68,6 @@
 
         if (firstRender)
         {
-            if (AppState.ActiveMod.GetPreviewPng().Length > 953673)
-            {
-                Modal.Open("Error",
-                    "Preview Image too Large",
-                    "Change to a preview image of 953kb or less and try again.",
-                    () => Navigation.NavigateTo("/mod/configure"));
-                return;
-            }
-
             if (SteamWorkshop.Initialize())
             {
                 if (AppState.ActiveMod.ItemId > 0)
@@ -93,6 +84,18 @@
                     IsLoading = false;
                     StateHasChanged();
                 }
+
+                var preview = AppState.ActiveMod.GetPreviewPng();
+
+                // Compress preview if it's too large for Steam
+                if (preview.Length > 953673)
+                {
+                    var converter = new TextureConverter();
+                    _ = converter.ConvertPreview("$preview", preview, out var jpeg);
+                    preview = jpeg;
+                }
+
+                Details.PreviewBytes = preview;
             }
             else
             {

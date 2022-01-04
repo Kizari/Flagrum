@@ -78,4 +78,17 @@
         <None Include="package-lock.json" />
     </ItemGroup>
 
+
+    <ItemGroup>
+      <None Update="Features\Information\Markup\About.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Features\Information\Markup\Roadmap.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Features\Information\Markup\Tutorials.html">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

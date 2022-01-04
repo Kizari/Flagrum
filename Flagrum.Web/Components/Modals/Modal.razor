@@ -1,5 +1,5 @@
-﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.4)">
-    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="width: 400px; height: 300px">
+﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.6)">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="width: @(Width)px; height: @(Height)px">
         <div class="rounded-t-lg bg-grey-700 p-3 row">
             @HeaderView
         </div>
@@ -17,9 +17,20 @@
 
 @code
 {
-    [Parameter] public RenderFragment HeaderView { get; set; }
-    [Parameter] public RenderFragment BodyView { get; set; }
-    [Parameter] public RenderFragment FooterView { get; set; }
+    [Parameter]
+    public RenderFragment HeaderView { get; set; }
+
+    [Parameter]
+    public RenderFragment BodyView { get; set; }
+
+    [Parameter]
+    public RenderFragment FooterView { get; set; }
+
+    [Parameter]
+    public int Width { get; set; } = 400;
+
+    [Parameter]
+    public int Height { get; set; } = 300;
 
     private string Display { get; set; } = "hidden";
     private string Opacity { get; set; } = "opacity-0";
@@ -34,7 +45,7 @@
         Opacity = "opacity-100";
         StateHasChanged();
     }
-    
+
     public async void Close(Action onClose = null)
     {
         Opacity = "opacity-0";

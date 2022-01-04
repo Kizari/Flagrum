@@ -1,0 +1,81 @@
+﻿@using Flagrum.Core.Gfxbin.Gmtl
+<div class="p-6">
+    <div class="box p-4 mb-6">
+        <h5 class="text-grey-300 mb-2">Texture Inputs</h5>
+        <table>
+            @foreach (var (name, fileName, path) in TextureInputs)
+            {
+                <tr>
+                    <td>
+                        <strong>@name</strong>
+                    </td>
+                    <td class="pl-6">
+                        <span>@fileName</span>
+                        <span class="material-icons pl-1 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                              @onclick="() => ShowPath(path)">
+                            open_in_new
+                        </span>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+
+    <div class="box p-4">
+        <h5 class="text-grey-300 mb-2">Material Inputs</h5>
+        <table>
+            @foreach (var (name, values) in MaterialInputs)
+            {
+                <tr>
+                    <td>
+                        <strong>@name</strong>
+                    </td>
+                    <td class="pl-6">@string.Join(", ", values)</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<AlertModal @ref="AlertModal"/>
+
+@code
+{
+    private string _previousPath;
+
+    [Parameter]
+    public string Path { get; set; }
+
+    private IEnumerable<(string Name, float[] Values)> MaterialInputs { get; set; }
+    private IEnumerable<(string Name, string FileName, string Path)> TextureInputs { get; set; }
+    private AlertModal AlertModal { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Path == _previousPath)
+        {
+            return;
+        }
+
+        var reader = new MaterialReader(Path);
+        var material = reader.Read();
+
+        var inputs = material.InterfaceInputs
+            .Where(i => i.InterfaceIndex == 0)
+            .OrderBy(i => i.ShaderGenName)
+            .Select(i => (i.ShaderGenName, i.Values));
+
+        var textures = material.Textures
+            .Where(t => !t.Path.EndsWith(".sb"))
+            .OrderBy(t => t.ShaderGenName)
+            .Select(t => (t.ShaderGenName, t.Path.Split('/').Last(), t.Path));
+
+        MaterialInputs = inputs;
+        TextureInputs = textures;
+    }
+
+    private void ShowPath(string path)
+    {
+        AlertModal.Open("Texture Path", "Full Data Path", path, null, 700);
+    }
+}

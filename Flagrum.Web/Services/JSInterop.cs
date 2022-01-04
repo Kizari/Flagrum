@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Flagrum.Web.Services;
@@ -56,5 +55,10 @@ public class JSInterop
     public async Task ApplyHtmlToElement(string id, string html, object reference)
     {
         await _jsRuntime.InvokeVoidAsync("interop.applyHtmlToElement", id, html, reference);
+    }
+
+    public async Task ScrollToElement(string id)
+    {
+        await _jsRuntime.InvokeVoidAsync("interop.scrollToElement", id);
     }
 }

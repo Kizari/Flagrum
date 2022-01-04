@@ -1,0 +1,42 @@
+﻿@using System.Diagnostics
+
+@inject JSInterop Interop
+
+<div id="@_id">
+    
+</div>
+
+@code
+{
+    private readonly string _id = Guid.NewGuid().ToString();
+
+    [Parameter] public string MarkupPath { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var html = await System.IO.File.ReadAllTextAsync($"{Flagrum.Core.Utilities.IOHelper.GetExecutingDirectory()}\\{MarkupPath.Replace('/', '\\')}");
+            await Interop.ApplyHtmlToElement(_id, html, DotNetObjectReference.Create(this));
+            
+            using var httpClient = new HttpClient();
+            var response = await httpClient.GetAsync($"https://raw.githubusercontent.com/Kizari/Flagrum/main/Flagrum.Web/{MarkupPath}");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                html = await response.Content.ReadAsStringAsync();
+                await System.IO.File.WriteAllTextAsync($"{Flagrum.Core.Utilities.IOHelper.GetExecutingDirectory()}\\{MarkupPath.Replace('/', '\\')}", html);
+            }
+
+            await Interop.ApplyHtmlToElement(_id, html, DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable] public void OpenLink(string uri)
+    {
+        Process.Start(new ProcessStartInfo(uri)
+        {
+            UseShellExecute = true
+        });
+    }
+}

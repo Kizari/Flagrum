@@ -1,0 +1,132 @@
+﻿@using System.IO;
+@using Flagrum.Core.Gfxbin.Gmtl
+@using Flagrum.Core.Utilities
+@using Flagrum.Web.Features.AssetExplorer.Data
+@implements IDisposable
+@inject JSInterop Interop
+@inject AppStateService AppState
+
+<div id="@_id" @onclick="OnClick" class="row py-1 pr-2 transition-colors hover:bg-grey-700 select-none cursor-pointer @(Item.IsSelected ? "bg-grey-800" : "")"
+     style="padding-left: @(Indent * 5)px">
+    @if (Item.IsExpandable)
+    {
+        <span @onclick="Expand" @onclick:stopPropagation="true" @onclick:preventDefault="true" 
+              class="material-icons text-sm">@(Item.IsExpanded ? "expand_more" : "chevron_right")</span>
+    }
+    else if (Item.Type == ExplorerItemType.Directory)
+    {
+        <div style="width: 14px;"></div>
+    }
+    else
+    {
+        <div style="width: 6px;"></div>
+    }
+    <span class="material-icons text-sm">@Icon</span>
+    <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Item.Name</span>
+</div>
+
+@if (Item.IsExpanded)
+{
+    <ExplorerView Path="@Item.Path" Indent="Indent" Directories="Item.IsExpandable" InitialPath="@DirectParent.InitialPath" />
+}
+
+@code
+{
+    [CascadingParameter] public Index Parent { get; set; }
+    [CascadingParameter] public ExplorerView DirectParent { get; set; }
+
+    [Parameter] public ExplorerItem Item { get; set; }
+    [Parameter] public int Indent { get; set; }
+
+    private readonly string _id = Guid.NewGuid().ToString();
+
+    private string Icon => Item.Type switch
+    {
+        ExplorerItemType.Directory => "folder",
+        ExplorerItemType.Material => "blur_circular",
+        ExplorerItemType.Texture => "view_in_ar",
+        _ => "insert_drive_file"
+    };
+
+    protected override void OnInitialized()
+    {
+        if (DirectParent.InitialPath != null)
+        {
+            DirectParent.InitialLoad += OnInitialLoad;
+        }
+    }
+
+    public void SetSelected(bool state)
+    {
+        Item.IsSelected = state;
+        StateHasChanged();
+
+        if (Item.Type == ExplorerItemType.Directory)
+        {
+            AppState.SetCurrentAssetExplorerPath(Item.Path);
+        }
+    }
+    
+    private void OnClick()
+    {
+        switch (Item.Type)
+        {
+            case ExplorerItemType.Directory:
+                Parent.SetActiveDirectory(Item.Path);
+                break;
+            case ExplorerItemType.Texture:
+                PreviewTexture();
+                break;
+            case ExplorerItemType.Material:
+                PreviewMaterial();
+                break;
+        }
+
+        Parent.SetSelectedItem(this);
+    }
+
+    private void Expand()
+    {
+        Item.IsExpanded = !Item.IsExpanded;
+        StateHasChanged();
+    }
+
+    private void PreviewMaterial()
+    {
+        Parent.SetPreviewMaterial(Item.Path);
+    }
+
+    private void PreviewTexture()
+    {
+        var converter = new TextureConverter();
+        var jpegBytes = converter.BtexToJpg(File.ReadAllBytes(Item.Path));
+        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\asset_preview.jpg", jpegBytes);
+        Parent.SetPreviewImage();
+    }
+
+    private async void OnInitialLoad(object sender, EventArgs e)
+    {
+        var path = DirectParent.InitialPath;
+        
+        if (path.StartsWith(Item.Path) && Item.IsExpandable)
+        {
+            Item.IsExpanded = true;
+        }
+
+        if (path.Equals(Item.Path))
+        {
+            Parent.SetSelectedItem(this);
+            await Interop.ScrollToElement(_id);
+        }
+        
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (DirectParent.InitialPath != null)
+        {
+            DirectParent.InitialLoad -= OnInitialLoad;
+        }
+    }
+}

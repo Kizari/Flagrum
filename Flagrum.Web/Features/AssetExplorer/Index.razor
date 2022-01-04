@@ -1,5 +1,268 @@
 ﻿@page "/assets"
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using System.IO
 
-<div class="p-6">
-    <h3 class="text-grey-300">Coming Soon™</h3>
-</div>
+@inject AppStateService AppState
+@inject IWpfService WpfService
+
+<LoadingView Text="Exporting Batch" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
+    @* <div class="row px-4 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark"> *@
+    @*     <span class="material-icons mr-2">arrow_back</span> *@
+    @*     <span class="material-icons mr-2">arrow_forward</span> *@
+    @*     <span class="material-icons mr-4">arrow_upward</span> *@
+    @*     <div class="flex-grow"> *@
+    @*         <EditForm Model="new object()"> *@
+    @*             <Textbox IsReadOnly="true" @bind-Value="Directory" Size="Textbox.Variant.Stretch"/> *@
+    @*         </EditForm> *@
+    @*     </div> *@
+    @* </div> *@
+
+    <div class="flex flex-row">
+        <div class="bg-dark border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
+            <strong class="font-display">File System</strong>
+        </div>
+        <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
+            <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong>
+            <Button Icon="file_download" Text="Batch Export" OnClick="() => BatchExportModal?.Open()"/>
+        </div>
+        <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
+            @if (PreviewType == ExplorerItemType.Texture)
+            {
+                <strong class="flex-grow font-display">FFXV Texture File</strong>
+                <Button Text="Export PNG" Icon="file_download" OnClickAsync="ExportPng" CssClass="mr-3"/>
+                <Button Text="Export TGA" Icon="file_download" OnClickAsync="ExportTga" CssClass="mr-3"/>
+                <Button Text="Export DDS" Icon="file_download" OnClickAsync="ExportDds"/>
+            }
+            else if (PreviewType == ExplorerItemType.Material)
+            {
+                <strong class="flex-grow font-display">FFXV Game Material</strong>
+            }
+            else
+            {
+                <strong class="flex-grow font-display">No File Selected</strong>
+            }
+        </div>
+    </div>
+
+    <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
+        <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
+            <CascadingValue Value="this">
+                <ExplorerView Path="" Directories="true" InitialPath="@Directory"/>
+            </CascadingValue>
+        </div>
+
+        <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
+            <CascadingValue Value="this">
+                <ExplorerView Path="@Directory"/>
+            </CascadingValue>
+        </div>
+        <div class="flex flex-col bg-dark-600 overflow-y-auto" style="flex: 1 1 auto; height: 100%">
+            @if (PreviewType == ExplorerItemType.Texture)
+            {
+                <div class="flex-grow flex flex-row items-center">
+                    <img src="images/@ImageName" class="mx-auto" style="max-width: 70%"/>
+                </div>
+            }
+            else if (PreviewType == ExplorerItemType.Material)
+            {
+                <MaterialPreview Path="@MaterialPath"/>
+            }
+            else
+            {
+                <div class="flex-grow flex flex-row items-center">
+                    <div class="mx-auto">
+                        <strong class="text-grey-500">
+                            Currently supports Textures (.btex) and Materials (.gmtl.gfxbin)
+                        </strong>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</LoadingView>
+
+<Modal @ref="BatchExportModal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Batch Export</span>
+        <span class="material-icons cursor-pointer" @onclick="() => BatchExportModal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <span>Batch export currently only supports textures.</span>
+            <div class="row mt-6">
+                <label style="width: 150px">Output Format</label>
+                <select @bind="Extension" class="input bg-dark-550 w-full">
+                    <option>PNG</option>
+                    <option>TGA</option>
+                    <option>DDS</option>
+                </select>
+            </div>
+            <div class="row mt-6 mb-10">
+                <Checkbox IsChecked="@IsRecursive" OnChange="v => { IsRecursive = v; StateHasChanged(); }"/>
+                <span class="inline-block ml-2">Also export from subdirectories recursively</span>
+            </div>
+            <Button Text="Export Batch" Icon="file_download" OnClickAsync="ExportBatch"/>
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    private string Directory { get; set; }
+    private string ImageName { get; set; } = "asset_preview.jpg";
+    private ExplorerItemType PreviewType { get; set; }
+    private string MaterialPath { get; set; }
+    private ExplorerItemRow SelectedDirectory { get; set; }
+    private ExplorerItemRow SelectedFile { get; set; }
+    private string Extension { get; set; } = "PNG";
+    private Modal BatchExportModal { get; set; }
+    private bool IsRecursive { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Directory = AppState.GetCurrentAssetExplorerPath();
+    }
+
+    public void SetActiveDirectory(string path)
+    {
+        Directory = path;
+        StateHasChanged();
+    }
+
+    public void SetPreviewMaterial(string path)
+    {
+        MaterialPath = path;
+        PreviewType = ExplorerItemType.Material;
+        StateHasChanged();
+    }
+
+    public void SetPreviewImage()
+    {
+    // Jank to trick the UI into updating
+        ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
+
+        PreviewType = ExplorerItemType.Texture;
+        StateHasChanged();
+    }
+
+    public void SetSelectedItem(ExplorerItemRow item)
+    {
+        if (item.Item.Type == ExplorerItemType.Directory)
+        {
+            SelectedDirectory?.SetSelected(false);
+            SelectedDirectory = item;
+            SelectedDirectory.SetSelected(true);
+        }
+        else
+        {
+            SelectedFile?.SetSelected(false);
+            SelectedFile = item;
+            SelectedFile.SetSelected(true);
+        }
+
+        StateHasChanged();
+    }
+
+    private Task ExportPng()
+    {
+        return ExportTexture("png");
+    }
+
+    private Task ExportTga()
+    {
+        return ExportTexture("tga");
+    }
+
+    private Task ExportDds()
+    {
+        return ExportTexture("dds");
+    }
+
+    private async Task ExportTexture(string extension)
+    {
+        await WpfService.OpenSaveFileDialogAsync(
+            SelectedFile.Item.Path.Split('\\').Last().Replace(".btex", $".{extension}"),
+            $"{extension.ToUpper()} Image|*.{extension}", path =>
+            {
+                var btex = File.ReadAllBytes(SelectedFile.Item.Path);
+                var converter = new TextureConverter();
+                var data = extension switch
+                {
+                    "png" => converter.BtexToPng(btex),
+                    "tga" => converter.BtexToTga(btex),
+                    "dds" => converter.BtexToDds(btex),
+                    _ => converter.BtexToJpg(btex)
+                    };
+
+                File.WriteAllBytes(path, data);
+            });
+    }
+
+    private async Task ExportBatch()
+    {
+        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder =>
+        {
+            InvokeAsync(() =>
+            {
+                BatchExportModal.Close();
+                IsLoading = true;
+                StateHasChanged();
+
+                var files = new List<string>();
+
+                if (IsRecursive)
+                {
+                    BuildFileListRecursively(SelectedDirectory.Item.Path, files);
+                }
+                else
+                {
+                    files.AddRange(System.IO.Directory.GetFiles(SelectedDirectory.Item.Path, "*.btex"));
+                }
+
+                var directories = files
+                    .Select(f =>
+                    {
+                        var relativePath = f.Replace(SelectedDirectory.Item.Path, "")[1..];
+                        var index = relativePath.LastIndexOf('\\');
+                        return index > 0 ? relativePath.Remove(index) : null;
+                    })
+                    .Where(d => !string.IsNullOrWhiteSpace(d))
+                    .Distinct();
+
+                foreach (var directory in directories)
+                {
+                    System.IO.Directory.CreateDirectory($"{folder}\\{directory}");
+                }
+
+                Parallel.ForEach(files, file =>
+                {
+                    var relativePath = file.Replace(SelectedDirectory.Item.Path, "");
+                    var outputPath = $"{folder}{relativePath.Replace(".btex", $".{Extension.ToLower()}")}";
+                    var btex = File.ReadAllBytes(file);
+                    var converter = new TextureConverter();
+                    var data = Extension switch
+                    {
+                        "PNG" => converter.BtexToPng(btex),
+                        "TGA" => converter.BtexToTga(btex),
+                        _ => converter.BtexToDds(btex)
+                        };
+
+                    File.WriteAllBytes(outputPath, data);
+                });
+
+                IsLoading = false;
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void BuildFileListRecursively(string directory, List<string> files)
+    {
+        files.AddRange(System.IO.Directory.GetFiles(directory, "*.btex"));
+        foreach (var subdirectory in System.IO.Directory.EnumerateDirectories(directory))
+        {
+            BuildFileListRecursively(subdirectory, files);
+        }
+    }
+}

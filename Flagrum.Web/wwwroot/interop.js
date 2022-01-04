@@ -46,7 +46,7 @@ window.interop = {
             overlay.classList.remove("opacity-0");
         }, 20);
     },
-    
+
     setBackgroundImage: function (modId) {
         let container = document.getElementById(modId);
         let image = new Image();
@@ -84,10 +84,16 @@ window.interop = {
     applyHtmlToElement: function (id, html, dotNetObject) {
         window.interop.currentReference = dotNetObject;
         let element = document.getElementById(id);
-        element.innerHTML = html;
+        if (element !== null && element !== undefined) {
+            element.innerHTML = html;
+        }
     },
 
     openDotNetLink: function (uri) {
         window.interop.currentReference.invokeMethodAsync("OpenLink", uri);
+    },
+
+    scrollToElement: function (id) {
+        document.getElementById(id).scrollIntoView({behavior: 'smooth'});
     }
 }
