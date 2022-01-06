@@ -1,8 +1,10 @@
 ﻿@page "/mod/upload"
+@using Flagrum.Core.Archive
 @inject SteamWorkshopService SteamWorkshop
 @inject AppStateService AppState
 @inject NavigationManager Navigation
 @inject JSInterop Interop
+@inject BinmodTypeHelper BinmodTypeHelper
 
 <LoadingView Text="@LoadingText"
              IsLoading="IsLoading">
@@ -76,26 +78,16 @@
                     {
                         Details = result;
                         IsLoading = false;
+                        InitializeData();
                         InvokeAsync(StateHasChanged);
                     });
                 }
                 else
                 {
                     IsLoading = false;
+                    InitializeData();
                     StateHasChanged();
                 }
-
-                var preview = AppState.ActiveMod.GetPreviewPng();
-
-                // Compress preview if it's too large for Steam
-                if (preview.Length > 953673)
-                {
-                    var converter = new TextureConverter();
-                    _ = converter.ConvertPreview("$preview", preview, out var jpeg);
-                    preview = jpeg;
-                }
-
-                Details.PreviewBytes = preview;
             }
             else
             {
@@ -105,6 +97,35 @@
                     () => Navigation.NavigateTo("/mod/configure"));
             }
         }
+    }
+
+    private void InitializeData()
+    {
+        var preview = AppState.ActiveMod.GetPreviewPng();
+
+        // Compress preview if it's too large for Steam
+        if (preview.Length > 953673)
+        {
+            var converter = new TextureConverter();
+            _ = converter.ConvertPreview("$preview", preview, out var jpeg);
+            preview = jpeg;
+        }
+
+        Details.PreviewBytes = preview;
+
+        var mod = AppState.ActiveMod;
+        var tags = new List<string>
+        {
+            BinmodTypeHelper.GetDisplayName((BinmodType)mod.Type),
+            BinmodTypeHelper.GetTargetTag(mod.Type, mod.Target)
+        };
+
+        if (mod.Type == (int)BinmodType.StyleEdit)
+        {
+            tags.Add(mod.Gender);
+        }
+
+        Details.Tags = tags;
     }
 
     private void Cancel()

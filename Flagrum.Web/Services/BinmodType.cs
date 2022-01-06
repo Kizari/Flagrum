@@ -83,6 +83,17 @@ public class BinmodTypeHelper
         }
     }
 
+    public string GetTargetTag(int binmodType, int binmodTarget)
+    {
+        var targets = GetTargets(binmodType);
+        if (targets.TryGetValue(binmodTarget, out var value))
+        {
+            return value;
+        }
+
+        return "Other";
+    }
+
     public string GetModmetaTargetName(int binmodType, int binmodTarget)
     {
         CreateModmetaTargets();

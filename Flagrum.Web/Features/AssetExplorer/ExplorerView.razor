@@ -60,13 +60,17 @@
                 {
                     try
                     {
-                        Items.Add(new ExplorerItem
+                        var directoryInfo = new DirectoryInfo(directory);
+                        if (!directoryInfo.Attributes.HasFlag(FileAttributes.Hidden))
                         {
-                            Name = directory.Split('\\')[^1],
-                            Path = directory,
-                            Type = ExplorerItemType.Directory,
-                            IsExpandable = Directory.GetDirectories(directory).Length > 0
-                        });
+                            Items.Add(new ExplorerItem
+                            {
+                                Name = directory.Split('\\')[^1],
+                                Path = directory,
+                                Type = ExplorerItemType.Directory,
+                                IsExpandable = Directory.GetDirectories(directory).Length > 0
+                            });
+                        }
                     }
                     catch
                     {

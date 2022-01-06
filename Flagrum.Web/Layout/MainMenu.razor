@@ -20,34 +20,22 @@
     </div>
 </CascadingValue>
 
-<Modal @ref="VersionNotesModal" Width="800" Height="540">
+<Modal @ref="VersionNotesModal" Width="500" Height="400">
     <HeaderView>
         <span class="text-grey-300 flex-grow">Flagrum has been Updated</span>
         <span class="material-icons cursor-pointer" @onclick="() => VersionNotesModal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
-            <h3 class="text-grey-300 mb-4">What's new in Flagrum @Version</h3>
-            <h4 class="text-grey-300 mb-4">Asset Explorer</h4>
-            <span>
-                The Asset Explorer can be used to deal with FFXV assets from your local file system.<br/><br/>
-                Currently the Asset Explorer supports the ability to:
-            </span>
-            <ul class="list-disc ml-6 mb-4">
-                <li>Preview Game Textures</li>
-                <li>Inspect Game Materials (useful for adjusting Flagrum materials in Blender)</li>
-                <li>Export Game Textures to PNG, TGA, or DDS</li>
-                <li>Batch Export a folder, or many folders of Textures at once</li>
+            <h3 class="text-grey-300 mb-6">What's new in Flagrum @Version</h3>
+            <h4 class="text-grey-300 mb-4">Steam Workshop</h4>
+            <ul class="list-disc ml-6 mb-6">
+                <li>Fixed a bug where Flagrum would crash when trying to upload an update to an existing Workshop Mod</li>
+                <li>Mods are now tagged based on their type and target</li>
             </ul>
-            <span>
-                New functionality will be added to the Asset Explorer in future updates.
-            </span>
-            <h4 class="text-grey-300 mt-6 mb-4">Steam Workshop</h4>
-            <ul class="list-disc ml-6">
-                <li>
-                    Preview Images will now be automatically compressed with the highest possible quality before
-                    uploading to Workshop if the current preview image exceeds the size limit
-                </li>
+            <h4 class="text-grey-300 mb-4">Minor</h4>
+            <ul class="list-disc ml-6 mb-4">
+                <li>Hidden folders no longer appear in Asset Explorer to make it easier to navigate</li>
             </ul>
         </div>
     </BodyView>
