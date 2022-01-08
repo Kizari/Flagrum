@@ -53,12 +53,23 @@ class Interop:
 
     @staticmethod
     def export_mesh(target_path, data: Gpubin):
+        # Serialize the model data
         json_data = json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=0)
 
         with ZipFile(target_path, mode='w', compression=ZIP_STORED, allowZip64=True, compresslevel=None) as fmd:
+            # Add model data to the zip
             fmd.writestr("data.json", json_data)
+            templates = []
+
             for mesh in data.Meshes:
                 if mesh.Material:
+                    # Add material template if not already in the zip
+                    template_path = join(dirname(__file__), "..", "lib", "templates", mesh.Material.Id + ".json")
+                    if mesh.Material.Id not in templates:
+                        fmd.write(template_path, arcname="materials/" + mesh.Material.Id + ".json")
+                        templates.append(mesh.Material.Id)
+
+                    # Add textures to the zip
                     for texture_id in mesh.Material.Textures:
                         texture_path = mesh.Material.Textures[texture_id]
                         if texture_path != '':

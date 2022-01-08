@@ -2,9 +2,6 @@
 using System.IO;
 using System.Linq;
 using Flagrum.Console.Utilities;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Gfxbin.Gmdl;
-using Flagrum.Core.Gfxbin.Gmtl;
 
 namespace Flagrum.Console;
 
@@ -28,15 +25,19 @@ public class Program
 
     public static void Main(string[] args)
     {
+        new MaterialFinder().MakeTemplate();
+        //MaterialToPython.ConvertFromJsonFile(@"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.json",
+        //  @"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.py");
+        //MaterialToPython.Convert(@"C:\Modding\nh03_000_basic_01_mat.gmtl.gfxbin", @"C:\Modding\glass.py");
         //GfxbinTests.CheckMaterialDefaults(@"C:\Modding\nh05_000_skin_00_mat.gmtl.gfxbin");
-        using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\me\me01\model_010\materials\autoexternal.earc");
-        var gmtls = unpacker.UnpackFilesByQuery(".gmtl");
-        foreach (var (name, data) in gmtls)
-        {
-            var reader = new MaterialReader(data);
-            var material = reader.Read();
-        }
-        bool x = true;
+        // using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\me\me01\model_010\materials\autoexternal.earc");
+        // var gmtls = unpacker.UnpackFilesByQuery(".gmtl");
+        // foreach (var (name, data) in gmtls)
+        // {
+        //     var reader = new MaterialReader(data);
+        //     var material = reader.Read();
+        // }
+        // bool x = true;
         //var gfx = @"C:\Users\Kieran\Desktop\character\aw\aw90\model_010\aw90_010.gmdl.gfxbin";
         //var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         //var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));

@@ -77,6 +77,7 @@ public class SteamWorkshopService
         var fileId = new PublishedFileId_t(itemId);
         _queryItemCallback = CallResult<SteamUGCQueryCompleted_t>.Create(OnQueryComplete);
         var request = SteamUGC.CreateQueryUGCDetailsRequest(new[] {fileId}, 1);
+        SteamUGC.SetReturnLongDescription(request, true);
         _queryItemCallback.Set(SteamUGC.SendQueryUGCRequest(request));
     }
 

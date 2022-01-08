@@ -3,10 +3,10 @@
 @inject JSInterop Interop
 @inject AppStateService AppState
 
-<div class="mod-listing-card shadow-lg mx-3 mt-8 bg-grey-800 @Opacity transition-opacity transition-transform transition-shadow transform hover:scale-105 cursor-pointer hover:shadow-xl"
+<div class="mod-listing-card shadow-lg mx-2.5 mt-6 bg-grey-800 @Opacity transition-opacity transition-transform transition-shadow transform hover:scale-105 cursor-pointer hover:shadow-xl"
      @onclick="Configure">
     <div class="bg-black">
-        <div style="position:relative;width:180px;height:180px;background-repeat: no-repeat; background-size: contain; background-position: center; background-image: url('images/@(Mod.Uuid).png')"
+        <div style="position:relative;width:178px;height:178px;background-repeat: no-repeat; background-size: contain; background-position: center; background-image: url('images/@(Mod.Uuid).png')"
              id="@Mod.Uuid">
             <Checkbox CssStyle="position:absolute;top:-10px;right:-10px;"
                       IsChecked="@Mod.IsApplyToGame"

@@ -8,6 +8,14 @@ namespace Flagrum.Console.Utilities;
 
 public static class MaterialsToTemplates
 {
+    public static void ConvertSingle(string path)
+    {
+        var reader = new MaterialReader(path);
+        var material = reader.Read();
+        var json = JsonConvert.SerializeObject(material);
+        File.WriteAllText(path.Replace(".gmtl.gfxbin", ".json"), json);
+    }
+
     public static void Run()
     {
         var files = new List<MaterialFile>();

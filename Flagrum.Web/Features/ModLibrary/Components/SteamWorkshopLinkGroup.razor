@@ -1,0 +1,34 @@
+﻿<div class="bg-dark-550 mt-6 shadow-md">
+    <div class="bg-dark p-3 row cursor-pointer" @onclick="Toggle">
+        <span class="material-icons text-grey-400 mr-2">@(IsExpanded ? "expand_less" : "expand_more")</span>
+        <strong class="block font-display flex-grow select-none">@Title</strong>
+    </div>
+    <div class="p-4 @(IsExpanded ? "" : "hidden")">
+        @ChildContent
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public bool DefaultExpanded { get; set; }
+
+    private bool IsExpanded { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        IsExpanded = DefaultExpanded;
+    }
+
+    private void Toggle()
+    {
+        IsExpanded = !IsExpanded;
+    }
+}

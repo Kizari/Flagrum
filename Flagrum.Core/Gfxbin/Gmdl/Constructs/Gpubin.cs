@@ -30,10 +30,8 @@ public class GpubinMesh
 public class MaterialData
 {
     public string Id { get; set; }
-    public string Name { get; set; }
     public Dictionary<string, float[]> Inputs { get; set; }
     public Dictionary<string, string> Textures { get; set; }
-
     public List<TextureData> TextureData { get; set; } = new();
 }
 

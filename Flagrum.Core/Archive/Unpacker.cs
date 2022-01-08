@@ -128,7 +128,7 @@ public class Unpacker : IDisposable
 
         if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
-            buffer = Decompress(file.Size, file.Key, buffer);
+            buffer = Decompress(file.Size, file.Key, file.Flags.HasFlag(ArchiveFileFlag.Copyguard), buffer);
         }
         else if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
         {
@@ -147,9 +147,9 @@ public class Unpacker : IDisposable
         }
     }
 
-    private byte[] Decompress(uint fileSize, ushort key, byte[] data)
+    private byte[] Decompress(uint fileSize, ushort key, bool isProtected, byte[] data)
     {
-        var chunkSize = 512 * 1024;
+        var chunkSize = _header.ChunkSize * 1024;
         var chunks = fileSize / chunkSize;
 
         // If the integer division wasn't even, add 1 more chunk
@@ -162,12 +162,12 @@ public class Unpacker : IDisposable
         using var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress);
         using var outputStream = new MemoryStream();
 
-        for (int index = 0; index < chunks; index++)
+        for (var index = 0; index < chunks; index++)
         {
             // Align the bytes
             if (index > 0)
             {
-                int offset = 4 - (int)(memoryStream.Position % 4);
+                var offset = 4 - (int)(memoryStream.Position % 4);
 
                 if (offset > 3)
                 {
@@ -185,9 +185,9 @@ public class Unpacker : IDisposable
             memoryStream.Read(buffer, 0, 4);
             var decompressedSize = BitConverter.ToUInt32(buffer);
 
-            if (index == 0 && key > 0)
+            if (index == 0 && isProtected)
             {
-                var chunkKey = (ArchiveFile.MasterChunkKeyA * key) + ArchiveFile.MasterChunkKeyB;
+                var chunkKey = ArchiveFile.MasterChunkKeyA * key + ArchiveFile.MasterChunkKeyB;
 
                 var compressedKey = (uint)(chunkKey >> 32);
                 var uncompressedKey = (uint)(chunkKey & 0xFFFFFFFF);
@@ -196,9 +196,7 @@ public class Unpacker : IDisposable
                 decompressedSize ^= uncompressedKey;
             }
 
-            buffer = new byte[decompressedSize];
-            zlibStream.Read(buffer, 0, (int)decompressedSize);
-            outputStream.Write(buffer);
+            zlibStream.CopyTo(outputStream, (int)decompressedSize);
         }
 
         return outputStream.ToArray();

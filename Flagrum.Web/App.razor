@@ -2,7 +2,7 @@
 
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(MainLayout)">
@@ -10,3 +10,27 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+<PromptModal @ref="RestartAppModal"
+             Title="Software Update"
+             Heading="Flagrum has been Updated"
+             Subtext="The application must be restarted to apply the changes"
+             YesText="Restart Flagrum"
+             NoText="Not Now"/>
+
+@code
+{
+    private PromptModal RestartAppModal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        WpfServiceHelper.OnAppUpdated = action =>
+        {
+            RestartAppModal.OnYes = action;
+            RestartAppModal.OnNo = () => RestartAppModal.Close(false);
+            RestartAppModal.Open();
+        };
+    }
+}

@@ -20,23 +20,85 @@
     </div>
 </CascadingValue>
 
-<Modal @ref="VersionNotesModal" Width="500" Height="400">
+<Modal @ref="VersionNotesModal" Width="800" Height="600" Padding="0">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Flagrum has been Updated</span>
+        <span class="text-grey-300 flex-grow">Software Update</span>
         <span class="material-icons cursor-pointer" @onclick="() => VersionNotesModal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
-        <div class="h-full">
-            <h3 class="text-grey-300 mb-6">What's new in Flagrum @Version</h3>
-            <h4 class="text-grey-300 mb-4">Steam Workshop</h4>
-            <ul class="list-disc ml-6 mb-6">
-                <li>Fixed a bug where Flagrum would crash when trying to upload an update to an existing Workshop Mod</li>
-                <li>Mods are now tagged based on their type and target</li>
-            </ul>
-            <h4 class="text-grey-300 mb-4">Minor</h4>
-            <ul class="list-disc ml-6 mb-4">
-                <li>Hidden folders no longer appear in Asset Explorer to make it easier to navigate</li>
-            </ul>
+        <div class="h-full p-6 scrollbar-light" style="max-height: 100%; overflow-y: auto">
+            <h3 class="text-grey-300 mb-6">Flagrum has been updated to @Version!</h3>
+
+            <div class="bg-grey-900 rounded-md border border-grey-700 p-4">
+                <h4 class="text-grey-300 mb-4">Flagrum 1.1.2</h4>
+                <h5 class="text-grey-300 mb-4">Modding</h5>
+                <ul class="list-disc ml-6 mb-4">
+                    <li>Added Glass Material to Flagrum and the Blender add-on</li>
+                    <li>Added base material name to Asset Explorer's Material Previewer</li>
+                    <li>Fixed an issue where Workshop Descriptions were only loading the first 256 characters</li>
+                    <li>Finalised mod tags for Workshop upload</li>
+                </ul>
+                <span class="block ml-6" style="color: #ff0000">
+                    <strong>Recommended Action:</strong>
+                    If you have any Flagrum mods on Workshop, consider reuploading the existing mod to apply the correct
+                    tags. This will ensure it appears in the new search functionality.
+                </span>
+                <h5 class="text-grey-300 mb-4 mt-6">Windows</h5>
+                <ul class="list-disc ml-6 mb-4">
+                    <li>
+                        Fixed an issue where after updating, Flagrum would no longer nest under its shortcut icon when
+                        pinned to the taskbar.
+                    </li>
+                </ul>
+                <span class="block ml-6" style="color: #ff0000">
+                    <strong>Recommended Action:</strong>
+                    If you have Flagrum pinned to the taskbar, unpin and repin to resolve this issue for future updates.
+                </span>
+                <ul class="list-disc ml-6 mt-4">
+                    <li>
+                        Flagrum will now launch with a smaller window on screens with a resolution smaller than the
+                        default window size
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
+                <h4 class="text-grey-300 mb-4">Flagrum 1.1.1</h4>
+                <h5 class="text-grey-300 mb-4">Steam Workshop</h5>
+                <ul class="list-disc ml-6 mb-6">
+                    <li>Fixed a bug where Flagrum would crash when trying to upload an update to an existing Workshop Mod</li>
+                    <li>Mods are now tagged based on their type and target</li>
+                </ul>
+                <h5 class="text-grey-300 mb-4">Minor</h5>
+                <ul class="list-disc ml-6 mb-4">
+                    <li>Hidden folders no longer appear in Asset Explorer to make it easier to navigate</li>
+                </ul>
+            </div>
+
+            <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
+                <h4 class="text-grey-300 mb-4">Flagrum 1.1.0</h4>
+                <h5 class="text-grey-300 mb-4">Asset Explorer</h5>
+                <span>
+                    The Asset Explorer can be used to deal with FFXV assets from your local file system.<br/><br/>
+                    Currently the Asset Explorer supports the ability to:
+                </span>
+                <ul class="list-disc ml-6 mb-4">
+                    <li>Preview Game Textures</li>
+                    <li>Inspect Game Materials (useful for adjusting Flagrum materials in Blender)</li>
+                    <li>Export Game Textures to PNG, TGA, or DDS</li>
+                    <li>Batch Export a folder, or many folders of Textures at once</li>
+                </ul>
+                <span>
+                    New functionality will be added to the Asset Explorer in future updates.
+                </span>
+                <h5 class="text-grey-300 mt-6 mb-4">Steam Workshop</h5>
+                <ul class="list-disc ml-6">
+                    <li>
+                        Preview Images will now be automatically compressed with the highest possible quality before
+                        uploading to Workshop if the current preview image exceeds the size limit
+                    </li>
+                </ul>
+            </div>
         </div>
     </BodyView>
 </Modal>

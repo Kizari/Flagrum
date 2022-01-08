@@ -51,30 +51,52 @@
     }
 
     div::-webkit-scrollbar {
-        width: 12px;
+        width: 14px;
     }
 
     div::-webkit-scrollbar-track {
-        width: 12px;
-        @apply bg-dark;
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #100f0c;
+        @apply rounded-t-full rounded-b-full;
     }
 
     div::-webkit-scrollbar-thumb {
-        width: 8px;
-        @apply bg-grey-800 rounded-t-full rounded-b-full;
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #292524;
+        @apply rounded-t-full rounded-b-full;
     }
 
     textarea::-webkit-scrollbar {
-        width: 12px;
+        width: 10px;
     }
 
     textarea::-webkit-scrollbar-track {
-        width: 12px;
-        @apply bg-dark;
+        width: 10px;
+        @apply bg-dark-550 rounded-t-full rounded-b-full;
     }
 
     textarea::-webkit-scrollbar-thumb {
-        width: 8px;
-        @apply bg-grey-800 hover:bg-grey-700 rounded-t-full rounded-b-full;
+        width: 10px;
+        @apply bg-grey-800 hover:bg-grey-700 rounded-t-full rounded-b-full transition-colors;
+    }
+
+    .scrollbar-light::-webkit-scrollbar {
+        width: 14px;
+    }
+
+    .scrollbar-light::-webkit-scrollbar-track {
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #181512;
+        @apply rounded-t-full rounded-b-full;
+    }
+
+    .scrollbar-light::-webkit-scrollbar-thumb {
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #44403C;
+        @apply rounded-t-full rounded-b-full;
     }
 }

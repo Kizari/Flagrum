@@ -1,9 +1,10 @@
 ﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.6)">
-    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="width: @(Width)px; height: @(Height)px">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="width: @(Width)px; height: @(Height)px; max-width: 90%; max-height: 90%">
         <div class="rounded-t-lg bg-grey-700 p-3 row">
             @HeaderView
         </div>
-        <div class="@(FooterView == null ? "rounded-b-lg" : "") p-6 flex flex-row h-full items-center">
+        <div class="@(FooterView == null ? "rounded-b-lg" : "") p-@Padding flex flex-row items-center overflow-hidden"
+             style="height: calc(100% - 50px)">
             @BodyView
         </div>
         @if (FooterView != null)
@@ -31,6 +32,9 @@
 
     [Parameter]
     public int Height { get; set; } = 300;
+
+    [Parameter]
+    public int Padding { get; set; } = 6;
 
     private string Display { get; set; } = "hidden";
     private string Opacity { get; set; } = "opacity-0";

@@ -48,7 +48,37 @@ public class ModelReplacementPresets
             File.WriteAllText(_settings.ReplacementsFilePath, JsonConvert.SerializeObject(empty, Formatting.Indented));
         }
 
-        Replacements = new List<ModelReplacementTarget>
+        Replacements = GetDefaultReplacements();
+
+        try
+        {
+            var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
+            var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
+            var indexCounter = 99;
+            Replacements.AddRange(custom.Select(e =>
+            {
+                var (name, models) = e;
+                indexCounter++;
+
+                return new ModelReplacementTarget
+                {
+                    Index = indexCounter,
+                    Name = name,
+                    ModmetaName = $"Custom_{indexCounter}",
+                    Models = models
+                };
+            }));
+        }
+        catch
+        {
+            // Can just continue as normal if the JSON is malformed
+            // User just won't have custom presets until they fix it
+        }
+    }
+
+    public List<ModelReplacementTarget> GetDefaultReplacements()
+    {
+        return new List<ModelReplacementTarget>
         {
             new()
             {
@@ -703,30 +733,5 @@ public class ModelReplacementPresets
                 }
             }
         };
-
-        try
-        {
-            var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
-            var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
-            var indexCounter = 99;
-            Replacements.AddRange(custom.Select(e =>
-            {
-                var (name, models) = e;
-                indexCounter++;
-
-                return new ModelReplacementTarget
-                {
-                    Index = indexCounter,
-                    Name = name,
-                    ModmetaName = $"Custom_{indexCounter}",
-                    Models = models
-                };
-            }));
-        }
-        catch
-        {
-            // Can just continue as normal if the JSON is malformed
-            // User just won't have custom presets until they fix it
-        }
     }
 }

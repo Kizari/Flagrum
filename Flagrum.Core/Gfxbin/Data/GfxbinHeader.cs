@@ -26,10 +26,10 @@ public class GfxbinHeader
         {
             _logger.LogWarning($"Gfxbin Version {Version}");
         }
-        else
-        {
-            _logger.LogInformation($"Gfxbin Version {Version}");
-        }
+        // else
+        // {
+        //     _logger.LogInformation($"Gfxbin Version {Version}");
+        // }
 
         var dependencyCount = reader.ReadMapCount();
 

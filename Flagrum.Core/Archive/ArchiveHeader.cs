@@ -28,4 +28,6 @@ public class ArchiveHeader
     public uint Flags { get; set; }
     public uint ChunkSize { get; set; }
     public ulong Hash { get; set; }
+
+    public bool IsProtectedArchive => (Version & 2147483648) > 0;
 }

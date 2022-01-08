@@ -3,8 +3,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Interop;
 using Flagrum.Desktop.Services;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
@@ -47,6 +50,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     public MainWindow()
     {
+        var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
+        var bounds = screen.Bounds;
+        var width = 1680;
+        var height = 1024;
+
+        if (width > bounds.Width || height > bounds.Height)
+        {
+            width = (int)(bounds.Width * 0.95);
+            height = (int)(bounds.Height * 0.9);
+
+            var dpiXProperty =
+                typeof(SystemParameters).GetProperty("DpiX", BindingFlags.NonPublic | BindingFlags.Static);
+            var dpiYProperty =
+                typeof(SystemParameters).GetProperty("Dpi", BindingFlags.NonPublic | BindingFlags.Static);
+
+            var dpiX = (int)dpiXProperty.GetValue(null, null);
+            var dpiY = (int)dpiYProperty.GetValue(null, null);
+
+            Width = width / (dpiX / 96.0);
+            Height = height / (dpiY / 96.0);
+        }
+        else
+        {
+            Width = width;
+            Height = height;
+        }
+
         flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
         if (!Directory.Exists(flagrumDirectory))
         {

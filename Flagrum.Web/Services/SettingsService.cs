@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Flagrum.Core.Utilities;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace Flagrum.Web.Services;
@@ -16,6 +17,9 @@ public class SettingsData
 
 public class SettingsService
 {
+    private const string Steam32 = @"SOFTWARE\VALVE\Steam";
+    private const string Steam64 = @"SOFTWARE\Wow6432Node\Valve\Steam";
+
     public SettingsService()
     {
         var imagesDirectory = $"{IOHelper.GetWebRoot()}\\images";
@@ -98,9 +102,35 @@ public class SettingsService
             }
         }
 
+        try
+        {
+            var key64 = Registry.LocalMachine.OpenSubKey(Steam64);
+            if (key64 == null)
+            {
+                var key32 = Registry.LocalMachine.OpenSubKey(Steam32);
+                SteamExePath = key32?.GetValue("InstallPath")?.ToString();
+            }
+            else
+            {
+                SteamExePath = key64.GetValue("InstallPath")?.ToString();
+            }
+
+            if (SteamExePath != null)
+            {
+                SteamExePath += @"\steam.exe";
+            }
+        }
+        catch
+        {
+            // Don't want a failed Steam path to take out the whole app
+            // It's not that important
+        }
+
         CheckIsReady();
         Save();
     }
+
+    public string SteamExePath { get; set; }
 
     public bool IsReady { get; set; }
     public string FlagrumDirectory { get; }

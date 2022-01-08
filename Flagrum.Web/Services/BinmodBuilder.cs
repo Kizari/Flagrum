@@ -33,8 +33,7 @@ public class BinmodBuilder
         _binmodType = binmodType;
     }
 
-    public void Initialise(Binmod mod, byte[] previewImage, byte[] previewBtex, byte[] thumbnailImage,
-        byte[] thumbnailBtex)
+    public void Initialise(Binmod mod, BuildContext context)
     {
         _mod = mod;
         _packer = new Packer();
@@ -43,13 +42,13 @@ public class BinmodBuilder
         var exml = _entityPackageBuilder.BuildExml(_mod);
         _packer.AddFile(exml, "data://$mod/temp.exml");
 
-        _packer.AddFile(previewImage, GetDataPath("$preview.png.bin"));
-        _packer.AddFile(previewBtex, GetDataPath("$preview.png"));
+        _packer.AddFile(context.PreviewImage, GetDataPath("$preview.png.bin"));
+        _packer.AddFile(context.PreviewBtex, GetDataPath("$preview.png"));
 
         if (mod.Type == (int)BinmodType.StyleEdit)
         {
-            _packer.AddFile(thumbnailImage, GetDataPath("default.png.bin"));
-            _packer.AddFile(thumbnailBtex, GetDataPath("default.png"));
+            _packer.AddFile(context.ThumbnailImage, GetDataPath("default.png.bin"));
+            _packer.AddFile(context.ThumbnailBtex, GetDataPath("default.png"));
         }
     }
 
@@ -99,7 +98,7 @@ public class BinmodBuilder
         _packer.AddFile(gpubin, gpubinUri);
     }
 
-    public void AddFmd(int modelIndex, Gpubin gpubin, IEnumerable<FmdTexture> textures)
+    public void AddFmd(int modelIndex, FmdData fmd)
     {
         var modelNamePrefix = modelIndex switch
         {
@@ -108,7 +107,7 @@ public class BinmodBuilder
             _ => string.Empty
         };
 
-        foreach (var mesh in gpubin.Meshes)
+        foreach (var mesh in fmd.Gpubin.Meshes)
         {
             var replacements = new Dictionary<string, string>();
             foreach (var (textureId, filePath) in mesh.Material.Textures)
@@ -156,7 +155,7 @@ public class BinmodBuilder
                     {
                         Id = textureId,
                         Uri = uri,
-                        Data = textures.First(t => t.Mesh == mesh.Name && t.TextureSlot == textureId).Data
+                        Data = fmd.Textures.First(t => t.Mesh == mesh.Name && t.TextureSlot == textureId).Data
                     });
                 }
             }
@@ -179,6 +178,7 @@ public class BinmodBuilder
                     Path = p.Uri
                 }).ToList(),
                 replacements,
+                fmd.Materials,
                 out var materialType);
 
             mesh.MaterialType = materialType;
@@ -202,11 +202,11 @@ public class BinmodBuilder
             _ => _mod.ModelName
         };
 
-        var model = OutfitTemplate.Build(_mod.ModDirectoryName, modelName, modelNamePrefix, gpubin);
-        var replacer = new ModelReplacer(model, gpubin, _mod.Type, _mod.Target, _mod.Gender);
+        var model = OutfitTemplate.Build(_mod.ModDirectoryName, modelName, modelNamePrefix, fmd.Gpubin);
+        var replacer = new ModelReplacer(model, fmd.Gpubin, _mod.Type, _mod.Target, _mod.Gender);
         model = replacer.Replace();
 
-        if (_mod.Type == (int)BinmodType.Weapon || _mod.Type == (int)BinmodType.Multi_Weapon)
+        if (_mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
         {
             foreach (var bone in model.BoneHeaders)
             {

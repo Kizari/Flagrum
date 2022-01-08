@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -84,10 +84,14 @@ public static class MaterialBuilder
         {"wipersMask_Texture", "white.btex"}
     };
 
-    public static Material FromTemplate(string templateName, string materialName, string modDirectoryName,
+    public static Material FromTemplate(
+        string templateName,
+        string materialName,
+        string modDirectoryName,
         List<MaterialInputData> inputs,
         List<MaterialTextureData> textures,
         Dictionary<string, string> replacements,
+        ConcurrentDictionary<string, Material> templates,
         out MaterialType type)
     {
         type = templateName switch
@@ -101,9 +105,12 @@ public static class MaterialBuilder
             _ => MaterialType.FourWeights
         };
 
-        var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
-        var json = File.ReadAllText(templatePath);
-        var material = JsonConvert.DeserializeObject<Material>(json);
+        if (!templates.TryGetValue(templateName, out var material))
+        {
+            var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";
+            var json = File.ReadAllText(templatePath);
+            material = JsonConvert.DeserializeObject<Material>(json);
+        }
 
         material.UpdateName(modDirectoryName, materialName);
 
@@ -147,14 +154,10 @@ public static class MaterialBuilder
         var match = material.InterfaceInputs.FirstOrDefault(u =>
             u.ShaderGenName.ToLower() == inputName.ToLower() && u.InterfaceIndex == 0);
 
-        if (match == null)
+        if (match != null)
         {
-            return;
-            throw new ArgumentException($"Input {inputName} was not found in material {material.Name}.",
-                nameof(inputName));
+            match.Values = values;
         }
-
-        match.Values = values;
     }
 
     public static byte[] GetDefaultTextureData(string name)

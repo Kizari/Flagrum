@@ -4,7 +4,6 @@ from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector, kdtree
 
 from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
-from ..panel.material_data import original_name_dictionary
 
 # Matrix that converts the axes back to FBX coordinate system
 conversion_matrix = Matrix([
@@ -383,7 +382,6 @@ def _pack_material(mesh: Object):
 
     data = MaterialData()
     data.Id = material.preset
-    data.Name = original_name_dictionary[material.preset]
     data.Inputs = {}
     data.Textures = {}
 
@@ -403,6 +401,5 @@ def _pack_material(mesh: Object):
         else:
             # Put in an array to make handling the JSON easier
             data.Inputs[prop.property_name] = [property_value]
-            
 
     return data

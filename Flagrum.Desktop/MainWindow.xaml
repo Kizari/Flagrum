@@ -7,7 +7,7 @@
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
         xmlns:fa5="http://schemas.fontawesome.com/icons/"
         mc:Ignorable="d"
-        Title="Flagrum" Width="1680" Height="1050"
+        Title="Flagrum"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         Background="#181512"
@@ -147,8 +147,12 @@
                             </DataTemplate>
                             <DataTemplate x:Key="LoadingTemplate">
                                 <StackPanel VerticalAlignment="Center">
-                                    <fa5:SvgAwesome Icon="Solid_SyncAlt" Spin="True" SpinDuration="2" Foreground="LightGray" Width="80" Height="80" />
-                                    <Label Foreground="LightGray" HorizontalAlignment="Center" FontSize="18pt" Margin="0, 20, 0, 100">Installing Additional Dependencies</Label>
+                                    <fa5:SvgAwesome Icon="Solid_SyncAlt" Spin="True" SpinDuration="2"
+                                                    Foreground="LightGray" Width="80" Height="80" />
+                                    <Label Foreground="LightGray" HorizontalAlignment="Center" FontSize="18pt"
+                                           Margin="0, 20, 0, 100">
+                                        Installing Additional Dependencies
+                                    </Label>
                                 </StackPanel>
                             </DataTemplate>
                         </ContentPresenter.Resources>

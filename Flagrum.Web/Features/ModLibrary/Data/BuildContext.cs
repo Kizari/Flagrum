@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ public class FmdData
 {
     public Gpubin Gpubin { get; set; }
     public ConcurrentBag<FmdTexture> Textures { get; } = new();
+    public ConcurrentDictionary<string, Material> Materials { get; } = new();
 }
 
 public class FmdTexture
@@ -121,6 +123,15 @@ public class BuildContext
                 }
             }
 
+            var materials = new Dictionary<string, byte[]>();
+            foreach (var materialEntry in archive.Entries.Where(e => e.FullName.Contains("materials/")))
+            {
+                await using var materialStream = materialEntry.Open();
+                var materialBytes = new byte[materialEntry.Length];
+                await materialStream.ReadAsync(materialBytes);
+                materials.Add(materialEntry.Name.Replace(".json", ""), materialBytes);
+            }
+
             Parallel.ForEach(textures, data =>
             {
                 var texture = new FmdTexture();
@@ -129,6 +140,13 @@ public class BuildContext
                 texture.TextureSlot = data.TextureSlot;
                 texture.Data = converter.ToBtex(data.Name, data.Extension, data.Type, data.Data);
                 fmd.Textures.Add(texture);
+            });
+
+            Parallel.ForEach(materials, material =>
+            {
+                var json = Encoding.UTF8.GetString(material.Value);
+                var materialObject = JsonConvert.DeserializeObject<Material>(json);
+                fmd.Materials.TryAdd(material.Key, materialObject);
             });
 
             Fmds[index] = fmd;

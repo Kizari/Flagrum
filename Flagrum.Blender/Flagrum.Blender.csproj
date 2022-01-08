@@ -8,7 +8,73 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj"/>
+        <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="templates\AVATAR_CLOTH.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\AVATAR_GLASS.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\AVATAR_HAIR.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\AVATAR_OUTFIT.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\AVATAR_SKIN.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\BASIC_MATERIAL.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\GLASS_MATERIAL.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="templates\NAMED_HUMAN_EYE.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\NAMED_HUMAN_GLASS.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="templates\NAMED_HUMAN_HAIR.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\NAMED_HUMAN_OUTFIT.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <Content Include="templates\NAMED_HUMAN_SKIN.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <None Remove="templates\GLASS_MATERIAL.json" />
+      <Content Include="templates\AVATAR_EYE.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+      <None Remove="templates\NAMED_HUMAN_GLASS.json" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -18,9 +84,9 @@
 
     <Target Name="CopyDependencies" AfterTargets="Publish">
         <ItemGroup>
-            <Blender Include="$(SolutionDir)\Flagrum.Blender\**\*.py" Exclude="$(SolutionDir)\Flagrum.Blender\venv\**\*.py"/>
+            <Blender Include="$(SolutionDir)\Flagrum.Blender\**\*.py" Exclude="$(SolutionDir)\Flagrum.Blender\venv\**\*.py" />
         </ItemGroup>
-        <Copy SourceFiles="@(Blender)" DestinationFiles="@(Blender->'$(PythonScriptsDir)\%(RecursiveDir)%(Filename)%(Extension)')"/>
+        <Copy SourceFiles="@(Blender)" DestinationFiles="@(Blender->'$(PythonScriptsDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
     </Target>
 
 </Project>

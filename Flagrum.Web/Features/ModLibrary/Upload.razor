@@ -103,7 +103,7 @@
     {
         var preview = AppState.ActiveMod.GetPreviewPng();
 
-        // Compress preview if it's too large for Steam
+    // Compress preview if it's too large for Steam
         if (preview.Length > 953673)
         {
             var converter = new TextureConverter();
@@ -116,6 +116,7 @@
         var mod = AppState.ActiveMod;
         var tags = new List<string>
         {
+            "Flagrum",
             BinmodTypeHelper.GetDisplayName((BinmodType)mod.Type),
             BinmodTypeHelper.GetTargetTag(mod.Type, mod.Target)
         };

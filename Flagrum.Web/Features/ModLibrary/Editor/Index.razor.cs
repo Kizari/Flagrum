@@ -245,8 +245,7 @@ public partial class Index : ComponentBase
         await BuildContext.WaitForBuildData(Mod.Type == (int)BinmodType.StyleEdit);
 
         Mod.ModelExtension = "gmdl";
-        BinmodBuilder.Initialise(Mod, BuildContext.PreviewImage, BuildContext.PreviewBtex, BuildContext.ThumbnailImage,
-            BuildContext.ThumbnailBtex);
+        BinmodBuilder.Initialise(Mod, BuildContext);
 
         if (ModelCount > 1)
         {
@@ -256,7 +255,7 @@ public partial class Index : ComponentBase
             }
             else
             {
-                BinmodBuilder.AddFmd(0, BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+                BinmodBuilder.AddFmd(0, BuildContext.Fmds[0]);
             }
 
             if (BuildContext.Fmds[1] == null)
@@ -265,12 +264,12 @@ public partial class Index : ComponentBase
             }
             else
             {
-                BinmodBuilder.AddFmd(1, BuildContext.Fmds[1].Gpubin, BuildContext.Fmds[1].Textures);
+                BinmodBuilder.AddFmd(1, BuildContext.Fmds[1]);
             }
         }
         else
         {
-            BinmodBuilder.AddFmd(-1, BuildContext.Fmds[0].Gpubin, BuildContext.Fmds[0].Textures);
+            BinmodBuilder.AddFmd(-1, BuildContext.Fmds[0]);
         }
 
         BinmodBuilder.WriteToFile(Mod.Path);
