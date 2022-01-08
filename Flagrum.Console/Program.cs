@@ -25,7 +25,8 @@ public class Program
 
     public static void Main(string[] args)
     {
-        new MaterialFinder().MakeTemplate();
+        AOFixer.Run();
+        //new MaterialFinder().MakeTemplate();
         //MaterialToPython.ConvertFromJsonFile(@"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.json",
         //  @"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.py");
         //MaterialToPython.Convert(@"C:\Modding\nh03_000_basic_01_mat.gmtl.gfxbin", @"C:\Modding\glass.py");

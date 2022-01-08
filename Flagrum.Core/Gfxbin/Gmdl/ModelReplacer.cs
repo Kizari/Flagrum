@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
@@ -233,39 +232,39 @@ public class ModelReplacer
                     }
                 }
 
-                if (_modType == (int)BinmodType.StyleEdit)
+                //if (_modType == (int)BinmodType.StyleEdit)
+                //{
+                if (_gpubin.BoneTable.Count > 1)
                 {
-                    if (_gpubin.BoneTable.Count > 1)
-                    {
-                        mesh.BoneIds = Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i);
-                    }
-                    else
-                    {
-                        mesh.BoneIds = new[] { 0u };
-                    }
+                    mesh.BoneIds = Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i);
                 }
                 else
                 {
-                    mesh.BoneIds = boneIds.Distinct().OrderBy(i => i);
-                    usedIndices.AddRange(boneIds.Distinct().Select(i => (ushort)i));
+                    mesh.BoneIds = new[] {0u};
                 }
+                //}
+                // else
+                // {
+                //     mesh.BoneIds = boneIds.Distinct().OrderBy(i => i);
+                //     usedIndices.AddRange(boneIds.Distinct().Select(i => (ushort)i));
+                // }
             }
         }
 
-        if (_modType == (int)BinmodType.StyleEdit)
-        {
-            _model.BoneHeaders = _gpubin.BoneTable
-                .Select(kvp =>
-                {
-                    var (boneIndex, boneName) = kvp;
-                    boneIndex = ushort.MaxValue;
-                    var lodIndex = ((uint)boneIndex << 16) | 0xFFFF;
-                    return new BoneHeader {LodIndex = lodIndex, Name = boneName};
-                })
-                .ToList();
+        //if (_modType == (int)BinmodType.StyleEdit)
+        //{
+        _model.BoneHeaders = _gpubin.BoneTable
+            .Select(kvp =>
+            {
+                var (boneIndex, boneName) = kvp;
+                boneIndex = ushort.MaxValue;
+                var lodIndex = ((uint)boneIndex << 16) | 0xFFFF;
+                return new BoneHeader {LodIndex = lodIndex, Name = boneName};
+            })
+            .ToList();
 
-            return _model;
-        }
+        return _model;
+        //}
 
         // Create arbitrary indices for the bones
         // Start at 10000 to avoid conflicts with other loaded bones on the target model

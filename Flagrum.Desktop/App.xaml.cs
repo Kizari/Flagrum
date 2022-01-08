@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
-using Flagrum.Web.Services;
 using Squirrel;
 
 namespace Flagrum.Desktop;
@@ -22,7 +21,6 @@ public partial class App : Application
 
         SquirrelAwareApp.HandleEvents(
             OnInstall,
-            OnUpdate,
             onAppUninstall: OnUninstall);
     }
 
@@ -33,17 +31,6 @@ public partial class App : Application
     {
         using var manager = new UpdateManager("");
         manager.CreateShortcutForThisExe();
-    }
-
-    private static async void OnUpdate(Version version)
-    {
-        // Disgusting hack to present update restart confirmation window in Flagrum.Web
-        while (WpfServiceHelper.OnAppUpdated == null)
-        {
-            await Task.Delay(100);
-        }
-
-        WpfServiceHelper.OnAppUpdated(() => UpdateManager.RestartApp());
     }
 
     private static void OnUninstall(Version version)
