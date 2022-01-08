@@ -1,8 +1,8 @@
-# Flagrum
+![Flagrum](https://i.imgur.com/6J7Gc1f.png)
 
 Join us over at the [Exineris Discord](https://discord.gg/7cNNwwJKsJ) for everything related to Flagrum and FFXV modding.
 
-**WARNING: Any mods made with Flagrum will be removed by Mod Organiser if it is launched. Flagrum can handle all aspects of managing binmods including uploading to Steam Workshop, so there should be no need to launch it.**
+**WARNING: Any mods made with Flagrum will be removed by Mod Organiser if it is launched. Flagrum can handle all aspects of managing binmods including uploading to Steam Workshop, so there is no need to launch it.**
 
 Flagrum is a streamlined modding tool for FFXV that implements support for
 key features missing from existing model-focused tooling.
