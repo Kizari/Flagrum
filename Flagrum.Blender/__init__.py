@@ -14,7 +14,7 @@ from .panel.normals_panel import UseCustomNormalsOperator, TransferFCNDOperator,
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 1),
+    "version": (1, 0, 2),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
