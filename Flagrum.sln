@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Desktop", "Flagrum.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Web", "Flagrum.Web\Flagrum.Web.csproj", "{4C3303C2-3CA7-4021-8098-E882D8381B23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ItemIdFixer", "ItemIdFixer\ItemIdFixer.csproj", "{1C317DE8-9522-4FCD-892C-5FA81F4F572C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{4C3303C2-3CA7-4021-8098-E882D8381B23}.Release|x64.Build.0 = Release|Any CPU
 		{4C3303C2-3CA7-4021-8098-E882D8381B23}.Release|x86.ActiveCfg = Release|Any CPU
 		{4C3303C2-3CA7-4021-8098-E882D8381B23}.Release|x86.Build.0 = Release|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Debug|x64.Build.0 = Debug|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Debug|x86.Build.0 = Debug|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Release|x64.ActiveCfg = Release|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Release|x64.Build.0 = Release|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Release|x86.ActiveCfg = Release|Any CPU
+		{1C317DE8-9522-4FCD-892C-5FA81F4F572C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

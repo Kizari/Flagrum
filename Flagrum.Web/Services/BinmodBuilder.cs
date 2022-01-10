@@ -179,9 +179,9 @@ public class BinmodBuilder
                 }).ToList(),
                 replacements,
                 fmd.Materials,
-                out var materialType);
+                out var weightLimit);
 
-            mesh.MaterialType = materialType;
+            mesh.WeightLimit = weightLimit;
 
             var materialWriter = new MaterialWriter(material);
             AddFile(material.Uri, materialWriter.Write());
@@ -203,7 +203,7 @@ public class BinmodBuilder
         };
 
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, modelName, modelNamePrefix, fmd.Gpubin);
-        var replacer = new ModelReplacer(model, fmd.Gpubin, _mod.Type, _mod.Target, _mod.Gender);
+        var replacer = new ModelReplacer(model, fmd.Gpubin);
         model = replacer.Replace();
 
         if (_mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)

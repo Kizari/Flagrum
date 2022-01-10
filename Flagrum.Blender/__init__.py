@@ -9,12 +9,12 @@ from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, Delete
     NormaliseWeightsOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, \
-    ClearTextureOperator, MaterialImportOperator
+    ClearTextureOperator, MaterialImportOperator, MaterialCopyOperator, MaterialPasteOperator
 from .panel.normals_panel import UseCustomNormalsOperator, TransferFCNDOperator, FCNDSettings, NormalsPanel
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 2),
+    "version": (1, 0, 3),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
@@ -76,6 +76,8 @@ classes = (
     ClearTextureOperator,
     MaterialResetOperator,
     MaterialImportOperator,
+    MaterialCopyOperator,
+    MaterialPasteOperator,
     MaterialEditorPanel,
     MaterialSettings,
     FCNDSettings,
@@ -107,9 +109,11 @@ def register():
     bpy.types.TOPBAR_MT_file_export.append(export_menu_item)
     bpy.types.Object.flagrum_material = PointerProperty(type=MaterialSettings)
     bpy.types.Object.flagrum_custom_normal_data = CollectionProperty(type=FCNDSettings)
+    bpy.types.Scene.flagrum_material_clipboard = PointerProperty(type=FlagrumMaterialPropertyCollection)
 
 
 def unregister():
+    del bpy.types.Scene.flagrum_material_clipboard
     del bpy.types.Object.flagrum_custom_normal_data
     del bpy.types.Object.flagrum_material
     bpy.types.TOPBAR_MT_file_import.remove(export_menu_item)

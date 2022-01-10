@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
@@ -92,17 +91,17 @@ public static class MaterialBuilder
         List<MaterialTextureData> textures,
         Dictionary<string, string> replacements,
         ConcurrentDictionary<string, Material> templates,
-        out MaterialType type)
+        out int weightLimit)
     {
-        type = templateName switch
+        weightLimit = templateName switch
         {
             //"BASIC_MATERIAL" => MaterialType.OneWeight,
-            //"NAMED_HUMAN_OUTFIT" => MaterialType.SixWeights,
-            //"NAMED_HUMAN_SKIN" => MaterialType.EightWeights,
-
-            // Currently only using this because despite others being more correct, the binmod loader
-            // tends to have issues if using other types
-            _ => MaterialType.FourWeights
+            "NAMED_HUMAN_OUTFIT" => 6,
+            "NAMED_HUMAN_SKIN" => 8,
+            "NAMED_HUMAN_GLASS" => 8,
+            "NAMED_HUMAN_EYE" => 4,
+            "NAMED_HUMAN_HAIR" => 8,
+            _ => 4
         };
 
         if (!templates.TryGetValue(templateName, out var material))

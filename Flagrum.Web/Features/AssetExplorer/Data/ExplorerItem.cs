@@ -5,7 +5,8 @@ public enum ExplorerItemType
     Unsupported,
     Directory,
     Material,
-    Texture
+    Texture,
+    Model
 }
 
 public class ExplorerItem

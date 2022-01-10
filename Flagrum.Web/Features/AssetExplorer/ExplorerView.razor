@@ -1,21 +1,27 @@
-﻿@using System.IO
-@using Flagrum.Web.Features.AssetExplorer.Data
-
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@using System.IO
 @foreach (var item in Items)
 {
     <CascadingValue Value="this">
-        <ExplorerItemRow Item="item" Indent="Indent + 2" />
+        <ExplorerItemRow Item="item" Indent="Indent + 2"/>
     </CascadingValue>
 }
 
 @code
 {
     private string _previousDirectory;
-    
-    [Parameter] public string Path { get; set; }
-    [Parameter] public int Indent { get; set; }
-    [Parameter] public bool Directories { get; set; }
-    [Parameter] public string InitialPath { get; set; }
+
+    [Parameter]
+    public string Path { get; set; }
+
+    [Parameter]
+    public int Indent { get; set; }
+
+    [Parameter]
+    public bool Directories { get; set; }
+
+    [Parameter]
+    public string InitialPath { get; set; }
 
     private List<ExplorerItem> Items { get; } = new();
     private ExplorerItemRow SelectedItem { get; set; }
@@ -36,9 +42,9 @@
         {
             return;
         }
-        
+
         Items.Clear();
-        
+
         if (Directories)
         {
             if (Path == string.Empty)
@@ -74,7 +80,7 @@
                     }
                     catch
                     {
-                        // Just don't add to the view
+    // Just don't add to the view
                     }
                 }
             }
@@ -91,7 +97,7 @@
                     : tokens[^1];
 
                 var type = ExtensionToType(extension);
-            
+
                 if (type != ExplorerItemType.Unsupported)
                 {
                     Items.Add(new ExplorerItem
@@ -108,11 +114,15 @@
         StateHasChanged();
     }
 
-    private ExplorerItemType ExtensionToType(string extension) => extension?.ToLower() switch
+    private ExplorerItemType ExtensionToType(string extension)
     {
-        "btex" => ExplorerItemType.Texture,
-        "gmtl.gfxbin" => ExplorerItemType.Material,
-        null or "" => ExplorerItemType.Directory,
-        _ => ExplorerItemType.Unsupported
-    };
+        return extension?.ToLower() switch
+        {
+            "btex" => ExplorerItemType.Texture,
+            "gmtl.gfxbin" => ExplorerItemType.Material,
+            //"gmdl.gfxbin" => ExplorerItemType.Model,
+            null or "" => ExplorerItemType.Directory,
+            _ => ExplorerItemType.Unsupported
+            };
+    }
 }

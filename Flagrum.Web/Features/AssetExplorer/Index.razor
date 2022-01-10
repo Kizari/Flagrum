@@ -67,6 +67,10 @@
             {
                 <MaterialPreview Path="@MaterialPath"/>
             }
+            else if (PreviewType == ExplorerItemType.Model)
+            {
+                <ModelPreview Path="@ModelPath"/>
+            }
             else
             {
                 <div class="flex-grow flex flex-row items-center">
@@ -112,6 +116,7 @@
     private string ImageName { get; set; } = "asset_preview.jpg";
     private ExplorerItemType PreviewType { get; set; }
     private string MaterialPath { get; set; }
+    private string ModelPath { get; set; }
     private ExplorerItemRow SelectedDirectory { get; set; }
     private ExplorerItemRow SelectedFile { get; set; }
     private string Extension { get; set; } = "PNG";
@@ -134,6 +139,13 @@
     {
         MaterialPath = path;
         PreviewType = ExplorerItemType.Material;
+        StateHasChanged();
+    }
+
+    public void SetPreviewModel(string path)
+    {
+        ModelPath = path;
+        PreviewType = ExplorerItemType.Model;
         StateHasChanged();
     }
 

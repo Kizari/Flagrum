@@ -60,7 +60,7 @@ public static class OutfitTemplate
                     Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name,
                             Cryptography.HashFileUri64(
                                 $"data://mod/{modDirectoryName}/materials/{modelNamePrefix}{m.Name.ToSafeString()}_mat.gmtl"),
-                            m.MaterialType))
+                            m.WeightLimit))
                         .ToList()
                 }
             },
@@ -140,7 +140,7 @@ public static class OutfitTemplate
         };
     }
 
-    private static Mesh BuildMesh(string meshName, ulong materialHash, MaterialType materialType)
+    private static Mesh BuildMesh(string meshName, ulong materialHash, int weightLimit)
     {
         return new Mesh
         {
@@ -165,12 +165,7 @@ public static class OutfitTemplate
 
             // Using anything other than Skinning_4Bones appears to break things (no rigging and ghostlike appearance)
             // We suspect this is a limitation of binmods, but currently unsure
-            VertexLayoutType = materialType switch
-            {
-                MaterialType.OneWeight => VertexLayoutType.Skinning_1Bones,
-                //MaterialType.Avatara => VertexLayoutType.BoneIndices64,
-                _ => VertexLayoutType.Skinning_4Bones
-            },
+            VertexLayoutType = VertexLayoutType.Skinning_4Bones,
 
             LowLodShadowCascadeNo = 2, // Always 2
             IsOrientedBB = true,
@@ -178,7 +173,7 @@ public static class OutfitTemplate
             // These will always be the same, shouldn't need to ever change
             PrimitiveType = PrimitiveType.PrimitiveTypeTriangleList,
 
-            MaterialType = materialType,
+            WeightLimit = weightLimit,
 
             // These shouldn't ever need to be changed
             Unknown1 = 0,

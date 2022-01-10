@@ -232,33 +232,26 @@ public class ModelWriter
 
         stride += 12;
 
-        var weightIndicesFormat = VertexElementFormat.XYZW16_Uint;
-        var weightIndicesStride = 8u;
-        
-        if (mesh.MaterialType == MaterialType.OneWeight)
-        {
-            weightIndicesFormat = VertexElementFormat.XYZW8_Uint;
-            weightIndicesStride = 4u;
-        }
-        
         elements.Add(new VertexElementDescription
         {
-            Format = weightIndicesFormat,
+            Format = VertexElementFormat.XYZW16_Uint,
             Semantic = VertexElementDescription.BlendIndices0,
             Offset = stride
         });
 
-        stride += weightIndicesStride;
+        stride += 8;
 
-        // ffxvbinmods don't seem to support the second weight map, so we disable it
-        // elements.Add(new VertexElementDescription
-        // {
-        //     Format = VertexElementFormat.XYZW16_Uint,
-        //     Semantic = VertexElementDescription.BlendIndices1,
-        //     Offset = stride
-        // });
-        //
-        // stride += 8;
+        if (mesh.WeightLimit > 4)
+        {
+            elements.Add(new VertexElementDescription
+            {
+                Format = VertexElementFormat.XYZW16_Uint,
+                Semantic = VertexElementDescription.BlendIndices1,
+                Offset = stride
+            });
+
+            stride += 8;
+        }
 
         elements.Add(new VertexElementDescription
         {
@@ -269,15 +262,17 @@ public class ModelWriter
 
         stride += 4;
 
-        // ffxvbinmods don't seem to support the second weight map, so we disable it
-        // elements.Add(new VertexElementDescription
-        // {
-        //     Format = VertexElementFormat.XYZW8_UintN,
-        //     Semantic = VertexElementDescription.BlendWeight1,
-        //     Offset = stride
-        // });
-        //
-        // stride += 4;
+        if (mesh.WeightLimit > 4)
+        {
+            elements.Add(new VertexElementDescription
+            {
+                Format = VertexElementFormat.XYZW8_UintN,
+                Semantic = VertexElementDescription.BlendWeight1,
+                Offset = stride
+            });
+
+            stride += 4;
+        }
 
         for (var i = 0; i < mesh.VertexCount; i++)
         {
@@ -286,33 +281,18 @@ public class ModelWriter
             vertexStream.Write(BitConverter.GetBytes(position.Y));
             vertexStream.Write(BitConverter.GetBytes(position.Z));
 
-            if (mesh.MaterialType == MaterialType.OneWeight)
+            foreach (var index in mesh.WeightIndices
+                         .Take(mesh.WeightLimit > 4 ? 2 : 1)
+                         .Select(weightIndicesMap => FixArraySize(weightIndicesMap[i], 4)))
             {
-                foreach (var index in mesh.WeightIndices
-                             .Take(1)
-                             .Select(weightIndicesMap => FixArraySize(weightIndicesMap[i], 4)))
-                {
-                    vertexStream.WriteByte((byte)index[0]);
-                    vertexStream.WriteByte((byte)index[1]);
-                    vertexStream.WriteByte((byte)index[2]);
-                    vertexStream.WriteByte((byte)index[3]);
-                }
-            }
-            else
-            {
-                foreach (var index in mesh.WeightIndices
-                             .Take(1)
-                             .Select(weightIndicesMap => FixArraySize(weightIndicesMap[i], 4)))
-                {
-                    vertexStream.Write(BitConverter.GetBytes(index[0]));
-                    vertexStream.Write(BitConverter.GetBytes(index[1]));
-                    vertexStream.Write(BitConverter.GetBytes(index[2]));
-                    vertexStream.Write(BitConverter.GetBytes(index[3]));
-                }
+                vertexStream.Write(BitConverter.GetBytes(index[0]));
+                vertexStream.Write(BitConverter.GetBytes(index[1]));
+                vertexStream.Write(BitConverter.GetBytes(index[2]));
+                vertexStream.Write(BitConverter.GetBytes(index[3]));
             }
 
             foreach (var weight in mesh.WeightValues
-                         .Take(1)
+                         .Take(mesh.WeightLimit > 4 ? 2 : 1)
                          .Select(weightValuesMap => FixArraySize(weightValuesMap[i], 4)))
             {
                 vertexStream.WriteByte(weight[0]);

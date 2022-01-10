@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
-using Flagrum.Core.Gfxbin.Gmdl.Templates;
 
 namespace Flagrum.Core.Gfxbin.Gmdl;
 
@@ -15,23 +14,15 @@ public class ModelReplacer
 {
     private readonly Gpubin _gpubin;
     private readonly Model _model;
-    private readonly int _modTarget;
-    private readonly int _modType;
-    private readonly string _modVariant;
 
-    public ModelReplacer(Model originalModel, Gpubin replacementData, int modType, int modTarget,
-        string modVariant = null)
+    public ModelReplacer(Model originalModel, Gpubin replacementData)
     {
         _model = originalModel;
         _gpubin = replacementData;
-        _modType = modType;
-        _modTarget = modTarget;
-        _modVariant = modVariant;
     }
 
     public Model Replace()
     {
-        var usedIndices = new List<ushort>();
         foreach (var mesh in _model.MeshObjects[0].Meshes)
         {
             var match = _gpubin.Meshes.FirstOrDefault(m => m.Name == mesh.Name);
@@ -42,134 +33,123 @@ public class ModelReplacer
                 var weightValues = match.WeightValues
                     .Select(m => m.Select(n => n.Select(o => (byte)o).ToArray()).ToList()).ToList();
 
-                // This normalises weights to 255 over both weight maps
-                // ffxvbinmods don't seem to support the second weight map, so we disable it
-                // for (var i = 0; i < mesh.VertexCount; i++)
-                // {
-                //     var sum = weightValues[0][i].Sum(s => s) + weightValues[1][i].Sum(s => s);
-                //     if (sum != 0 && sum != 255)
-                //     {
-                //         var difference = 255 - sum;
-                //         var counter = 0;
-                //
-                //         while (difference > 0)
-                //         {
-                //             var weight = counter >= weightValues[0][i].Length
-                //                 ? weightValues[1][i]
-                //                 : weightValues[0][i];
-                //
-                //             var index = counter >= weightValues[0][i].Length
-                //                 ? counter - weightValues[0][i].Length
-                //                 : counter;
-                //
-                //             if (weight.Length > 0 && weight[index] > 0 && weight[index] < 255)
-                //             {
-                //                 weight[index]++;
-                //                 difference--;
-                //             }
-                //
-                //             counter++;
-                //             if (counter == weightValues[0][i].Length + weightValues[1][i].Length)
-                //             {
-                //                 counter = 0;
-                //             }
-                //         }
-                //
-                //         while (difference < 0)
-                //         {
-                //             var weight = counter >= weightValues[0][i].Length
-                //                 ? weightValues[1][i]
-                //                 : weightValues[0][i];
-                //
-                //             var index = counter >= weightValues[0][i].Length
-                //                 ? counter - weightValues[0][i].Length
-                //                 : counter;
-                //
-                //             if (weight.Length > 0 && weight[index] > 0)
-                //             {
-                //                 weight[index]--;
-                //                 difference++;
-                //             }
-                //
-                //             counter++;
-                //             if (counter == weightValues[0][i].Length + weightValues[1][i].Length - 1)
-                //             {
-                //                 counter = 0;
-                //             }
-                //         }
-                //     }
-                // }
+                var weightIndices = match.WeightIndices
+                    .Select(m => m.Select(n => n.Select(o => o).ToArray()).ToList()).ToList();
 
-                if (mesh.MaterialType == MaterialType.OneWeight)
+                var limit = mesh.WeightLimit;
+                if (limit > 4)
                 {
-                    for (var i = 0; i < mesh.VertexCount; i++)
+                    mesh.VertexLayoutType = VertexLayoutType.Skinning_6Bones;
+                }
+
+                for (var i = 0; i < mesh.VertexCount; i++)
+                {
+                    var sum = 0;
+                    for (var s = 0; s < limit; s++)
                     {
-                        var weights = weightValues[0][i];
-                        for (var j = 0; j < weights.Length; j++)
+                        if (s < 4)
                         {
-                            if (j == 0)
+                            if (s < weightValues[0][i].Length)
                             {
-                                if (weights[j] > 0)
-                                {
-                                    weights[j] = 255;
-                                }
-                                else
-                                {
-                                    weights[j] = 0;
-                                }
+                                sum += weightValues[0][i][s];
+                            }
+                        }
+                        else
+                        {
+                            if (s - 4 < weightValues[1][i].Length)
+                            {
+                                sum += weightValues[1][i][s - 4];
+                            }
+                        }
+                    }
+
+                    for (var s = limit; s < 8; s++)
+                    {
+                        if (s - 4 < weightValues[1][i].Length)
+                        {
+                            weightIndices[1][i][s - 4] = 0;
+                            weightValues[1][i][s - 4] = 0;
+                        }
+                    }
+
+                    if (sum != 0 && sum != 255)
+                    {
+                        var difference = 255 - sum;
+                        var counter = 0;
+
+                        while (difference > 0)
+                        {
+                            var weight = counter >= weightValues[0][i].Length
+                                ? weightValues[1][i]
+                                : weightValues[0][i];
+
+                            var index = counter >= weightValues[0][i].Length
+                                ? counter - weightValues[0][i].Length
+                                : counter;
+
+                            if (weight.Length > 0 && weight[index] > 0 && weight[index] < 255)
+                            {
+                                weight[index]++;
+                                difference--;
                             }
 
-                            weights[j] = 0;
+                            counter++;
+                            var threshold = weightValues[0][i].Length + weightValues[1][i].Length;
+                            if (counter == (threshold < limit ? threshold : limit))
+                            {
+                                counter = 0;
+                            }
+                        }
+
+                        while (difference < 0)
+                        {
+                            var weight = counter >= weightValues[0][i].Length
+                                ? weightValues[1][i]
+                                : weightValues[0][i];
+
+                            var index = counter >= weightValues[0][i].Length
+                                ? counter - weightValues[0][i].Length
+                                : counter;
+
+                            if (weight.Length > 0 && weight[index] > 0)
+                            {
+                                weight[index]--;
+                                difference++;
+                            }
+
+                            counter++;
+                            var threshold = weightValues[0][i].Length + weightValues[1][i].Length;
+                            if (counter == (threshold < limit ? threshold : limit))
+                            {
+                                counter = 0;
+                            }
                         }
                     }
                 }
-                else
+
+                for (var i = 0; i < mesh.VertexCount; i++)
                 {
-                    // This normalises weights to 255 over the first weight map only
-                    for (var i = 0; i < mesh.VertexCount; i++)
+                    if (mesh.WeightLimit == 6)
                     {
-                        for (var j = 0; j < 2; j++)
+                        var weights = 0;
+                        for (var j = 0; j < 4; j++)
                         {
-                            var sum = weightValues[j][i].Sum(s => s);
-                            if (sum != 0 && sum != 255)
+                            if (j < weightValues[0][i].Length && weightValues[0][i][j] > 0)
                             {
-                                var difference = 255 - sum;
-                                var counter = 0;
-
-                                while (difference > 0)
-                                {
-                                    var weight = weightValues[j][i];
-
-                                    if (weight[counter] > 0 && weight[counter] < 255)
-                                    {
-                                        weight[counter]++;
-                                        difference--;
-                                    }
-
-                                    counter++;
-                                    if (counter == weight.Length)
-                                    {
-                                        counter = 0;
-                                    }
-                                }
-
-                                while (difference < 0)
-                                {
-                                    var weight = weightValues[j][i];
-
-                                    if (weight[counter] > 0)
-                                    {
-                                        weight[counter]--;
-                                        difference++;
-                                    }
-
-                                    counter++;
-                                    if (counter == weight.Length)
-                                    {
-                                        counter = 0;
-                                    }
-                                }
+                                weights++;
                             }
+
+                            if (j < weightValues[1][i].Length && weightValues[1][i][j] > 0)
+                            {
+                                weights++;
+                            }
+                        }
+
+                        // var sum1 = weightValues[0][i].Sum(w => w);
+                        // var sum2 = weightValues[1][i].Sum(w => w);
+                        if (weights > 6)
+                        {
+                            File.AppendAllText(@"C:\Modding\MaterialTesting\log.txt", "REEEEEEEEE\r\n");
                         }
                     }
                 }
@@ -180,7 +160,7 @@ public class ModelReplacer
                 mesh.FaceIndices = match.FaceIndices;
                 mesh.VertexPositions = match.VertexPositions;
                 mesh.ColorMaps = match.ColorMaps;
-                mesh.WeightIndices = match.WeightIndices;
+                mesh.WeightIndices = weightIndices;
                 mesh.WeightValues = weightValues;
 
                 // Convert the UV coords back to half-precision floats
@@ -219,40 +199,12 @@ public class ModelReplacer
                     new Vector3(0, 0, mesh.Aabb.Max.Z - center.Z)
                 );
 
-                // Generate list of Bone IDs used in this mesh
-                var boneIds = new List<uint>();
-                foreach (var weightIndexMap in mesh.WeightIndices)
-                {
-                    foreach (var weightList in weightIndexMap)
-                    {
-                        foreach (var weight in weightList)
-                        {
-                            boneIds.Add(weight);
-                        }
-                    }
-                }
-
-                //if (_modType == (int)BinmodType.StyleEdit)
-                //{
-                if (_gpubin.BoneTable.Count > 1)
-                {
-                    mesh.BoneIds = Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i);
-                }
-                else
-                {
-                    mesh.BoneIds = new[] {0u};
-                }
-                //}
-                // else
-                // {
-                //     mesh.BoneIds = boneIds.Distinct().OrderBy(i => i);
-                //     usedIndices.AddRange(boneIds.Distinct().Select(i => (ushort)i));
-                // }
+                mesh.BoneIds = _gpubin.BoneTable.Count > 1
+                    ? Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i)
+                    : new[] {0u};
             }
         }
 
-        //if (_modType == (int)BinmodType.StyleEdit)
-        //{
         _model.BoneHeaders = _gpubin.BoneTable
             .Select(kvp =>
             {
@@ -261,54 +213,6 @@ public class ModelReplacer
                 var lodIndex = ((uint)boneIndex << 16) | 0xFFFF;
                 return new BoneHeader {LodIndex = lodIndex, Name = boneName};
             })
-            .ToList();
-
-        return _model;
-        //}
-
-        // Create arbitrary indices for the bones
-        // Start at 10000 to avoid conflicts with other loaded bones on the target model
-        ushort count = 10000;
-        usedIndices = usedIndices.Distinct().ToList();
-        var indexMap = usedIndices.ToDictionary(i => i, i => count++);
-
-        // Need to use indices of preloaded bones to prevent rigging issues
-        foreach (var bone in PreloadedBones.Get(_modType, _modTarget, _modVariant))
-        {
-            var match = _gpubin.BoneTable.FirstOrDefault(p => p.Value == bone.Name);
-            if (match.Value != null)
-            {
-                indexMap[(ushort)match.Key] = (ushort)(bone.LodIndex >> 16);
-            }
-        }
-
-        // Update each weight index in the mesh to match the new index map
-        foreach (var mesh in _model.MeshObjects[0].Meshes)
-        {
-            foreach (var indexList in mesh.WeightIndices)
-            {
-                foreach (var indices in indexList)
-                {
-                    for (var i = 0; i < indices.Length; i++)
-                    {
-                        indices[i] = indexMap[indices[i]];
-                    }
-                }
-            }
-        }
-
-        // Generate the fixed bone table and apply it to the model
-        _model.BoneHeaders = _gpubin.BoneTable
-            .Where(d => usedIndices.Contains((ushort)d.Key))
-            .Select(kvp => new BoneHeader
-            {
-                Name = kvp.Value,
-                // Indices are stored in the bone table as the original number shifted left 16 bits
-                // With the last 16 bits all set to 1
-                // Unsure why this is, but we do the same to ensure the model loads correctly
-                LodIndex = ((uint)indexMap[(ushort)kvp.Key] << 16) | 0xFFFF
-            })
-            .OrderBy(b => b.LodIndex)
             .ToList();
 
         return _model;

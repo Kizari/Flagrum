@@ -1,25 +1,31 @@
 ﻿import bpy
 from bpy.types import Panel, Operator, Mesh
 
+from .material_data import material_weight_limit
+
 
 class NormaliseWeightsOperator(Operator):
     bl_idname = "flagrum.cleanup_normalise_weights"
     bl_label = "Normalise Weights"
-    bl_description = "Limits weights to 4 per vertex and normalises existing weights to ensure a consistent result " \
-                     "with the exporter "
+    bl_description = "Normalises vertex weights to the limits defined by the selected Flagrum materials to " \
+        "ensure a consistent result with the FMD exporter"
 
     @classmethod
     def poll(cls, context):
         selected_meshes = []
         for obj in context.view_layer.objects.selected:
             if obj.type == 'MESH':
+                if obj.flagrum_material.preset is None or obj.flagrum_material.preset == 'NONE':
+                    return False
                 selected_meshes.append(obj)
         return len(selected_meshes) > 0
 
     def execute(self, context):
         for obj in context.view_layer.objects.selected:
             if obj.type == 'MESH':
+                material = obj.flagrum_material
                 mesh_data: Mesh = obj.data
+                limit = material_weight_limit[material.preset]
                 for vertex in mesh_data.vertices:
                     weights = vertex.groups.items().copy()
                     weights.sort(key=lambda g: g[1].weight, reverse=True)
@@ -27,11 +33,11 @@ class NormaliseWeightsOperator(Operator):
                     for i in range(len(weights)):
                         group = weights[i][1]
                         total_weight += group.weight
-                        if i == 3:
+                        if i == (limit - 1):
                             break
                     for i in range(len(weights)):
                         group = weights[i][1]
-                        if i > 3:
+                        if i > (limit - 1):
                             obj.vertex_groups[group.group].remove([vertex.index])
                             continue
                         if group.weight > 0:

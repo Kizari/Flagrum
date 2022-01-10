@@ -25,7 +25,17 @@ public class Program
 
     public static void Main(string[] args)
     {
-        AOFixer.Run();
+        // using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\am\am80\model_007\autoexternal.earc");
+        // var gfx = unpacker.UnpackFileByQuery("am80_007.gmdl", out _);
+        // var gpu = unpacker.UnpackFileByQuery("am80_007.gpubin", out _);
+        // var model = new ModelReader(gfx, gpu).Read();
+        // foreach (var mesh in model.MeshObjects[0].Meshes)
+        // {
+        //     System.Console.WriteLine(mesh.Name);
+        // }
+
+        new MaterialFinder().FindWeightLimits();
+        //AOFixer.Run();
         //new MaterialFinder().MakeTemplate();
         //MaterialToPython.ConvertFromJsonFile(@"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.json",
         //  @"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.py");

@@ -12,8 +12,10 @@ public enum VertexLayoutType
     Skinning_1Bones = 0x8,
     Skinning_6Bones = 0x10,
     BoneIndices16 = 0x20,
+
     // This is a test entry for Comrades, the name is an assumption
     BoneIndices32 = 0x21,
+
     // This is a test entry for Comrades, the name is an assumption
     BoneIndices64 = 0x22,
     Skinning_Any = 0x1B
@@ -72,15 +74,6 @@ public enum IndexType
     IndexTypeNum = 0x2
 }
 
-public enum MaterialType
-{
-    FourWeights,
-    SixWeights,
-    EightWeights,
-    OneWeight,
-    Avatara
-}
-
 public class Mesh
 {
     public string Name { get; set; }
@@ -123,8 +116,8 @@ public class Mesh
     public List<UVMap> UVMaps { get; set; } = new();
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<byte[]>> WeightValues { get; set; } = new();
-    
-    public MaterialType MaterialType { get; set; }
+
+    public int WeightLimit { get; set; }
 
     // NOTE: Class contains unknowns
     public byte Unknown1 { get; set; }

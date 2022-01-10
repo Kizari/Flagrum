@@ -28,6 +28,23 @@ material_enum = (
     ('GLASS_MATERIAL', 'Glass Material', '')
 )
 
+material_weight_limit = {
+    'NONE': 4,
+    'NAMED_HUMAN_OUTFIT': 6,
+    'NAMED_HUMAN_SKIN': 8,
+    'NAMED_HUMAN_HAIR': 8,
+    'NAMED_HUMAN_EYE': 4,
+    'NAMED_HUMAN_GLASS': 8,
+    'AVATAR_OUTFIT': 4,
+    'AVATAR_SKIN': 4,
+    'AVATAR_CLOTH': 4,
+    'AVATAR_HAIR': 4,
+    'AVATAR_EYE': 4,
+    'AVATAR_GLASS': 4,
+    'BASIC_MATERIAL': 4,
+    'GLASS_MATERIAL': 4
+}
+
 material_properties = {
     'NONE': [],
     'NAMED_HUMAN_OUTFIT': [MaterialPropertyMetadata('Roughness0_Power', True, 15, 'INPUT', 1),

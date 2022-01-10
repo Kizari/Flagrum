@@ -1,7 +1,6 @@
-﻿@using System.IO;
-@using Flagrum.Core.Gfxbin.Gmtl
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@using System.IO
 @using Flagrum.Core.Utilities
-@using Flagrum.Web.Features.AssetExplorer.Data
 @implements IDisposable
 @inject JSInterop Interop
 @inject AppStateService AppState
@@ -10,8 +9,10 @@
      style="padding-left: @(Indent * 5)px">
     @if (Item.IsExpandable)
     {
-        <span @onclick="Expand" @onclick:stopPropagation="true" @onclick:preventDefault="true" 
-              class="material-icons text-sm">@(Item.IsExpanded ? "expand_more" : "chevron_right")</span>
+        <span @onclick="Expand" @onclick:stopPropagation="true" @onclick:preventDefault="true"
+              class="material-icons text-sm">
+            @(Item.IsExpanded ? "expand_more" : "chevron_right")
+        </span>
     }
     else if (Item.Type == ExplorerItemType.Directory)
     {
@@ -27,16 +28,22 @@
 
 @if (Item.IsExpanded)
 {
-    <ExplorerView Path="@Item.Path" Indent="Indent" Directories="Item.IsExpandable" InitialPath="@DirectParent.InitialPath" />
+    <ExplorerView Path="@Item.Path" Indent="Indent" Directories="Item.IsExpandable" InitialPath="@DirectParent.InitialPath"/>
 }
 
 @code
 {
-    [CascadingParameter] public Index Parent { get; set; }
-    [CascadingParameter] public ExplorerView DirectParent { get; set; }
+    [CascadingParameter]
+    public Index Parent { get; set; }
 
-    [Parameter] public ExplorerItem Item { get; set; }
-    [Parameter] public int Indent { get; set; }
+    [CascadingParameter]
+    public ExplorerView DirectParent { get; set; }
+
+    [Parameter]
+    public ExplorerItem Item { get; set; }
+
+    [Parameter]
+    public int Indent { get; set; }
 
     private readonly string _id = Guid.NewGuid().ToString();
 
@@ -44,9 +51,10 @@
     {
         ExplorerItemType.Directory => "folder",
         ExplorerItemType.Material => "blur_circular",
-        ExplorerItemType.Texture => "view_in_ar",
+        ExplorerItemType.Texture => "gradient",
+        ExplorerItemType.Model => "view_in_ar",
         _ => "insert_drive_file"
-    };
+        };
 
     protected override void OnInitialized()
     {
@@ -66,7 +74,7 @@
             AppState.SetCurrentAssetExplorerPath(Item.Path);
         }
     }
-    
+
     private void OnClick()
     {
         switch (Item.Type)
@@ -78,7 +86,10 @@
                 PreviewTexture();
                 break;
             case ExplorerItemType.Material:
-                PreviewMaterial();
+                Parent.SetPreviewMaterial(Item.Path);
+                break;
+            case ExplorerItemType.Model:
+                Parent.SetPreviewModel(Item.Path);
                 break;
         }
 
@@ -89,11 +100,6 @@
     {
         Item.IsExpanded = !Item.IsExpanded;
         StateHasChanged();
-    }
-
-    private void PreviewMaterial()
-    {
-        Parent.SetPreviewMaterial(Item.Path);
     }
 
     private void PreviewTexture()
@@ -107,7 +113,7 @@
     private async void OnInitialLoad(object sender, EventArgs e)
     {
         var path = DirectParent.InitialPath;
-        
+
         if (path.StartsWith(Item.Path) && Item.IsExpandable)
         {
             Item.IsExpanded = true;
@@ -118,7 +124,7 @@
             Parent.SetSelectedItem(this);
             await Interop.ScrollToElement(_id);
         }
-        
+
         StateHasChanged();
     }
 

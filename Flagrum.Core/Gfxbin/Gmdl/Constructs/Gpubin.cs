@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Flagrum.Core.Gfxbin.Gmdl.Components;
 
 namespace Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
@@ -24,7 +23,7 @@ public class GpubinMesh
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<int[]>> WeightValues { get; set; } = new();
     public MaterialData Material { get; set; }
-    public MaterialType MaterialType { get; set; }
+    public int WeightLimit { get; set; }
 }
 
 public class MaterialData
