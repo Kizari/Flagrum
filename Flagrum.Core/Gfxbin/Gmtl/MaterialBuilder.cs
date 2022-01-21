@@ -90,20 +90,8 @@ public static class MaterialBuilder
         List<MaterialInputData> inputs,
         List<MaterialTextureData> textures,
         Dictionary<string, string> replacements,
-        ConcurrentDictionary<string, Material> templates,
-        out int weightLimit)
+        ConcurrentDictionary<string, Material> templates)
     {
-        weightLimit = templateName switch
-        {
-            //"BASIC_MATERIAL" => MaterialType.OneWeight,
-            "NAMED_HUMAN_OUTFIT" => 6,
-            "NAMED_HUMAN_SKIN" => 8,
-            "NAMED_HUMAN_GLASS" => 8,
-            "NAMED_HUMAN_EYE" => 4,
-            "NAMED_HUMAN_HAIR" => 8,
-            _ => 4
-        };
-
         if (!templates.TryGetValue(templateName, out var material))
         {
             var templatePath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\Materials\\{templateName}.json";

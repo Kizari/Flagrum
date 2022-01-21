@@ -60,6 +60,7 @@ class MaterialPropertyMetadata:
 class MaterialData:
     Id: str
     Name: str
+    WeightLimit: int
     Textures: dict[str, str]
     Inputs: dict[str, list[float]]
 

@@ -178,10 +178,7 @@ public class BinmodBuilder
                     Path = p.Uri
                 }).ToList(),
                 replacements,
-                fmd.Materials,
-                out var weightLimit);
-
-            mesh.WeightLimit = weightLimit;
+                fmd.Materials);
 
             var materialWriter = new MaterialWriter(material);
             AddFile(material.Uri, materialWriter.Write());

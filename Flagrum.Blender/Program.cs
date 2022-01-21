@@ -34,7 +34,7 @@ public static class Program
         var result = material.InterfaceInputs
             .Where(i => i.InterfaceIndex == 0)
             .ToDictionary(i => i.ShaderGenName, i => i.Values);
-        
+
         var json = JsonConvert.SerializeObject(result);
         File.WriteAllText(outputPath, json);
     }
@@ -59,66 +59,32 @@ public static class Program
                 b => b.Name);
         }
 
-        Gpubin meshData;
-
-        if (inputPath.Contains("_$fcnd"))
+        var meshData = new Gpubin
         {
-            meshData = new Gpubin
-            {
-                BoneTable = boneTable,
-                Meshes = model.MeshObjects.SelectMany(o => o.Meshes
-                    .Where(m => m.LodNear == 0)
-                    .Select(m => new GpubinMesh
+            BoneTable = boneTable,
+            Meshes = model.MeshObjects.SelectMany(o => o.Meshes
+                .Where(m => m.LodNear == 0)
+                .Select(m => new GpubinMesh
+                {
+                    Name = m.Name,
+                    FaceIndices = m.FaceIndices,
+                    VertexPositions = m.VertexPositions,
+                    ColorMaps = m.ColorMaps,
+                    Normals = m.Normals,
+                    UVMaps = m.UVMaps.Select(m => new UVMap32
                     {
-                        Name = m.Name,
-                        FaceIndices = m.FaceIndices,
-                        VertexPositions = m.VertexPositions,
-                        ColorMaps = m.ColorMaps,
-                        Normals = m.Normals,
-                        Tangents = m.Tangents,
-                        UVMaps = m.UVMaps.Select(m => new UVMap32
+                        UVs = m.UVs.Select(uv => new UV32
                         {
-                            UVs = m.UVs.Select(uv => new UV32
-                            {
-                                U = (float)uv.U,
-                                V = (float)uv.V
-                            }).ToList()
-                        }).ToList(),
-                        WeightIndices = m.WeightIndices,
-                        WeightValues = m.WeightValues
-                            .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
-                            .ToList()
-                    }))
-            };
-        }
-        else
-        {
-            meshData = new Gpubin
-            {
-                BoneTable = boneTable,
-                Meshes = model.MeshObjects.SelectMany(o => o.Meshes
-                    .Where(m => m.LodNear == 0)
-                    .Select(m => new GpubinMesh
-                    {
-                        Name = m.Name,
-                        FaceIndices = m.FaceIndices,
-                        VertexPositions = m.VertexPositions,
-                        ColorMaps = m.ColorMaps,
-                        UVMaps = m.UVMaps.Select(m => new UVMap32
-                        {
-                            UVs = m.UVs.Select(uv => new UV32
-                            {
-                                U = (float)uv.U,
-                                V = (float)uv.V
-                            }).ToList()
-                        }).ToList(),
-                        WeightIndices = m.WeightIndices,
-                        WeightValues = m.WeightValues
-                            .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
-                            .ToList()
-                    }))
-            };
-        }
+                            U = (float)uv.U,
+                            V = (float)uv.V
+                        }).ToList()
+                    }).ToList(),
+                    WeightIndices = m.WeightIndices,
+                    WeightValues = m.WeightValues
+                        .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
+                        .ToList()
+                }))
+        };
 
         var json = JsonConvert.SerializeObject(meshData);
         File.WriteAllText(outputPath, json);

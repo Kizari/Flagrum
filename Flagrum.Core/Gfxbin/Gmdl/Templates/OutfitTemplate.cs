@@ -60,7 +60,7 @@ public static class OutfitTemplate
                     Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name,
                             Cryptography.HashFileUri64(
                                 $"data://mod/{modDirectoryName}/materials/{modelNamePrefix}{m.Name.ToSafeString()}_mat.gmtl"),
-                            m.WeightLimit))
+                            m.Material.WeightLimit))
                         .ToList()
                 }
             },
@@ -173,7 +173,7 @@ public static class OutfitTemplate
             // These will always be the same, shouldn't need to ever change
             PrimitiveType = PrimitiveType.PrimitiveTypeTriangleList,
 
-            WeightLimit = weightLimit,
+            WeightLimit = weightLimit == 0 ? 4 : weightLimit,
 
             // These shouldn't ever need to be changed
             Unknown1 = 0,

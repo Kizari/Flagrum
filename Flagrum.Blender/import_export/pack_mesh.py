@@ -1,9 +1,10 @@
 ﻿import bmesh
 import bpy
 from bpy.types import Object, Mesh
-from mathutils import Matrix, Vector, kdtree
+from mathutils import Matrix, Vector
 
 from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
+from ..panel.material_data import material_weight_limit
 
 # Matrix that converts the axes back to FBX coordinate system
 conversion_matrix = Matrix([
@@ -25,12 +26,6 @@ def pack_mesh():
             mesh = MeshData()
             mesh.Name = obj.name
             mesh.Material = _pack_material(obj)
-
-            # Need to preserve the vertex positions of the custom data since the next operations change the indices
-            custom_data = []
-            for item in obj.flagrum_custom_normal_data:
-                vertex = obj.data.vertices[item.vertex_index]
-                custom_data.append((vertex.co, item.normal, item.tangent))
 
             # Clone the mesh so we don't mess with the original
             mesh_copy: Object = obj.copy()
@@ -82,7 +77,7 @@ def pack_mesh():
             weight_indices, weight_values = _pack_weight_maps(mesh_copy, reverse_bone_table)
             mesh.WeightIndices = weight_indices
             mesh.WeightValues = weight_values
-            normals, tangents = _pack_normals_and_tangents_v2(mesh_copy, custom_data)
+            normals, tangents = _pack_normals_and_tangents(mesh_copy)
             mesh.Normals = normals
             mesh.Tangents = tangents
             mesh_data.Meshes.append(mesh)
@@ -93,13 +88,14 @@ def pack_mesh():
     return mesh_data
 
 
-def _pack_normals_and_tangents_v2(mesh: Object, custom_data):
+def _pack_normals_and_tangents(mesh: Object):
     mesh_data: Mesh = mesh.data
     normals: list[Normal] = []
     tangents: list[Normal] = []
 
-    mesh_data.use_auto_smooth = True
-    mesh_data.normals_split_custom_set_from_vertices([vertex.normal for vertex in mesh_data.vertices])
+    if not mesh_data.has_custom_normals:
+        mesh_data.use_auto_smooth = True
+        mesh_data.normals_split_custom_set_from_vertices([vertex.normal for vertex in mesh_data.vertices])
 
     try:
         mesh_data.calc_tangents()
@@ -150,80 +146,6 @@ def _pack_normals_and_tangents_v2(mesh: Object, custom_data):
         tangent.W = bitangents_dict[i][0] * 127
         normals.append(normal)
         tangents.append(tangent)
-
-    kd = kdtree.KDTree(size)
-    for i in range(size):
-        vertex = mesh_data.vertices[i]
-        kd.insert(vertex.co, i)
-
-    kd.balance()
-
-    # for i in range(size):
-    #     vertex = mesh_data.vertices[i]
-    #     group = []
-    #     for (co, index, distance) in kd.find_range(vertex.co, 0.001):
-    #         group.append(index)
-    #     if len(group) > 1:
-    #         normal = normals[group[0]]
-    #         tangent = tangents[group[0]]
-    #         for j in range(len(group)):
-    #             if j > 0:
-    #                 index = group[j]
-    #                 normals[index] = normal
-    #                 tangents[index] = tangent
-
-    # Reapply the preserved normals if present
-    for item in custom_data:
-        for (co, index, distance) in kd.find_range(item[0], 0):
-            match = index
-            break
-        normal = Normal()
-        tangent = Normal()
-        normal.X = item[1][0]
-        normal.Y = item[1][1]
-        normal.Z = item[1][2]
-        normal.W = item[1][3]
-        tangent.X = item[2][0]
-        tangent.Y = item[2][1]
-        tangent.Z = item[2][2]
-        tangent.W = item[2][3]
-        normals[match] = normal
-        tangents[match] = tangent
-
-    return normals, tangents
-
-
-def _pack_normals_and_tangents(mesh: Object):
-    normals: list[Normal] = []
-    tangents: list[Normal] = []
-    mesh_data: Mesh = mesh.data
-
-    mesh_data.calc_tangents()
-
-    normals_dict = {}
-    tangents_dict = {}
-
-    for face in mesh_data.polygons:
-        for vertex in [mesh_data.loops[i] for i in face.loop_indices]:
-            normal = Normal()
-            tangent = Normal()
-            converted_normal = conversion_matrix @ Vector(vertex.normal)
-            converted_tangent = conversion_matrix @ Vector(vertex.tangent)
-            bitangent_sign = int(vertex.bitangent_sign)
-            normal.X = int(converted_normal[0] * 127.0)
-            normal.Y = int(converted_normal[1] * 127.0)
-            normal.Z = int(converted_normal[2] * 127.0)
-            normal.W = 0
-            tangent.X = int(converted_tangent[0] * 127.0)
-            tangent.Y = int(converted_tangent[1] * 127.0)
-            tangent.Z = int(converted_tangent[2] * 127.0)
-            tangent.W = 127 * bitangent_sign
-            normals_dict[vertex.vertex_index] = normal
-            tangents_dict[vertex.vertex_index] = tangent
-
-    for i in range(len(mesh_data.vertices)):
-        normals.append(normals_dict[i])
-        tangents.append(tangents_dict[i])
 
     return normals, tangents
 
@@ -382,6 +304,7 @@ def _pack_material(mesh: Object):
 
     data = MaterialData()
     data.Id = material.preset
+    data.WeightLimit = material_weight_limit[material.preset]
     data.Inputs = {}
     data.Textures = {}
 

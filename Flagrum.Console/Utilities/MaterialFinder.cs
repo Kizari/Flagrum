@@ -26,6 +26,23 @@ public class MaterialFinder
 
     public void MakeTemplate()
     {
+        const string templateName = "NAMED_HUMAN_OUTFIT";
+        const string sourceEarcPath = @$"{DataDirectory}\nh\nh02\model_030\materials\autoexternal.earc";
+        const string sourceMaterialPath = "data://character/nh/nh02/model_030/materials/nh02_030_cloth_00_mat.gmtl";
+
+        using var unpacker = new Unpacker(sourceEarcPath);
+        var sourceBytes = unpacker.UnpackFileByQuery(sourceMaterialPath, out _);
+        var sourceMaterial = new MaterialReader(sourceBytes).Read();
+
+        var outJson = JsonConvert.SerializeObject(sourceMaterial);
+        File.WriteAllText(@$"C:\Modding\MaterialTesting\{templateName}.json", outJson);
+
+        MaterialToPython.ConvertFromJsonFile(@$"C:\Modding\MaterialTesting\{templateName}.json",
+            @$"C:\Modding\MaterialTesting\{templateName}.py");
+    }
+
+    public void MakeGlassTemplate()
+    {
         // Get Iggy glasses material from the game files
         const string iggyPath = $"{DataDirectory}\\nh\\nh03\\model_000\\materials\\autoexternal.earc";
         using var iggyUnpacker = new Unpacker(iggyPath);
@@ -72,7 +89,7 @@ public class MaterialFinder
         _matches = new ConcurrentBag<(string, string)>();
         Parallel.ForEach(Directory.EnumerateDirectories(DataDirectory), FindRecursively);
         //FindRecursively(dataDirectory);
-        File.WriteAllText(@"C:\Modding\MaterialTesting\TransparencyMaterials.txt", _matches
+        File.WriteAllText(@"C:\Modding\MaterialTesting\Cloth.txt", _matches
             .Distinct()
             .Aggregate("", (current, next) => current + next.Item1 + " - " + next.Item2 + "\r\n"));
         watch.Stop();
@@ -156,8 +173,11 @@ public class MaterialFinder
                 {
                     var reader = new MaterialReader(materialData);
                     var material = reader.Read();
-                    if (material.Interfaces.Any(i => i.Name == "CHR_Transparency_Material")
-                        && material.Textures.Any(t => t.ShaderGenName.Contains("Emiss")))
+                    if (material.Interfaces.Any(i => i.Name == "CHR_NhBasic_Material")
+                        && !material.Textures.Any(t => t.ShaderGenName.Contains("MultiMask"))
+                        && material.InterfaceInputs.Any(i =>
+                            i.ShaderGenName.Contains("BaseColor") &&
+                            i.Values.All(v => v == 1.0)))
                     {
                         _matches.Add((materialUri, file));
                     }

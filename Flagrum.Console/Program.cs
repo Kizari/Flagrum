@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Flagrum.Console.Utilities;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
+using Newtonsoft.Json;
 
 namespace Flagrum.Console;
 
@@ -25,6 +28,51 @@ public class Program
 
     public static void Main(string[] args)
     {
+        //var json = File.ReadAllText(@"C:\Code\Flagrum\Flagrum.Blender\templates\LUCII_PHANTOM.json");
+        var jsonBytes = File.ReadAllBytes(@"C:\Modding\MaterialTesting\glass_sword\LUCII_PHANTOM.json");
+        var json = Encoding.UTF8.GetString(jsonBytes);
+        var test = JsonConvert.DeserializeObject<Material>(json);
+        //const string templateName = "LUCII_PHANTOM";
+        //MaterialToPython.ConvertFromJsonFile(@$"C:\Code\Flagrum\Flagrum.Blender\templates\{templateName}.json",
+        //    @$"C:\Modding\MaterialTesting\{templateName}.py");
+
+        // var json = File.ReadAllText(@"C:\Modding\normals.txt");
+        // var normals = JsonConvert.DeserializeObject<List<int[]>>(json);
+        //
+        // var gfx = @"C:\Users\Kieran\Desktop\character\nh\nh02\model_000\nh02_000.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var reader = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu));
+        // var model = reader.Read();
+        //
+        // var normals2 = model.MeshObjects[0].Meshes
+        //     .Where(m => m.Name == "EyelashShape" && m.LodNear == 0)
+        //     .SelectMany(m => m.Tangents
+        //         .Select(n => new int[] {n.X, n.Y, n.Z, n.W}))
+        //     .ToList();
+        //
+        // System.Console.WriteLine($"Original count: {normals2.Count()}");
+        // System.Console.WriteLine($"New count: {normals.Count()}");
+        //
+        // var matching = 0;
+        // var notMatching = 0;
+        // for (var i = 0; i < normals2.Count(); i++)
+        // {
+        //     if (Math.Abs(normals[i][0] - normals2[i][0]) < 5
+        //         && Math.Abs(normals[i][1] - normals2[i][1]) < 5
+        //         && Math.Abs(normals[i][2] - normals2[i][2]) < 5
+        //         && Math.Abs(normals[i][3] - normals2[i][3]) < 5)
+        //     {
+        //         matching++;
+        //     }
+        //     else
+        //     {
+        //         notMatching++;
+        //     }
+        // }
+        //
+        // System.Console.WriteLine($"Matching: {matching}");
+        // System.Console.WriteLine($"Not Matching: {notMatching}");
+
         // using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\character\am\am80\model_007\autoexternal.earc");
         // var gfx = unpacker.UnpackFileByQuery("am80_007.gmdl", out _);
         // var gpu = unpacker.UnpackFileByQuery("am80_007.gpubin", out _);
@@ -34,7 +82,7 @@ public class Program
         //     System.Console.WriteLine(mesh.Name);
         // }
 
-        new MaterialFinder().FindWeightLimits();
+
         //AOFixer.Run();
         //new MaterialFinder().MakeTemplate();
         //MaterialToPython.ConvertFromJsonFile(@"C:\Modding\MaterialTesting\NAMED_HUMAN_GLASS.json",

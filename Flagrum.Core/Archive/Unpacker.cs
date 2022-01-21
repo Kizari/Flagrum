@@ -159,8 +159,9 @@ public class Unpacker : IDisposable
         }
 
         using var memoryStream = new MemoryStream(data);
-        var outBuffer = new byte[file.Size];
-        var outBufferOffset = 0u;
+        using var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress);
+        using var outStream = new MemoryStream();
+        using var writer = new BinaryWriter(outStream);
 
         for (var index = 0; index < chunks; index++)
         {
@@ -185,18 +186,20 @@ public class Unpacker : IDisposable
             memoryStream.Read(buffer, 0, 4);
             var decompressedSize = BitConverter.ToUInt32(buffer);
 
-            // Read the compressed chunk into memory (zlibstream breaks if reading direct from the main memory stream)
-            buffer = new byte[compressedSize];
-            memoryStream.Read(buffer, 0, (int)compressedSize);
-            using var stream = new MemoryStream(buffer);
+            var readCount = 4096;
+            var position = 0;
 
-            // Decompress the current chunk into the output buffer
-            using var zlibStream = new ZLibStream(stream, CompressionMode.Decompress);
-            zlibStream.Read(outBuffer, (int)outBufferOffset, (int)decompressedSize);
-            outBufferOffset += decompressedSize;
+            while (readCount > 0)
+            {
+                var size = (int)Math.Min(decompressedSize - position, 4096);
+                var decompressBuffer = new byte[size];
+                readCount = zlibStream.Read(decompressBuffer, 0, size);
+                writer.Write(decompressBuffer, 0, readCount);
+                position += readCount;
+            }
         }
 
-        return outBuffer;
+        return outStream.ToArray();
     }
 
     private IEnumerable<ArchiveFile> ReadFileHeaders()

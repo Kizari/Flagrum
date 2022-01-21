@@ -75,6 +75,10 @@
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </Content>
       <None Remove="templates\NAMED_HUMAN_GLASS.json" />
+      <None Remove="templates\LUCII_PHANTOM.json" />
+      <Content Include="templates\LUCII_PHANTOM.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <PropertyGroup>

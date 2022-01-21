@@ -53,6 +53,19 @@
             </div>
         </div>
         <div class="h-full py-6 pr-5 pl-2" style="flex: 0 0 242px;">
+            @foreach (var (modType, limit) in Limits)
+            {
+                if (modType > -1)
+                {
+                    if (AppState.Mods.Count(m => m.Type == modType) > limit)
+                    {
+                        <div class="rounded-md ml-2 px-3 py-2 mb-4" style="background: #440000; color: #ff0000; border: 1px solid #ff0000">
+                            Limit exceeded for<br/>
+                            @BinmodTypeHelper.GetDisplayName((BinmodType)modType) mods.
+                        </div>
+                    }
+                }
+            }
             <strong class="font-display block ml-2 text-grey-300 mb-3 text-lg">Browse Workshop Mods</strong>
             <small class="block text-grey-500 ml-2">
                 Only Flagrum mods will appear in results

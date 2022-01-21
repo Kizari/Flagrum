@@ -4,9 +4,6 @@ namespace Flagrum.Core.Gfxbin.Gmdl.Constructs;
 
 public class Gpubin
 {
-    public string Target { get; set; }
-    public string Uuid { get; set; }
-    public string Title { get; set; }
     public Dictionary<int, string> BoneTable { get; set; }
     public IEnumerable<GpubinMesh> Meshes { get; set; }
 }
@@ -23,12 +20,12 @@ public class GpubinMesh
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<int[]>> WeightValues { get; set; } = new();
     public MaterialData Material { get; set; }
-    public int WeightLimit { get; set; }
 }
 
 public class MaterialData
 {
     public string Id { get; set; }
+    public int WeightLimit { get; set; }
     public Dictionary<string, float[]> Inputs { get; set; }
     public Dictionary<string, string> Textures { get; set; }
     public List<TextureData> TextureData { get; set; } = new();

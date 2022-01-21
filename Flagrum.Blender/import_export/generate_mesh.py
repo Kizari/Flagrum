@@ -1,5 +1,7 @@
+from array import array
+
 import bpy
-from mathutils import Matrix, Vector, kdtree
+from mathutils import Matrix, Vector
 
 from ..entities import MeshData
 
@@ -78,33 +80,23 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
 
     mesh_object = bpy.data.objects.new(mesh_data.Name, mesh)
     context.collection.objects.link(mesh_object)
+
+    # Import custom normals
+    mesh.update(calc_edges=True)
+
+    clnors = array('f', [0.0] * (len(mesh.loops) * 3))
+    mesh.loops.foreach_get("normal", clnors)
     mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
 
-    # Add normal data as a custom data if present
-    size = len(mesh_data.Normals)
-    if size > 0:
-        print("Custom normal data detected")
+    normals = []
+    for normal in mesh_data.Normals:
+        result = correction_matrix @ Vector([normal.X / 127.0, normal.Y / 127.0, normal.Z / 127.0])
+        result.normalize()
+        normals.append(result)
 
-        kd = kdtree.KDTree(size)
-        for i in range(size):
-            vertex = mesh.vertices[i]
-            kd.insert(vertex.co, i)
+    mesh.normals_split_custom_set_from_vertices(normals)
+    mesh.use_auto_smooth = True
 
-        kd.balance()
-
-        for i in range(size):
-            vertex = vertices[i]
-            for (co, index, distance) in kd.find_range([vertex[0], vertex[1], vertex[2]], 0.001):
-                match = index
-                break
-            normal = mesh_data.Normals[i]
-            tangent = mesh_data.Tangents[i]
-            fcnd = mesh_object.flagrum_custom_normal_data.add()
-            fcnd.vertex_index = match
-            fcnd.normal = [normal.X, normal.Y, normal.Z, normal.W]
-            fcnd.tangent = [tangent.X, tangent.Y, tangent.Z, tangent.W]
-
-    # Thanks Sai for the fix here
     layer = bpy.context.view_layer
     layer.update()
 
