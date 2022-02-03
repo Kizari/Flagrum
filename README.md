@@ -51,3 +51,9 @@ We have a great list of resources over at the [Flagrum Wiki](https://github.com/
 * Elisa
 * Saturn
 * Castagnaccio
+
+## Want to support us?
+
+These tools take a monumental amount of time and effort to develop. We are all volunteers and we believe the modding tools should be free and open-source to all. If you want to help support the ongoing development of Flagrum and our other projects, please consider donating.
+
+<a href="https://buymeacoffee.com/Exineris"><img width="200" src="https://i.imgur.com/cCLsrEb.png" alt="Buy us a coffee" /></a>
