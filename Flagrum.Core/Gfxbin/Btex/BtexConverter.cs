@@ -7,9 +7,12 @@ namespace Flagrum.Core.Gfxbin.Btex;
 
 public enum TextureType
 {
-    Color,
-    Greyscale,
+    Undefined,
+    BaseColor,
+    AmbientOcclusion,
     Normal,
+    Mrs,
+    Opacity,
     Preview,
     Thumbnail
 }
@@ -249,7 +252,7 @@ public static class BtexConverter
     {
         return type switch
         {
-            TextureType.Color => 49,
+            TextureType.BaseColor => 49,
             TextureType.Preview or TextureType.Thumbnail => 33,
             _ => 17
         };
@@ -268,8 +271,10 @@ public static class BtexConverter
     {
         return type switch
         {
-            TextureType.Color => 2,
-            TextureType.Greyscale => 2,
+            TextureType.BaseColor => 2,
+            TextureType.AmbientOcclusion => 2,
+            TextureType.Mrs => 2,
+            TextureType.Undefined => 2,
             _ => 4
         };
     }

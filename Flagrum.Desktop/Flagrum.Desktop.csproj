@@ -8,8 +8,8 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <AssemblyName>Flagrum</AssemblyName>
-        <AssemblyVersion>1.1.4</AssemblyVersion>
-        <FileVersion>1.1.4</FileVersion>
+        <AssemblyVersion>1.1.5</AssemblyVersion>
+        <FileVersion>1.1.5</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -44,6 +44,33 @@
         </Content>
         <Content Include="Resources\Textures\teal.btex">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\Play-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\app.css">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\bmc.js">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\discord-button.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\index.html">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\interop.js">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 

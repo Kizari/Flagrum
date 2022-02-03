@@ -1,8 +1,5 @@
 ﻿@page "/"
 @using Flagrum.Core.Archive
-@using Flagrum.Core.Utilities
-@using System.Collections.Concurrent
-@using System.IO
 
 @inject NavigationManager Navigation
 @inject SettingsService Settings
@@ -128,86 +125,10 @@
 
     private List<ModelReplacementTarget> DefaultReplacements { get; set; }
 
-    protected override async void OnInitialized()
+    protected override void OnInitialized()
     {
         DefaultReplacements = ModelReplacementPresets.GetDefaultReplacements();
-        if (!AppState.IsModListInitialized)
-        {
-            await Task.Run(() =>
-            {
-                var binmodList = ModlistEntry.FromFile(Settings.BinmodListPath);
-                var localMods = Directory.GetFiles(Settings.ModDirectory, "*.ffxvbinmod", SearchOption.TopDirectoryOnly);
-                IEnumerable<string> allMods;
-
-                if (Directory.Exists(Settings.WorkshopDirectory))
-                {
-                    var workshopMods = Directory.GetFiles(Settings.WorkshopDirectory, "*.ffxvbinmod", SearchOption.AllDirectories);
-                    allMods = localMods.Union(workshopMods);
-                }
-                else
-                {
-                    allMods = localMods;
-                }
-
-                var mods = new ConcurrentBag<Binmod>();
-
-                Parallel.ForEach(allMods, file =>
-                {
-                    using var unpacker = new Unpacker(file);
-                    var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta", out _);
-                    var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper, Logger);
-                    var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
-
-                    var binmodListing = binmodList.FirstOrDefault(e => file.Contains(e.Path.Replace('/', '\\')));
-
-                    if (mod == null)
-                    {
-                        Logger.LogWarning($"Could not read modmeta from {file}");
-                        return;
-                    }
-
-                    if (binmodListing == null)
-                    {
-                        Logger.LogWarning($"Could not find binmod.list entry for {file}");
-                        return;
-                    }
-
-                    mod.Description = mod.Description?.Replace("\\n", "\n");
-                    mod.GameMenuDescription = mod.GameMenuDescription?.Replace("\\n", "\n");
-                    mod.IsWorkshopMod = binmodListing.IsWorkshopMod;
-                    mod.Index = binmodListing.Index;
-                    mod.IsApplyToGame = binmodListing.IsEnabled;
-                    mod.Path = file;
-                    File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{mod.Uuid}.png", previewBytes);
-
-                    mods.Add(mod);
-                });
-
-                AppState.Mods = mods.ToList();
-                var paths = AppState.Mods.Select(m => m.Path);
-                AppState.UnmanagedEntries = binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
-            });
-
-            ClearOldImages();
-            AppState.IsModListInitialized = true;
-        }
-
         StateHasChanged();
-    }
-
-    private async void ClearOldImages()
-    {
-        await Task.Run(() =>
-        {
-            var exceptions = AppState.Mods.Select(m => $"{IOHelper.GetWebRoot()}\\images\\{m.Uuid}.png");
-            foreach (var image in Directory.EnumerateFiles($"{IOHelper.GetWebRoot()}\\images"))
-            {
-                if (!exceptions.Contains(image))
-                {
-                    File.Delete(image);
-                }
-            }
-        });
     }
 
     private void FilterType(int type)

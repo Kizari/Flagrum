@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using Flagrum.Core.Utilities;
+using ZLibNet;
 
 namespace Flagrum.Core.Archive;
 
@@ -23,6 +23,8 @@ public class Unpacker : IDisposable
         _header = ReadHeader();
     }
 
+    public List<ArchiveFile> Files => _files ??= ReadFileHeaders().ToList();
+
     public void Dispose()
     {
         _stream?.Dispose();
@@ -32,6 +34,12 @@ public class Unpacker : IDisposable
     {
         _files ??= ReadFileHeaders().ToList();
         return _files.Any(f => f.Uri == uri);
+    }
+
+    public string GetUriByQuery(string query)
+    {
+        _files ??= ReadFileHeaders().ToList();
+        return _files.FirstOrDefault(f => f.Uri.EndsWith(query))?.Uri;
     }
 
     /// <summary>
@@ -159,7 +167,6 @@ public class Unpacker : IDisposable
         }
 
         using var memoryStream = new MemoryStream(data);
-        using var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress);
         using var outStream = new MemoryStream();
         using var writer = new BinaryWriter(outStream);
 
@@ -168,14 +175,13 @@ public class Unpacker : IDisposable
             // Align the bytes
             if (index > 0)
             {
-                var offset = 4 - (int)((file.DataOffset + (ulong)memoryStream.Position) % 4);
-
+                var offset = 4 - (int)((_header.DataOffset + memoryStream.Position) % 4);
                 if (offset > 3)
                 {
                     offset = 0;
                 }
 
-                memoryStream.Seek(memoryStream.Position + offset, SeekOrigin.Begin);
+                memoryStream.Seek(offset, SeekOrigin.Current);
             }
 
             // Read the data sizes
@@ -186,17 +192,14 @@ public class Unpacker : IDisposable
             memoryStream.Read(buffer, 0, 4);
             var decompressedSize = BitConverter.ToUInt32(buffer);
 
-            var readCount = 4096;
-            var position = 0;
-
-            while (readCount > 0)
-            {
-                var size = (int)Math.Min(decompressedSize - position, 4096);
-                var decompressBuffer = new byte[size];
-                readCount = zlibStream.Read(decompressBuffer, 0, size);
-                writer.Write(decompressBuffer, 0, readCount);
-                position += readCount;
-            }
+            // Decompress the current chunk and write to the output stream
+            buffer = new byte[compressedSize];
+            memoryStream.Read(buffer, 0, (int)compressedSize);
+            using var stream = new MemoryStream(buffer);
+            using var zlibStream = new ZLibStream(stream, CompressionMode.Decompress);
+            var decompressedBuffer = new byte[decompressedSize];
+            zlibStream.Read(decompressedBuffer, 0, (int)decompressedSize);
+            writer.Write(decompressedBuffer);
         }
 
         return outStream.ToArray();
@@ -270,6 +273,12 @@ public class Unpacker : IDisposable
         header.Hash = ReadUint64();
 
         return header;
+    }
+
+    public static byte[] GetFileByLocation(string earcLocation, string fileQuery)
+    {
+        using var unpacker = new Unpacker(earcLocation);
+        return unpacker.UnpackFileByQuery(fileQuery, out _);
     }
 
     private byte ReadByte()

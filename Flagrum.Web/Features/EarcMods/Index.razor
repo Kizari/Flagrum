@@ -1,0 +1,35 @@
+﻿@page "/earc"
+@using Flagrum.Core.Utilities
+@using System.IO
+
+<div class="flex flex-row items-start p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+    <Button Icon="add" Text="Create Mod" CssClass="mr-3"/>
+    <Button Icon="folder_zip" Text="Install from ZIP" CssClass="mr-3"/>
+</div>
+
+<h4 class="ml-6 mt-6 text-grey-300">Active Mods</h4>
+<div class="px-6 pt-6 pb-6 flex flex-row flex-wrap">
+    @for (var i = 0; i < 4; i++)
+    {
+        <EarcModCard IsDisabled="false"/>
+    }
+</div>
+
+<h4 class="ml-6 text-grey-300">Disabled Mods</h4>
+<div class="px-6 pt-6 pb-6 flex flex-row flex-wrap">
+    @for (var i = 0; i < 2; i++)
+    {
+        <EarcModCard IsDisabled="true"/>
+    }
+</div>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+    //var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
+        var defaultPreviewPath = @"C:\Users\Kieran\Desktop\Cursed\fabulous.jpg";
+        var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+        File.Copy(defaultPreviewPath, currentPreviewPath, true);
+    }
+}

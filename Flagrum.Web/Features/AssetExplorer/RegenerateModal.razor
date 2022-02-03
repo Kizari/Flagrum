@@ -1,0 +1,51 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Microsoft.EntityFrameworkCore.Internal
+@inject AppStateService AppState
+@inject UriMapper Mapper
+@inject FlagrumDbContext Context
+
+<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Rebuild File Index</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <span class="block mb-6">
+                If your game files have lost sync with Flagrum's file index (such as if you have added extra
+                content to the game or installed mods from other sources), you can regenerate the file index
+                to repair the Asset Explorer's Game View. This may take several minutes to complete.
+            </span>
+            <Button Icon="refresh" Text="Regenerate Index" OnClickAsync="OnClick" />
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+    
+    private Modal Modal { get; set; }
+
+    public void Open() => Modal.Open();
+
+    private async Task OnClick()
+    {
+        AppState.Node = null;
+        Parent.ClearSelectedItem();
+        Parent.CallStateHasChanged();
+        Modal.Close();
+        
+        await Task.Run(() =>
+        {
+            Mapper.RegenerateMap();
+            Context.GetDependencies().StateManager.ResetState();
+            
+            AppState.Node = Context.AssetExplorerNodes
+                .FirstOrDefault(n => n.Id == 1);
+
+            InvokeAsync(() => Parent.CallStateHasChanged());
+        });
+    }
+}

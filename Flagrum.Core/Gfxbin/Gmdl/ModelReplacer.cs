@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
@@ -21,8 +21,10 @@ public class ModelReplacer
         _gpubin = replacementData;
     }
 
-    public Model Replace()
+    public Model Replace(bool isModelReplacement)
     {
+        var usedIndices = new List<uint>();
+
         foreach (var mesh in _model.MeshObjects[0].Meshes)
         {
             var match = _gpubin.Meshes.FirstOrDefault(m => m.Name == mesh.Name);
@@ -127,33 +129,6 @@ public class ModelReplacer
                     }
                 }
 
-                for (var i = 0; i < mesh.VertexCount; i++)
-                {
-                    if (mesh.WeightLimit == 6)
-                    {
-                        var weights = 0;
-                        for (var j = 0; j < 4; j++)
-                        {
-                            if (j < weightValues[0][i].Length && weightValues[0][i][j] > 0)
-                            {
-                                weights++;
-                            }
-
-                            if (j < weightValues[1][i].Length && weightValues[1][i][j] > 0)
-                            {
-                                weights++;
-                            }
-                        }
-
-                        // var sum1 = weightValues[0][i].Sum(w => w);
-                        // var sum2 = weightValues[1][i].Sum(w => w);
-                        if (weights > 6)
-                        {
-                            File.AppendAllText(@"C:\Modding\MaterialTesting\log.txt", "REEEEEEEEE\r\n");
-                        }
-                    }
-                }
-
                 // Replace model data with the imported data
                 mesh.Normals = match.Normals;
                 mesh.Tangents = match.Tangents;
@@ -199,21 +174,72 @@ public class ModelReplacer
                     new Vector3(0, 0, mesh.Aabb.Max.Z - center.Z)
                 );
 
-                mesh.BoneIds = _gpubin.BoneTable.Count > 1
-                    ? Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i)
-                    : new[] {0u};
+                if (isModelReplacement)
+                {
+                    mesh.BoneIds = mesh.WeightIndices
+                        .SelectMany(w => w
+                            .SelectMany(x => x
+                                .Select(y => (uint)y)))
+                        .Distinct()
+                        .OrderBy(b => b);
+
+                    usedIndices.AddRange(mesh.BoneIds);
+                }
+                else
+                {
+                    mesh.BoneIds = _gpubin.BoneTable.Count > 1
+                        ? Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i)
+                        : new[] {0u};
+                }
             }
         }
 
-        _model.BoneHeaders = _gpubin.BoneTable
-            .Select(kvp =>
+        if (isModelReplacement)
+        {
+            // Create arbitrary indices for the bones
+            // Start at 10000 to avoid conflicts with other loaded bones on the target model
+            ushort count = 10000;
+            usedIndices = usedIndices.Distinct().ToList();
+            var indexMap = usedIndices.ToDictionary(i => i, i => count++);
+
+            // Update each weight index in the mesh to match the new index map
+            foreach (var mesh in _model.MeshObjects[0].Meshes)
             {
-                var (boneIndex, boneName) = kvp;
-                boneIndex = ushort.MaxValue;
-                var lodIndex = ((uint)boneIndex << 16) | 0xFFFF;
-                return new BoneHeader {LodIndex = lodIndex, Name = boneName};
-            })
-            .ToList();
+                foreach (var indexList in mesh.WeightIndices)
+                {
+                    foreach (var indices in indexList)
+                    {
+                        for (var i = 0; i < indices.Length; i++)
+                        {
+                            indices[i] = indexMap[indices[i]];
+                        }
+                    }
+                }
+            }
+
+            // Generate the fixed bone table and apply it to the model
+            _model.BoneHeaders = _gpubin.BoneTable
+                .Where(d => usedIndices.Contains((ushort)d.Key))
+                .Select(kvp => new BoneHeader
+                {
+                    Name = kvp.Value,
+                    LodIndex = ((uint)indexMap[(ushort)kvp.Key] << 16) | 0xFFFF
+                })
+                .OrderBy(b => b.LodIndex)
+                .ToList();
+        }
+        else
+        {
+            _model.BoneHeaders = _gpubin.BoneTable
+                .Select(kvp =>
+                {
+                    var (boneIndex, boneName) = kvp;
+                    boneIndex = ushort.MaxValue;
+                    var lodIndex = ((uint)boneIndex << 16) | 0xFFFF;
+                    return new BoneHeader {LodIndex = lodIndex, Name = boneName};
+                })
+                .ToList();
+        }
 
         return _model;
     }

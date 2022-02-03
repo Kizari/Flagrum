@@ -8,6 +8,28 @@
     <base href="/"/>
     <link href="app.css" rel="stylesheet"/>
     <link href="_content/Z.Blazor.Diagrams/style.min.css" rel="stylesheet"/>
+    <link href="_content/Blazor.ContextMenu/blazorContextMenu.min.css" rel="stylesheet"/>
+    
+    <style>
+        .context-menu {
+            background-color: #ff0000;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-left: -5px;
+            margin-right: -5px;
+        }
+
+        .context-menu-item {
+            background-color: #0000ff;
+            color: #00ff00;
+            margin: 0 !important;
+        }
+
+        .context-menu-item:hover {
+            background-color: #00ff00;
+            color: #0000ff;
+        }
+    </style>
 </head>
 
 <body class="font-body" style="background-color: #181512">
@@ -21,6 +43,7 @@
 <script src="_framework/blazor.webview.js"></script>
 <script src="_content/Z.Blazor.Diagrams/script.min.js"></script>
 <script src="_content/Blazor.Extensions.Canvas/blazor.extensions.canvas.js"></script>
+<script src="_content/Blazor.ContextMenu/blazorContextMenu.min.js"></script>
 <script data-coffee-color="#ffffff" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-font-color="#000000"
         data-name="bmc-button" data-outline-color="#000000" data-slug="Exineris" data-text="Buy us a coffee"
         src="bmc.js" type="text/javascript"></script>

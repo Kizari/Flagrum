@@ -1,0 +1,144 @@
+﻿@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using System.IO
+@using Flagrum.Core.Archive
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Persistence.Entities
+@inject IWpfService WpfService
+@inject FlagrumDbContext Context
+@inject SettingsService Settings
+
+<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Export Folder</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <div class="row">
+                <label style="width: 240px">Texture Output Format</label>
+                <select @bind="Extension" class="input bg-dark-550 w-full">
+                    <option>PNG</option>
+                    <option>TGA</option>
+                    <option>DDS</option>
+                    <option>BTEX</option>
+                </select>
+            </div>
+            <div class="row mt-6 mb-10">
+                <Checkbox IsChecked="@IsRecursive" OnChange="v => { IsRecursive = v; StateHasChanged(); }"/>
+                <span class="inline-block ml-2">Also export from subdirectories recursively</span>
+            </div>
+            <Button Text="Export" Icon="file_download" OnClickAsync="Export"/>
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private Modal Modal { get; set; }
+    private bool IsRecursive { get; set; }
+    private string Extension { get; set; } = "PNG";
+
+    public void Open()
+    {
+        Modal.Open();
+    }
+
+    private async Task Export()
+    {
+        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder =>
+        {
+            InvokeAsync(() =>
+            {
+                Modal.Close();
+                Parent.SetLoading(true, "Exporting");
+
+                var files = new Dictionary<string, List<string>>();
+
+                if (IsRecursive)
+                {
+                    Parent.ContextNode.Traverse(Context, node =>
+                    {
+                        if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
+                        {
+                            var location = node.GetLocation(Context, Settings);
+                            if (!files.TryGetValue(location, out var uris))
+                            {
+                                uris = new List<string> {node.GetUri(Context)};
+                                files.Add(location, uris);
+                            }
+                            else
+                            {
+                                uris.Add(node.GetUri(Context));
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    foreach (var node in Parent.ContextNode.Children)
+                    {
+                        if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
+                        {
+                            var location = node.GetLocation(Context, Settings);
+                            if (!files.TryGetValue(location, out var uris))
+                            {
+                                uris = new List<string> {node.GetUri(Context)};
+                                files.Add(location, uris);
+                            }
+                            else
+                            {
+                                uris.Add(node.GetUri(Context));
+                            }
+                        }
+                    }
+                }
+
+                var baseUri = Parent.ContextNode.GetUri(Context);
+                var converter = new TextureConverter();
+                
+                foreach (var (archiveLocation, uris) in files)
+                {
+                    using var unpacker = new Unpacker(archiveLocation);
+                    foreach (var uri in uris)
+                    {
+                        var data = unpacker.UnpackFileByQuery(uri, out _);
+                        if (AssetExplorerItem.GetType(uri) == ExplorerItemType.Texture)
+                        {
+                            data = Extension switch
+                            {
+                                "PNG" => converter.BtexToPng(data),
+                                "TGA" => converter.BtexToTga(data),
+                                "DDS" => converter.BtexToDds(data),
+                                _ => data
+                            };
+                        }
+
+                        var relativePath = Parent.ContextNode.Name + "\\" + uri
+                            .Replace(baseUri, "")
+                            .Replace('/', '\\');
+                        
+                        var currentDirectory = folder;
+                        var split = relativePath.Split('\\');
+                        for (var index = 0; index < split.Length - 1; index++)
+                        {
+                            var token = split[index];
+                            currentDirectory += "\\" + token;
+                            if (!Directory.Exists(currentDirectory))
+                            {
+                                Directory.CreateDirectory(currentDirectory);
+                            }
+                        }
+
+                        var absolutePath = currentDirectory + "\\" + split.Last();
+                        File.WriteAllBytes(absolutePath, data);
+                    }
+                }
+                
+                Parent.SetLoading(false);
+            });
+        });
+    }
+}

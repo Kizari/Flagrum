@@ -4,17 +4,18 @@ from bpy.types import AddonPreferences
 from bpy.utils import register_class, unregister_class
 
 from . import addon_updater_ops
+from .globals import FlagrumGlobals
 from .import_export.menu import ImportOperator, ExportOperator
 from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, \
     NormaliseWeightsOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, \
     ClearTextureOperator, MaterialImportOperator, MaterialCopyOperator, MaterialPasteOperator
-from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel
+from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEdgesOperator, MergeNormalsOperator
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 4),
+    "version": (1, 0, 5),
     "blender": (2, 93, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
@@ -81,11 +82,14 @@ classes = (
     MaterialEditorPanel,
     MaterialSettings,
     UseCustomNormalsOperator,
+    SplitEdgesOperator,
+    MergeNormalsOperator,
     DeleteUnusedBonesOperator,
     DeleteUnusedVGroupsOperator,
     NormaliseWeightsOperator,
     CleanupPanel,
-    NormalsPanel
+    NormalsPanel,
+    FlagrumGlobals
 )
 
 
@@ -106,11 +110,13 @@ def register():
     bpy.types.TOPBAR_MT_file_import.append(import_menu_item)
     bpy.types.TOPBAR_MT_file_export.append(export_menu_item)
     bpy.types.Object.flagrum_material = PointerProperty(type=MaterialSettings)
-    bpy.types.Scene.flagrum_material_clipboard = PointerProperty(type=FlagrumMaterialPropertyCollection)
+    bpy.types.WindowManager.flagrum_material_clipboard = PointerProperty(type=FlagrumMaterialPropertyCollection)
+    bpy.types.WindowManager.flagrum_globals = PointerProperty(type=FlagrumGlobals)
 
 
 def unregister():
-    del bpy.types.Scene.flagrum_material_clipboard
+    del bpy.types.WindowManager.flagrum_globals
+    del bpy.types.WindowManager.flagrum_material_clipboard
     del bpy.types.Object.flagrum_material
     bpy.types.TOPBAR_MT_file_import.remove(export_menu_item)
     bpy.types.TOPBAR_MT_file_import.remove(import_menu_item)

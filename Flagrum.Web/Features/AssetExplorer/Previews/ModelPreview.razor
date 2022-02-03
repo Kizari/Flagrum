@@ -1,8 +1,7 @@
 ﻿@using Blazor.Extensions
+@using Flagrum.Web.Features.AssetExplorer.Data
 @using Blazor.Extensions.Canvas.WebGL
-@using Flagrum.Core.Gfxbin.Gmdl
 @using Flagrum.Core.Gfxbin.Gmdl.Components
-@using System.IO
 @implements IDisposable
 
 <BECanvas Width="400" Height="400" @ref="Canvas"></BECanvas>
@@ -10,7 +9,7 @@
 @code
 {
     [Parameter]
-    public string Path { get; set; }
+    public AssetExplorerItem Item { get; set; }
 
     private WebGLContext Context { get; set; }
     private BECanvasComponent Canvas { get; set; }
@@ -19,9 +18,9 @@
 
     protected override void OnInitialized()
     {
-        var gpu = Path.Replace(".gmdl.gfxbin", ".gpubin");
-        var reader = new ModelReader(File.ReadAllBytes(Path), File.ReadAllBytes(gpu));
-        Model = reader.Read();
+    //var gpu = Path.Replace(".gmdl.gfxbin", ".gpubin");
+    //var reader = new ModelReader(File.ReadAllBytes(Path), File.ReadAllBytes(gpu));
+    //Model = reader.Read();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

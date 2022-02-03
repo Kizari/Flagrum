@@ -6,10 +6,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Blazor.ContextMenu" Version="1.11.1" />
         <PackageReference Include="Blazor.Extensions.Canvas" Version="1.1.1" />
         <PackageReference Include="DirectXTexNet" Version="1.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
         <PackageReference Include="Scriban" Version="5.0.0" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
@@ -26,37 +32,8 @@
         <_ContentIncludedByDefault Remove="Layout\MainLayout.razor" />
         <_ContentIncludedByDefault Remove="Layout\NodeExplorer.razor" />
         <_ContentIncludedByDefault Remove="Layout\TypeTreeComponent.razor" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <Content Update="wwwroot\app.css">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\bmc.js">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\interop.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\index.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\Play-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\discord-button.png">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
+        <_ContentIncludedByDefault Remove="Features\FileInspector\Index.razor" />
+        <_ContentIncludedByDefault Remove="Features\FileInspector\ObjectInspector.razor" />
     </ItemGroup>
 
 

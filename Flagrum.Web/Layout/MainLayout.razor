@@ -8,9 +8,20 @@
     {
         <MainMenu/>
         <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
-            <CascadingValue Value="this">
-                @Body
-            </CascadingValue>
+            @if (AppState.Node == null)
+            {
+                <div class="row py-2 px-4 text-grey-400" style="background-color: rgba(5, 5, 1, 0.35)">
+                    <LoadingIndicator/>
+                    <span class="flex-grow">
+                        Indexing game files, this may take several minutes, but will only need to happen once
+                    </span>
+                </div>
+            }
+            <div class="flex-grow bg-grey-900 overflow-auto flex flex-col">
+                <CascadingValue Value="this">
+                    @Body
+                </CascadingValue>
+            </div>
         </div>
     }
     else

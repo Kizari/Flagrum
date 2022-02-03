@@ -8,7 +8,7 @@ class NormaliseWeightsOperator(Operator):
     bl_idname = "flagrum.cleanup_normalise_weights"
     bl_label = "Normalise Weights"
     bl_description = "Normalises vertex weights to the limits defined by the selected Flagrum materials to " \
-        "ensure a consistent result with the FMD exporter"
+                     "ensure a consistent result with the FMD exporter"
 
     @classmethod
     def poll(cls, context):
@@ -93,6 +93,29 @@ class DeleteUnusedBonesOperator(Operator):
                 meshes.append(obj)
 
         bones_to_keep = ["C_Hip"]
+        if context.window_manager.flagrum_globals.retain_base_armature:
+            bones_to_keep = ["C_Hip", "C_Spine1", "C_Spine1Sub", "C_Spine2", "C_Spine2W", "C_Spine3", "C_Spine3W",
+                             "C_Neck1", "C_Head", "Facial_A", "C_HairRoot", "C_HeadEnd", "Facial_B", "C_Throat_B",
+                             "C_NeckSub", "C_NeckSubEnd", "C_Neck1W", "C_Neck1WEnd", "L_Shoulder", "L_Forearm",
+                             "L_Hand", "L_Socket", "L_Thumb1", "L_Thumb2", "L_Thumb3", "L_ThumbEnd", "L_Index1",
+                             "L_Index2", "L_Index3", "L_IndexBulge", "L_Middle1", "L_Middle2", "L_Middle3",
+                             "L_MiddleBulge", "L_RingMeta", "L_Ring1", "L_Ring2", "L_Ring3", "L_RingBulge", "L_RingSub",
+                             "L_PinkyMeta", "L_Pinky1", "L_Pinky2", "L_Pinky3", "L_PinkyBulge", "L_PinkySub",
+                             "L_IndexSub", "L_MiddleSub", "L_ForearmrollA", "L_ForearmrollB", "L_ForearmrollC",
+                             "L_Wrist", "L_sleeveSub", "L_DeltoidA", "L_DeltoidB", "L_DeltoidC", "L_Elbow", "L_Bust",
+                             "L_armpit", "L_ShoulderSub", "R_Shoulder", "R_UpperArm", "R_Forearm", "R_Hand", "R_Socket",
+                             "R_Thumb1", "R_Thumb2", "R_Thumb3", "R_ThumbEnd", "R_Index1", "R_Index2", "R_Index3",
+                             "R_IndexBulge", "R_Middle1", "R_Middle2", "R_Middle3", "R_MiddleBulge", "R_RingMeta",
+                             "R_Ring1", "R_Ring2", "R_Ring3", "R_RingSub", "R_PinkyMeta", "R_Pinky1", "R_Pinky2",
+                             "R_Pinky3", "R_PinkyBulge", "R_PinkySub", "R_IndexSub", "R_MiddleSub", "R_ForearmrollA",
+                             "R_ForearmrollB", "R_ForearmrollC", "R_Wrist", "R_sleeveSub", "R_DeltoidA", "R_DeltoidB",
+                             "R_DeltoidC", "R_Elbow", "R_Bust", "R_ShoulderSub", "R_armpit", "L_UpperLeg", "L_Foreleg",
+                             "L_Foot", "L_Toe", "L_ToeEnd", "L_CalfB", "L_CalfF", "L_ankle", "L_ankleB", "L_FemorisA",
+                             "L_FemorisAsub", "L_FemorisB", "L_FemorisC", "L_Knee", "L_UpperLegSub", "L_UpperLegSubEnd",
+                             "R_UpperLeg", "R_Foreleg", "R_Foot", "R_Toe", "R_ToeEnd", "R_CalfB", "R_CalfF", "R_ankle",
+                             "R_FemorisA", "R_FemorisAsub", "R_FemorisB", "R_FemorisC", "R_Knee", "C_HipW", "C_Spine1W",
+                             "C_Spine1WEnd", "L_Hip", "L_Hipback", "L_HipSub", "R_Hip", "R_Hipback", "R_HipSub",
+                             "R_HipSubEnd", "c_BeltKdi"]
 
         for mesh in meshes:
             groups = {i: False for i, k in enumerate(mesh.vertex_groups)}
@@ -127,6 +150,9 @@ class CleanupPanel(Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator(DeleteUnusedBonesOperator.bl_idname)
+        row = layout.row(align=True)
+        row.operator(DeleteUnusedBonesOperator.bl_idname)
+        row.prop(context.window_manager.flagrum_globals, property="retain_base_armature", icon='OUTLINER_OB_ARMATURE',
+                 icon_only=True)
         layout.operator(DeleteUnusedVGroupsOperator.bl_idname)
         layout.operator(NormaliseWeightsOperator.bl_idname)

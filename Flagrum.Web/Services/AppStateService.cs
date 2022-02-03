@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Newtonsoft.Json;
 
 namespace Flagrum.Web.Services;
@@ -15,10 +17,14 @@ public class AppStateService
 {
     private readonly AppStateData _data;
     private readonly SettingsService _settings;
+    private readonly FlagrumDbContext _context;
 
-    public AppStateService(SettingsService settings)
+    public AppStateService(
+        SettingsService settings,
+        FlagrumDbContext context)
     {
         _settings = settings;
+        _context = context;
 
         if (File.Exists(_settings.StatePath))
         {
@@ -37,6 +43,8 @@ public class AppStateService
     public IList<Binmod> Mods { get; set; } = new List<Binmod>();
     public IList<ModlistEntry> UnmanagedEntries { get; set; } = new List<ModlistEntry>();
     public bool IsModListInitialized { get; set; }
+
+    public AssetExplorerNode Node { get; set; }
 
     public int ActiveCategoryFilter { get; set; } = 0;
     public int ActiveModTypeFilter { get; set; } = -1;

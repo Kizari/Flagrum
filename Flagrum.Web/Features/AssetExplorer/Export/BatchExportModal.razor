@@ -1,0 +1,110 @@
+﻿@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using System.IO
+@inject IWpfService WpfService
+
+<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Batch Export</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <span>Batch export currently only supports textures.</span>
+            <div class="row mt-6">
+                <label style="width: 150px">Output Format</label>
+                <select @bind="Extension" class="input bg-dark-550 w-full">
+                    <option>PNG</option>
+                    <option>TGA</option>
+                    <option>DDS</option>
+                </select>
+            </div>
+            <div class="row mt-6 mb-10">
+                <Checkbox IsChecked="@IsRecursive" OnChange="v => { IsRecursive = v; StateHasChanged(); }"/>
+                <span class="inline-block ml-2">Also export from subdirectories recursively</span>
+            </div>
+            <Button Text="Export Batch" Icon="file_download" OnClickAsync="ExportBatch"/>
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private Modal Modal { get; set; }
+    private bool IsRecursive { get; set; }
+    private string Extension { get; set; } = "PNG";
+
+    public void Open()
+    {
+        Modal.Open();
+    }
+
+    private async Task ExportBatch()
+    {
+        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder =>
+        {
+            InvokeAsync(() =>
+            {
+                Modal.Close();
+                Parent.IsLoading = true;
+                StateHasChanged();
+
+                var files = new List<string>();
+
+                if (IsRecursive)
+                {
+                    BuildFileListRecursively(Parent.SelectedDirectory.Item.Path, files);
+                }
+                else
+                {
+                    files.AddRange(Directory.GetFiles(Parent.SelectedDirectory.Item.Path, "*.btex"));
+                }
+
+                var directories = files
+                    .Select(f =>
+                    {
+                        var relativePath = f.Replace(Parent.SelectedDirectory.Item.Path, "")[1..];
+                        var index = relativePath.LastIndexOf('\\');
+                        return index > 0 ? relativePath.Remove(index) : null;
+                    })
+                    .Where(d => !string.IsNullOrWhiteSpace(d))
+                    .Distinct();
+
+                foreach (var directory in directories)
+                {
+                    Directory.CreateDirectory($"{folder}\\{directory}");
+                }
+
+                Parallel.ForEach(files, file =>
+                {
+                    var relativePath = file.Replace(Parent.SelectedDirectory.Item.Path, "");
+                    var outputPath = $"{folder}{relativePath.Replace(".btex", $".{Extension.ToLower()}")}";
+                    var btex = File.ReadAllBytes(file);
+                    var converter = new TextureConverter();
+                    var data = Extension switch
+                    {
+                        "PNG" => converter.BtexToPng(btex),
+                        "TGA" => converter.BtexToTga(btex),
+                        _ => converter.BtexToDds(btex)
+                        };
+
+                    File.WriteAllBytes(outputPath, data);
+                });
+
+                Parent.IsLoading = false;
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void BuildFileListRecursively(string directory, List<string> files)
+    {
+        files.AddRange(Directory.GetFiles(directory, "*.btex"));
+        foreach (var subdirectory in Directory.EnumerateDirectories(directory))
+        {
+            BuildFileListRecursively(subdirectory, files);
+        }
+    }
+}

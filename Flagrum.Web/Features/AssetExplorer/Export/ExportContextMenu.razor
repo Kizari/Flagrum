@@ -1,0 +1,100 @@
+﻿@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using System.IO
+@inject IWpfService WpfService
+@inject FlagrumDbContext Context
+@inject SettingsService Settings
+@inject ILogger<ExportContextMenu> Logger
+
+<ContextMenu Id="assetExplorerMenu"
+             OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
+             OverrideDefaultListCssClass="p-0">
+    @if (Parent.ContextItem.Type == ExplorerItemType.Directory)
+    {
+        <Item OnClick="ExportFolderModal.Open"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">drive_file_move</span>
+                <span>Export Folder</span>
+            </div>
+        </Item>
+    }
+    else
+    {
+        <Item OnClick="ExportSingle"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">open_in_new</span>
+                <span>Export File</span>
+            </div>
+        </Item>
+
+        if (Parent.ContextItem.Type == ExplorerItemType.Model)
+        {
+            <Item OnClick="ExportWithDependenciesModal.Open"
+                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                <div class="row">
+                    <span class="material-icons mr-3" style="font-size: 0.9rem">share</span>
+                    <span>Export With Dependencies</span>
+                </div>
+            </Item>
+        }
+    }
+</ContextMenu>
+
+<ExportWithDependenciesModal @ref="ExportWithDependenciesModal"/>
+<ExportFolderModal @ref="ExportFolderModal"/>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
+    private ExportFolderModal ExportFolderModal { get; set; }
+
+    private async Task ExportSingle()
+    {
+        var item = Parent.ContextItem;
+
+        var defaultName = item.Type switch
+        {
+            ExplorerItemType.Material => item.Name + ".gfxbin",
+            ExplorerItemType.Model => item.Name + ".gfxbin",
+            ExplorerItemType.Texture => item.Name[..item.Name.LastIndexOf('.')] + ".png",
+            _ => item.Name
+            };
+
+        var filter = item.Type switch
+        {
+            ExplorerItemType.Material => "Game Material|*.gmtl.gfxbin",
+            ExplorerItemType.Model => "Game Model|*.gmdl.gfxbin",
+            ExplorerItemType.Texture => "PNG Image|*.png|TGA Image|*.tga|DDS Image|*.dds|BTEX Image|*.btex",
+            _ => $"Unknown File|*.{item.Name.Split('.').Last()}"
+            };
+
+        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, path =>
+        {
+            byte[] data;
+
+            if (item.Type == ExplorerItemType.Texture)
+            {
+                var extension = path.Split('.').Last();
+                var converter = new TextureConverter();
+                data = extension switch
+                {
+                    "png" => converter.BtexToPng(item.Data()),
+                    "tga" => converter.BtexToTga(item.Data()),
+                    "dds" => converter.BtexToDds(item.Data()),
+                    _ => item.Data()
+                    };
+            }
+            else
+            {
+                data = item.Data();
+            }
+
+            File.WriteAllBytes(path, data);
+        });
+    }
+}

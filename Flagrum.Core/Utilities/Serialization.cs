@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Flagrum.Core.Utilities;
 
@@ -51,5 +52,11 @@ public static class Serialization
         }
 
         return string.IsNullOrWhiteSpace(input) ? Guid.NewGuid().ToString().ToLower() : output.ToLower();
+    }
+
+    public static string ToBase64(this string input)
+    {
+        var bytes = Encoding.UTF8.GetBytes(input);
+        return Convert.ToBase64String(bytes);
     }
 }

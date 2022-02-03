@@ -1,0 +1,23 @@
+﻿@using Flagrum.Web.Persistence
+@using Flagrum.Web.Persistence.Entities
+@inject SettingsService Settings
+@inject FlagrumDbContext Context
+
+@foreach (var node in Context.AssetExplorerNodes
+    .Where(n => n.ParentId == Node.Id)
+    .OrderByDescending(n => n.Children.Any())
+    .ThenBy(n => n.Name))
+{
+    <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => Parent.SetContextNode(node)">
+        <VirtualExplorerRow Node="node"/>
+    </ContextMenuTrigger>
+}
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    [Parameter]
+    public AssetExplorerNode Node { get; set; }
+}

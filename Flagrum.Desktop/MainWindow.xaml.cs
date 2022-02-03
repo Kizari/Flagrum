@@ -27,12 +27,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private readonly string flagrumDirectory;
     private readonly string logFile;
-
-#if DEBUG
+    
     public string HostPageUri { get; } = "wwwroot/index.html";
-#else
-    public string HostPageUri { get; } = "wwwroot/_content/Flagrum.Web/index.html";
-#endif
 
     private bool _hasWebView2Runtime;
 

@@ -111,7 +111,7 @@ class MaterialCopyOperator(Operator):
     bl_label = "Copy"
 
     def execute(self, context):
-        clipboard = context.scene.flagrum_material_clipboard
+        clipboard = context.window_manager.flagrum_material_clipboard
         material: MaterialSettings = context.view_layer.objects.active.flagrum_material
         active_material_data = None
         for property_definition in material.property_collection:
@@ -132,7 +132,7 @@ class MaterialPasteOperator(Operator):
 
     @classmethod
     def poll(cls, context):
-        material_id = context.scene.flagrum_material_clipboard.material_id
+        material_id = context.window_manager.flagrum_material_clipboard.material_id
         material: MaterialSettings = context.view_layer.objects.active.flagrum_material
         active_material_data = None
         for property_definition in material.property_collection:
@@ -141,7 +141,7 @@ class MaterialPasteOperator(Operator):
         return material_id is not None and material_id != '' and active_material_data.material_id == material_id
 
     def execute(self, context):
-        clipboard = context.scene.flagrum_material_clipboard
+        clipboard = context.window_manager.flagrum_material_clipboard
         material: MaterialSettings = context.view_layer.objects.active.flagrum_material
         active_material_data = None
         for property_definition in material.property_collection:

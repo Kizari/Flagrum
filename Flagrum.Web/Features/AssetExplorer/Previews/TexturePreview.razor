@@ -1,0 +1,34 @@
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@using System.IO
+@using Flagrum.Core.Utilities
+<div class="flex-grow flex flex-row items-center">
+    <img src="images/@ImageName" class="mx-auto" style="max-width: 70%"/>
+</div>
+
+@code
+{
+    private AssetExplorerItem _previousItem;
+
+    [Parameter]
+    public AssetExplorerItem Item { get; set; }
+
+    private string ImageName { get; set; } = "asset_preview.jpg";
+
+    protected override void OnParametersSet()
+    {
+        if (_previousItem != Item)
+        {
+            _previousItem = Item;
+
+    // Convert to jpeg for display
+            var converter = new TextureConverter();
+            var jpegBytes = converter.BtexToJpg(Item.Data());
+            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\asset_preview.jpg", jpegBytes);
+
+    // Jank to trick the UI into updating
+            ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
+
+            StateHasChanged();
+        }
+    }
+}

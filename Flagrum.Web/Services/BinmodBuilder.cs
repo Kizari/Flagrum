@@ -13,24 +13,18 @@ namespace Flagrum.Web.Services;
 
 public class BinmodBuilder
 {
-    private readonly BinmodTypeHelper _binmodType;
     private readonly EntityPackageBuilder _entityPackageBuilder;
     private readonly Modmeta _modmeta;
-    private readonly SettingsService _settings;
 
     private Binmod _mod;
     private Packer _packer;
 
     public BinmodBuilder(
-        SettingsService settings,
         EntityPackageBuilder entityPackageBuilder,
-        Modmeta modmeta,
-        BinmodTypeHelper binmodType)
+        Modmeta modmeta)
     {
-        _settings = settings;
         _entityPackageBuilder = entityPackageBuilder;
         _modmeta = modmeta;
-        _binmodType = binmodType;
     }
 
     public void Initialise(Binmod mod, BuildContext context)
@@ -201,7 +195,7 @@ public class BinmodBuilder
 
         var model = OutfitTemplate.Build(_mod.ModDirectoryName, modelName, modelNamePrefix, fmd.Gpubin);
         var replacer = new ModelReplacer(model, fmd.Gpubin);
-        model = replacer.Replace();
+        model = replacer.Replace(_mod.Type == (int)BinmodType.Character);
 
         if (_mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
         {

@@ -1,0 +1,186 @@
+﻿@using Flagrum.Web.Persistence.Entities
+@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Core.Gfxbin.Data
+@using Flagrum.Core.Gfxbin.Gmtl
+@using Flagrum.Core.Archive
+@using System.Text
+@using System.IO
+@using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
+@inject IWpfService WpfService
+@inject SettingsService Settings
+@inject FlagrumDbContext Context
+
+<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Export With Dependencies</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <div class="row">
+                <label style="width: 240px">Texture Output Format</label>
+                <select @bind="Extension" class="input bg-dark-550 w-full">
+                    <option>PNG</option>
+                    <option>TGA</option>
+                    <option>DDS</option>
+                    <option>BTEX</option>
+                </select>
+            </div>
+            <div class="row mt-6">
+                <Checkbox IsChecked="@IncludeHighTextures" OnChange="v => { IncludeHighTextures = v; StateHasChanged(); }"/>
+                <span class="inline-block ml-2">Include high resolution textures</span>
+            </div>
+            <div class="row mt-6 mb-10">
+                <Checkbox IsChecked="@IncludeCommonTextures" OnChange="v => { IncludeCommonTextures = v; StateHasChanged(); }"/>
+                <span class="inline-block ml-2">Include shared textures</span>
+            </div>
+            <Button Text="Export" Icon="file_download" OnClickAsync="Export"/>
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private Modal Modal { get; set; }
+    private string Extension { get; set; } = "PNG";
+    private bool IncludeHighTextures { get; set; } = true;
+    private bool IncludeCommonTextures { get; set; }
+
+    public void Open()
+    {
+        Modal.Open();
+    }
+
+    private async Task Export()
+    {
+        var item = Parent.ContextItem;
+        var defaultName = item.Name + ".gfxbin";
+        const string filter = "Game Model|*.gmdl.gfxbin";
+
+        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, path =>
+        {
+            InvokeAsync(() =>
+            {
+                Parent.SetLoading(true, "Exporting");
+                Modal.Close();
+            });
+
+            var gfxbin = item.Data();
+            var reader = new BinaryReader(gfxbin);
+            var header = new GfxbinHeader();
+            header.Read(reader);
+
+            var materials = new Dictionary<string, byte[]>();
+            var textures = new Dictionary<string, byte[]>();
+
+            var gpubinUri = header.Dependencies.FirstOrDefault(d => d.Path.EndsWith(".gpubin"))?.Path;
+            var gpubin = Context.GetFileByUri(gpubinUri);
+
+            var materialUris = header.Dependencies
+                .Where(d => d.Path.EndsWith(".gmtl"))
+                .Select(d => d.Path);
+
+            foreach (var uri in materialUris)
+            {
+                var materialData = Context.GetFileByUri(uri);
+                materials.Add(uri, materialData);
+
+                var material = new MaterialReader(materialData).Read();
+                foreach (var texture in material.Textures.Where(t => !string.IsNullOrEmpty(t.Path) && !t.Path.EndsWith(".sb")))
+                {
+                    if (textures.ContainsKey(texture.Path) || !CommonCheck(texture.Path))
+                    {
+                        continue;
+                    }
+
+                    var textureData = Context.GetFileByUri(texture.Path);
+                    textures.Add(texture.Path, ConvertTexture(textureData));
+                }
+
+                if (IncludeHighTextures)
+                {
+                    var highTexturePackUri = material.HighTexturePackAsset.Replace(".htpk", ".autoext");
+                    var highTexturePack = Context.GetFileByUri(highTexturePackUri);
+
+                    foreach (var highTexture in Encoding.UTF8.GetString(highTexturePack)
+                        .Split(' ')
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Select(s =>
+                        {
+                            var result = s.Trim();
+                            if (result.Last() == 0x00)
+                            {
+                                result = result[..^1];
+                            }
+
+                            return result;
+                        }))
+                    {
+                        if (textures.ContainsKey(highTexture) || !CommonCheck(highTexture))
+                        {
+                            continue;
+                        }
+
+                        var textureData = Context.GetFileByUri(highTexture);
+                        textures.Add(highTexture, ConvertTexture(textureData));
+                    }
+                }
+            }
+
+            File.WriteAllBytes(path, gfxbin);
+            File.WriteAllBytes(path.Replace(".gmdl.gfxbin", ".gpubin"), gpubin);
+            var root = Path.GetDirectoryName(path);
+            var materialsDirectory = $"{root}\\materials";
+            var texturesDirectory = $"{root}\\textures";
+
+            if (!Directory.Exists(materialsDirectory))
+            {
+                Directory.CreateDirectory(materialsDirectory);
+            }
+
+            if (!Directory.Exists(texturesDirectory))
+            {
+                Directory.CreateDirectory(texturesDirectory);
+            }
+
+            foreach (var (uri, data) in materials)
+            {
+                var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}.gfxbin";
+                File.WriteAllBytes(materialPath, data);
+            }
+
+            foreach (var (uri, data) in textures)
+            {
+                var fileName = uri.Split('/').Last();
+                fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
+                var texturePath = $"{texturesDirectory}\\{fileName}";
+                File.WriteAllBytes(texturePath, data);
+            }
+
+            InvokeAsync(() => Parent.SetLoading(false));
+        });
+    }
+
+    private bool CommonCheck(string uri)
+    {
+        return IncludeCommonTextures
+               || !uri.StartsWith("data://shader")
+               && !uri.StartsWith("data://vfx")
+               && !uri.Contains("/common/");
+    }
+
+    private byte[] ConvertTexture(byte[] btex)
+    {
+        var converter = new TextureConverter();
+        return Extension switch
+        {
+            "PNG" => converter.BtexToPng(btex),
+            "TGA" => converter.BtexToTga(btex),
+            "DDS" => converter.BtexToDds(btex),
+            _ => btex
+            };
+    }
+}

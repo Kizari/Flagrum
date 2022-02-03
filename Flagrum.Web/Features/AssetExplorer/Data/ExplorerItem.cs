@@ -2,6 +2,7 @@
 
 public enum ExplorerItemType
 {
+    Unspecified,
     Unsupported,
     Directory,
     Material,

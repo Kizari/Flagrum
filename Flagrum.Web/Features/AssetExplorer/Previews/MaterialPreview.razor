@@ -1,4 +1,5 @@
-﻿@using Flagrum.Core.Gfxbin.Gmtl
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Core.Gfxbin.Gmtl
 <div class="p-6">
     <div class="box p-4 mb-6">
         <h5 class="text-grey-300 mb-2">@BaseMaterial</h5>
@@ -44,10 +45,10 @@
 
 @code
 {
-    private string _previousPath;
+    private AssetExplorerItem _previousItem;
 
     [Parameter]
-    public string Path { get; set; }
+    public AssetExplorerItem Item { get; set; }
 
     private string BaseMaterial { get; set; }
     private IEnumerable<(string Name, float[] Values)> MaterialInputs { get; set; }
@@ -56,12 +57,12 @@
 
     protected override void OnParametersSet()
     {
-        if (Path == _previousPath)
+        if (_previousItem == Item)
         {
             return;
         }
 
-        var reader = new MaterialReader(Path);
+        var reader = new MaterialReader(Item.Data());
         var material = reader.Read();
         BaseMaterial = material.Interfaces[0].Name;
 
@@ -77,6 +78,7 @@
 
         MaterialInputs = inputs;
         TextureInputs = textures;
+        StateHasChanged();
     }
 
     private void ShowPath(string path)

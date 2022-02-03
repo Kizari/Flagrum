@@ -12,13 +12,22 @@ public static class BtexHelper
         }
 
         if (textureId.Contains("basecolor", StringComparison.OrdinalIgnoreCase)
-            || textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase)
             || textureId.Contains("emissive", StringComparison.OrdinalIgnoreCase))
         {
-            return TextureType.Color;
+            return TextureType.BaseColor;
         }
 
-        return TextureType.Greyscale;
+        if (textureId.Contains("mrs", StringComparison.OrdinalIgnoreCase))
+        {
+            return TextureType.Mrs;
+        }
+
+        if (textureId.Contains("occlusion", StringComparison.OrdinalIgnoreCase))
+        {
+            return TextureType.AmbientOcclusion;
+        }
+
+        return TextureType.Undefined;
     }
 
     public static string GetSuffix(string textureId)

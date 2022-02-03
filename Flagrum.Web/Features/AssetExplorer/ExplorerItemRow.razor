@@ -1,6 +1,4 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
-@using System.IO
-@using Flagrum.Core.Utilities
 @implements IDisposable
 @inject JSInterop Interop
 @inject AppStateService AppState
@@ -77,20 +75,9 @@
 
     private void OnClick()
     {
-        switch (Item.Type)
+        if (Item.Type == ExplorerItemType.Directory)
         {
-            case ExplorerItemType.Directory:
-                Parent.SetActiveDirectory(Item.Path);
-                break;
-            case ExplorerItemType.Texture:
-                PreviewTexture();
-                break;
-            case ExplorerItemType.Material:
-                Parent.SetPreviewMaterial(Item.Path);
-                break;
-            case ExplorerItemType.Model:
-                Parent.SetPreviewModel(Item.Path);
-                break;
+            Parent.SetActiveDirectory(Item.Path);
         }
 
         Parent.SetSelectedItem(this);
@@ -100,14 +87,6 @@
     {
         Item.IsExpanded = !Item.IsExpanded;
         StateHasChanged();
-    }
-
-    private void PreviewTexture()
-    {
-        var converter = new TextureConverter();
-        var jpegBytes = converter.BtexToJpg(File.ReadAllBytes(Item.Path));
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\asset_preview.jpg", jpegBytes);
-        Parent.SetPreviewImage();
     }
 
     private async void OnInitialLoad(object sender, EventArgs e)

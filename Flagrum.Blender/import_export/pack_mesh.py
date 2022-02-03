@@ -3,7 +3,9 @@ import bpy
 from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector
 
+from .export_context import ExportContext
 from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
+from ..operations.merge_normals import merge_normals
 from ..panel.material_data import material_weight_limit
 
 # Matrix that converts the axes back to FBX coordinate system
@@ -14,7 +16,7 @@ conversion_matrix = Matrix([
 ])
 
 
-def pack_mesh():
+def pack_mesh(export_context: ExportContext):
     mesh_data = Gpubin()
     mesh_data.Meshes = []
 
@@ -70,6 +72,11 @@ def pack_mesh():
             bmesh.update_edit_mesh(mesh_copy.data)
             bpy.ops.object.mode_set(mode='OBJECT')
 
+            # Merge normals on doubles if set in export settings
+            if export_context.smooth_normals:
+                merge_normals(mesh_copy.data, export_context.distance)
+
+            # Pack the mesh data
             mesh.VertexPositions = _pack_vertex_positions(mesh_copy)
             mesh.FaceIndices = _pack_faces(mesh_copy)
             mesh.UVMaps = _pack_uv_maps(mesh_copy)

@@ -1,8 +1,8 @@
-import bpy
-from bpy.props import StringProperty
+from bpy.props import StringProperty, FloatProperty, BoolProperty
 from bpy.types import Operator
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 
+from .export_context import ExportContext
 from .generate_armature import generate_armature
 from .generate_mesh import generate_mesh
 from .import_context import ImportContext
@@ -47,8 +47,30 @@ class ExportOperator(Operator, ExportHelper):
         options={'HIDDEN'}
     )
 
+    smooth_normals: BoolProperty(
+        name="Smooth Normals on Doubles",
+        description="When the exporter splits edges for compatibility with FFXV, this functionality will smooth "
+                    "the seams caused by the edge-splitting",
+        default=False
+    )
+
+    distance: FloatProperty(
+        name="Distance",
+        description="The maximum distance between doubles for which to merge normals",
+        default=0.0001,
+        min=0.0001,
+        precision=4
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="FMD Export Options")
+        layout.prop(self, property="smooth_normals")
+        layout.prop(self, property="distance")
+
     def execute(self, context):
-        data = pack_mesh()
+        export_context = ExportContext(self.smooth_normals, self.distance)
+        data = pack_mesh(export_context)
         Interop.export_mesh(self.filepath, data)
 
         return {'FINISHED'}

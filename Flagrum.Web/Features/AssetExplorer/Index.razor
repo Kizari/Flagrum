@@ -1,160 +1,202 @@
 ﻿@page "/assets"
+@using System.Timers
 @using Flagrum.Web.Features.AssetExplorer.Data
-@using System.IO
+@using Flagrum.Web.Persistence.Entities
 
 @inject AppStateService AppState
 @inject IWpfService WpfService
+@inject SettingsService Settings
+@inject FlagrumDbContext Context
 
-<LoadingView Text="Exporting Batch" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
-    @* <div class="row px-4 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark"> *@
-    @*     <span class="material-icons mr-2">arrow_back</span> *@
-    @*     <span class="material-icons mr-2">arrow_forward</span> *@
-    @*     <span class="material-icons mr-4">arrow_upward</span> *@
-    @*     <div class="flex-grow"> *@
-    @*         <EditForm Model="new object()"> *@
-    @*             <Textbox IsReadOnly="true" @bind-Value="Directory" Size="Textbox.Variant.Stretch"/> *@
-    @*         </EditForm> *@
-    @*     </div> *@
-    @* </div> *@
+<CascadingValue Value="this">
+    <ExportContextMenu/>
+    <RegenerateModal @ref="RegenerateModal"/>
+    <BatchExportModal @ref="BatchExportModal"/>
+</CascadingValue>
+
+<LoadingView Text="@LoadingMessage" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
+    <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+        @if (View == 1 && AppState.Node != null)
+        {
+            <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="() => SetNode(AppState.Node.Parent)">arrow_upward</span>
+        }
+        <div class="flex-grow pr-3">
+            <EditForm Model="new object()">
+                <Textbox IsReadOnly="true" @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch"/>
+            </EditForm>
+        </div>
+        <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
+            <ModTypeButton Text="Game View" Value="1"/>
+            <ModTypeButton Text="File System" Value="2"/>
+        </ModTypeButtonGroup>
+    </div>
 
     <div class="flex flex-row">
         <div class="bg-dark border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
-            <strong class="font-display">File System</strong>
-        </div>
-        <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
-            <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong>
-            <Button Icon="file_download" Text="Batch Export" OnClick="() => BatchExportModal?.Open()"/>
-        </div>
-        <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
-            @if (PreviewType == ExplorerItemType.Texture)
+            @if (View == 1)
             {
-                <strong class="flex-grow font-display">FFXV Texture File</strong>
-                <Button Text="Export PNG" Icon="file_download" OnClickAsync="ExportPng" CssClass="mr-3"/>
-                <Button Text="Export TGA" Icon="file_download" OnClickAsync="ExportTga" CssClass="mr-3"/>
-                <Button Text="Export DDS" Icon="file_download" OnClickAsync="ExportDds"/>
-            }
-            else if (PreviewType == ExplorerItemType.Material)
-            {
-                <strong class="flex-grow font-display">FFXV Game Material</strong>
+                if (AppState.Node == null)
+                {
+                    <div class="row">
+                        <strong class="font-display flex-grow">data://</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <strong class="font-display flex-grow">@AppState.Node.Name</strong>
+                        <span class="material-icons select-none cursor-pointer" style="font-size: 0.9rem" @onclick="RegenerateModal.Open">settings</span>
+                    </div>
+                }
             }
             else
             {
-                <strong class="flex-grow font-display">No File Selected</strong>
+                <strong class="font-display flex-grow">File System</strong>
             }
+        </div>
+        @if (View == 2)
+        {
+            <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
+                <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong>
+                <Button Icon="file_download" Text="Batch Export" OnClick="() => BatchExportModal?.Open()"/>
+            </div>
+        }
+        <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
+            <strong class="flex-grow font-display">@(SelectedItem == null ? "No File Selected" : SelectedItem.DisplayName)</strong>
         </div>
     </div>
 
     <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
         <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
             <CascadingValue Value="this">
-                <ExplorerView Path="" Directories="true" InitialPath="@Directory"/>
+                @if (View == 1)
+                {
+                    if (AppState.Node != null)
+                    {
+                        <VirtualExplorerView Node="AppState.Node"/>
+                    }
+                    else
+                    {
+                        <span class="block py-1 px-3">
+                            Game View will become available once Flagrum has finished indexing the game files
+                            to allow for an improved browsing experience, searching, and filtering of all
+                            game files (even those in archives).<br/><br/>
+                            <em>This process may take several minutes depending on your system hardware.</em>
+                        </span>
+                    }
+                }
+                else
+                {
+                    <ExplorerView Path="" Directories="true" InitialPath="@Directory"/>
+                }
             </CascadingValue>
         </div>
 
-        <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
-            <CascadingValue Value="this">
-                <ExplorerView Path="@Directory"/>
-            </CascadingValue>
-        </div>
+        @if (View == 2)
+        {
+            <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
+                <CascadingValue Value="this">
+                    <ExplorerView Path="@Directory"/>
+                </CascadingValue>
+            </div>
+        }
+
         <div class="flex flex-col bg-dark-600 overflow-y-auto" style="flex: 1 1 auto; height: 100%">
-            @if (PreviewType == ExplorerItemType.Texture)
-            {
-                <div class="flex-grow flex flex-row items-center">
-                    <img src="images/@ImageName" class="mx-auto" style="max-width: 70%"/>
-                </div>
-            }
-            else if (PreviewType == ExplorerItemType.Material)
-            {
-                <MaterialPreview Path="@MaterialPath"/>
-            }
-            else if (PreviewType == ExplorerItemType.Model)
-            {
-                <ModelPreview Path="@ModelPath"/>
-            }
-            else
-            {
-                <div class="flex-grow flex flex-row items-center">
-                    <div class="mx-auto">
-                        <strong class="text-grey-500">
-                            Currently supports Textures (.btex) and Materials (.gmtl.gfxbin)
-                        </strong>
-                    </div>
-                </div>
-            }
+            <Preview Item="SelectedItem"/>
         </div>
     </div>
 </LoadingView>
 
-<Modal @ref="BatchExportModal">
-    <HeaderView>
-        <span class="text-grey-300 flex-grow">Batch Export</span>
-        <span class="material-icons cursor-pointer" @onclick="() => BatchExportModal.Close()">cancel</span>
-    </HeaderView>
-    <BodyView>
-        <div class="h-full">
-            <span>Batch export currently only supports textures.</span>
-            <div class="row mt-6">
-                <label style="width: 150px">Output Format</label>
-                <select @bind="Extension" class="input bg-dark-550 w-full">
-                    <option>PNG</option>
-                    <option>TGA</option>
-                    <option>DDS</option>
-                </select>
-            </div>
-            <div class="row mt-6 mb-10">
-                <Checkbox IsChecked="@IsRecursive" OnChange="v => { IsRecursive = v; StateHasChanged(); }"/>
-                <span class="inline-block ml-2">Also export from subdirectories recursively</span>
-            </div>
-            <Button Text="Export Batch" Icon="file_download" OnClickAsync="ExportBatch"/>
-        </div>
-    </BodyView>
-</Modal>
-
 @code
 {
-    private string Directory { get; set; }
-    private string ImageName { get; set; } = "asset_preview.jpg";
-    private ExplorerItemType PreviewType { get; set; }
-    private string MaterialPath { get; set; }
-    private string ModelPath { get; set; }
-    private ExplorerItemRow SelectedDirectory { get; set; }
+    private string _directory;
+    private Timer _timer;
+
+    private int View { get; set; } = 1;
+    public ExplorerItemRow SelectedDirectory { get; set; }
     private ExplorerItemRow SelectedFile { get; set; }
-    private string Extension { get; set; } = "PNG";
-    private Modal BatchExportModal { get; set; }
-    private bool IsRecursive { get; set; }
-    private bool IsLoading { get; set; }
+    private AssetExplorerItem SelectedItem { get; set; }
+
+    public bool IsLoading { get; set; }
+    private string LoadingMessage { get; set; }
+
+    public AssetExplorerItem ContextItem { get; set; }
+    public AssetExplorerNode ContextNode { get; set; }
+    private BatchExportModal BatchExportModal { get; set; }
+    private RegenerateModal RegenerateModal { get; set; }
+
+    private string CurrentPath { get; set; }
+
+    private string Directory
+    {
+        get => _directory;
+        set
+        {
+            _directory = value;
+            CurrentPath = value;
+        }
+    }
 
     protected override void OnInitialized()
     {
         Directory = AppState.GetCurrentAssetExplorerPath();
+
+        if (!System.IO.Directory.Exists(Directory))
+        {
+            Directory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        }
+
+        if (AppState.Node == null)
+        {
+            _timer = new Timer(1000);
+            _timer.Elapsed += (_, _) =>
+            {
+                if (AppState.Node != null)
+                {
+                    _timer.Stop();
+                    InvokeAsync(StateHasChanged);
+                }
+            };
+            _timer.Start();
+        }
+        else
+        {
+            var nodeId = Context.GetInt(StateKey.CurrentAssetNode);
+            if (nodeId > 0)
+            {
+                AppState.Node = Context.AssetExplorerNodes
+                    .FirstOrDefault(n => n.Id == nodeId);
+                CurrentPath = AppState.Node?.GetUri(Context);
+            }
+        }
+
+        UpdateCurrentPath();
+        StateHasChanged();
+    }
+
+    public void SetNode(AssetExplorerNode node)
+    {
+        if (node != null)
+        {
+            AppState.Node = Context.AssetExplorerNodes
+                .FirstOrDefault(n => n.Id == node.Id);
+            CurrentPath = node.GetUri(Context);
+            Context.SetInt(StateKey.CurrentAssetNode, node.Id);
+
+            StateHasChanged();
+        }
+    }
+
+    public void SetContextNode(AssetExplorerNode node)
+    {
+        ContextNode = node;
+        ContextItem = AssetExplorerItem.FromNode(node, Context);
+        StateHasChanged();
     }
 
     public void SetActiveDirectory(string path)
     {
         Directory = path;
-        StateHasChanged();
-    }
-
-    public void SetPreviewMaterial(string path)
-    {
-        MaterialPath = path;
-        PreviewType = ExplorerItemType.Material;
-        StateHasChanged();
-    }
-
-    public void SetPreviewModel(string path)
-    {
-        ModelPath = path;
-        PreviewType = ExplorerItemType.Model;
-        StateHasChanged();
-    }
-
-    public void SetPreviewImage()
-    {
-    // Jank to trick the UI into updating
-        ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
-
-        PreviewType = ExplorerItemType.Texture;
         StateHasChanged();
     }
 
@@ -171,110 +213,54 @@
             SelectedFile?.SetSelected(false);
             SelectedFile = item;
             SelectedFile.SetSelected(true);
+            SetSelectedItem(AssetExplorerItem.FromExplorerItem(item.Item));
         }
 
         StateHasChanged();
     }
 
-    private Task ExportPng()
+    public void SetSelectedItem(AssetExplorerItem item)
     {
-        return ExportTexture("png");
+        SelectedItem = item;
+        CurrentPath = $"{AppState.Node.GetUri(Context)}/{item.Name}";
+        StateHasChanged();
     }
 
-    private Task ExportTga()
+    public void ClearSelectedItem()
     {
-        return ExportTexture("tga");
+        SelectedItem = null;
+        CurrentPath = "data://";
+        StateHasChanged();
     }
 
-    private Task ExportDds()
+    private void OnViewChanged(int view)
     {
-        return ExportTexture("dds");
+        View = view;
+        UpdateCurrentPath();
+        StateHasChanged();
     }
 
-    private async Task ExportTexture(string extension)
+    private void UpdateCurrentPath()
     {
-        await WpfService.OpenSaveFileDialogAsync(
-            SelectedFile.Item.Path.Split('\\').Last().Replace(".btex", $".{extension}"),
-            $"{extension.ToUpper()} Image|*.{extension}", path =>
-            {
-                var btex = File.ReadAllBytes(SelectedFile.Item.Path);
-                var converter = new TextureConverter();
-                var data = extension switch
-                {
-                    "png" => converter.BtexToPng(btex),
-                    "tga" => converter.BtexToTga(btex),
-                    "dds" => converter.BtexToDds(btex),
-                    _ => converter.BtexToJpg(btex)
-                    };
-
-                File.WriteAllBytes(path, data);
-            });
-    }
-
-    private async Task ExportBatch()
-    {
-        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder =>
+        if (View == 1)
         {
-            InvokeAsync(() =>
-            {
-                BatchExportModal.Close();
-                IsLoading = true;
-                StateHasChanged();
-
-                var files = new List<string>();
-
-                if (IsRecursive)
-                {
-                    BuildFileListRecursively(SelectedDirectory.Item.Path, files);
-                }
-                else
-                {
-                    files.AddRange(System.IO.Directory.GetFiles(SelectedDirectory.Item.Path, "*.btex"));
-                }
-
-                var directories = files
-                    .Select(f =>
-                    {
-                        var relativePath = f.Replace(SelectedDirectory.Item.Path, "")[1..];
-                        var index = relativePath.LastIndexOf('\\');
-                        return index > 0 ? relativePath.Remove(index) : null;
-                    })
-                    .Where(d => !string.IsNullOrWhiteSpace(d))
-                    .Distinct();
-
-                foreach (var directory in directories)
-                {
-                    System.IO.Directory.CreateDirectory($"{folder}\\{directory}");
-                }
-
-                Parallel.ForEach(files, file =>
-                {
-                    var relativePath = file.Replace(SelectedDirectory.Item.Path, "");
-                    var outputPath = $"{folder}{relativePath.Replace(".btex", $".{Extension.ToLower()}")}";
-                    var btex = File.ReadAllBytes(file);
-                    var converter = new TextureConverter();
-                    var data = Extension switch
-                    {
-                        "PNG" => converter.BtexToPng(btex),
-                        "TGA" => converter.BtexToTga(btex),
-                        _ => converter.BtexToDds(btex)
-                        };
-
-                    File.WriteAllBytes(outputPath, data);
-                });
-
-                IsLoading = false;
-                StateHasChanged();
-            });
-        });
-    }
-
-    private void BuildFileListRecursively(string directory, List<string> files)
-    {
-        files.AddRange(System.IO.Directory.GetFiles(directory, "*.btex"));
-        foreach (var subdirectory in System.IO.Directory.EnumerateDirectories(directory))
-        {
-            BuildFileListRecursively(subdirectory, files);
+            CurrentPath = AppState.Node == null ? "data://" : AppState.Node.GetUri(Context);
         }
+        else
+        {
+            CurrentPath = Directory;
+        }
+    }
+
+    public void SetLoading(bool state, string message = null)
+    {
+        LoadingMessage = message;
+        IsLoading = state;
+        StateHasChanged();
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
     }
 }

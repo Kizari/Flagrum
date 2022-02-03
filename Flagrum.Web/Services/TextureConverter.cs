@@ -187,35 +187,26 @@ public class TextureConverter
 
     private ScratchImage BuildDds(TextureType type, ScratchImage image)
     {
-        // Run necessary conversion methods on image
+        // var filterFlags = TEX_FILTER_FLAGS.CUBIC;
+        // var compressFlags = TEX_COMPRESS_FLAGS.DEFAULT;
+        // var metadata = image.GetMetadata();
+        // if (metadata.Format is DXGI_FORMAT.B8G8R8A8_UNORM_SRGB
+        //     or DXGI_FORMAT.B8G8R8X8_UNORM_SRGB
+        //     or DXGI_FORMAT.R8G8B8A8_UNORM_SRGB)
+        // {
+        //     compressFlags = TEX_COMPRESS_FLAGS.SRGB;
+        //     filterFlags |= TEX_FILTER_FLAGS.SRGB;
+        // }
+
         switch (type)
         {
-            case TextureType.Normal:
-                image = image.GenerateMipMaps(TEX_FILTER_FLAGS.LINEAR, 0);
-                image = image.Compress(DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
-                    0.5f);
-                break;
-            case TextureType.Greyscale:
-                image = image.GenerateMipMaps(TEX_FILTER_FLAGS.LINEAR, 0);
+            case TextureType.AmbientOcclusion:
+                image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
                 image = image.Compress(DXGI_FORMAT.BC4_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
                     0.5f);
                 break;
-            case TextureType.Preview or TextureType.Thumbnail:
-                var metadata = image.GetMetadata();
-                if (type == TextureType.Preview && !(metadata.Width == 600 && metadata.Height == 600))
-                {
-                    image = image.Resize(600, 600, TEX_FILTER_FLAGS.DEFAULT);
-                }
-                else if (type == TextureType.Thumbnail && !(metadata.Width == 168 && metadata.Height == 242))
-                {
-                    image = image.Resize(168, 242, TEX_FILTER_FLAGS.DEFAULT);
-                }
-
-                image = image.Compress(DXGI_FORMAT.BC1_UNORM,
-                    TEX_COMPRESS_FLAGS.SRGB_OUT | TEX_COMPRESS_FLAGS.PARALLEL, 0.5f);
-                break;
             default:
-                image = image.GenerateMipMaps(TEX_FILTER_FLAGS.SRGB, 0);
+                image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
                 image = image.Compress(DXGI_FORMAT.BC1_UNORM, TEX_COMPRESS_FLAGS.SRGB | TEX_COMPRESS_FLAGS.PARALLEL,
                     0.5f);
                 break;
