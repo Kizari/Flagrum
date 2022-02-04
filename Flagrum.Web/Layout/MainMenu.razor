@@ -3,6 +3,7 @@
 @inject SettingsService Settings
 
 <CascadingValue Value="this">
+    <Bootstrapper/>
     <div class="h-full bg-dark flex-shrink-0 flex flex-col border-dark-550 border-r">
         <MenuItem Icon="apps" Text="Mod Library" DefaultActive="true" Uri="/"/>
         <MenuItem Icon="videogame_asset" Text="Asset Explorer" Uri="/assets"/>
@@ -10,7 +11,7 @@
         @* <MenuItem Icon="folder_zip" Text="EARC Mods" Uri="/earc"/> *@
         @* <MenuItem Icon="share" Text="Sequence Editor" Uri="/sequenceeditor"></MenuItem> *@
         <div class="flex-grow"></div>
-        
+
         <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/>
         <MenuItem Icon="info_outline" Text="About" Uri="/about"/>
         <MenuItem Icon="settings" Text="Settings" Uri="/settings"/>
@@ -40,6 +41,7 @@
                 <h5 class="text-grey-300 mb-4">Modding</h5>
                 <ul class="list-disc ml-6 mb-6">
                     <li>Fixed a bug where Model Replacement Mods were not rigging correctly</li>
+                    <li>Fixed a bug where MRS textures were expressing their effects slightly inaccurately in-game</li>
                 </ul>
             </div>
 

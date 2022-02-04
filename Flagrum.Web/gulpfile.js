@@ -11,7 +11,7 @@ const appStyles = () => {
             require("tailwindcss"),
             require("autoprefixer")
         ]))
-        .pipe(gulp.dest("./wwwroot"));
+        .pipe(gulp.dest("../Flagrum.Desktop/wwwroot"));
 }
 
 const watch = () => {

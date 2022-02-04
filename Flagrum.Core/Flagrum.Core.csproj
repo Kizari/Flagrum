@@ -13,7 +13,6 @@
 
     <ItemGroup>
       <None Remove="zlib64.dll" />
-      <EmbeddedResource Include="zlib64.dll" />
     </ItemGroup>
 
 </Project>

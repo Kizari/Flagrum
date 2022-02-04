@@ -173,7 +173,12 @@ public static class OutfitTemplate
             // These will always be the same, shouldn't need to ever change
             PrimitiveType = PrimitiveType.PrimitiveTypeTriangleList,
 
-            WeightLimit = weightLimit == 0 ? 4 : weightLimit,
+            WeightLimit = weightLimit switch
+            {
+                < 4 => 4,
+                > 6 => 6,
+                _ => weightLimit
+            },
 
             // These shouldn't ever need to be changed
             Unknown1 = 0,

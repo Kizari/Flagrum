@@ -120,7 +120,7 @@ namespace ZLibNet
 			{
 				// Copy the assembly to the temporary file
 				string tempFile = Path.GetTempFileName();
-				using (Stream stm = thisAss.GetManifestResourceStream("ZLibNet." + dllName))
+				using (Stream stm = new FileStream(dllName, FileMode.Open, FileAccess.Read))
 				{
 					using (Stream outFile = File.Create(tempFile))
 					{
