@@ -30,11 +30,11 @@ public class DiagramPersistence
             var targetId = idMap[link.TargetId];
             var sourceNode = diagram.Nodes.Single(n => n.Id == sourceId);
             var targetNode = diagram.Nodes.Single(n => n.Id == targetId);
-            var sourcePort =
-                sourceNode.Ports.Single(p => (p as StandardPort).Name == link.SourcePortName) as StandardPort;
-            var targetPort =
-                targetNode.Ports.Single(p => (p as StandardPort).Name == link.TargetPortName) as StandardPort;
-            var newLink = new LinkModel(sourcePort, targetPort);
+            var sourcePort = sourceNode.Ports
+                .FirstOrDefault(p => (p as StandardPort)?.Name == link.SourcePortName) as StandardPort;
+            var targetPort = targetNode.Ports
+                .FirstOrDefault(p => (p as StandardPort)?.Name == link.TargetPortName) as StandardPort;
+            var newLink = new LinkModel(sourcePort!, targetPort);
 
             var color = sourcePort?.Color ?? targetPort.Color;
             if (color == StandardPort.Control)
@@ -46,43 +46,24 @@ public class DiagramPersistence
             newLink.Color = color;
             diagram.Links.Add(newLink);
 
-            if (sourcePort != null)
-            {
-                var temp = sourcePort.Name;
-                sourcePort.Name = "";
-                sourcePort.Name = temp;
-            }
-
-            if (targetPort != null)
-            {
-                var temp = targetPort.Name;
-                targetPort.Name = "";
-                targetPort.Name = temp;
-            }
+            // if (sourcePort != null)
+            // {
+            //     var temp = sourcePort.Name;
+            //     sourcePort.Name = "";
+            //     sourcePort.Name = temp;
+            // }
+            //
+            // if (targetPort != null)
+            // {
+            //     var temp = targetPort.Name;
+            //     targetPort.Name = "";
+            //     targetPort.Name = temp;
+            // }
         }
     }
 
     public void New(Diagram diagram)
     {
-        //var n = new NodeModel(new Point(0, 50));
-        //n.AddPort(PortAlignment.Left);
-        //n.AddPort(PortAlignment.Right);
-        //diagram.Nodes.Add(n);
-
-        //var n2 = new NodeModel(new Point(0, 50));
-        //n2.AddPort(PortAlignment.Left);
-        //n2.AddPort(PortAlignment.Right);
-        //diagram.Nodes.Add(n2);
-
-        //var group = new GroupModel(new List<NodeModel> { n, n2 });
-        //diagram.AddGroup(group);
-        //var group2 = new GroupModel(new List<NodeModel> { });
-        //group2.AddPort(PortAlignment.Left);
-        //group2.AddPort(PortAlignment.Right);
-        ////diagram.Nodes.Add(group2);
-        //diagram.AddGroup(group2);
-        //group2.AddChild(group);
-
         var node = new StandardNode(typeof(SequenceEventSequenceStarted), new Point(300, 50));
         diagram.Nodes.Add(node);
         node = new StandardNode(typeof(SequenceActionControlIf), new Point(300, 50));

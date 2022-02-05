@@ -39,6 +39,15 @@ public class StandardNode : NodeModel
         Title = type.Name;
         Type = type;
 
+        var tokens = Type.Namespace.Split('.');
+        foreach (var token in tokens)
+        {
+            if (Title.StartsWith(token))
+            {
+                Title = Title[token.Length..];
+            }
+        }
+
         var fields = type.GetFields();
 
         var comparer = Comparer<Type>.Create((first, second) =>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Timers;
 using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Models;
@@ -41,10 +42,7 @@ public partial class SequenceEditor
         if (sender is StandardNode node && node.Group == null)
         {
             var group = Diagram.Groups.FirstOrDefault(g => g.GetBounds().Overlap(node.GetBounds()));
-            if (group != null)
-            {
-                group.AddChild(node);
-            }
+            group?.AddChild(node);
         }
     }
 
@@ -58,22 +56,24 @@ public partial class SequenceEditor
             json = await File.ReadAllTextAsync(_autosavePath);
         }
 
-        if (json != null)
+        if (json == null)
+        {
+            persistence.New(Diagram);
+        }
+        else
         {
             try
             {
                 var data = JsonConvert.DeserializeObject<DiagramData>(json);
+                await Task.Delay(50);
                 persistence.Load(Diagram, data);
+                StateHasChanged();
             }
             catch (Exception ex)
             {
                 Console.Write(ex.Message);
                 persistence.New(Diagram);
             }
-        }
-        else
-        {
-            persistence.New(Diagram);
         }
     }
 
