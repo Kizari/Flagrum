@@ -15,4 +15,8 @@
       <None Remove="zlib64.dll" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Ebex\Xmb2" />
+    </ItemGroup>
+
 </Project>
