@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using Flagrum.Core.Ebex.Entities;
 using Flagrum.Core.Ebex.Types;
 using Flagrum.Core.Utilities;
 
@@ -44,6 +45,25 @@ public class ModuleReader
         {
             ParseDataType(element, "typedef");
         }
+
+        foreach (var (_, type) in _types)
+        {
+            if (type is EbexClass @class)
+            {
+                @class.Instantiate = GetInstantiateFunction(@class);
+            }
+        }
+    }
+
+    private Func<EbexElement, EbexType, EbexElement> GetInstantiateFunction(EbexClass @class)
+    {
+        return @class.Name switch
+        {
+            //"SQEX.Ebony.Framework.Sequence.Tray.SequenceTray" => (parent, type) => new EbexTray(parent, type),
+            //"SQEX.Ebony.Framework.Sequence.Tray.TemplateTray" => (parent, type) => new EbexTemplateTray(parent, type),
+            //"SQEX.Ebony.Framework.Sequence.Tray.PrefabTray" => (parent, type) => new EbexPrefabTray(parent, type),
+            _ => (parent, type) => new EbexElement(parent, type)
+        };
     }
 
     private void ParseDataType(XmlElement element, string typeName)

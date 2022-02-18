@@ -54,8 +54,11 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
         mesh.uv_layers[i].data.foreach_set("uv", per_loop_list)
 
     # Generate each of the color maps
+    color_map_counter = 0
     for i in range(len(mesh_data.ColorMaps)):
         vertex_colors = mesh_data.ColorMaps[i].Colors
+        if len(vertex_colors) < 1:
+            continue
 
         colors = []
         for color in vertex_colors:
@@ -73,7 +76,8 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
         if i > 0:
             new_name += str(i)
         mesh.vertex_colors.new(name=new_name)
-        mesh.vertex_colors[i].data.foreach_set("color", per_loop_list)
+        mesh.vertex_colors[color_map_counter].data.foreach_set("color", per_loop_list)
+        color_map_counter += 1
 
     mesh.validate()
     mesh.update()

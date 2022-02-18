@@ -8,7 +8,7 @@ namespace Flagrum.Core.Ebex.Types;
 public class EbexType
 {
     public string Name { get; set; }
-    public Dictionary<string, string> Attributes { get; set; }
+    public Dictionary<string, string> Attributes { get; set; } = new();
     public Func<EbexElement, EbexType, EbexElement> Instantiate { get; set; }
 
     public EbexElement InstantiateElement(EbexElement parent)
@@ -38,13 +38,18 @@ public class EbexType
         foreach (var element in elements)
         {
             var name = element.GetAttribute("name");
-            Attributes.Add(name, element.InnerText);
+
+            if (!Attributes.ContainsKey(name))
+            {
+                Attributes.Add(name, element.InnerText);
+            }
         }
     }
 
     public bool GetBool(string attributeName)
     {
-        return Attributes[attributeName].Equals("true", StringComparison.OrdinalIgnoreCase);
+        return Attributes.TryGetValue(attributeName, out var boolean) &&
+               boolean.Equals("true", StringComparison.OrdinalIgnoreCase);
     }
 
     public int GetInt(string attributeName)

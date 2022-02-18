@@ -10,6 +10,7 @@ public class EbexElement : IEbexComponent, IEnumerable<EbexElement>
     public EbexElement(EbexElement parent, EbexType type)
     {
         Parent = parent;
+        Type = type;
     }
 
     public EbexElement Parent { get; }
@@ -17,6 +18,7 @@ public class EbexElement : IEbexComponent, IEnumerable<EbexElement>
     public List<EbexElement> Children { get; } = new();
 
     public string Name { get; set; }
+    public bool IsChecked { get; set; }
     public IEbexComponent Value { get; set; }
 
     public EbexElement this[string name] => Children.FirstOrDefault(c => c.Name == name);

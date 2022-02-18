@@ -26,9 +26,10 @@ public class EbexReader : IDisposable
     {
         _stream.Close();
         _stream.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    public void Read()
+    public IEnumerable<EbexElement> Read()
     {
         var objectsContainer = _rootElement.GetElementByName("objects");
         var objects = objectsContainer.GetElements("object");
@@ -37,17 +38,43 @@ public class EbexReader : IDisposable
         {
             _elements.Add(ReadObject(objectElement));
         }
+
+        return _elements;
     }
 
     private EbexElement ReadObject(Xmb2Element element)
     {
-        var csType = (string)element.GetAttributeByName("csharp_type").Value;
+        var csType = (string)element.GetAttributeByName("csharp_type")?.Value;
         var type = csType ?? (string)element.GetAttributeByName("type").Value;
-        var ownerIndex = (int)element.GetAttributeByName("ownerIndex").Value;
-        var ownerPath = (string)element.GetAttributeByName("ownerPath").Value;
+        var ownerIndexObject = element.GetAttributeByName("ownerIndex")?.Value;
+        var ownerPath = (string)element.GetAttributeByName("ownerPath")?.Value;
 
-        var parent = GetElementByIndexAndPath(ownerIndex, ownerPath);
-        return BuildEbexComponent(parent, type) as EbexElement;
+        var parent = ownerIndexObject == null ? null : GetElementByIndexAndPath((int)(uint)ownerIndexObject, ownerPath);
+
+        if (BuildEbexComponent(parent, type) is EbexElement ebexElement)
+        {
+            PopulateElementsRecursively(element, ebexElement);
+            return ebexElement;
+        }
+
+        return null;
+    }
+
+    private void PopulateElementsRecursively(Xmb2Element element, EbexElement ebexElement)
+    {
+        ebexElement.Name = (string)element.GetAttributeByName("name").Value;
+        ebexElement.IsChecked = (bool)element.GetAttributeByName("checked").Value;
+
+        // foreach (var child in element
+        //              .GetElements()
+        //              .Where(e => !e.GetAttributeByName("reference").ToBool()
+        //                          && e.GetAttributeByName("dynamic").ToBool()))
+        // {
+        //     var name = (string)element.GetAttributeByName("name").Value;
+        //     var type = PrimitiveTypeHelper.FromCompositeString((string)element.GetAttributeByName("type").Value);
+        //     
+        //     var ebexChild = ebexElement[name];
+        // }
     }
 
     private IEbexComponent BuildEbexComponent(EbexElement parent, string type)
@@ -68,14 +95,13 @@ public class EbexReader : IDisposable
                 return result;
             }
 
-            if (ebexType is EbexEnum @enum)
+            switch (ebexType)
             {
-                return new EbexValue(@enum, null);
-            }
-
-            if (ebexType is EbexTypedef)
-            {
-                type = ebexType.Name;
+                case EbexEnum @enum:
+                    return new EbexValue(@enum, null);
+                case EbexTypedef:
+                    type = ebexType.Name;
+                    break;
             }
 
             if (type != null)

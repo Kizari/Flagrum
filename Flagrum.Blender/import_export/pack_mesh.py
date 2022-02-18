@@ -1,6 +1,6 @@
 ﻿import bmesh
 import bpy
-from bpy.types import Object, Mesh
+from bpy.types import Object, Mesh, DataTransferModifier
 from mathutils import Matrix, Vector
 
 from .export_context import ExportContext
@@ -22,6 +22,7 @@ def pack_mesh(export_context: ExportContext):
 
     bone_table, reverse_bone_table = _pack_bone_table()
     mesh_data.BoneTable = bone_table
+    counter = 0
 
     for obj in bpy.data.objects:
         if obj.type == 'MESH':
@@ -72,6 +73,19 @@ def pack_mesh(export_context: ExportContext):
             bmesh.update_edit_mesh(mesh_copy.data)
             bpy.ops.object.mode_set(mode='OBJECT')
 
+            # Apply original normals from source mesh
+            mesh_copy.data.use_auto_smooth = True
+            modifier_name = "normals_modifier" + str(counter)
+            counter += 1
+            modifier: DataTransferModifier = mesh_copy.modifiers.new(name=modifier_name, type='DATA_TRANSFER')
+            modifier.data_types_loops = {'CUSTOM_NORMAL'}
+            modifier.loop_mapping = 'NEAREST_NORMAL'
+            modifier.mix_factor = 1.0
+            modifier.mix_mode = 'REPLACE'
+            modifier.object = obj
+            modifier.use_loop_data = True
+            bpy.ops.object.modifier_apply(modifier=modifier_name, report=False)
+
             # Merge normals on doubles if set in export settings
             if export_context.smooth_normals:
                 merge_normals(mesh_copy.data, export_context.distance)
@@ -101,7 +115,6 @@ def _pack_normals_and_tangents(mesh: Object):
     tangents: list[Normal] = []
 
     if not mesh_data.has_custom_normals:
-        mesh_data.use_auto_smooth = True
         mesh_data.normals_split_custom_set_from_vertices([vertex.normal for vertex in mesh_data.vertices])
 
     try:

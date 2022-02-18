@@ -1,5 +1,6 @@
 ﻿using System.IO;
-using Flagrum.Core.Gfxbin.Gmdl;
+using System.Linq;
+using Flagrum.Core.Ebex;
 
 namespace Flagrum.Console;
 
@@ -7,10 +8,38 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var gfx = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\mod\seams_test.gmdl.gfxbin");
-        var gpu = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\mod\seams_test.gpubin");
-        var model = new ModelReader(gfx, gpu).Read();
+        using var fileStream = new FileStream(@"C:\Modding\nh02_initialize.ebex",
+            FileMode.Open, FileAccess.Read);
+
+        var reader = new EbexReader(fileStream);
+        var result = reader.Read().ToList();
+
+        var writer = new EbexWriter(result);
+        var outputStream = writer.Write() as MemoryStream;
+        File.WriteAllBytes(@"C:\Modding\nh02_initialize_reserialized.xml", outputStream.ToArray());
+
         var x = true;
+
+        // var gfx = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh05\model_000\nh05_000.gmdl.gfxbin");
+        // var gpu = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh05\model_000\nh05_000.gpubin");
+        // var model = new ModelReader(gfx, gpu).Read();
+        //
+        // foreach (var mesh in model.MeshObjects[0].Meshes)
+        // {
+        //     System.Console.WriteLine(mesh.Name);
+        //     for (var i = 0; i < mesh.ColorMaps.Count; i++)
+        //     {
+        //         var colorMap = mesh.ColorMaps[i];
+        //         if (colorMap.Colors.Any(c => c.A is > 0 and < 255))
+        //         {
+        //             System.Console.WriteLine($"- Color Map {i}");
+        //         }
+        //     }
+        //
+        //     System.Console.WriteLine("\n");
+        // }
+        //
+        // var x = true;
         //Visit(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas");
         // var json = File.ReadAllText(@"C:\Modding\map3.json");
         // var map = JsonConvert.DeserializeObject<Dictionary<string, IEnumerable<string>>>(json);

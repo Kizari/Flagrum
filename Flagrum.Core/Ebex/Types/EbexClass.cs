@@ -8,6 +8,7 @@ public class EbexClass : EbexType
 {
     public EbexClass(XmlElement element)
     {
+        Name = element.GetAttribute("name");
         ReadAttributes(element);
         ReadBaseClasses(element);
         ReadFunctions(element);
@@ -25,7 +26,11 @@ public class EbexClass : EbexType
         foreach (var attribute in attributes)
         {
             var name = attribute.GetAttribute("name");
-            Attributes.Add(name, element.InnerText);
+
+            if (!Attributes.ContainsKey(name))
+            {
+                Attributes.Add(name, element.InnerText);
+            }
         }
     }
 

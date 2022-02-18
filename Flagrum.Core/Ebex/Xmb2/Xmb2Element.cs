@@ -20,37 +20,37 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Offset to the child element relative offset table, relative to this element.
+    /// Offset to the child element relative offset table, relative to this element.
     /// </summary>
     private int ElementStartOffset { get; }
 
     /// <summary>
-    ///     Offset to the attribute relative offset table, relative to this field.
+    /// Offset to the attribute relative offset table, relative to this field.
     /// </summary>
     private int AttributeStartOffset { get; }
 
     /// <summary>
-    ///     Number of child elements.
+    /// Number of child elements.
     /// </summary>
     public uint ElementCount { get; }
 
     /// <summary>
-    ///     Number of attributes.
+    /// Number of attributes.
     /// </summary>
     private uint AttributeCount { get; }
 
     /// <summary>
-    ///     The XMB2 document.
+    /// The XMB2 document.
     /// </summary>
     private byte[] Xmb2 { get; }
 
     /// <summary>
-    ///     This element's absolute offset.
+    /// This element's absolute offset.
     /// </summary>
     private long Offset { get; }
 
     /// <summary>
-    ///     This element's name.
+    /// This element's name.
     /// </summary>
     public string Name { get; }
 
@@ -104,7 +104,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Read an Xmb2Element from a byte array.
+    /// Read an Xmb2Element from a byte array.
     /// </summary>
     /// <param name="xmb2">The XMB2 document byte array.</param>
     /// <param name="startIndex">The index to start reading from.</param>
@@ -125,7 +125,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Read the child element with a given index.
+    /// Read the child element with a given index.
     /// </summary>
     /// <param name="index">The index of the child element to get.</param>
     /// <returns>The parsed child element.</returns>
@@ -150,7 +150,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Read the child element with a given name.
+    /// Read the child element with a given name.
     /// </summary>
     /// <param name="name">The name of the child element to get.</param>
     /// <returns>The parsed child element.</returns>
@@ -194,7 +194,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Read the attribute element with a given name.
+    /// Read the attribute element with a given name.
     /// </summary>
     /// <param name="name">The name of the attribute to get.</param>
     /// <returns>The parsed attribute.</returns>
@@ -205,7 +205,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Read the list of child elements sharing a given name.
+    /// Read the list of child elements sharing a given name.
     /// </summary>
     /// <param name="name">The name of the elements to read.</param>
     /// <param name="results">List into which to store the results.</param>
@@ -244,7 +244,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Read the list of child elements.
+    /// Read the list of child elements.
     /// </summary>
     public IList<Xmb2Element> GetElements()
     {
@@ -264,7 +264,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the absolute offset to this element's name attribute.
+    /// Get the absolute offset to this element's name attribute.
     /// </summary>
     /// <returns>The absolute offset to this element's name attribute.</returns>
     private long GetNameAttributeOffset()
@@ -275,7 +275,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as a string.
+    /// Get the value of this element as a string.
     /// </summary>
     /// <returns>The element's value as a string.</returns>
     public string GetTextValue()
@@ -285,7 +285,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as a bool.
+    /// Get the value of this element as a bool.
     /// </summary>
     /// <returns>The element's value as a bool.</returns>
     public bool GetBoolValue()
@@ -295,7 +295,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as an integer.
+    /// Get the value of this element as an integer.
     /// </summary>
     /// <returns>The element's value as an integer.</returns>
     public int GetIntValue()
@@ -305,7 +305,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as an unsigned integer.
+    /// Get the value of this element as an unsigned integer.
     /// </summary>
     /// <returns>The element's value as an unsigned integer.</returns>
     public uint GetUIntValue()
@@ -315,7 +315,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as a float.
+    /// Get the value of this element as a float.
     /// </summary>
     /// <returns>The element's value as a float.</returns>
     public float GetFloatValue()
@@ -325,7 +325,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as a double.
+    /// Get the value of this element as a double.
     /// </summary>
     /// <returns>The element's value as a double.</returns>
     public double GetDoubleValue()
@@ -335,7 +335,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the value of this element as a float4.
+    /// Get the value of this element as a float4.
     /// </summary>
     /// <returns>The element's value as a float4.</returns>
     public float[] GetFloat4Value()
@@ -345,7 +345,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get this element's value attribute.
+    /// Get this element's value attribute.
     /// </summary>
     /// <returns>The value attribute.</returns>
     private Xmb2Variant GetValueAttribute()
@@ -370,7 +370,7 @@ public class Xmb2Element
     }
 
     /// <summary>
-    ///     Get the name of the element.
+    /// Get the name of the element.
     /// </summary>
     /// <returns>The element's name.</returns>
     private string GetName()
