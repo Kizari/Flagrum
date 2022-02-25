@@ -1,0 +1,70 @@
+﻿@page "/mod/presets"
+@using Flagrum.Web.Persistence.Entities
+
+@inject NavigationManager Navigation
+
+<EditForm Model="Preset" class="p-6">
+
+    <div class="box p-3 row">
+        <label class="mr-3 flex-shrink-0">PRESET NAME</label>
+        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Preset.Name"/>
+        <Button CssClass="mx-3" Icon="save" Text="Save"/>
+        <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
+    </div>
+
+    <div class="box mt-6">
+        <div class="row p-3 border-b border-dark-550">
+            <span class="flex-grow">
+                <strong>Models to Replace</strong>
+            </span>
+            <Button Icon="add" Text="Add Another" OnClick="AddPath"/>
+        </div>
+        @for (var i = 0; i < Preset.ReplacementPaths.Count; i++)
+        {
+            var path = Preset.ReplacementPaths.ElementAt(i);
+            <div class="row px-3 @(i == 0 ? "pt-3" : "pt-1.5") @(i == Preset.ReplacementPaths.Count - 1 ? "pb-3" : "pb-1.5")">
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="path.Path"/>
+                <Button CssClass="ml-3" Icon="videogame_asset" Text="Browse" OnClick="() => Modal.Open(path)"/>
+                @if (Preset.ReplacementPaths.Count > 1)
+                {
+                    <span class="material-icons cursor-pointer ml-2" @onclick="() => ClearPath(path)">clear</span>
+                }
+            </div>
+        }
+    </div>
+
+</EditForm>
+
+<ModelBrowserModal @ref="Modal"/>
+
+@code
+{
+    private ModelReplacementPreset Preset { get; } = new();
+    private ModelBrowserModal Modal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Preset.ReplacementPaths ??= new List<ModelReplacementPath>();
+        if (Preset.ReplacementPaths.Count < 1)
+        {
+            Preset.ReplacementPaths.Add(new ModelReplacementPath());
+        }
+    }
+
+    private void AddPath()
+    {
+        Preset.ReplacementPaths.Add(new ModelReplacementPath());
+        StateHasChanged();
+    }
+
+    private void ClearPath(ModelReplacementPath path)
+    {
+        Preset.ReplacementPaths.Remove(path);
+        StateHasChanged();
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/mod/configure/frompreset");
+    }
+}

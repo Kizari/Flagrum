@@ -7,16 +7,16 @@ else if (Item?.Type == ExplorerItemType.Material)
 {
     <MaterialPreview Item="Item"/>
 }
-else if (Item?.Type == ExplorerItemType.Model)
-{
-    <ModelPreview Item="Item"/>
-}
+@* else if (Item?.Type == ExplorerItemType.Model) *@
+@* { *@
+@*     <ModelPreview Item="Item"/> *@
+@* } *@
 else
 {
     <div class="flex-grow flex flex-row items-center">
         <div class="mx-auto">
             <strong class="text-grey-500">
-                Currently supports Textures (.btex) and Materials (.gmtl.gfxbin)
+                Preview currently supports Textures (.btex) and Materials (.gmtl.gfxbin)
             </strong>
         </div>
     </div>

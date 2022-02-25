@@ -1,6 +1,7 @@
-import bpy
 import os
 from dataclasses import dataclass
+
+import bpy
 
 
 @dataclass(init=False)
@@ -25,4 +26,5 @@ class ImportContext:
                 if len(group_name) > 0:
                     group_name += "."
                 group_name += string
+
         self.collection = bpy.data.collections.new(group_name)

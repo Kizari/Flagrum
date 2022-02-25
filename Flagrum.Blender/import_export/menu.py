@@ -25,10 +25,11 @@ class ImportOperator(Operator, ImportHelper):
     def execute(self, context):
         import_context = ImportContext(self.filepath)
 
-        armature_data = import_armature_data(import_context)
-        generate_armature(import_context, armature_data)
-
         mesh_data = Interop.import_mesh(import_context.gfxbin_path)
+
+        if len(mesh_data.BoneTable.__dict__) > 0:
+            armature_data = import_armature_data(import_context)
+            generate_armature(import_context, armature_data)
 
         for mesh in mesh_data.Meshes:
             generate_mesh(import_context, mesh, mesh_data.BoneTable.__dict__)

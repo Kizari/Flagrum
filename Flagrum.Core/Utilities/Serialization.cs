@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace Flagrum.Core.Utilities;
@@ -6,7 +7,7 @@ namespace Flagrum.Core.Utilities;
 public static class Serialization
 {
     /// <summary>
-    ///     Aligns current offset to the given block size
+    /// Aligns current offset to the given block size
     /// </summary>
     /// <param name="offset">The offset of the end of the data that needs to be aligned</param>
     /// <param name="blockSize">The size to align to</param>
@@ -23,7 +24,7 @@ public static class Serialization
 
     public static string ToSafeString(this string input)
     {
-        if (string.IsNullOrWhiteSpace(input))
+        if (string.IsNullOrWhiteSpace(input) || !input.Any(char.IsLetter))
         {
             return Guid.NewGuid().ToString().ToLower();
         }

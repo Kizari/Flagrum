@@ -26,8 +26,8 @@ public class BinmodTypeHelper
     private Dictionary<BinmodType, string> ModmetaTypes { get; set; }
     private Dictionary<string, BinmodType> ModmetaTypesReversed { get; set; }
 
-    private Dictionary<int, string> TemporaryModmetaTargets { get; set; } = new();
-    private Dictionary<string, int> TemporaryModmetaTargetsReversed { get; set; } = new();
+    private Dictionary<int, string> TemporaryModmetaTargets { get; } = new();
+    private Dictionary<string, int> TemporaryModmetaTargetsReversed { get; } = new();
 
     public string GetModmetaTypeName(int type)
     {
@@ -77,21 +77,24 @@ public class BinmodTypeHelper
         {
             return value;
         }
-        else
-        {
-            return TemporaryModmetaTargets[binmodTarget];
-        }
+
+        return TemporaryModmetaTargets[binmodTarget];
     }
 
     public string GetTargetTag(int binmodType, int binmodTarget)
     {
-        var targets = GetTargets(binmodType);
-        if (targets.TryGetValue(binmodTarget, out var value))
+        Dictionary<int, string> targets;
+        if (binmodType == (int)BinmodType.Character)
         {
-            return value;
+            targets = _modelReplacementPresets.GetDefaultReplacements()
+                .ToDictionary(t => t.Index, t => t.Name);
+        }
+        else
+        {
+            targets = GetTargets(binmodType);
         }
 
-        return "Other";
+        return targets.TryGetValue(binmodTarget, out var value) ? value : "Other";
     }
 
     public string GetModmetaTargetName(int binmodType, int binmodTarget)
@@ -102,10 +105,8 @@ public class BinmodTypeHelper
         {
             return value;
         }
-        else
-        {
-            return TemporaryModmetaTargets[binmodTarget];
-        }
+
+        return TemporaryModmetaTargets[binmodTarget];
     }
 
     public int GetBinmodTarget(int binmodType, string targetName)
@@ -116,18 +117,16 @@ public class BinmodTypeHelper
         {
             return value;
         }
-        else
-        {
-            var id = 100000;
-            if (TemporaryModmetaTargets.Count > 0)
-            {
-                id = TemporaryModmetaTargets.Max(t => t.Key) + 1;
-            }
 
-            TemporaryModmetaTargets.Add(id, targetName);
-            TemporaryModmetaTargetsReversed.Add(targetName, id);
-            return id;
+        var id = 100000;
+        if (TemporaryModmetaTargets.Count > 0)
+        {
+            id = TemporaryModmetaTargets.Max(t => t.Key) + 1;
         }
+
+        TemporaryModmetaTargets.Add(id, targetName);
+        TemporaryModmetaTargetsReversed.Add(targetName, id);
+        return id;
     }
 
     public int GetModelCount(int binmodType, int binmodTarget)

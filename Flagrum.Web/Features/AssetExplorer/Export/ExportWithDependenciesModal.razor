@@ -2,10 +2,10 @@
 @using Index = Flagrum.Web.Features.AssetExplorer.Index
 @using Flagrum.Core.Gfxbin.Data
 @using Flagrum.Core.Gfxbin.Gmtl
-@using Flagrum.Core.Archive
-@using System.Text
 @using System.IO
 @using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
+@using Flagrum.Core.Archive
+@using System.Text
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
@@ -100,32 +100,56 @@
                     textures.Add(texture.Path, ConvertTexture(textureData));
                 }
 
-                if (IncludeHighTextures)
+                if (IncludeHighTextures && !string.IsNullOrWhiteSpace(material.HighTexturePackAsset))
                 {
                     var highTexturePackUri = material.HighTexturePackAsset.Replace(".htpk", ".autoext");
-                    var highTexturePack = Context.GetFileByUri(highTexturePackUri);
 
-                    foreach (var highTexture in Encoding.UTF8.GetString(highTexturePack)
-                        .Split(' ')
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
-                        .Select(s =>
+                    byte[] highTexturePack = null;
+                    if (Context.ArchiveExistsForUri(highTexturePackUri))
+                    {
+                        highTexturePack = Context.GetFileByUri(highTexturePackUri);
+                    }
+                    else
+                    {
+                        var archiveRelativePath = material.HighTexturePackAsset
+                            .Replace("data://", "")
+                            .Replace(".htpk", ".earc")
+                            .Replace('/', '\\');
+
+                        var archivePath = $"{Settings.GameDataDirectory}\\{archiveRelativePath}";
+
+                        if (File.Exists(archivePath))
                         {
-                            var result = s.Trim();
-                            if (result.Last() == 0x00)
+                            using var unpacker = new Unpacker(archivePath);
+                            var files = string.Join(' ', unpacker.Files.Select(f => f.Uri));
+                            highTexturePack = Encoding.UTF8.GetBytes(files);
+                        }
+                    }
+
+                    if (highTexturePack != null)
+                    {
+                        foreach (var highTexture in Encoding.UTF8.GetString(highTexturePack)
+                            .Split(' ')
+                            .Where(s => !string.IsNullOrWhiteSpace(s))
+                            .Select(s =>
                             {
-                                result = result[..^1];
+                                var result = s.Trim();
+                                if (result.Last() == 0x00)
+                                {
+                                    result = result[..^1];
+                                }
+
+                                return result;
+                            }))
+                        {
+                            if (textures.ContainsKey(highTexture) || !CommonCheck(highTexture))
+                            {
+                                continue;
                             }
 
-                            return result;
-                        }))
-                    {
-                        if (textures.ContainsKey(highTexture) || !CommonCheck(highTexture))
-                        {
-                            continue;
+                            var textureData = Context.GetFileByUri(highTexture);
+                            textures.Add(highTexture, ConvertTexture(textureData));
                         }
-
-                        var textureData = Context.GetFileByUri(highTexture);
-                        textures.Add(highTexture, ConvertTexture(textureData));
                     }
                 }
             }

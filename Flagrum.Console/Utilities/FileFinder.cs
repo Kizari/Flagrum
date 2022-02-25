@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -20,14 +21,7 @@ public class FileFinder
 {
     private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
 
-    private readonly string _startDirectory;
-    private string _fileName;
     private ConcurrentBag<FileData> _map;
-
-    public FileFinder(string startDirectory)
-    {
-        _startDirectory = startDirectory;
-    }
 
     public void GenerateMap()
     {
@@ -40,7 +34,7 @@ public class FileFinder
 
         watch.Stop();
         System.Console.WriteLine($"Mapping finished after {watch.ElapsedMilliseconds} milliseconds.");
-        
+
         File.WriteAllText(@"C:\Modding\map.json", JsonConvert.SerializeObject(_map));
     }
 
@@ -63,7 +57,7 @@ public class FileFinder
                 FileName = file.Split('\\').Last(),
                 Location = file
             });
-            
+
             if (file.EndsWith(".earc"))
             {
                 using var unpacker = new Unpacker(file);
@@ -81,43 +75,31 @@ public class FileFinder
         }
     }
 
-    public void FindByFileName(string fileName)
+    public void FindByQuery(Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch)
     {
         System.Console.WriteLine("Starting search...");
         var watch = Stopwatch.StartNew();
 
-        _fileName = fileName;
-        var startDirectory = $"{DataDirectory}\\{_startDirectory}";
-        foreach (var directory in Directory.EnumerateDirectories(startDirectory))
-        {
-            FindRecursively(directory);
-        }
+        var startDirectory = DataDirectory;
+        Parallel.ForEach(Directory.EnumerateDirectories(startDirectory),
+            directory => { FindRecursively(directory, condition, onMatch); });
 
         watch.Stop();
         System.Console.WriteLine($"Search finished after {watch.ElapsedMilliseconds} milliseconds.");
     }
 
-    private bool FindRecursively(string directory)
+    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch)
     {
         foreach (var file in Directory.EnumerateFiles(directory, "*.earc"))
         {
             using var unpacker = new Unpacker(file);
-            var result = unpacker.GetUriByQuery(_fileName);
-            if (result != null)
+            foreach (var archiveFile in unpacker.Files.Where(condition))
             {
-                System.Console.WriteLine(result + " - " + file);
-                return true;
+                onMatch(archiveFile);
             }
         }
 
-        foreach (var subdirectory in Directory.EnumerateDirectories(directory))
-        {
-            if (FindRecursively(subdirectory))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        Parallel.ForEach(Directory.EnumerateDirectories(directory),
+            subdirectory => { FindRecursively(subdirectory, condition, onMatch); });
     }
 }

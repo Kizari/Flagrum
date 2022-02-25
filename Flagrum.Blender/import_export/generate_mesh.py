@@ -3,10 +3,11 @@ from array import array
 import bpy
 from mathutils import Matrix, Vector
 
+from .import_context import ImportContext
 from ..entities import MeshData
 
 
-def generate_mesh(context, mesh_data: MeshData, bone_table):
+def generate_mesh(context: ImportContext, mesh_data: MeshData, bone_table):
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
         [1, 0, 0],
@@ -118,11 +119,16 @@ def generate_mesh(context, mesh_data: MeshData, bone_table):
                 vertex_group.add([j], mesh_data.WeightValues[i][j][k] / 255.0, 'ADD')
 
     # Link the mesh to the armature
-    mod = mesh_object.modifiers.new(
-        type="ARMATURE", name=context.collection.name)
-    mod.use_vertex_groups = True
+    if len(bone_table) > 0:
+        mod = mesh_object.modifiers.new(
+            type="ARMATURE", name=context.collection.name)
+        mod.use_vertex_groups = True
 
-    armature = bpy.data.objects[context.collection.name]
-    mod.object = armature
+        armature = bpy.data.objects[context.collection.name]
+        mod.object = armature
 
-    mesh_object.parent = armature
+        mesh_object.parent = armature
+    else:
+        # Collection wasn't linked on armature set, so do it now
+        if context.collection.name not in bpy.context.scene.collection.children:
+            bpy.context.scene.collection.children.link(context.collection)

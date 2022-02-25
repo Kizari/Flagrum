@@ -18,8 +18,10 @@ class Interop:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         (output, err) = process.communicate()
         status = process.wait()
-        print(output)
-        print(err)
+        if output != b'':
+            print(output)
+        if err is not None:
+            print(err)
 
     @staticmethod
     def import_material_inputs(gfxbin_path) -> dict[str, list[float]]:

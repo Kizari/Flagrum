@@ -1,0 +1,98 @@
+﻿@using Flagrum.Web.Features.ModLibrary.Data
+@using Flagrum.Web.Persistence.Entities
+
+@inject FlagrumDbContext Context
+
+<div class="box mt-2 p-3 row hover:bg-dark-550 cursor-pointer" @onclick="OnSelect">
+    <span class="material-icons cursor-pointer @(Preset.IsFavourite ? "text-accent1-200" : "")"
+          @onclick="OnFavourite"
+          @onclick:stopPropagation="true">
+        @(Preset.IsFavourite ? "star" : "star_border")
+    </span>
+    <span class="flex-grow mx-4">@Preset.Name</span>
+    <span class="material-icons-outlined cursor-pointer mr-3"
+          @onclick="() => InformationModal.Open()"
+          @onclick:stopPropagation="true">
+        info
+    </span>
+    <span class="material-icons cursor-pointer">
+        content_copy
+    </span>
+    @if (!Preset.IsDefault)
+    {
+        <span class="material-icons cursor-pointer ml-3">
+            edit
+        </span>
+        <span class="material-icons cursor-pointer ml-3">
+            delete
+        </span>
+    }
+</div>
+
+<AutosizeModal @ref="InformationModal" Width="640" Height="480">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Preset Information</span>
+        <span class="material-icons cursor-pointer" @onclick="() => InformationModal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div>
+            <strong>This preset will replace the following models:</strong>
+            <ul class="list-disc">
+                @foreach (var path in Preset.Paths)
+                {
+                    <li>@path</li>
+                }
+            </ul>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    [CascadingParameter]
+    public ModelReplacements Parent { get; set; }
+    
+    [CascadingParameter]
+    public Index ParentParent { get; set; }
+
+    [Parameter]
+    public ModelReplacementPresetMetadata Preset { get; set; }
+
+    private AutosizeModal InformationModal { get; set; }
+
+    private void OnSelect()
+    {
+        ParentParent.Mod.Target = Preset.Id;
+        ParentParent.ModelReplacementPresetName = Preset.Name;
+        ParentParent.ModTargetChanged(Preset.Id);
+    }
+    
+    private void OnFavourite()
+    {
+        if (Preset.IsFavourite)
+        {
+            var match = Context.ModelReplacementFavourites
+                .FirstOrDefault(f => f.Id == Preset.Id && f.IsDefault == Preset.IsDefault);
+
+            if (match != null)
+            {
+                Context.Remove(match);
+            }
+
+            Preset.IsFavourite = false;
+        }
+        else
+        {
+            Context.ModelReplacementFavourites.Add(new ModelReplacementFavourite
+            {
+                Id = Preset.Id,
+                IsDefault = Preset.IsDefault
+            });
+
+            Preset.IsFavourite = true;
+        }
+
+        Context.SaveChanges();
+        Parent.CallStateHasChanged();
+    }
+}

@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Linq;
+using Flagrum.Console.Utilities;
 using Flagrum.Core.Gfxbin.Gmdl;
 
 namespace Flagrum.Console;
@@ -7,10 +9,26 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var gfx = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\mod\seams_test.gmdl.gfxbin");
-        var gpu = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\mod\seams_test.gpubin");
-        var model = new ModelReader(gfx, gpu).Read();
-        var x = true;
+        var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
+        var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
+        bool x = true;
+
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.EndsWith(".amdl"),
+        //     file => System.Console.WriteLine($"{file.Uri.Split('/').Last()}\t\t{file.Uri}")
+        // );
+
+        // var input = @"C:\Modding\teal.png";
+        // var output = @"C:\Modding\teal.btex";
+        // var converter = new TextureConverter();
+        // var btex = converter.ToBtex("teal", "png", TextureType.Mrs, File.ReadAllBytes(input));
+        // File.WriteAllBytes(output, btex);
+        // var gfx = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\le_ar_gqshop1\le_ar_gqshop1.gmdl.gfxbin");
+        // var gpu = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\le_ar_gqshop1\le_ar_gqshop1.gpubin");
+        // var model = new ModelReader(gfx, gpu).Read();
+        // var x = true;
         //Visit(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas");
         // var json = File.ReadAllText(@"C:\Modding\map3.json");
         // var map = JsonConvert.DeserializeObject<Dictionary<string, IEnumerable<string>>>(json);

@@ -1,0 +1,82 @@
+﻿@using Flagrum.Web.Features.ModLibrary.Data
+@inject FlagrumDbContext Context
+@inject ModelReplacementPresets ModelReplacementPresets
+@inject NavigationManager Navigation
+
+<CascadingValue Value="this">
+    @if (Presets.Any(p => p.IsFavourite))
+    {
+        <h5 class="text-grey-300 mt-6 mb-4 ml-1">Favourite Presets</h5>
+        foreach (var preset in Presets.Where(p => p.IsFavourite))
+        {
+            <ModelReplacementRow Preset="preset"/>
+        }
+    }
+
+    <h5 class="text-grey-300 mt-6 mb-4 ml-1">Flagrum Presets</h5>
+
+    @foreach (var preset in Presets.Where(p => !p.IsFavourite && p.IsDefault))
+    {
+        <ModelReplacementRow Preset="preset"/>
+    }
+
+    @if (Presets.Any(p => !p.IsDefault && !p.IsFavourite))
+    {
+        <h5 class="text-grey-300 mt-6 mb-2">Custom Presets</h5>
+
+        @foreach (var preset in Presets.Where(p => !p.IsDefault && !p.IsFavourite))
+        {
+            <ModelReplacementRow Preset="preset"/>
+        }
+    }
+</CascadingValue>
+
+@code
+{
+    private List<ModelReplacementPresetMetadata> Presets { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var favourites = Context.ModelReplacementFavourites.ToList();
+
+        var replacements = ModelReplacementPresets.GetDefaultReplacements();
+        var defaults = replacements
+            .Select(r => new ModelReplacementPresetMetadata
+            {
+                Id = r.Index,
+                IsDefault = true,
+                IsFavourite = favourites.Any(f => f.Id == r.Index && f.IsDefault),
+                Name = r.Name,
+                Paths = r.Models
+            })
+            .ToList();
+
+        var custom = Context.ModelReplacementPresets
+            .Select(r => new ModelReplacementPresetMetadata
+            {
+                Id = r.Id,
+                IsDefault = false,
+                Name = r.Name,
+                Paths = new List<string>()
+            })
+            .ToList();
+
+        foreach (var item in custom
+            .Where(item => favourites
+                .Any(f => f.Id == item.Id && !f.IsDefault)))
+        {
+            item.IsFavourite = true;
+        }
+
+        Presets = defaults
+            .Union(custom)
+            .OrderBy(r => r.IsFavourite)
+            .ThenBy(r => r.Name)
+            .ToList();
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
+}
