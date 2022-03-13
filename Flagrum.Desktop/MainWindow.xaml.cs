@@ -9,8 +9,10 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using Flagrum.Desktop.Services;
+using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -97,6 +99,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             InstallWebView2Runtime();
         }
+        
+        // Migrate the database
+        using var context = new FlagrumDbContext();
+        context.Database.MigrateAsync().Wait();
 
         var services = new ServiceCollection();
 

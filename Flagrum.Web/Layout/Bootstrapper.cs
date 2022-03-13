@@ -27,7 +27,6 @@ public class Bootstrapper : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        await Context.Database.MigrateAsync();
         await LoadBinmods();
         await LoadNodes();
         Parent.IsReady = true;
