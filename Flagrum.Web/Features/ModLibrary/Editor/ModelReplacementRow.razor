@@ -1,7 +1,7 @@
 ﻿@using Flagrum.Web.Features.ModLibrary.Data
 @using Flagrum.Web.Persistence.Entities
-
 @inject FlagrumDbContext Context
+@inject NavigationManager Navigation
 
 <div class="box mt-2 p-3 row hover:bg-dark-550 cursor-pointer" @onclick="OnSelect">
     <span class="material-icons cursor-pointer @(Preset.IsFavourite ? "text-accent1-200" : "")"
@@ -15,29 +15,35 @@
           @onclick:stopPropagation="true">
         info
     </span>
-    <span class="material-icons cursor-pointer">
+    <span class="material-icons cursor-pointer"
+          @onclick="CreateCopy"
+          @onclick:stopPropagation="true">
         content_copy
     </span>
     @if (!Preset.IsDefault)
     {
-        <span class="material-icons cursor-pointer ml-3">
+        <span class="material-icons cursor-pointer ml-3"
+              @onclick="Edit"
+              @onclick:stopPropagation="true">
             edit
         </span>
-        <span class="material-icons cursor-pointer ml-3">
+        <span class="material-icons cursor-pointer ml-3"
+              @onclick="ConfirmDelete"
+              @onclick:stopPropagation="true">
             delete
         </span>
     }
 </div>
 
-<AutosizeModal @ref="InformationModal" Width="640" Height="480">
+<AutosizeModal @ref="InformationModal" Width="800" Height="480">
     <HeaderView>
         <span class="text-grey-300 flex-grow">Preset Information</span>
         <span class="material-icons cursor-pointer" @onclick="() => InformationModal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
-        <div>
+        <div style="max-height: 80vh">
             <strong>This preset will replace the following models:</strong>
-            <ul class="list-disc">
+            <ul class="list-disc ml-6 mt-2">
                 @foreach (var path in Preset.Paths)
                 {
                     <li>@path</li>
@@ -47,11 +53,19 @@
     </BodyView>
 </AutosizeModal>
 
+<PromptModal Title="Delete Preset"
+             @ref="DeleteModal"
+             Heading="Are you sure?"
+             Subtext="This action cannot be undone!"
+             YesText="Delete"
+             NoText="Cancel"
+             OnYes="Delete"/>
+
 @code
 {
     [CascadingParameter]
     public ModelReplacements Parent { get; set; }
-    
+
     [CascadingParameter]
     public Index ParentParent { get; set; }
 
@@ -59,14 +73,15 @@
     public ModelReplacementPresetMetadata Preset { get; set; }
 
     private AutosizeModal InformationModal { get; set; }
+    private PromptModal DeleteModal { get; set; }
 
     private void OnSelect()
     {
-        ParentParent.Mod.Target = Preset.Id;
+        ParentParent.Mod.Target = Preset.Id + 100;
         ParentParent.ModelReplacementPresetName = Preset.Name;
-        ParentParent.ModTargetChanged(Preset.Id);
+        ParentParent.ModTargetChanged(Preset.Id + 100);
     }
-    
+
     private void OnFavourite()
     {
         if (Preset.IsFavourite)
@@ -94,5 +109,33 @@
 
         Context.SaveChanges();
         Parent.CallStateHasChanged();
+    }
+
+    private void CreateCopy()
+    {
+        Navigation.NavigateTo($"/mod/presets/copy/{Preset.Id}");
+    }
+
+    private void Edit()
+    {
+        Navigation.NavigateTo($"/mod/presets/edit/{Preset.Id}");
+    }
+
+    private void ConfirmDelete()
+    {
+        DeleteModal.Open();
+    }
+
+    private void Delete()
+    {
+        var match = Context.ModelReplacementPresets.Find(Preset.Id);
+
+        if (match != null)
+        {
+            Context.Remove(match);
+            Context.SaveChanges();
+        }
+
+        Parent.RemovePreset(Preset.Id);
     }
 }

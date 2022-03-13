@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
@@ -40,15 +41,53 @@ public class Bootstrapper : ComponentBase
             await Task.Run(() =>
             {
                 UriMapper.RegenerateMap();
-                AppState.Node = Context.AssetExplorerNodes
-                    .FirstOrDefault(n => n.Id == 1);
+                OnNodesLoaded();
             });
         }
         else
         {
-            AppState.Node = Context.AssetExplorerNodes
-                .FirstOrDefault(n => n.Id == 1);
+            OnNodesLoaded();
         }
+    }
+
+    private void OnNodesLoaded()
+    {
+        // Set the root node
+        AppState.Node = Context.AssetExplorerNodes
+            .FirstOrDefault(n => n.Id == 1);
+
+        Task.Run(() =>
+        {
+            using var context = new FlagrumDbContext(Settings);
+
+            // Get all model nodes
+            var modelNodes = context.AssetExplorerNodes
+                .Where(n => n.Name.EndsWith(".gmdl"))
+                .ToList();
+
+            // Recursively populate parents for each node up the tree
+            foreach (var node in modelNodes)
+            {
+                node.TraverseDescending(context, n =>
+                {
+                    if (n.ParentId != null)
+                    {
+                        n.Parent = context.AssetExplorerNodes.FirstOrDefault(m => m.Id == n.ParentId);
+                        n.Parent.Children ??= new List<AssetExplorerNode>();
+                        n.Parent.Children.Add(n);
+                    }
+                });
+            }
+
+            // Get root node from arbitrary node
+            var rootNode = modelNodes[0];
+            while (rootNode.Parent != null)
+            {
+                rootNode = rootNode.Parent;
+            }
+
+            AppState.RootModelBrowserNode = rootNode;
+        });
     }
 
     private async Task LoadBinmods()

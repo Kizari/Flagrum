@@ -4,7 +4,7 @@
             @HeaderView
         </div>
         <div class="@(FooterView == null ? "rounded-b-lg" : "") p-@Padding flex flex-row items-center scrollbar-light"
-             style="max-height: 90vh; overflow-y: auto;">
+             style="max-height: 90vh; overflow-y: auto; overflow-x: hidden">
             @BodyView
         </div>
         @if (FooterView != null)

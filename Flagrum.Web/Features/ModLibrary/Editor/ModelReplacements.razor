@@ -22,13 +22,15 @@
 
     @if (Presets.Any(p => !p.IsDefault && !p.IsFavourite))
     {
-        <h5 class="text-grey-300 mt-6 mb-2">Custom Presets</h5>
+        <h5 class="text-grey-300 mt-6 mb-4 ml-1">Custom Presets</h5>
 
         @foreach (var preset in Presets.Where(p => !p.IsDefault && !p.IsFavourite))
         {
             <ModelReplacementRow Preset="preset"/>
         }
     }
+    
+    <div class="mb-2"></div>
 </CascadingValue>
 
 @code
@@ -78,5 +80,15 @@
     public void CallStateHasChanged()
     {
         StateHasChanged();
+    }
+
+    public void RemovePreset(int presetId)
+    {
+        var match = Presets.FirstOrDefault(p => !p.IsDefault && p.Id == presetId);
+        if (match != null)
+        {
+            Presets.Remove(match);
+            StateHasChanged();
+        }
     }
 }

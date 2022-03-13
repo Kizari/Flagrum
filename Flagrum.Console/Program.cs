@@ -1,6 +1,5 @@
-﻿using System.IO;
-using System.Linq;
-using Flagrum.Console.Utilities;
+﻿using System;
+using System.IO;
 using Flagrum.Core.Gfxbin.Gmdl;
 
 namespace Flagrum.Console;
@@ -12,7 +11,27 @@ public class Program
         var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
         var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
-        bool x = true;
+
+        foreach (var meshObject in model.MeshObjects)
+        {
+            foreach (var mesh in meshObject.Meshes)
+            {
+                foreach (var uvMap in mesh.UVMaps)
+                {
+                    foreach (var coord in uvMap.UVs)
+                    {
+                        if (coord.U == Half.NaN || coord.U == Half.NegativeInfinity || coord.U == Half.PositiveInfinity
+                            || coord.V == Half.NaN || coord.V == Half.NegativeInfinity ||
+                            coord.V == Half.PositiveInfinity)
+                        {
+                            System.Console.WriteLine($"{meshObject.Name}, {mesh.Name} - U: {coord.U}, V: {coord.V}");
+                        }
+                    }
+                }
+            }
+        }
+
+        var x = true;
 
         // var finder = new FileFinder();
         // finder.FindByQuery(

@@ -15,7 +15,7 @@ from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEd
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 6),
+    "version": (1, 0, 7),
     "blender": (2, 93, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",

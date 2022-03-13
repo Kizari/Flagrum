@@ -10,9 +10,9 @@
     </HeaderView>
     <BodyView>
 
-        @if (IsReady)
+        @if (AppState.RootModelBrowserNode != null)
         {
-            <div class="w-full h-full">
+            <div class="w-full h-full flex flex-col">
                 <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-grey-900">
                     <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="NavigateUp">arrow_upward</span>
                     <div class="flex-grow">
@@ -36,12 +36,11 @@
                 <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
                     <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
                         <CascadingValue Value="this">
-                            @foreach (var node in Context.AssetExplorerNodes
-                                .Where(n => n.ParentId == CurrentNode.Id && NodeIds.Contains(n.Id))
+                            @foreach (var node in CurrentNode.Children
                                 .OrderByDescending(n => n.Children.Any())
                                 .ThenBy(n => n.Name))
                             {
-                                <ModelExplorerRow Node="node" />
+                                <ModelExplorerRow Node="node"/>
                             }
                         </CascadingValue>
                     </div>
@@ -54,7 +53,7 @@
         else
         {
             <div class="text-center">
-                <span>The asset browser cannot be used until file indexing is complete. Please try again shortly.</span>
+                <span class="m-6">The asset browser cannot be used until file indexing is complete. Please wait or try again shortly.</span>
             </div>
         }
 
@@ -63,13 +62,14 @@
 
 @code
 {
+    [CascadingParameter]
+    public ModelReplacement Parent { get; set; }
+
     private Timer _timer;
     private AssetExplorerNode _currentNode;
     private ModelReplacementPath _path;
 
     private Modal Modal { get; set; }
-    private bool IsReady { get; set; }
-    private List<int> NodeIds { get; set; } = new();
 
     private string CurrentUri { get; set; }
 
@@ -85,17 +85,17 @@
 
     protected override void OnInitialized()
     {
-        if (AppState.Node == null)
+        if (AppState.RootModelBrowserNode == null)
         {
             _timer = new Timer(1000);
             _timer.Elapsed += (_, _) =>
             {
-                if (AppState.Node != null)
+                if (AppState.RootModelBrowserNode != null)
                 {
                     _timer.Stop();
                     InvokeAsync(() =>
                     {
-                        BuildNodeTree();
+                        CurrentNode = AppState.RootModelBrowserNode;
                         StateHasChanged();
                     });
                 }
@@ -105,44 +105,22 @@
         }
         else
         {
-            BuildNodeTree();
+            CurrentNode = AppState.RootModelBrowserNode;
         }
     }
 
     public void SetNode(AssetExplorerNode node)
     {
-        CurrentNode = node;
-        StateHasChanged();
-    }
-
-    private void BuildNodeTree()
-    {
-        // Get all model nodes
-        var modelNodes = Context.AssetExplorerNodes
-            .Where(n => n.Name.EndsWith(".gmdl"))
-            .ToList();
-        
-        // Recursively populate parents for each node up the tree
-        foreach (var node in modelNodes)
+        if (node.Name.EndsWith(".gmdl"))
         {
-            node.TraverseDescending(Context, n =>
-            {
-                if (!NodeIds.Contains(node.Id))
-                {
-                    NodeIds.Add(node.Id);
-                }
-                
-                if (n.ParentId != null)
-                {
-                    n.Parent = Context.AssetExplorerNodes.FirstOrDefault(m => m.Id == n.ParentId);
-                    n.Parent.Children ??= new List<AssetExplorerNode>();
-                    n.Parent.Children.Add(n);
-                }
-            });
+            _path.Path = node.GetUri(Context).Replace("data://", "");
+            Close();
+            Parent.CallStateHasChanged();
+            return;
         }
 
-        CurrentNode = AppState.Node;
-        IsReady = true;
+        CurrentNode = node;
+        StateHasChanged();
     }
 
     private void NavigateUp()

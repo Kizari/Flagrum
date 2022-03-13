@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
+using Flagrum.Web.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flagrum.Web.Services;
 
@@ -15,11 +15,11 @@ public class ModelReplacementTarget
 
 public class ModelReplacementPresets
 {
-    private readonly SettingsService _settings;
+    private readonly FlagrumDbContext _context;
 
-    public ModelReplacementPresets(SettingsService settings)
+    public ModelReplacementPresets(FlagrumDbContext context)
     {
-        _settings = settings;
+        _context = context;
         BuildDictionary();
     }
 
@@ -42,38 +42,24 @@ public class ModelReplacementPresets
 
     private void BuildDictionary()
     {
-        if (!File.Exists(_settings.ReplacementsFilePath))
-        {
-            var empty = new Dictionary<string, string[]>();
-            File.WriteAllText(_settings.ReplacementsFilePath, JsonConvert.SerializeObject(empty, Formatting.Indented));
-        }
-
+        // Get Flagrum presets from code
         Replacements = GetDefaultReplacements();
 
-        try
-        {
-            var customJson = File.ReadAllText(_settings.ReplacementsFilePath);
-            var custom = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(customJson);
-            var indexCounter = 99;
-            Replacements.AddRange(custom.Select(e =>
-            {
-                var (name, models) = e;
-                indexCounter++;
+        // Get user-defined presets from database
+        var custom = _context.ModelReplacementPresets
+            .Include(p => p.ReplacementPaths)
+            .ToList();
 
-                return new ModelReplacementTarget
-                {
-                    Index = indexCounter,
-                    Name = name,
-                    ModmetaName = $"Custom_{indexCounter}",
-                    Models = models
-                };
-            }));
-        }
-        catch
+        Replacements.AddRange(custom.Select(e =>
         {
-            // Can just continue as normal if the JSON is malformed
-            // User just won't have custom presets until they fix it
-        }
+            return new ModelReplacementTarget
+            {
+                Index = e.Id + 100,
+                Name = e.Name,
+                ModmetaName = $"Custom_{e.Id + 100}",
+                Models = e.ReplacementPaths.Select(p => p.Path)
+            };
+        }));
     }
 
     public List<ModelReplacementTarget> GetDefaultReplacements()

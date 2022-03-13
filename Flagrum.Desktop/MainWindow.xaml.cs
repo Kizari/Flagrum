@@ -51,7 +51,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var width = 1680;
         var height = 1024;
 
-        if (width > bounds.Width || height > bounds.Height)
+        if (width > (bounds.Width * 0.95) || height > (bounds.Height * 0.9))
         {
             width = (int)(bounds.Width * 0.95);
             height = (int)(bounds.Height * 0.9);

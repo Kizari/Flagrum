@@ -16,7 +16,7 @@ namespace Flagrum.Web.Features.ModLibrary.Editor;
 public partial class Index : ComponentBase
 {
     [Parameter] public string NavigationParameter { get; set; }
-    
+
     [Inject] private ILogger<Index> Logger { get; set; }
     [Inject] private AppStateService AppState { get; set; }
     [Inject] private BinmodTypeHelper BinmodTypeHelper { get; set; }
@@ -111,8 +111,20 @@ public partial class Index : ComponentBase
         }
 
         var previewBytes = Mod.GetPreviewPng();
-        BuildContext.ProcessPreviewImage(previewBytes);
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", previewBytes);
+
+        if (previewBytes.Length > 0)
+        {
+            BuildContext.ProcessPreviewImage(previewBytes);
+            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", previewBytes);
+        }
+        else
+        {
+            var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
+            var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+            File.Copy(defaultPreviewPath, currentPreviewPath, true);
+            previewBytes = File.ReadAllBytes(defaultPreviewPath);
+            BuildContext.ProcessPreviewImage(previewBytes);
+        }
 
         if (Mod.Type == (int)BinmodType.StyleEdit)
         {
@@ -330,7 +342,7 @@ public partial class Index : ComponentBase
             Mod.Model1Name = ModelNames[0].ToSafeString();
             Mod.Model2Name = ModelNames[1].ToSafeString();
         }
-        
+
         StateHasChanged();
     }
 
