@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Archive;
+using Flagrum.Web.Persistence;
 
 namespace Flagrum.Web.Services;
 
 public class BinmodTypeHelper
 {
     private readonly ModelReplacementPresets _modelReplacementPresets;
-    private readonly SettingsService _settings;
+    private readonly FlagrumDbContext _context;
 
     public BinmodTypeHelper(
-        SettingsService settings,
-        ModelReplacementPresets presets)
+        ModelReplacementPresets presets,
+        FlagrumDbContext context)
     {
-        _settings = settings;
         _modelReplacementPresets = presets;
+        _context = context;
     }
 
     private Dictionary<BinmodType, string> TypeNames { get; set; }
@@ -27,7 +28,6 @@ public class BinmodTypeHelper
     private Dictionary<string, BinmodType> ModmetaTypesReversed { get; set; }
 
     private Dictionary<int, string> TemporaryModmetaTargets { get; } = new();
-    private Dictionary<string, int> TemporaryModmetaTargetsReversed { get; } = new();
 
     public string GetModmetaTypeName(int type)
     {
@@ -45,12 +45,6 @@ public class BinmodTypeHelper
     {
         CreateTypeNames();
         return TypeNames[binmodType];
-    }
-
-    public int FromName(string typeName)
-    {
-        CreateTypeNames();
-        return (int)TypeNamesReversed[typeName];
     }
 
     public Dictionary<int, string> GetTargets(int type)
@@ -73,12 +67,10 @@ public class BinmodTypeHelper
     public string GetTargetName(int binmodType, int binmodTarget)
     {
         var targets = GetTargets(binmodType);
-        if (targets.TryGetValue(binmodTarget, out var value))
-        {
-            return value;
-        }
-
-        return TemporaryModmetaTargets[binmodTarget];
+        return targets.TryGetValue(binmodTarget, out var value) ? value : _context.ModelReplacementPresets
+            .Where(p => p.Id == binmodTarget - 100)
+            .Select(p => p.Name)
+            .FirstOrDefault();
     }
 
     public string GetTargetTag(int binmodType, int binmodTarget)
@@ -101,12 +93,7 @@ public class BinmodTypeHelper
     {
         CreateModmetaTargets();
         var dictionary = ModmetaTargets[(BinmodType)binmodType];
-        if (dictionary.TryGetValue(binmodTarget, out var value))
-        {
-            return value;
-        }
-
-        return TemporaryModmetaTargets[binmodTarget];
+        return dictionary.TryGetValue(binmodTarget, out var value) ? value : $"Custom_{binmodTarget}";
     }
 
     public int GetBinmodTarget(int binmodType, string targetName)
@@ -125,7 +112,6 @@ public class BinmodTypeHelper
         }
 
         TemporaryModmetaTargets.Add(id, targetName);
-        TemporaryModmetaTargetsReversed.Add(targetName, id);
         return id;
     }
 
@@ -133,28 +119,37 @@ public class BinmodTypeHelper
     {
         var type = (BinmodType)binmodType;
 
-        if (type == BinmodType.Weapon)
+        switch (type)
         {
-            var target = (WeaponSoloTarget)binmodTarget;
-            if (target is WeaponSoloTarget.Dagger or WeaponSoloTarget.Gun)
+            case BinmodType.Weapon:
             {
-                return 2;
+                var target = (WeaponSoloTarget)binmodTarget;
+                if (target is WeaponSoloTarget.Dagger or WeaponSoloTarget.Gun)
+                {
+                    return 2;
+                }
+
+                break;
             }
-        }
-        else if (type == BinmodType.Multi_Weapon)
-        {
-            var target = (WeaponMultiTarget)binmodTarget;
-            if (target is WeaponMultiTarget.Dagger or WeaponMultiTarget.Katana or WeaponMultiTarget.Shuriken)
+            case BinmodType.Multi_Weapon:
             {
-                return 2;
+                var target = (WeaponMultiTarget)binmodTarget;
+                if (target is WeaponMultiTarget.Dagger or WeaponMultiTarget.Katana or WeaponMultiTarget.Shuriken)
+                {
+                    return 2;
+                }
+
+                break;
             }
-        }
-        else if (type == BinmodType.StyleEdit)
-        {
-            var target = (OutfitMultiTarget)binmodTarget;
-            if (target is not OutfitMultiTarget.Accessory and not OutfitMultiTarget.Hair)
+            case BinmodType.StyleEdit:
             {
-                return 2;
+                var target = (OutfitMultiTarget)binmodTarget;
+                if (target is not OutfitMultiTarget.Accessory and not OutfitMultiTarget.Hair)
+                {
+                    return 2;
+                }
+
+                break;
             }
         }
 
@@ -165,40 +160,49 @@ public class BinmodTypeHelper
     {
         var type = (BinmodType)binmodType;
 
-        if (type == BinmodType.Weapon)
+        switch (type)
         {
-            var target = (WeaponSoloTarget)binmodTarget;
-            if (target is WeaponSoloTarget.Dagger or WeaponSoloTarget.Gun)
+            case BinmodType.Weapon:
             {
-                return new Dictionary<int, string>
+                var target = (WeaponSoloTarget)binmodTarget;
+                if (target is WeaponSoloTarget.Dagger or WeaponSoloTarget.Gun)
                 {
-                    {0, "Right"},
-                    {1, "Left"}
-                };
+                    return new Dictionary<int, string>
+                    {
+                        {0, "Right"},
+                        {1, "Left"}
+                    };
+                }
+
+                break;
             }
-        }
-        else if (type == BinmodType.Multi_Weapon)
-        {
-            var target = (WeaponMultiTarget)binmodTarget;
-            if (target is WeaponMultiTarget.Dagger or WeaponMultiTarget.Katana or WeaponMultiTarget.Shuriken)
+            case BinmodType.Multi_Weapon:
             {
-                return new Dictionary<int, string>
+                var target = (WeaponMultiTarget)binmodTarget;
+                if (target is WeaponMultiTarget.Dagger or WeaponMultiTarget.Katana or WeaponMultiTarget.Shuriken)
                 {
-                    {0, "Right"},
-                    {1, "Left"}
-                };
+                    return new Dictionary<int, string>
+                    {
+                        {0, "Right"},
+                        {1, "Left"}
+                    };
+                }
+
+                break;
             }
-        }
-        else if (type == BinmodType.StyleEdit)
-        {
-            var target = (OutfitMultiTarget)binmodTarget;
-            if (target != OutfitMultiTarget.Accessory)
+            case BinmodType.StyleEdit:
             {
-                return new Dictionary<int, string>
+                var target = (OutfitMultiTarget)binmodTarget;
+                if (target != OutfitMultiTarget.Accessory)
                 {
-                    {0, "Slim"},
-                    {1, "Chubby"}
-                };
+                    return new Dictionary<int, string>
+                    {
+                        {0, "Slim"},
+                        {1, "Chubby"}
+                    };
+                }
+
+                break;
             }
         }
 

@@ -37,7 +37,18 @@ public class ModelReplacementPresets
 
     public IEnumerable<string> GetOriginalGmdls(int target)
     {
-        return Replacements.First(r => r.Index == target).Models;
+        if (target < 100)
+        {
+            return Replacements.First(r => r.Index == target).Models;
+        }
+        else
+        {
+            return _context.ModelReplacementPresets
+                .First(r => r.Id == (target - 100))
+                .ReplacementPaths
+                .Select(r => r.Path)
+                .ToList();
+        }
     }
 
     private void BuildDictionary()

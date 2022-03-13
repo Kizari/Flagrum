@@ -77,9 +77,10 @@
 
     private void OnSelect()
     {
-        ParentParent.Mod.Target = Preset.Id + 100;
+        var id = Preset.IsDefault ? Preset.Id : Preset.Id + 100;
+        ParentParent.Mod.Target = id;
         ParentParent.ModelReplacementPresetName = Preset.Name;
-        ParentParent.ModTargetChanged(Preset.Id + 100);
+        ParentParent.ModTargetChanged(id);
     }
 
     private void OnFavourite()
