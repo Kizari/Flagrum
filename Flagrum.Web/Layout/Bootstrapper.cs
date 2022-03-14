@@ -28,19 +28,20 @@ public class Bootstrapper : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await LoadBinmods();
-        await LoadNodes();
+        LoadNodes();
         Parent.IsReady = true;
         Parent.CallStateHasChanged();
     }
 
-    private async Task LoadNodes()
+    private void LoadNodes()
     {
         if (!Context.AssetExplorerNodes.Any())
         {
-            await Task.Run(() =>
+            Task.Run(() =>
             {
                 UriMapper.RegenerateMap();
                 OnNodesLoaded();
+                InvokeAsync(Parent.CallStateHasChanged);
             });
         }
         else

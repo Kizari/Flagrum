@@ -163,11 +163,11 @@ public class Binmod
                         break;
                     case "gmdl1":
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
-                        mod.Model1Name = value.Replace(".fbx", "").Replace(".gmdl", "");
+                        mod.Model1Name = value.Split('/').Last().Replace(".fbx", "").Replace(".gmdl", "");
                         break;
                     case "gmdl2":
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
-                        mod.Model2Name = value.Replace(".fbx", "").Replace(".gmdl", "");
+                        mod.Model2Name = value.Split('/').Last().Replace(".fbx", "").Replace(".gmdl", "");
                         break;
                     case "count_original_gmdls":
                         mod.OriginalGmdlCount = int.Parse(value);
@@ -216,13 +216,13 @@ public class Binmod
             {
                 if (modelCount > 1)
                 {
-                    if (property == "modify_gmdl[0]")
+                    if (property is "modify_gmdl[0]")
                     {
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
                         mod.ModDirectoryName = value.Split('/')[1];
                         mod.Model1Name = value.Split('/').Last().Replace(".fbx", "").Replace(".gmdl", "");
                     }
-                    else if (property == "modify_gmdl[1]")
+                    else if (property is "modify_gmdl[1]")
                     {
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
                         mod.ModDirectoryName = value.Split('/')[1];
@@ -231,7 +231,7 @@ public class Binmod
                 }
                 else
                 {
-                    if (property == "modify_gmdl[0]")
+                    if (property is "modify_gmdl[0]")
                     {
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
                         mod.ModDirectoryName = value.Split('/')[1];

@@ -198,11 +198,7 @@ public class BuildContext
             await onUpdate();
 
             var converter = new TextureConverter();
-            ThumbnailBtex = converter.ToBtex(
-                "default",
-                file.Split('.').Last(),
-                TextureType.Thumbnail,
-                buffer);
+            ThumbnailBtex = converter.ConvertThumbnail("default", buffer);
         });
     }
 
@@ -212,11 +208,7 @@ public class BuildContext
         {
             var converter = new TextureConverter();
             ThumbnailImage = image;
-            ThumbnailBtex = converter.ToBtex(
-                "default",
-                "png",
-                TextureType.Thumbnail,
-                image);
+            ThumbnailBtex = converter.ConvertThumbnail("default", image);
         });
     }
 }
