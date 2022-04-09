@@ -1,7 +1,7 @@
 ﻿@page "/assets"
+@using Flagrum.Web.Persistence.Entities
 @using System.Timers
 @using Flagrum.Web.Features.AssetExplorer.Data
-@using Flagrum.Web.Persistence.Entities
 
 @inject AppStateService AppState
 @inject IWpfService WpfService
@@ -62,7 +62,7 @@
             </div>
         }
         <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
-            <strong class="flex-grow font-display">@(SelectedItem == null ? "No File Selected" : SelectedItem.DisplayName)</strong>
+            <strong class="flex-grow font-display">@(SelectedItem == null ? "No File Selected" : AssetExplorerItem.GetDisplayName(SelectedItem.Name, AssetExplorerItem.GetType(SelectedItem.Uri)))</strong>
         </div>
     </div>
 

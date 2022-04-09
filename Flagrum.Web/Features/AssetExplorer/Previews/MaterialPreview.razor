@@ -3,6 +3,14 @@
 <div class="p-6">
     <div class="box p-4 mb-6">
         <h5 class="text-grey-300 mb-2">@BaseMaterial</h5>
+        <div class="flex flex-row">
+            <div>
+                <strong>High Resolution Texture Pack</strong>
+            </div>
+            <div class="flex-grow pl-10">
+                @(string.IsNullOrWhiteSpace(HighTexturePack) ? "N/A" : HighTexturePack)
+            </div>
+        </div>
     </div>
     <div class="box p-4 mb-6">
         <h5 class="text-grey-300 mb-2">Texture Inputs</h5>
@@ -54,6 +62,7 @@
     private IEnumerable<(string Name, float[] Values)> MaterialInputs { get; set; }
     private IEnumerable<(string Name, string FileName, string Path)> TextureInputs { get; set; }
     private AlertModal AlertModal { get; set; }
+    private string HighTexturePack { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -75,6 +84,8 @@
             .Where(t => !t.Path.EndsWith(".sb"))
             .OrderBy(t => t.ShaderGenName)
             .Select(t => (t.ShaderGenName, t.Path.Split('/').Last(), t.Path));
+
+        HighTexturePack = material.HighTexturePackAsset;
 
         MaterialInputs = inputs;
         TextureInputs = textures;

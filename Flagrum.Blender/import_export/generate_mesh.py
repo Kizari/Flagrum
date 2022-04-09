@@ -1,13 +1,14 @@
 from array import array
 
 import bpy
+from bpy.types import Collection
 from mathutils import Matrix, Vector
 
 from .import_context import ImportContext
 from ..entities import MeshData
 
 
-def generate_mesh(context: ImportContext, mesh_data: MeshData, bone_table):
+def generate_mesh(collection: Collection, mesh_data: MeshData, bone_table):
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
         [1, 0, 0],
@@ -80,7 +81,7 @@ def generate_mesh(context: ImportContext, mesh_data: MeshData, bone_table):
     mesh.update()
 
     mesh_object = bpy.data.objects.new(mesh_data.Name, mesh)
-    context.collection.objects.link(mesh_object)
+    collection.objects.link(mesh_object)
 
     # Import custom normals
     mesh.update(calc_edges=True)
@@ -102,33 +103,36 @@ def generate_mesh(context: ImportContext, mesh_data: MeshData, bone_table):
     layer.update()
 
     # Add the vertex weights from each weight map
-    for i in range(len(mesh_data.WeightValues)):
-        for j in range(len(mesh_data.WeightValues[i])):
-            for k in range(4):
-                # No need to import zero weights
-                if mesh_data.WeightValues[i][j][k] == 0:
-                    continue
+    if len(bone_table) > 0:
+        for i in range(len(mesh_data.WeightValues)):
+            for j in range(len(mesh_data.WeightValues[i])):
+                for k in range(4):
+                    # No need to import zero weights
+                    if mesh_data.WeightValues[i][j][k] == 0:
+                        continue
 
-                bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
-                vertex_group = mesh_object.vertex_groups.get(bone_name)
+                    bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
+                    vertex_group = mesh_object.vertex_groups.get(bone_name)
 
-                if not vertex_group:
-                    vertex_group = mesh_object.vertex_groups.new(name=bone_name)
+                    if not vertex_group:
+                        vertex_group = mesh_object.vertex_groups.new(name=bone_name)
 
-                # Weights are divided by 255 to convert from 0-255 to 0.0 - 1.0
-                vertex_group.add([j], mesh_data.WeightValues[i][j][k] / 255.0, 'ADD')
+                    # Weights are divided by 255 to convert from 0-255 to 0.0 - 1.0
+                    vertex_group.add([j], mesh_data.WeightValues[i][j][k] / 255.0, 'ADD')
 
     # Link the mesh to the armature
     if len(bone_table) > 0:
         mod = mesh_object.modifiers.new(
-            type="ARMATURE", name=context.collection.name)
+            type="ARMATURE", name=collection.name)
         mod.use_vertex_groups = True
 
-        armature = bpy.data.objects[context.collection.name]
+        armature = bpy.data.objects[collection.name]
         mod.object = armature
 
         mesh_object.parent = armature
     else:
         # Collection wasn't linked on armature set, so do it now
-        if context.collection.name not in bpy.context.scene.collection.children:
-            bpy.context.scene.collection.children.link(context.collection)
+        if collection.name not in bpy.context.scene.collection.children:
+            bpy.context.scene.collection.children.link(collection)
+
+    return mesh_object

@@ -5,7 +5,7 @@ from bpy.utils import register_class, unregister_class
 
 from . import addon_updater_ops
 from .globals import FlagrumGlobals
-from .import_export.menu import ImportOperator, ExportOperator
+from .import_export.menu import ImportOperator, ExportOperator, ImportEnvironmentOperator
 from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, \
     NormaliseWeightsOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
@@ -15,7 +15,7 @@ from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEd
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 7),
+    "version": (1, 0, 8),
     "blender": (2, 93, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
@@ -71,6 +71,7 @@ classes = (
     FlagrumPreferences,
     ImportOperator,
     ExportOperator,
+    ImportEnvironmentOperator,
     FlagrumMaterialProperty,
     FlagrumMaterialPropertyCollection,
     TextureSlotOperator,
@@ -96,6 +97,8 @@ classes = (
 def import_menu_item(self, context):
     self.layout.operator(ImportOperator.bl_idname,
                          text="FFXV Model (.gfxbin)")
+    self.layout.operator(ImportEnvironmentOperator.bl_idname,
+                         text="Flagrum Environment (.fed)")
 
 
 def export_menu_item(self, context):

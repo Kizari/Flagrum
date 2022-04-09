@@ -7,7 +7,9 @@ public enum ExplorerItemType
     Directory,
     Material,
     Texture,
-    Model
+    Model,
+    Xml,
+    Text
 }
 
 public class ExplorerItem

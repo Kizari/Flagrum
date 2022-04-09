@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Flagrum.Core.Gfxbin.Gmdl.Buffering;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
@@ -110,7 +111,21 @@ public class ModelReader
 
     private void ReadMeshData()
     {
-        var meshObjectCount = (int)_reader.Read();
+        var meshObjectCountObject = _reader.Read();
+        uint meshObjectCount;
+        if (meshObjectCountObject is int integer)
+        {
+            meshObjectCount = Convert.ToUInt32(integer);
+        }
+        else if (meshObjectCountObject is ushort uint16)
+        {
+            meshObjectCount = Convert.ToUInt32(uint16);
+        }
+        else
+        {
+            meshObjectCount = (uint)meshObjectCountObject;
+        }
+        
         for (var i = 0; i < meshObjectCount; i++)
         {
             // NOTE: Seems to be a random bool here for MeshObjects after the first

@@ -51,7 +51,7 @@ public class Unpacker : IDisposable
     {
         _files ??= ReadFileHeaders().ToList();
 
-        var match = _files.FirstOrDefault(f => f.Uri.Contains(query));
+        var match = _files.FirstOrDefault(f => f.Uri.Contains(query, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
             uri = match.Uri;

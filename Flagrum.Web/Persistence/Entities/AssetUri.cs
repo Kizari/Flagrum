@@ -1,6 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Flagrum.Core.Archive;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flagrum.Web.Persistence.Entities;
 
@@ -16,10 +18,18 @@ public static class AssetUriExtensions
 {
     public static byte[] GetFileByUri(this FlagrumDbContext context, string uri)
     {
-        var location = context.Settings.GameDataDirectory + "\\" + context.AssetUris
-            .Where(a => a.Uri == uri)
+        var uriPattern = $"%{uri}%";
+        var earcRelativePath = context.AssetUris
+            .Where(a => EF.Functions.Like(a.Uri, uriPattern))
             .Select(a => a.ArchiveLocation.Path)
             .FirstOrDefault();
+
+        if (earcRelativePath == null)
+        {
+            return Array.Empty<byte>();
+        }
+
+        var location = context.Settings.GameDataDirectory + "\\" + earcRelativePath;
 
         return Unpacker.GetFileByLocation(location, uri);
     }

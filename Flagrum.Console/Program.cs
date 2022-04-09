@@ -8,7 +8,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
+        //var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
+        var gfx = @"C:\Users\Kieran\Desktop\Models2\nh01\model_081\nh01_081.gmdl.gfxbin";
         var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
         var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
 
