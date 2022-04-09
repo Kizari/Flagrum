@@ -75,31 +75,36 @@ public class FileFinder
         }
     }
 
-    public void FindByQuery(Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch)
+    public void FindByQuery(Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch, bool unpackMatchedFiles)
     {
         System.Console.WriteLine("Starting search...");
         var watch = Stopwatch.StartNew();
 
         var startDirectory = DataDirectory;
         Parallel.ForEach(Directory.EnumerateDirectories(startDirectory),
-            directory => { FindRecursively(directory, condition, onMatch); });
+            directory => { FindRecursively(directory, condition, onMatch, unpackMatchedFiles); });
 
         watch.Stop();
         System.Console.WriteLine($"Search finished after {watch.ElapsedMilliseconds} milliseconds.");
     }
 
-    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch)
+    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch, bool unpackMatchedFiles)
     {
         foreach (var file in Directory.EnumerateFiles(directory, "*.earc"))
         {
             using var unpacker = new Unpacker(file);
             foreach (var archiveFile in unpacker.Files.Where(condition))
             {
+                if (unpackMatchedFiles)
+                {
+                    unpacker.ReadFileData(archiveFile);
+                }
+                
                 onMatch(archiveFile);
             }
         }
 
         Parallel.ForEach(Directory.EnumerateDirectories(directory),
-            subdirectory => { FindRecursively(subdirectory, condition, onMatch); });
+            subdirectory => { FindRecursively(subdirectory, condition, onMatch, unpackMatchedFiles); });
     }
 }

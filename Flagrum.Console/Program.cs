@@ -1,5 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Text;
+using Flagrum.Console.Utilities;
+using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmdl;
 
 namespace Flagrum.Console;
@@ -8,31 +11,55 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        //var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
-        var gfx = @"C:\Users\Kieran\Desktop\Models2\nh01\model_081\nh01_081.gmdl.gfxbin";
-        var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
-        var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
-
-        foreach (var meshObject in model.MeshObjects)
-        {
-            foreach (var mesh in meshObject.Meshes)
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.Contains("door", StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith(".gmdl"),
+        //     file =>
+        //     {
+        //         System.Console.WriteLine(file.Uri);
+        //     },
+        //     false);
+        
+        var finder = new FileFinder();
+        finder.FindByQuery(
+            file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+            file =>
             {
-                foreach (var uvMap in mesh.UVMaps)
+                var builder = new StringBuilder();
+                Xmb2Document.Dump(file.GetData(), builder);
+                var text = builder.ToString();
+                if (text.Contains("lure", StringComparison.OrdinalIgnoreCase))
                 {
-                    foreach (var coord in uvMap.UVs)
-                    {
-                        if (coord.U == Half.NaN || coord.U == Half.NegativeInfinity || coord.U == Half.PositiveInfinity
-                            || coord.V == Half.NaN || coord.V == Half.NegativeInfinity ||
-                            coord.V == Half.PositiveInfinity)
-                        {
-                            System.Console.WriteLine($"{meshObject.Name}, {mesh.Name} - U: {coord.U}, V: {coord.V}");
-                        }
-                    }
+                    System.Console.WriteLine(file.Uri);
                 }
-            }
-        }
+            },
+            true);
 
-        var x = true;
+        //var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
+         // var gfx = @"C:\Users\Kieran\Desktop\Models2\nh00\model_000\nh00_000.gmdl.gfxbin";
+         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+         // var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
+         //
+         // foreach (var meshObject in model.MeshObjects)
+         // {
+         //     foreach (var mesh in meshObject.Meshes)
+         //     {
+         //         foreach (var uvMap in mesh.UVMaps)
+         //         {
+         //             foreach (var coord in uvMap.UVs)
+         //             {
+         //                 if (coord.U == Half.NaN || coord.U == Half.NegativeInfinity || coord.U == Half.PositiveInfinity
+         //                     || coord.V == Half.NaN || coord.V == Half.NegativeInfinity ||
+         //                     coord.V == Half.PositiveInfinity)
+         //                 {
+         //                     System.Console.WriteLine($"{meshObject.Name}, {mesh.Name} - U: {coord.U}, V: {coord.V}");
+         //                 }
+         //             }
+         //         }
+         //     }
+         // }
+         //
+         // var x = true;
 
         // var finder = new FileFinder();
         // finder.FindByQuery(

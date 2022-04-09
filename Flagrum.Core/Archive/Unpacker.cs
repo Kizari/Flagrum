@@ -103,7 +103,7 @@ public class Unpacker : IDisposable
         return packer;
     }
 
-    private void ReadFileData(ArchiveFile file)
+    public void ReadFileData(ArchiveFile file)
     {
         _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
         var buffer = new byte[file.ProcessedSize];

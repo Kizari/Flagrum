@@ -359,6 +359,10 @@ public class EnvironmentPacker
                     GetPathsRecursively(combinedUriString, innerXmb2,
                         new[] {positionAltered.X, positionAltered.Y, positionAltered.Z}, rotationAltered, scaleAltered);
                 }
+                else
+                {
+                    _logger.LogInformation("Failed to load entity package from {Uri} at path {SourcePath}", uri, path.GetTextValue());
+                }
             }
         }
     }
