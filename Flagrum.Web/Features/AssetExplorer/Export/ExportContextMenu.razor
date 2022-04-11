@@ -17,7 +17,7 @@
              OnHiding="() => {Parent.ContextNode = null; Parent.CallStateHasChanged();}">
     @if (Parent.ContextItem.Type == ExplorerItemType.Directory)
     {
-        <Item OnClick="ExportFolderModal.Open"
+        <Item OnClick="ExportFolder"
               OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
             <div class="row">
                 <span class="material-icons mr-3" style="font-size: 0.9rem">drive_file_move</span>
@@ -76,6 +76,12 @@
     private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
     private ExportFolderModal ExportFolderModal { get; set; }
 
+    private void ExportFolder()
+    {
+        ExportFolderModal.SetContextNode(Parent.ContextNode);
+        ExportFolderModal.Open();
+    }
+    
     private async Task ExportSingle()
     {
         var item = Parent.ContextItem;

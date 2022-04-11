@@ -2,6 +2,7 @@
 @using Flagrum.Core.Archive
 @using Flagrum.Web.Features.AssetExplorer.Data
 @using System.IO
+@using Flagrum.Web.Persistence.Entities
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
@@ -39,7 +40,10 @@
     private Modal Modal { get; set; }
     private bool IsRecursive { get; set; }
     private string Extension { get; set; } = "PNG";
+    private AssetExplorerNode ContextNode { get; set; }
 
+    public void SetContextNode(AssetExplorerNode node) => ContextNode = node;
+    
     public void Open()
     {
         Modal.Open();
@@ -58,7 +62,7 @@
 
                 if (IsRecursive)
                 {
-                    Parent.ContextNode.Traverse(Context, node =>
+                    ContextNode.Traverse(Context, node =>
                     {
                         if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
                         {
@@ -77,7 +81,7 @@
                 }
                 else
                 {
-                    foreach (var node in Context.AssetExplorerNodes.Where(n => n.ParentId == Parent.ContextNode.Id))
+                    foreach (var node in Context.AssetExplorerNodes.Where(n => n.ParentId == ContextNode.Id))
                     {
                         if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
                         {
@@ -95,7 +99,7 @@
                     }
                 }
 
-                var baseUri = Parent.ContextNode.GetUri(Context);
+                var baseUri = ContextNode.GetUri(Context);
                 var converter = new TextureConverter();
 
                 foreach (var (archiveLocation, uris) in files)
@@ -104,7 +108,9 @@
                     foreach (var uri in uris)
                     {
                         var data = unpacker.UnpackFileByQuery(uri, out _);
-                        if (AssetExplorerItem.GetType(uri) == ExplorerItemType.Texture)
+                        var type = AssetExplorerItem.GetType(uri);
+                        
+                        if (type == ExplorerItemType.Texture)
                         {
                             data = Extension switch
                             {
@@ -115,7 +121,7 @@
                                 };
                         }
 
-                        var relativePath = Parent.ContextNode.Name + "\\" + uri
+                        var relativePath = ContextNode.Name + "\\" + uri
                             .Replace(baseUri, "")
                             .Replace('/', '\\');
 
@@ -131,8 +137,13 @@
                             }
                         }
 
-                        var absolutePath = currentDirectory + "\\" + split.Last();
-                        absolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + Extension.ToLower();
+                        var absolutePath = currentDirectory + "\\" + AssetExplorerItem.GetDisplayName(split.Last(), type);
+
+                        if (type == ExplorerItemType.Texture)
+                        {
+                            absolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + Extension.ToLower();
+                        }
+                        
                         File.WriteAllBytes(absolutePath, data);
                     }
                 }

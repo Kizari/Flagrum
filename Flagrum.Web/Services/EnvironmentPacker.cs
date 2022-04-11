@@ -34,7 +34,6 @@ public class EnvironmentModelMetadata
 public class EnvironmentPacker
 {
     private readonly ILogger<EnvironmentPacker> _logger;
-    private readonly FlagrumDbContext _context;
     private readonly SettingsService _settings;
     
     private ConcurrentBag<EnvironmentModelMetadata> _models = new();
@@ -47,11 +46,9 @@ public class EnvironmentPacker
 
     public EnvironmentPacker(
         ILogger<EnvironmentPacker> logger,
-        FlagrumDbContext context,
         SettingsService settings)
     {
         _logger = logger;
-        _context = context;
         _settings = settings;
     }
     
@@ -74,7 +71,9 @@ public class EnvironmentPacker
             Directory.CreateDirectory(_texturesDirectory);
         }
 
-        GetPathsRecursively(uri, _context.GetFileByUri(uri), new[] {0.0f, 0.0f, 0.0f, 0.0f}, new[] {0.0f, 0.0f, 0.0f, 0.0f},
+        // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
+        using var outerContext = new FlagrumDbContext(_settings);
+        GetPathsRecursively(uri, outerContext.GetFileByUri(uri), new[] {0.0f, 0.0f, 0.0f, 0.0f}, new[] {0.0f, 0.0f, 0.0f, 0.0f},
             1.0f);
 
         // _models = new ConcurrentBag<EnvironmentModelMetadata>(_models.Where(m => !_lowLodPrefabs
@@ -337,7 +336,12 @@ public class EnvironmentPacker
                         Vector3.Add(Vector3.Transform(new Vector3(position.GetFloat4Value()), quaternion),
                             new Vector3(prefabPosition));
                     var i = 0;
-                    var rotationAltered = rotation.GetFloat4Value().Select(p => p + prefabRotation[i++]).ToArray();
+                    var rotationFloats = rotation.GetFloat4Value();
+                    if (rotationFloats[3] != 0)
+                    {
+                        _logger.LogInformation("Float was {Value}", rotationFloats[3]);
+                    }
+                    var rotationAltered = rotationFloats.Select(p => p + prefabRotation[i++]).ToArray();
                     var scaleAltered = scale.GetFloatValue() * prefabScale;
                     var prefabFileName = uri.Split('\\', '/').Last();
 
@@ -352,8 +356,8 @@ public class EnvironmentPacker
                 }
                 catch
                 {
-                    var path = element.GetElementByName("sourcePath_").GetTextValue();
-                    _logger.LogInformation("Failed to handle model node with sourcePath {Path} from ebex {Uri}", path,
+                    var path = element.GetElementByName("sourcePath_")?.GetTextValue();
+                    _logger.LogInformation("Failed to handle model node with sourcePath {Path} from ebex {Uri}", path ?? "NONE",
                         uri);
                 }
             }

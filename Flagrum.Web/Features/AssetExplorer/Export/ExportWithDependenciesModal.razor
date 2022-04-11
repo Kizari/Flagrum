@@ -107,7 +107,7 @@
                 {
                     // Process high resolution textures
                     var highTexturePackUri = material.HighTexturePackAsset.Replace(".htpk", ".autoext");
-                    var highMaterial = ProcessHighTextures(material, highTexturePackUri, textures);
+                    var highMaterial = ProcessHighTextures(material, highTexturePackUri, textures, false);
                     if (highMaterial.Length > 0)
                     {
                         highMaterials.Add(highTexturePackUri, highMaterial);
@@ -115,7 +115,7 @@
                     
                     // Attempt to process 4K texture pack
                     highTexturePackUri = highTexturePackUri.Insert(highTexturePackUri.LastIndexOf('.'), "2");
-                    highMaterial = ProcessHighTextures(material, highTexturePackUri, highTextures);
+                    highMaterial = ProcessHighTextures(material, highTexturePackUri, highTextures, true);
                     if (highMaterial.Length > 0)
                     {
                         highMaterials.Add(highTexturePackUri, highMaterial);
@@ -177,14 +177,14 @@
         });
     }
 
-    private byte[] ProcessHighTextures(Material material, string highTexturePackUri, Dictionary<string, byte[]> textures)
+    private byte[] ProcessHighTextures(Material material, string highTexturePackUri, Dictionary<string, byte[]> textures, bool is4K)
     {
         byte[] highTexturePack = null;
         if (Context.ArchiveExistsForUri(highTexturePackUri))
         {
             highTexturePack = Context.GetFileByUri(highTexturePackUri);
         }
-        else
+        else if (!is4K)
         {
             var archiveRelativePath = material.HighTexturePackAsset
                 .Replace("data://", "")

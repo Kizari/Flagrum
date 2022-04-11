@@ -28,7 +28,7 @@ public class Program
                 var builder = new StringBuilder();
                 Xmb2Document.Dump(file.GetData(), builder);
                 var text = builder.ToString();
-                if (text.Contains("ul_tb_d_basea.ebex", StringComparison.OrdinalIgnoreCase))
+                if (text.Contains("tb_pr_wall1_walla.gmdl", StringComparison.OrdinalIgnoreCase))
                 {
                     System.Console.WriteLine(file.Uri);
                 }
