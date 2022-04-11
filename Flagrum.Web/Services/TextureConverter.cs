@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
 using Flagrum.Core.Gfxbin.Btex;
@@ -167,9 +168,13 @@ public class TextureConverter
         var pointer = pinnedData.AddrOfPinnedObject();
 
         var image = TexHelper.Instance.LoadFromDDSMemory(pointer, dds.Length, DDS_FLAGS.NONE);
-
+        
         pinnedData.Free();
-
+        
+        // This is required to prevent an access violation exception from DirectXTexNet
+        // When converting a large number of textures at once
+        GC.Collect();
+        
         var metadata = image.GetMetadata();
         if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
         {

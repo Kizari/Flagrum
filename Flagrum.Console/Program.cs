@@ -19,7 +19,7 @@ public class Program
         //         System.Console.WriteLine(file.Uri);
         //     },
         //     false);
-        
+
         var finder = new FileFinder();
         finder.FindByQuery(
             file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
@@ -28,15 +28,14 @@ public class Program
                 var builder = new StringBuilder();
                 Xmb2Document.Dump(file.GetData(), builder);
                 var text = builder.ToString();
-                if (text.Contains("lure", StringComparison.OrdinalIgnoreCase))
+                if (text.Contains("ul_tb_d_basea.ebex", StringComparison.OrdinalIgnoreCase))
                 {
                     System.Console.WriteLine(file.Uri);
                 }
             },
             true);
 
-        //var gfx = @"C:\Users\Kieran\Desktop\Models2\bo02\model_000\bo02_000.gmdl.gfxbin";
-         // var gfx = @"C:\Users\Kieran\Desktop\Models2\nh00\model_000\nh00_000.gmdl.gfxbin";
+         // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
          // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
          // var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
          //
@@ -58,8 +57,8 @@ public class Program
          //         }
          //     }
          // }
-         //
-         // var x = true;
+        //
+        // var x = true;
 
         // var finder = new FileFinder();
         // finder.FindByQuery(

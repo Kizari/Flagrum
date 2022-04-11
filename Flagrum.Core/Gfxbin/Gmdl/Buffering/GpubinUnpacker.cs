@@ -236,7 +236,10 @@ public class GpubinUnpacker
         var value = BitConverter.ToHalf(_currentBuffer, _currentBufferPosition);
         _currentBufferPosition += 2; // 2 bytes in a half
 
-        if (value == Half.NaN || value == Half.NegativeInfinity || value == Half.PositiveInfinity)
+        if (Half.IsNaN(value)
+            || Half.IsInfinity(value)
+            || Half.IsNegativeInfinity(value)
+            || Half.IsPositiveInfinity(value))
         {
             value = (Half)0;
         }

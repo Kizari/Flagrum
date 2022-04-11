@@ -43,7 +43,7 @@
 
     private async Task ExportBatch()
     {
-        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder =>
+        await WpfService.OpenFolderDialogAsync(Parent.SelectedDirectory.Item.Path, folder =>
         {
             InvokeAsync(() =>
             {

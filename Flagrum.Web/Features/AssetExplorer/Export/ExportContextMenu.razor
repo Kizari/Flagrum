@@ -9,10 +9,12 @@
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
+@inject EnvironmentPacker EnvironmentPacker
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
-             OverrideDefaultListCssClass="p-0">
+             OverrideDefaultListCssClass="p-0"
+             OnHiding="() => {Parent.ContextNode = null; Parent.CallStateHasChanged();}">
     @if (Parent.ContextItem.Type == ExplorerItemType.Directory)
     {
         <Item OnClick="ExportFolderModal.Open"
@@ -145,13 +147,7 @@
 
             await Task.Run(() =>
             {
-                var packer = new EnvironmentPacker(Logger, item.Uri, Settings.GameDataDirectory, Context.GetFileByUri, btex =>
-                {
-                    var converter = new TextureConverter();
-                    return converter.BtexToTga(btex);
-                }, Context.ArchiveExistsForUri);
-
-                packer.Pack(path);
+                EnvironmentPacker.Pack(item.Uri, path);
             });
 
             await InvokeAsync(() => Parent.SetLoading(false));

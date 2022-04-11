@@ -178,9 +178,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         Task.Run(async () =>
         {
-            using (var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum").Result)
+            try
             {
-                await manager.UpdateApp();
+                using (var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum").Result)
+                {
+                    await manager.UpdateApp();
+                }
+            }
+            catch
+            {
+                
             }
         });
     }

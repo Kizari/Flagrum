@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 
 import bpy
+from bpy.types import Material
 
 
 @dataclass(init=False)
@@ -9,9 +10,13 @@ class ImportContext:
     gfxbin_path: str
     amdl_path: str
     collection: bpy.types.Collection
+    materials: dict[str, Material]
+    texture_slots: dict[str, bool]
 
     def __init__(self, gfxbin_file_path):
         self.gfxbin_path = gfxbin_file_path
+        self.materials = {}
+        self.texture_slots = {}
 
         path_name = os.path.dirname(gfxbin_file_path)
         p0 = os.path.split(path_name)

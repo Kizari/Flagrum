@@ -36,6 +36,7 @@ public class BlenderTextureData
     public string Name { get; set; }
     public string Slot { get; set; }
     public string Path { get; set; }
+    public string Uri { get; set; }
 }
 
 public class MaterialData
