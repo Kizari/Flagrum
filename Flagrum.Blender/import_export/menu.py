@@ -5,8 +5,9 @@ from types import SimpleNamespace
 
 import bpy
 from bpy.props import StringProperty, FloatProperty, BoolProperty
-from bpy.types import Operator, Menu
+from bpy.types import Operator, Menu, Mesh
 from bpy_extras.io_utils import ImportHelper, ExportHelper
+from mathutils import Matrix, Euler, Vector
 
 from .export_context import ExportContext
 from .generate_armature import generate_armature
@@ -112,8 +113,8 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
         meshes = {}
 
         for model in data:
-            if model.Index < 1:
-                continue
+            # if model.Index < 1:
+            #    continue
 
             mesh_data = None
             if model.Index in meshes:
@@ -124,13 +125,10 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
                     collection = bpy.data.collections[model.PrefabName]
 
                 for original_mesh in meshes[model.Index]:
-                    mesh = original_mesh.copy()
+                    mesh: Mesh = original_mesh.copy()
                     collection.objects.link(mesh)
                     mesh["Model URI"] = model.Path
-                    mesh.scale = [model.Scale, model.Scale, model.Scale]
-                    mesh.rotation_euler = [math.radians(model.Rotation[0]), math.radians(abs(model.Rotation[2] * -1)),
-                                           math.radians(model.Rotation[1])]
-                    mesh.location = [model.Position[0], model.Position[2] * -1, model.Position[1]]
+                    self.transform_mesh(mesh, model)
             else:
                 try:
                     path = directory + "\\" + filename_without_extension + "_models\\" + str(model.Index) + ".json"
@@ -159,18 +157,78 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
                 collection = bpy.data.collections[model.PrefabName]
 
             # Import the mesh and position it according to the level data
-            mesh = generate_mesh(context, collection, mesh_metadata, [], use_blue_normals=False)
+            mesh = generate_mesh(context, collection, mesh_metadata, [], use_blue_normals=False,
+                                 use_correction_matrix=False)
             mesh["Model URI"] = model.Path
-            mesh.scale = [model.Scale, model.Scale, model.Scale]
-            mesh.rotation_euler = [math.radians(model.Rotation[0]), math.radians(abs(model.Rotation[2] * -1)),
-                                   math.radians(model.Rotation[1])]
-            mesh.location = [model.Position[0], model.Position[2] * -1, model.Position[1]]
+            self.transform_mesh(mesh, model)
 
             if model.Index in meshes:
                 meshes[model.Index].append(mesh)
             else:
                 meshes[model.Index] = []
                 meshes[model.Index].append(mesh)
+
+    def transform_mesh(self, mesh: Mesh, model: EnvironmentModelMetadata):
+        # Matrix that corrects the axes from FBX coordinate system
+        correction_matrix = Matrix([
+            [1, 0, 0],
+            [0, 0, -1],
+            [0, 1, 0]
+        ])
+
+        scale_vector = Vector([model.Scale, model.Scale, model.Scale])
+        rotation_euler = Vector([math.radians(model.Rotation[0]),
+                                math.radians(model.Rotation[1]),
+                                math.radians(model.Rotation[2])])
+        position_vector = Vector([model.Position[0], model.Position[1], model.Position[2]])
+
+        skip_first = False
+        if model.Rotation[0] == 0 and model.Rotation[1] == 0 and model.Rotation[2] == 0:
+            for rotation in reversed(model.PrefabRotations):
+                if rotation[0] == 0 and rotation[1] == 0 and rotation[2] == 0:
+                    continue
+                rotation_euler = Vector([math.radians(rotation[0]),
+                                         math.radians(rotation[1]),
+                                         math.radians(rotation[2])])
+                skip_first = True
+                break
+
+        matrix = Matrix.LocRotScale(position_vector, Euler(rotation_euler), scale_vector)
+
+        mesh.matrix_world = correction_matrix.to_4x4() @ matrix
+
+        rotation_x = 0
+        rotation_y = 0
+        rotation_z = 0
+
+        if model.Path == "data://environment/common/props/co_pr_GSshop1/models/co_pr_GSshop1_lightC.gmdl" and model.PrefabName == "p_co_pr_GSshop1_lightC":
+            print("lightC rotations:")
+
+        passed_first = False
+        for rotation in reversed(model.PrefabRotations):
+            if model.Path == "data://environment/common/props/co_pr_GSshop1/models/co_pr_GSshop1_lightC.gmdl" and model.PrefabName == "p_co_pr_GSshop1_lightC":
+                print(rotation)
+            if rotation[0] == 0 and rotation[1] == 0 and rotation[2] == 0:
+                continue
+            if skip_first and not passed_first:
+                passed_first = True
+                continue
+            rotation_x += rotation[0]
+            rotation_y += rotation[1]
+            rotation_z += rotation[2]
+
+        mesh.rotation_euler[0] += math.radians(rotation_x)
+        mesh.rotation_euler[1] += math.radians(rotation_z * -1)
+        mesh.rotation_euler[2] += math.radians(rotation_y)
+
+        # matrix = Matrix(model.Transform)
+        # matrix.transpose()
+        # 
+        # if model.Path == "data://environment/leide/props/le_pr_GQobj4/models/le_pr_GQobj4_sunaA.gmdl":
+        #     print(matrix.to_euler())
+        #     print("")
+        # 
+        # mesh.matrix_world = matrix
 
 
 class FlagrumImportMenu(Menu):

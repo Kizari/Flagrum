@@ -9,7 +9,7 @@ from ..entities import MeshData, BlenderTextureData
 
 
 def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table,
-                  use_blue_normals: bool):
+                  use_blue_normals: bool, use_correction_matrix: bool = True):
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
         [1, 0, 0],
@@ -19,8 +19,12 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
 
     # Correct the vertex positions
     vertices = []
-    for vertex in mesh_data.VertexPositions:
-        vertices.append(correction_matrix @ Vector([vertex.X, vertex.Y, vertex.Z]))
+    if use_correction_matrix:
+        for vertex in mesh_data.VertexPositions:
+            vertices.append(correction_matrix @ Vector([vertex.X, vertex.Y, vertex.Z]))
+    else:
+        for vertex in mesh_data.VertexPositions:
+            vertices.append(Vector([vertex.X, vertex.Y, vertex.Z]))
 
     # Reverse the winding order of the faces so the normals face the right direction
     for face in mesh_data.FaceIndices:
@@ -94,7 +98,10 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
 
     normals = []
     for normal in mesh_data.Normals:
-        result = correction_matrix @ Vector([normal.X / 127.0, normal.Y / 127.0, normal.Z / 127.0])
+        if use_correction_matrix:
+            result = correction_matrix @ Vector([normal.X / 127.0, normal.Y / 127.0, normal.Z / 127.0])
+        else:
+            result = Vector([normal.X / 127.0, normal.Y / 127.0, normal.Z / 127.0])
         result.normalize()
         normals.append(result)
 

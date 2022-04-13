@@ -122,3 +122,5 @@ class EnvironmentModelMetadata:
     Position: list[float]
     Rotation: list[float]
     Scale: float
+    PrefabRotations: list[list[float]]
+    Transform: list[list[float]]
