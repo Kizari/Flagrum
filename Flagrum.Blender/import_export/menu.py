@@ -139,15 +139,14 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
                     print("Failed to load " + model.Path)
 
                 if mesh_data is not None:
-                    self.import_mesh(context, mesh_data, model, directory, meshes)
+                    self.import_mesh(context, mesh_data, model, meshes)
 
         for texture_slot in context.texture_slots:
             print(texture_slot)
 
         return {'FINISHED'}
 
-    def import_mesh(self, context: ImportContext, mesh_data: Gpubin, model: EnvironmentModelMetadata, directory,
-                    meshes):
+    def import_mesh(self, context: ImportContext, mesh_data: Gpubin, model: EnvironmentModelMetadata, meshes):
         for mesh_metadata in mesh_data.Meshes:
             # Create or get the collection for this prefab
             if model.PrefabName not in bpy.context.scene.collection.children:
@@ -176,40 +175,36 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
             [0, 1, 0]
         ])
 
+        # Compose a transformation matrix from the model node transforms
         scale_vector = Vector([model.Scale, model.Scale, model.Scale])
         rotation_euler = Vector([math.radians(model.Rotation[0]),
-                                math.radians(model.Rotation[1]),
-                                math.radians(model.Rotation[2])])
+                                 math.radians(model.Rotation[1]),
+                                 math.radians(model.Rotation[2])])
         position_vector = Vector([model.Position[0], model.Position[1], model.Position[2]])
 
+        # If the model node doesn't have a rotation, we need to plug the first prefab transformation in here instead
+        # Otherwise things end up rotated incorrectly
         skip_first = False
-        if model.Rotation[0] == 0 and model.Rotation[1] == 0 and model.Rotation[2] == 0:
+        if -0.01 < model.Rotation[0] < 0.01 and -0.01 < model.Rotation[1] < 0.01 and -0.01 < model.Rotation[2] < 0.01:
             for rotation in reversed(model.PrefabRotations):
-                if rotation[0] == 0 and rotation[1] == 0 and rotation[2] == 0:
-                    continue
                 rotation_euler = Vector([math.radians(rotation[0]),
                                          math.radians(rotation[1]),
                                          math.radians(rotation[2])])
                 skip_first = True
                 break
 
+        # Apply the matrix to the mesh
         matrix = Matrix.LocRotScale(position_vector, Euler(rotation_euler), scale_vector)
-
         mesh.matrix_world = correction_matrix.to_4x4() @ matrix
 
         rotation_x = 0
         rotation_y = 0
         rotation_z = 0
 
-        if model.Path == "data://environment/common/props/co_pr_GSshop1/models/co_pr_GSshop1_lightC.gmdl" and model.PrefabName == "p_co_pr_GSshop1_lightC":
-            print("lightC rotations:")
-
+        # Add all the prefab rotations together
         passed_first = False
         for rotation in reversed(model.PrefabRotations):
-            if model.Path == "data://environment/common/props/co_pr_GSshop1/models/co_pr_GSshop1_lightC.gmdl" and model.PrefabName == "p_co_pr_GSshop1_lightC":
-                print(rotation)
-            if rotation[0] == 0 and rotation[1] == 0 and rotation[2] == 0:
-                continue
+            # Skip the first prefab rotation if it was plugged into the matrix above
             if skip_first and not passed_first:
                 passed_first = True
                 continue
@@ -217,18 +212,10 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
             rotation_y += rotation[1]
             rotation_z += rotation[2]
 
+        # Convert the combined prefab rotation to Blender space and apply to the mesh
         mesh.rotation_euler[0] += math.radians(rotation_x)
         mesh.rotation_euler[1] += math.radians(rotation_z * -1)
         mesh.rotation_euler[2] += math.radians(rotation_y)
-
-        # matrix = Matrix(model.Transform)
-        # matrix.transpose()
-        # 
-        # if model.Path == "data://environment/leide/props/le_pr_GQobj4/models/le_pr_GQobj4_sunaA.gmdl":
-        #     print(matrix.to_euler())
-        #     print("")
-        # 
-        # mesh.matrix_world = matrix
 
 
 class FlagrumImportMenu(Menu):

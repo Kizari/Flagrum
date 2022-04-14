@@ -12,10 +12,11 @@ from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, Flag
 from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, \
     ClearTextureOperator, MaterialImportOperator, MaterialCopyOperator, MaterialPasteOperator
 from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEdgesOperator, MergeNormalsOperator
+from .panel.rendering_panel import ToggleEmissionOperator, RenderingPanel
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 10),
+    "version": (1, 0, 11),
     "blender": (2, 93, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
@@ -91,6 +92,8 @@ classes = (
     NormaliseWeightsOperator,
     CleanupPanel,
     NormalsPanel,
+    ToggleEmissionOperator,
+    RenderingPanel,
     FlagrumGlobals
 )
 

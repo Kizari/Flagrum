@@ -9,4 +9,5 @@ public interface IWpfService
     Task OpenFolderDialogAsync(string initialDirectory, Action<string> onFolderSelected);
     Task OpenSaveFileDialogAsync(string defaultName, string filter, Action<string> onFileSelected);
     Version GetVersion();
+    void ShowWindowsNotification(string message);
 }

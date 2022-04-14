@@ -62,7 +62,7 @@
             </div>
         }
         <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
-            <strong class="flex-grow font-display">@(SelectedItem == null ? "No File Selected" : AssetExplorerItem.GetDisplayName(SelectedItem.Name, AssetExplorerItem.GetType(SelectedItem.Uri)))</strong>
+            <strong class="flex-grow font-display">@(SelectedItem == null ? "No File Selected" : AssetExplorerItem.GetDisplayName(SelectedItem.Name, AssetExplorerItem.GetType(SelectedItem.Uri ?? SelectedItem.Name)))</strong>
         </div>
     </div>
 

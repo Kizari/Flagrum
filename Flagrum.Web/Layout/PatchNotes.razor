@@ -1,5 +1,26 @@
 ﻿<h3 class="text-grey-300 mb-6">Flagrum has been updated to @Version!</h3>
 
+<div class="bg-grey-900 rounded-md border border-grey-700 p-4">
+    <h4 class="text-grey-300 mb-4">Flagrum 1.1.11</h4>
+    <h5 class="text-grey-300 mb-4">Minor Improvements</h5>
+    <ul class="list-disc ml-6 mb-6">
+        <li>Added automatic node setup for opacity mask textures</li>
+        <li>Added notification for when environment exports are complete</li>
+        <li>Added button to disconnect/reconnect all emission textures for rendering</li>
+        <li>Enabled backface culling on all environment materials to improve performance</li>
+        <li>Removed automatic node setup for emission on environments when texture is blank</li>
+    </ul>
+    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
+    <ul class="list-disc ml-6 mb-6">
+        <li>Fixed rotation issues with exported environments</li>
+        <li>Fixed bug where environments would accumulate if not restarting between exports</li>
+        <li>Fixed bug where environment export would crash when encountering an invalid URI</li>
+        <li>Fixed bug where environment import would occasionally fail on certain textures</li>
+        <li>Fixed bug where texture preview would crash Flagrum on File System view</li>
+        <li>Fixed edge-case where certain imports would fail due to non-numeric vertex coords</li>
+    </ul>
+</div>
+
 <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
     <h4 class="text-grey-300 mb-4">Flagrum 1.1.10</h4>
     <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
@@ -39,16 +60,16 @@
     </ul>
 </div>
 
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Flagrum 1.1.8</h4>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where Weapon Model Replacements were invisible in-game</li>
-        <li>Fixed bug where editing Comrades mods after restarting Flagrum could break them</li>
-        <li>Fixed bug where Comrades gear thumbnails were always invisible</li>
-        <li>Fixed bug where Comrades Accessory mods were always invisible in-game</li>
-    </ul>
-</div>
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.8</h4> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where Weapon Model Replacements were invisible in-game</li> *@
+@*         <li>Fixed bug where editing Comrades mods after restarting Flagrum could break them</li> *@
+@*         <li>Fixed bug where Comrades gear thumbnails were always invisible</li> *@
+@*         <li>Fixed bug where Comrades Accessory mods were always invisible in-game</li> *@
+@*     </ul> *@
+@* </div> *@
 
 @* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
 @*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.7</h4> *@

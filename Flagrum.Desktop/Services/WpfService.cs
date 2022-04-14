@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Flagrum.Web.Services;
+using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -65,5 +66,12 @@ public class WpfService : IWpfService
     public Version GetVersion()
     {
         return typeof(WpfService).Assembly.GetName().Version;
+    }
+
+    public void ShowWindowsNotification(string message)
+    {
+        new ToastContentBuilder()
+            .AddText(message)
+            .Show();
     }
 }

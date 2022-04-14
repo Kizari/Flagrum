@@ -228,6 +228,15 @@ public class GpubinUnpacker
     {
         var value = BitConverter.ToSingle(_currentBuffer, _currentBufferPosition);
         _currentBufferPosition += sizeof(float);
+
+        if (float.IsNaN(value)
+            || float.IsInfinity(value)
+            || float.IsNegativeInfinity(value)
+            || float.IsPositiveInfinity(value))
+        {
+            value = 0.0f;
+        }
+
         return value;
     }
 

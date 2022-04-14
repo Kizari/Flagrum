@@ -154,6 +154,7 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
         material = bpy.data.materials.new(name=mesh_data.BlenderMaterial.Name)
 
         material.use_nodes = True
+        material.use_backface_culling = True
         bsdf = material.node_tree.nodes["Principled BSDF"]
         multiply = material.node_tree.nodes.new('ShaderNodeMixRGB')
         multiply.blend_type = 'MULTIPLY'
@@ -239,10 +240,12 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
                 material.node_tree.links.new(bsdf.inputs['Metallic'], separate_rgb.outputs['R'])
                 material.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb.outputs['G'])
             elif "EMISSIVECOLOR0" in texture_slot or "EMISSIVE0" in texture_slot:
-                material.node_tree.links.new(bsdf.inputs['Emission'], texture.outputs['Color'])
-            elif "TRANSPARENCY0" in texture_slot:
+                if not texture_metadata.Path.upper().endswith("WHITE.TGA"):
+                    material.node_tree.links.new(bsdf.inputs['Emission'], texture.outputs['Color'])
+            elif "TRANSPARENCY0" in texture_slot or "OPACITYMASK0" in texture_slot:
                 texture.image.colorspace_settings.name = 'Non-Color'
                 material.node_tree.links.new(bsdf.inputs['Alpha'], texture.outputs['Color'])
+                material.blend_method = 'CLIP'
             elif "OCCLUSION0" in texture_slot:
                 texture.image.colorspace_settings.name = 'Non-Color'
                 material.node_tree.links.new(multiply.inputs['Color2'], texture.outputs['Color'])

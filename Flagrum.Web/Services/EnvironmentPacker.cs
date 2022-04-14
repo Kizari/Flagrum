@@ -12,14 +12,11 @@ using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
-using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SQEX.Ebony.Framework.Sequence.Action;
-using ZLibNet;
 using Vector3 = System.Numerics.Vector3;
 
 namespace Flagrum.Core.Ebex;
@@ -33,7 +30,6 @@ public class EnvironmentModelMetadata
     public float[] Rotation { get; set; }
     public float Scale { get; set; }
     public List<float[]> PrefabRotations { get; set; }
-    public float[,] Transform { get; set; }
 }
 
 public class EnvironmentPacker
@@ -44,7 +40,7 @@ public class EnvironmentPacker
     private readonly ConcurrentBag<string> _nodeTypes = new();
     private readonly SettingsService _settings;
 
-    private readonly ConcurrentDictionary<string, string> _textures = new();
+    private readonly ConcurrentDictionary<string, bool> _textures = new();
     // private readonly ConcurrentDictionary<string, bool> _lowLodPrefabs = new();
 
     private string _modelsDirectory;
@@ -83,13 +79,12 @@ public class EnvironmentPacker
             new[] {0.0f, 0.0f, 0.0f, 0.0f},
             1.0f,
             new List<float[]>());
-        //GetPathsRecursively(uri, outerContext.GetFileByUri(uri), Matrix4x4.Identity, true);
 
         // _models = new ConcurrentBag<EnvironmentModelMetadata>(_models.Where(m => !_lowLodPrefabs
         //     .Any(p => p.Key.Contains(m.PrefabName, StringComparison.OrdinalIgnoreCase))));
 
         var models = _models.DistinctBy(m => m.Path).ToList();
-        
+
         Parallel.For(0, models.Count, index =>
         {
             var model = models.ElementAt(index);
@@ -102,7 +97,7 @@ public class EnvironmentPacker
 
         // Can't use multithreading here due to an issue where DirectXTexNet hits
         // an access violation exception because we can't clear the memory quickly enough
-        foreach (var (hash, uri2) in _textures.OrderBy(t => t.Value))
+        foreach (var (uri2, _) in _textures)
         {
             using var context = new FlagrumDbContext(_settings);
             var btexData = context.GetFileByUri(uri2);
@@ -211,6 +206,12 @@ public class EnvironmentPacker
                                 .Select(t =>
                                 {
                                     var fileName = t.Path.Split('/').Last();
+
+                                    if (!fileName.Contains('.'))
+                                    {
+                                        return null;
+                                    }
+
                                     var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
                                     var highResPath = highResTextures
                                         .FirstOrDefault(t =>
@@ -236,6 +237,7 @@ public class EnvironmentPacker
                                         Slot = t.ShaderGenName
                                     };
                                 })
+                                .Where(t => t != null)
                         }
                     };
                 }))
@@ -243,9 +245,9 @@ public class EnvironmentPacker
 
         foreach (var mesh in meshData.Meshes)
         {
-            foreach (var texture in mesh.BlenderMaterial.Textures.DistinctBy(t => t.Hash))
+            foreach (var texture in mesh.BlenderMaterial.Textures.DistinctBy(t => t.Uri))
             {
-                _textures.TryAdd(texture.Hash, texture.Uri);
+                _textures.TryAdd(texture.Uri, true);
             }
         }
 
@@ -323,20 +325,20 @@ public class EnvironmentPacker
             DegreesToRadians(prefabRotation[1]),
             DegreesToRadians(prefabRotation[0]),
             DegreesToRadians(prefabRotation[2]));
-    
+
         var elements = objects.GetElements();
         Parallel.For(0, elements.Count, counter =>
         {
             var element = elements.ElementAt(counter);
-    
+
             using var context = new FlagrumDbContext(_settings);
             var typeAttribute = element.GetAttributeByName("type").GetTextValue();
-    
+
             if (counter == 0 && !_nodeTypes.Contains(typeAttribute))
             {
                 _nodeTypes.Add(typeAttribute);
             }
-    
+
             if (typeAttribute is "Black.Entity.StaticModelEntity" or "Black.Entity.Actor.HeightFieldEntity")
             {
                 try
@@ -345,22 +347,22 @@ public class EnvironmentPacker
                     var position = element.GetElementByName("position_");
                     var rotation = element.GetElementByName("rotation_");
                     var scale = element.GetElementByName("scaling_");
-    
+
                     var positionAltered =
                         Vector3.Add(Vector3.Transform(new Vector3(position.GetFloat4Value()), quaternion),
                             new Vector3(prefabPosition));
-    
+
                     // Luminous ignores scale of 0, so we must too
                     var scaleFloat = scale.GetFloatValue();
                     if (scaleFloat is > -0.0001f and < 0.0001f)
                     {
                         scaleFloat = 1.0f;
                     }
-    
+
                     //var rotationAltered = rotationFloats.Select(p => p + prefabRotation[i++]).ToArray();
                     var scaleAltered = scaleFloat * prefabScale;
                     var prefabFileName = uri.Split('\\', '/').Last();
-    
+
                     _models.Add(new EnvironmentModelMetadata
                     {
                         PrefabName = prefabFileName[..prefabFileName.LastIndexOf('.')],
@@ -385,7 +387,7 @@ public class EnvironmentPacker
                 var position = element.GetElementByName("position_").GetFloat4Value();
                 var rotation = element.GetElementByName("rotation_").GetFloat4Value();
                 var scale = element.GetElementByName("scaling_")?.GetFloatValue() ?? 1.0f;
-    
+
                 var positionAltered =
                     Vector3.Add(Vector3.Transform(new Vector3(position), quaternion), new Vector3(prefabPosition));
                 var i = 0;
@@ -395,22 +397,29 @@ public class EnvironmentPacker
                 {
                     scale = 1.0f;
                 }
-    
+
                 var rotationAltered = rotation.Select(p => p + prefabRotation[i++]).ToArray();
                 var scaleAltered = scale * prefabScale;
-    
+
                 var relativeUri = path.GetTextValue();
                 var uriUri = new Uri(uri.Replace("data://", "data://data/"));
                 var combinedUri = new Uri(uriUri, relativeUri);
                 var combinedUriString = combinedUri.ToString().Replace("data://data/", "data://");
                 var innerXmb2 = context.GetFileByUri(combinedUriString);
-    
+
                 if (innerXmb2.Length > 0)
                 {
                     var newPrefabRotations = new List<float[]>(prefabRotations);
-                    newPrefabRotations.Add(rotation);
+                    if (!(rotation[0] is > -0.0001f and < 0.0001f
+                          && rotation[1] is > -0.0001f and < 0.0001f
+                          && rotation[2] is > -0.0001f and < 0.0001f))
+                    {
+                        newPrefabRotations.Add(rotation);
+                    }
+
                     GetPathsRecursively(combinedUriString, innerXmb2,
-                        new[] {positionAltered.X, positionAltered.Y, positionAltered.Z}, rotationAltered, scaleAltered, newPrefabRotations);
+                        new[] {positionAltered.X, positionAltered.Y, positionAltered.Z}, rotationAltered, scaleAltered,
+                        newPrefabRotations);
                 }
                 else
                 {
@@ -430,133 +439,6 @@ public class EnvironmentPacker
             // }
         });
     }
-    
-    // private void GetPathsRecursively(string uri, byte[] xmb2, Matrix4x4 prefabMatrix, bool isFirst)
-    // {
-    //     // Get all objects from the current prefab
-    //     using var stream = new MemoryStream(xmb2);
-    //     var package = Xmb2Document.GetRootElement(stream);
-    //     var objects = package.GetElementByName("objects");
-    //     var elements = objects.GetElements();
-    //     
-    //     //Parallel.For(0, elements.Count, counter =>
-    //     for (var counter = 0; counter < elements.Count; counter++)
-    //     {
-    //         var element = elements.ElementAt(counter);
-    //
-    //         using var context = new FlagrumDbContext(_settings);
-    //         var typeAttribute = element.GetAttributeByName("type").GetTextValue();
-    //
-    //         if (counter == 0 && !_nodeTypes.Contains(typeAttribute))
-    //         {
-    //             _nodeTypes.Add(typeAttribute);
-    //         }
-    //
-    //         if (typeAttribute is "Black.Entity.StaticModelEntity" or "Black.Entity.Actor.HeightFieldEntity")
-    //         {
-    //             try
-    //             {
-    //                 // Pull relevant data from the node
-    //                 var path = element.GetElementByName("sourcePath_").GetTextValue();
-    //                 var position = element.GetElementByName("position_").GetFloat4Value();
-    //                 var rotation = element.GetElementByName("rotation_").GetFloat4Value();
-    //                 var scale = element.GetElementByName("scaling_").GetFloatValue();
-    //
-    //                 // Luminous ignores scale of 0, so we must too
-    //                 if (scale is > -0.0001f and < 0.0001f)
-    //                 {
-    //                     scale = 1.0f;
-    //                 }
-    //
-    //                 // Construct a transformation matrix for this item
-    //                 var translationMatrix = Matrix4x4.CreateTranslation(position[0], position[1], position[2]);
-    //                 var quaternion = Quaternion.CreateFromYawPitchRoll(
-    //                             DegreesToRadians(rotation[1]),
-    //                             DegreesToRadians(rotation[0]),
-    //                             DegreesToRadians(rotation[2]));
-    //                 var rotationMatrix = Matrix4x4.CreateFromQuaternion(quaternion);
-    //                 var scaleMatrix = Matrix4x4.CreateScale(scale);
-    //
-    //                 var matrix = rotationMatrix * translationMatrix;//scaleMatrix * rotationMatrix * translationMatrix;
-    //                 matrix = Matrix4x4.Transpose(matrix);
-    //
-    //                 if (path == "environment/leide/props/le_pr_GQobj4/models/le_pr_GQobj4_sunaA.gmdl")
-    //                 {
-    //                     var logRows = new List<List<string>>();
-    //                     var array = matrix.ToArray();
-    //                     
-    //                     for (var i = 0; i < 4; i++)
-    //                     {
-    //                         var row = new List<string>();
-    //                         for (var j = 0; j < 4; j++)
-    //                         {
-    //                             row.Add(array[i, j].ToString());
-    //                         }
-    //                         logRows.Add(row);
-    //                     }
-    //
-    //                     foreach (var row in logRows)
-    //                     {
-    //                         _logger.LogInformation(string.Join(", ", row));
-    //                     }
-    //                     _logger.LogInformation("");
-    //                 }
-    //                 
-    //                 var prefabFileName = uri.Split('\\', '/').Last();
-    //
-    //                 _models.Add(new EnvironmentModelMetadata
-    //                 {
-    //                     PrefabName = prefabFileName[..prefabFileName.LastIndexOf('.')],
-    //                     Path = $"data://{path.Replace('\\', '/')}",
-    //                     Transform = isFirst ? matrix.ToArray() : (prefabMatrix * matrix).ToArray()
-    //                 });
-    //             }
-    //             catch
-    //             {
-    //                 var path = element.GetElementByName("sourcePath_")?.GetTextValue();
-    //                 _logger.LogInformation("Failed to handle model node with sourcePath {Path} from ebex {Uri}",
-    //                     path ?? "NONE",
-    //                     uri);
-    //             }
-    //         }
-    //         else if (typeAttribute == "SQEX.Ebony.Framework.Entity.EntityPackageReference")
-    //         {
-    //             // Pull relevant data from the node
-    //             var path = element.GetElementByName("sourcePath_").GetTextValue();
-    //             var position = element.GetElementByName("position_").GetFloat4Value();
-    //             var rotation = element.GetElementByName("rotation_").GetFloat4Value();
-    //             var scale = element.GetElementByName("scaling_").GetFloatValue();
-    //
-    //             // Luminous ignores scale of 0, so we must too
-    //             if (scale is > -0.0001f and < 0.0001f)
-    //             {
-    //                 scale = 1.0f;
-    //             }
-    //
-    //             // Construct a transformation matrix for this item
-    //             var translationMatrix = Matrix4x4.CreateTranslation(position[0], position[1], position[2]);
-    //             var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(DegreesToRadians(rotation[1]),
-    //                 DegreesToRadians(rotation[0]), DegreesToRadians(rotation[2]));
-    //             var scaleMatrix = Matrix4x4.CreateScale(scale);
-    //             var matrix = translationMatrix * rotationMatrix * scaleMatrix;
-    //
-    //             var uriUri = new Uri(uri.Replace("data://", "data://data/"));
-    //             var combinedUri = new Uri(uriUri, path);
-    //             var combinedUriString = combinedUri.ToString().Replace("data://data/", "data://");
-    //             var innerXmb2 = context.GetFileByUri(combinedUriString);
-    //
-    //             if (innerXmb2.Length > 0)
-    //             {
-    //                 GetPathsRecursively(combinedUriString, innerXmb2, isFirst ? matrix : prefabMatrix * matrix, false);
-    //             }
-    //             else
-    //             {
-    //                 _logger.LogInformation("Failed to load entity package from {Uri} at path {SourcePath}", uri,
-    //                     path);
-    //             }
-    //         }
-    //     };
-    // }
 
     private float DegreesToRadians(float degrees)
     {

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Flagrum.Console.Utilities;
-using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 
 namespace Flagrum.Console;
 
@@ -11,6 +11,35 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        var settings = new SettingsService();
+        using var context = new FlagrumDbContext(settings);
+        var gfxData =
+            context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gmdl");
+        var gpuData =
+            context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gpubin");
+        var model = new ModelReader(gfxData, gpuData).Read();
+
+        var types = new List<string>();
+
+        foreach (var meshObject in model.MeshObjects)
+        {
+            foreach (var mesh in meshObject.Meshes)
+            {
+                foreach (var stream in mesh.VertexStreamDescriptions)
+                {
+                    foreach (var description in stream.VertexElementDescriptions)
+                    {
+                        if (!types.Contains(description.Semantic))
+                        {
+                            types.Add(description.Semantic);
+                        }
+                    }
+                }
+            }
+        }
+
+        var x = true;
+
         // var finder = new FileFinder();
         // finder.FindByQuery(
         //     file => file.Uri.Contains("door", StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith(".gmdl"),
@@ -20,43 +49,43 @@ public class Program
         //     },
         //     false);
 
-        var finder = new FileFinder();
-        finder.FindByQuery(
-            file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
-            file =>
-            {
-                var builder = new StringBuilder();
-                Xmb2Document.Dump(file.GetData(), builder);
-                var text = builder.ToString();
-                if (text.Contains("tb_pr_wall1_walla.gmdl", StringComparison.OrdinalIgnoreCase))
-                {
-                    System.Console.WriteLine(file.Uri);
-                }
-            },
-            true);
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+        //     file =>
+        //     {
+        //         var builder = new StringBuilder();
+        //         Xmb2Document.Dump(file.GetData(), builder);
+        //         var text = builder.ToString();
+        //         if (text.Contains("stella", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             System.Console.WriteLine(file.Uri);
+        //         }
+        //     },
+        //     true);
 
-         // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
-         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
-         // var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
-         //
-         // foreach (var meshObject in model.MeshObjects)
-         // {
-         //     foreach (var mesh in meshObject.Meshes)
-         //     {
-         //         foreach (var uvMap in mesh.UVMaps)
-         //         {
-         //             foreach (var coord in uvMap.UVs)
-         //             {
-         //                 if (coord.U == Half.NaN || coord.U == Half.NegativeInfinity || coord.U == Half.PositiveInfinity
-         //                     || coord.V == Half.NaN || coord.V == Half.NegativeInfinity ||
-         //                     coord.V == Half.PositiveInfinity)
-         //                 {
-         //                     System.Console.WriteLine($"{meshObject.Name}, {mesh.Name} - U: {coord.U}, V: {coord.V}");
-         //                 }
-         //             }
-         //         }
-         //     }
-         // }
+        // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
+        //
+        // foreach (var meshObject in model.MeshObjects)
+        // {
+        //     foreach (var mesh in meshObject.Meshes)
+        //     {
+        //         foreach (var uvMap in mesh.UVMaps)
+        //         {
+        //             foreach (var coord in uvMap.UVs)
+        //             {
+        //                 if (coord.U == Half.NaN || coord.U == Half.NegativeInfinity || coord.U == Half.PositiveInfinity
+        //                     || coord.V == Half.NaN || coord.V == Half.NegativeInfinity ||
+        //                     coord.V == Half.PositiveInfinity)
+        //                 {
+        //                     System.Console.WriteLine($"{meshObject.Name}, {mesh.Name} - U: {coord.U}, V: {coord.V}");
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         //
         // var x = true;
 

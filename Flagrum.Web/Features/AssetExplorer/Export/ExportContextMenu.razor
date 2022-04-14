@@ -156,7 +156,11 @@
                 EnvironmentPacker.Pack(item.Uri, path);
             });
 
-            await InvokeAsync(() => Parent.SetLoading(false));
+            await InvokeAsync(() =>
+            {
+                Parent.SetLoading(false);
+                WpfService.ShowWindowsNotification("Environment Export Complete");
+            });
         });
     }
 }
