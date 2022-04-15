@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
@@ -56,6 +58,11 @@ public class EnvironmentPacker
 
     public void Pack(string uri, string outputPath)
     {
+        // Need to set to invariant culture as some cultures don't handle the
+        // exponent portion when parsing floats
+        var previousCulture = Thread.CurrentThread.CurrentCulture;
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        
         var basePathTokens = outputPath.Split('\\')[..^1];
         var basePath = string.Join('\\', basePathTokens);
         var outputFileName = outputPath.Split('\\').Last();
@@ -118,6 +125,8 @@ public class EnvironmentPacker
         _models.Clear();
         _textures.Clear();
         _nodeTypes.Clear();
+
+        Thread.CurrentThread.CurrentCulture = previousCulture;
     }
 
     private void PackModel(string uri, string directory, int index)
