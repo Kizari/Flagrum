@@ -119,7 +119,7 @@ namespace Flagrum.Core.Ebex.Xmb2
                         float4[0] = BitConverter.ToSingle(xmb2, realValueOffset);
                         float4[1] = BitConverter.ToSingle(xmb2, realValueOffset + sizeof(float));
                         float4[2] = BitConverter.ToSingle(xmb2, realValueOffset + sizeof(float) * 2);
-                        float4[3] = BitConverter.ToSingle(xmb2, realValueOffset + sizeof(float) * 2);
+                        float4[3] = BitConverter.ToSingle(xmb2, realValueOffset + sizeof(float) * 3);
                         value = float4;
                     }
                     break;
@@ -323,6 +323,15 @@ namespace Flagrum.Core.Ebex.Xmb2
             var result = new float[4];
             switch (this.ValueType)
             {
+                case Type.String:
+                    var valueString = (string)Value;
+                    var tokens = valueString.Split(',');
+                    for (var i = 0; i < 4; i++)
+                    {
+                        result[i] = float.Parse(tokens[i]);
+                    }
+
+                    break;
                 case Type.Bool:
                     if ((bool)this.Value)
                     {

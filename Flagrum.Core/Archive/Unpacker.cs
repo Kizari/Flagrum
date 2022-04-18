@@ -51,7 +51,7 @@ public class Unpacker : IDisposable
     {
         _files ??= ReadFileHeaders().ToList();
 
-        var match = _files.FirstOrDefault(f => f.Uri.Contains(query));
+        var match = _files.FirstOrDefault(f => f.Uri.Contains(query, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
             uri = match.Uri;
@@ -103,7 +103,7 @@ public class Unpacker : IDisposable
         return packer;
     }
 
-    private void ReadFileData(ArchiveFile file)
+    public void ReadFileData(ArchiveFile file)
     {
         _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
         var buffer = new byte[file.ProcessedSize];

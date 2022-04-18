@@ -1,6 +1,9 @@
-﻿using System.IO;
-using System.Linq;
-using Flagrum.Core.Ebex;
+﻿using System.Collections.Generic;
+using System.IO;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 
 namespace Flagrum.Console;
 
@@ -8,37 +11,98 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        using var fileStream = new FileStream(@"C:\Modding\nh02_initialize.ebex",
-            FileMode.Open, FileAccess.Read);
+        var settings = new SettingsService();
+        using var context = new FlagrumDbContext(settings);
+        var gfxData =
+            context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gmdl");
+        var gpuData =
+            context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gpubin");
+        var model = new ModelReader(gfxData, gpuData).Read();
 
-        var reader = new EbexReader(fileStream);
-        var result = reader.Read().ToList();
+        var types = new List<string>();
 
-        var writer = new EbexWriter(result);
-        var outputStream = writer.Write() as MemoryStream;
-        File.WriteAllBytes(@"C:\Modding\nh02_initialize_reserialized.xml", outputStream.ToArray());
+        foreach (var meshObject in model.MeshObjects)
+        {
+            foreach (var mesh in meshObject.Meshes)
+            {
+                foreach (var stream in mesh.VertexStreamDescriptions)
+                {
+                    foreach (var description in stream.VertexElementDescriptions)
+                    {
+                        if (!types.Contains(description.Semantic))
+                        {
+                            types.Add(description.Semantic);
+                        }
+                    }
+                }
+            }
+        }
 
         var x = true;
 
-        // var gfx = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh05\model_000\nh05_000.gmdl.gfxbin");
-        // var gpu = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh05\model_000\nh05_000.gpubin");
-        // var model = new ModelReader(gfx, gpu).Read();
-        //
-        // foreach (var mesh in model.MeshObjects[0].Meshes)
-        // {
-        //     System.Console.WriteLine(mesh.Name);
-        //     for (var i = 0; i < mesh.ColorMaps.Count; i++)
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.Contains("door", StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith(".gmdl"),
+        //     file =>
         //     {
-        //         var colorMap = mesh.ColorMaps[i];
-        //         if (colorMap.Colors.Any(c => c.A is > 0 and < 255))
+        //         System.Console.WriteLine(file.Uri);
+        //     },
+        //     false);
+
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+        //     file =>
+        //     {
+        //         var builder = new StringBuilder();
+        //         Xmb2Document.Dump(file.GetData(), builder);
+        //         var text = builder.ToString();
+        //         if (text.Contains("stella", StringComparison.OrdinalIgnoreCase))
         //         {
-        //             System.Console.WriteLine($"- Color Map {i}");
+        //             System.Console.WriteLine(file.Uri);
+        //         }
+        //     },
+        //     true);
+
+        // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
+        // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
+        // var model = new ModelReader(File.ReadAllBytes(gfx), File.ReadAllBytes(gpu)).Read();
+        //
+        // foreach (var meshObject in model.MeshObjects)
+        // {
+        //     foreach (var mesh in meshObject.Meshes)
+        //     {
+        //         foreach (var uvMap in mesh.UVMaps)
+        //         {
+        //             foreach (var coord in uvMap.UVs)
+        //             {
+        //                 if (coord.U == Half.NaN || coord.U == Half.NegativeInfinity || coord.U == Half.PositiveInfinity
+        //                     || coord.V == Half.NaN || coord.V == Half.NegativeInfinity ||
+        //                     coord.V == Half.PositiveInfinity)
+        //                 {
+        //                     System.Console.WriteLine($"{meshObject.Name}, {mesh.Name} - U: {coord.U}, V: {coord.V}");
+        //                 }
+        //             }
         //         }
         //     }
-        //
-        //     System.Console.WriteLine("\n");
         // }
         //
+        // var x = true;
+
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.EndsWith(".amdl"),
+        //     file => System.Console.WriteLine($"{file.Uri.Split('/').Last()}\t\t{file.Uri}")
+        // );
+
+        // var input = @"C:\Modding\teal.png";
+        // var output = @"C:\Modding\teal.btex";
+        // var converter = new TextureConverter();
+        // var btex = converter.ToBtex("teal", "png", TextureType.Mrs, File.ReadAllBytes(input));
+        // File.WriteAllBytes(output, btex);
+        // var gfx = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\le_ar_gqshop1\le_ar_gqshop1.gmdl.gfxbin");
+        // var gpu = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\le_ar_gqshop1\le_ar_gqshop1.gpubin");
+        // var model = new ModelReader(gfx, gpu).Read();
         // var x = true;
         //Visit(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas");
         // var json = File.ReadAllText(@"C:\Modding\map3.json");

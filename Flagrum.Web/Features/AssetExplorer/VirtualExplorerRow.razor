@@ -1,13 +1,12 @@
-﻿@using Flagrum.Web.Persistence
-@using Flagrum.Web.Persistence.Entities
+﻿@using Flagrum.Web.Persistence.Entities
 @using Flagrum.Web.Features.AssetExplorer.Data
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 
-<div class="row py-1 pr-2 pl-4 transition-colors hover:bg-grey-700 select-none cursor-pointer"
+<div class="row py-1 pr-2 pl-4 transition-colors @(Parent.SelectedItem?.Uri == Node.GetUri(Context) || Parent.ContextNode == Node ? "bg-grey-700" : "") hover:bg-grey-700 select-none cursor-pointer"
      @onclick="() => OnClick(Node)">
-    <span class="material-icons text-sm">@Icon(Type(Node))</span>
-    <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@DisplayName(Node)</span>
+    <span class="material-icons text-sm">@AssetExplorerItem.GetIcon(Node.GetUri(Context))</span>
+    <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@AssetExplorerItem.GetDisplayName(Node.Name, AssetExplorerItem.GetType(Node.GetUri(Context)))</span>
 </div>
 
 @code
@@ -27,63 +26,7 @@
         else
         {
             Parent.SetSelectedItem(AssetExplorerItem.FromNode(node, Context));
+            StateHasChanged();
         }
-    }
-
-    private string DisplayName(AssetExplorerNode node)
-    {
-        if (Type(node) == ExplorerItemType.Directory || node.Name.StartsWith("CRAF"))
-        {
-            return node.Name;
-        }
-
-        var extension = node.Name[node.Name.LastIndexOf('.')..].ToLower();
-        var trueExtension = extension switch
-        {
-            ".tif" or ".tga" or ".png" or ".dds" or ".exr" => ".btex",
-            ".gmtl" => ".gmtl.gfxbin",
-            ".gmdl" => ".gmdl.gfxbin",
-            _ => extension
-            };
-
-        return node.Name[..node.Name.LastIndexOf('.')] + trueExtension;
-    }
-
-    private string Icon(ExplorerItemType type)
-    {
-        return type switch
-        {
-            ExplorerItemType.Directory => "folder",
-            ExplorerItemType.Material => "blur_circular",
-            ExplorerItemType.Texture => "gradient",
-            ExplorerItemType.Model => "view_in_ar",
-            _ => "insert_drive_file"
-            };
-    }
-
-    private ExplorerItemType Type(AssetExplorerNode node)
-    {
-        if (Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
-        {
-            return ExplorerItemType.Directory;
-        }
-
-        var tokens = node.Name.Split('.').Select(t => t.ToLower()).ToArray();
-        var extension = tokens[^1] == "gfxbin"
-            ? string.Join('.', tokens[^2..])
-            : tokens[^1];
-        return ExtensionToType(extension);
-    }
-
-    private ExplorerItemType ExtensionToType(string extension)
-    {
-        return extension?.ToLower() switch
-        {
-            "btex" or "tif" or "tga" or "png" or "dds" or "exr" => ExplorerItemType.Texture,
-            "gmtl.gfxbin" or "gmtl" => ExplorerItemType.Material,
-    //"gmdl.gfxbin" => ExplorerItemType.Model,
-            null or "" => ExplorerItemType.Directory,
-            _ => ExplorerItemType.Unsupported
-            };
     }
 }

@@ -1,0 +1,164 @@
+﻿@page "/mod/presets/{Mode}/{PresetId}"
+@using Flagrum.Web.Persistence.Entities
+@using Microsoft.EntityFrameworkCore
+
+@inject NavigationManager Navigation
+@inject FlagrumDbContext Context
+@inject ModelReplacementPresets ModelReplacementPresets
+
+<EditForm Model="Preset" class="p-6">
+
+    <div class="box p-3 row">
+        <label class="mr-3 flex-shrink-0">PRESET NAME</label>
+        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Preset.Name"/>
+        <Button CssClass="mx-3" Icon="save" Text="Save" OnClick="Save"/>
+        <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
+    </div>
+
+    <div class="box mt-6">
+        <div class="row p-3 border-b border-dark-550">
+            <span class="flex-grow">
+                <strong>Models to Replace</strong>
+            </span>
+            <Button Icon="add" Text="Add Another" OnClick="AddPath"/>
+        </div>
+        @for (var i = 0; i < Preset.ReplacementPaths.Count; i++)
+        {
+            var path = Preset.ReplacementPaths.ElementAt(i);
+            <div class="row px-3 @(i == 0 ? "pt-3" : "pt-1.5") @(i == Preset.ReplacementPaths.Count - 1 ? "pb-3" : "pb-1.5")">
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="path.Path"/>
+                <Button CssClass="ml-3" Icon="videogame_asset" Text="Browse" OnClick="() => Modal.Open(path)"/>
+                @if (Preset.ReplacementPaths.Count > 1)
+                {
+                    <span class="material-icons cursor-pointer ml-2" @onclick="() => ClearPath(path)">clear</span>
+                }
+            </div>
+        }
+    </div>
+
+</EditForm>
+
+<CascadingValue Value="this">
+    <ModelBrowserModal @ref="Modal"/>
+</CascadingValue>
+
+<AlertModal @ref="AlertModal" />
+
+@code
+{
+    [Parameter] public string Mode { get; set; }
+    [Parameter] public string PresetId { get; set; }
+
+    private ModelReplacementPreset Preset { get; set; } = new();
+    private ModelBrowserModal Modal { get; set; }
+    private AlertModal AlertModal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var presetId = Convert.ToInt32(PresetId);
+        if (presetId > 0)
+        {
+            if (Mode == "edit")
+            {
+                Preset = Context.ModelReplacementPresets
+                    .Include(p => p.ReplacementPaths)
+                    .FirstOrDefault(p => p.Id == presetId);
+            }
+            else
+            {
+                Preset = Context.ModelReplacementPresets
+                    .Where(p => p.Id == presetId)
+                    .Select(p => new ModelReplacementPreset
+                    {
+                        Name = p.Name + " Copy",
+                        ReplacementPaths = p.ReplacementPaths.Select(r => new ModelReplacementPath
+                        {
+                            Path = r.Path
+                        }).ToList()
+                    })
+                    .FirstOrDefault() ?? ModelReplacementPresets.GetDefaultReplacements()
+                        .Where(p => p.Index == presetId)
+                        .Select(p => new ModelReplacementPreset
+                        {
+                            Name = p.Name + " Copy",
+                            ReplacementPaths = p.Models.Select(r => new ModelReplacementPath
+                            {
+                                Path = r
+                            }).ToList()
+                        })
+                        .FirstOrDefault();
+            }
+        }
+        else
+        {
+            var name = "New Preset";
+            var counter = 1;
+            var names = Context.ModelReplacementPresets
+                .Where(p => p.Name.StartsWith("New Preset"))
+                .Select(p => p.Name)
+                .ToList();
+
+            while (names.Contains(name))
+            {
+                counter++;
+                name = "New Preset " + counter;
+            }
+            
+            Preset = new ModelReplacementPreset
+            {
+                Name = name,
+                ReplacementPaths = new List<ModelReplacementPath> {new()}
+            };
+        }
+    }
+
+    private void AddPath()
+    {
+        Preset.ReplacementPaths.Add(new ModelReplacementPath());
+        StateHasChanged();
+    }
+
+    private void ClearPath(ModelReplacementPath path)
+    {
+        Preset.ReplacementPaths.Remove(path);
+        StateHasChanged();
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/mod/configure/frompreset");
+    }
+
+    private void Save()
+    {
+        if (string.IsNullOrEmpty(Preset.Name))
+        {
+            AlertModal.Open("Error", "Invalid Preset Name", "Please enter a name for this preset.", null);
+        }
+        else if (!Preset.ReplacementPaths.Any(r => !string.IsNullOrEmpty(r.Path)))
+        {
+            AlertModal.Open("Error", "Invalid Model Replacements", "Please provide at least one model to replace.", null);
+        }
+        else if (ModelReplacementPresets.GetDefaultReplacements().Any(r => r.Name == Preset.Name)
+            || Context.ModelReplacementPresets.Any(r => r.Name == Preset.Name))
+        {
+            AlertModal.Open("Error", "Invalid Preset Name", "This name is already in use by another preset.", null);
+        }
+        else
+        {
+            if (Preset.Id > 0)
+            {
+                Context.Update(Preset);
+            }
+            else
+            {
+                Context.Add(Preset);
+            }
+
+            Context.SaveChanges();
+            Navigation.NavigateTo("/mod/configure/frompreset");
+        }
+    }
+
+    public void CallStateHasChanged() => StateHasChanged();
+}

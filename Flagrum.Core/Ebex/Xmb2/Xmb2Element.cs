@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Flagrum.Core.Utilities;
 
@@ -53,8 +54,48 @@ public class Xmb2Element
     /// This element's name.
     /// </summary>
     public string Name { get; }
+    
+    private static readonly Dictionary<uint, string> Names = new string[]
+    {
+        "",
+        "name",
+        "objectIndex",
+        "type",
+        "value",
+        "path",
+        "checked",
+        "reference",
+        "object",
+        "original_type",
+        "owner",
+        "ownerIndex",
+        "ownerPath",
+        "fixid",
+        "relativePath",
+        "dynamic",
+        "connectorIndex",
+        "connectorRelativePath",
+        "connectorObject",
+        "connectorObjectIndex",
+        "PrefabOwnerPackageSource",
+        "PrefabConnectionSourceItemPath",
+        "ProxyConnectionOwnerPackageName",
+        "UseTemplateConnection",
+        "UnresolvedPointerPackageSource",
+        "UseUnresolvedPointerReference",
+        "FarReference",
+        "ReferenceSourceItemPath",
+        "UsePrefabConnectionV20",
+        "CharaEntryRef",
+        "csharp_type",
+        "deserialize_type",
+        "csharp",
+        "import_component_class_name",
+        "import_component_class_hash",
+        "import_component_member_hash"
+    }.ToDictionary((Func<string, uint>) (x => Cryptography.Hash32(x)), (Func<string, string>) (x => x));
 
-    public void Dump(byte[] xmb2, StringBuilder output, int indent)
+    public void Dump(StringBuilder output, int indent)
     {
         for (var i = 0; i < indent; i++)
         {
@@ -72,7 +113,9 @@ public class Xmb2Element
             var variantOffset = variantRelativeOffsetOffset + variantRelativeOffset;
             var variant = Xmb2Variant.FromByteArray(Xmb2, variantOffset);
 
-            output.Append(" 0x").Append(variant.NameHash.ToString("x")).Append("=\"").Append(variant.GetTextValue())
+            //output.Append(" 0x").Append(variant.NameHash.ToString("x")).Append("=\"").Append(variant.GetTextValue())
+            //    .Append('\"');
+            output.Append(' ').Append(Names[variant.NameHash]).Append("=\"").Append(variant.GetTextValue())
                 .Append('\"');
         }
 
@@ -81,7 +124,7 @@ public class Xmb2Element
             output.Append(">\n");
             foreach (var element in GetElements())
             {
-                element.Dump(xmb2, output, indent + 2);
+                element.Dump(output, indent + 2);
             }
 
             for (var i = 0; i < indent; i++)

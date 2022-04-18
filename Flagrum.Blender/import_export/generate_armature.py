@@ -171,6 +171,7 @@ def generate_armature(context: ImportContext, armature_data):
     armature = bpy.data.armatures.new(armature_name)
     armature_object = bpy.data.objects.new(armature_name, armature)
     armature_object.data.name = armature_name
+    armature.display_type = 'STICK'
     bpy.context.scene.collection.children.link(context.collection)
     context.collection.objects.link(armature_object)
     bpy.context.view_layer.objects.active = armature_object

@@ -25,6 +25,14 @@ public class ModelReplacer
     {
         var usedIndices = new List<uint>();
 
+        // Weapon model replacements (usually only have 1 or 2 bones) don't seem to work correctly on the
+        // same system as other model replacements, so we'll just let it use the standard bone system
+        // if we have detected this armature
+        if (_gpubin.BoneTable.Count < 6 && _gpubin.BoneTable.Any(b => b.Value == "C_Body"))
+        {
+            isModelReplacement = false;
+        }
+        
         foreach (var mesh in _model.MeshObjects[0].Meshes)
         {
             var match = _gpubin.Meshes.FirstOrDefault(m => m.Name == mesh.Name);

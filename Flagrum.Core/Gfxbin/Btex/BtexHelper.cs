@@ -27,6 +27,11 @@ public static class BtexHelper
             return TextureType.AmbientOcclusion;
         }
 
+        if (textureId.Contains("opacity", StringComparison.OrdinalIgnoreCase))
+        {
+            return TextureType.Opacity;
+        }
+
         return TextureType.Undefined;
     }
 

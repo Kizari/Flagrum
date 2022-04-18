@@ -1,4 +1,5 @@
 ﻿@page "/mod/configure"
+@page "/mod/configure/{NavigationParameter}"
 @using Flagrum.Core.Archive
 
 <CascadingValue Value="this">
@@ -15,14 +16,32 @@
             @if (!CanSave)
             {
                 <div class="row mt-6">
-                    <div class="box row p-4 mr-3 flex-grow">
+                    <div class="box row p-4 flex-grow @(Mod.Type == (int)BinmodType.Character && Mod.Target < 0 ? "" : "mr-3")">
                         <label class="inline-block mr-3">TYPE</label>
                         <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged"/>
                     </div>
-                    <div class="box row p-4 ml-3 flex-grow">
-                        <label class="inline-block mr-3">TARGET</label>
-                        <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" Placeholder="-- Select Target --"/>
-                    </div>
+                    @if (Mod.Type != (int)BinmodType.Character)
+                    {
+                        <div class="box row p-4 ml-3 flex-grow">
+                            <label class="inline-block mr-3">TARGET</label>
+                            <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" Placeholder="-- Select Target --"/>
+                        </div>
+                    }
+                    else if (Mod.Target > -1)
+                    {
+                        <div class="box row p-4 ml-3 flex-grow">
+                            <label class="inline-block mr-3">TARGET</label>
+                            <span class="flex-grow input mr-3">@ModelReplacementPresetName</span>
+                            <span class="material-icons cursor-pointer" @onclick="() => Mod.Target = -1">clear</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="box row p-4 ml-3">
+                            <Button CssClass="my-1" Icon="add" Text="Create New Preset" OnClick="@(() => Navigation.NavigateTo("/mod/presets/create/0"))"/>
+                        </div>
+                    }
+
                     @if (Mod.Type == (int)BinmodType.StyleEdit)
                     {
                         <div class="box row p-4 ml-6 flex-grow">
@@ -37,6 +56,11 @@
                         </div>
                     }
                 </div>
+
+                @if (Mod.Type == (int)BinmodType.Character && Mod.Target < 0)
+                {
+                    <ModelReplacements/>
+                }
 
                 @if (Mod.Target > -1 && (Mod.Type != (int)BinmodType.StyleEdit || !string.IsNullOrEmpty(Mod.Gender)))
                 {
@@ -169,4 +193,4 @@
              Subtext="This action cannot be undone!"
              YesText="Delete"
              NoText="Cancel"
-             OnYes="OnDelete" />
+             OnYes="OnDelete"/>

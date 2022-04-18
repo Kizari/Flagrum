@@ -20,6 +20,23 @@ public class GpubinMesh
     public List<List<ushort[]>> WeightIndices { get; set; } = new();
     public List<List<int[]>> WeightValues { get; set; } = new();
     public MaterialData Material { get; set; }
+    public BlenderMaterialData BlenderMaterial { get; set; }
+}
+
+public class BlenderMaterialData
+{
+    public string Hash { get; set; }
+    public string Name { get; set; }
+    public IEnumerable<BlenderTextureData> Textures { get; set; }
+}
+
+public class BlenderTextureData
+{
+    public string Hash { get; set; }
+    public string Name { get; set; }
+    public string Slot { get; set; }
+    public string Path { get; set; }
+    public string Uri { get; set; }
 }
 
 public class MaterialData

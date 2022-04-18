@@ -1,17 +1,23 @@
-﻿@using Index = Flagrum.Web.Features.AssetExplorer.Index
+﻿@using Flagrum.Web.Persistence.Entities
+@using Index = Flagrum.Web.Features.AssetExplorer.Index
 @using Flagrum.Web.Features.AssetExplorer.Data
 @using System.IO
+@using System.Text
+@using Flagrum.Core.Ebex.Xmb2
+@using Flagrum.Core.Ebex
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
+@inject EnvironmentPacker EnvironmentPacker
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
-             OverrideDefaultListCssClass="p-0">
+             OverrideDefaultListCssClass="p-0"
+             OnHiding="() => {Parent.ContextNode = null; Parent.CallStateHasChanged();}">
     @if (Parent.ContextItem.Type == ExplorerItemType.Directory)
     {
-        <Item OnClick="ExportFolderModal.Open"
+        <Item OnClick="ExportFolder"
               OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
             <div class="row">
                 <span class="material-icons mr-3" style="font-size: 0.9rem">drive_file_move</span>
@@ -39,6 +45,23 @@
                 </div>
             </Item>
         }
+        else if (Parent.ContextItem.Type == ExplorerItemType.Xml)
+        {
+            <Item OnClick="ExportXml"
+                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                <div class="row">
+                    <span class="material-icons mr-3" style="font-size: 0.9rem">code</span>
+                    <span>Export as XML</span>
+                </div>
+            </Item>
+            <Item OnClick="ExportEnvironment"
+                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                <div class="row">
+                    <span class="material-icons mr-3" style="font-size: 0.9rem">public</span>
+                    <span>Export as Environment</span>
+                </div>
+            </Item>
+        }
     }
 </ContextMenu>
 
@@ -53,6 +76,12 @@
     private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
     private ExportFolderModal ExportFolderModal { get; set; }
 
+    private void ExportFolder()
+    {
+        ExportFolderModal.SetContextNode(Parent.ContextNode);
+        ExportFolderModal.Open();
+    }
+    
     private async Task ExportSingle()
     {
         var item = Parent.ContextItem;
@@ -95,6 +124,43 @@
             }
 
             File.WriteAllBytes(path, data);
+        });
+    }
+
+    private async Task ExportXml()
+    {
+        var item = Parent.ContextItem;
+        var defaultName = item.Name[..item.Name.LastIndexOf('.')] + ".xml";
+        var filter = "XML File|*.xml";
+
+        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, path =>
+        {
+            var xmb2 = item.Data();
+            var builder = new StringBuilder();
+            Xmb2Document.Dump(xmb2, builder);
+            File.WriteAllText(path, builder.ToString());
+        });
+    }
+
+    private async Task ExportEnvironment()
+    {
+        var item = Parent.ContextItem;
+        var filter = "Flagrum Environment Data|*.fed";
+
+        await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
+        {
+            await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
+
+            await Task.Run(() =>
+            {
+                EnvironmentPacker.Pack(item.Uri, path);
+            });
+
+            await InvokeAsync(() =>
+            {
+                Parent.SetLoading(false);
+                WpfService.ShowWindowsNotification("Environment Export Complete");
+            });
         });
     }
 }

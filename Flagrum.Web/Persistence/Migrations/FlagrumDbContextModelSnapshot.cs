@@ -65,6 +65,46 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.ToTable("AssetUris");
                 });
 
+            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementFavourite", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id", "IsDefault");
+
+                    b.ToTable("ModelReplacementFavourites");
+                });
+
+            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementPath", b =>
+                {
+                    b.Property<int>("ModelReplacementPresetId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ModelReplacementPresetId", "Path");
+
+                    b.ToTable("ModelReplacementPaths");
+                });
+
+            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementPreset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ModelReplacementPresets");
+                });
+
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.StatePair", b =>
                 {
                     b.Property<int>("Key")
@@ -98,6 +138,15 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.Navigation("ArchiveLocation");
                 });
 
+            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementPath", b =>
+                {
+                    b.HasOne("Flagrum.Web.Persistence.Entities.ModelReplacementPreset", null)
+                        .WithMany("ReplacementPaths")
+                        .HasForeignKey("ModelReplacementPresetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ArchiveLocation", b =>
                 {
                     b.Navigation("AssetUris");
@@ -106,6 +155,11 @@ namespace Flagrum.Web.Persistence.Migrations
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.AssetExplorerNode", b =>
                 {
                     b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementPreset", b =>
+                {
+                    b.Navigation("ReplacementPaths");
                 });
 #pragma warning restore 612, 618
         }

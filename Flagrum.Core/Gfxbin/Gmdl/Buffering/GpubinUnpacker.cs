@@ -228,6 +228,15 @@ public class GpubinUnpacker
     {
         var value = BitConverter.ToSingle(_currentBuffer, _currentBufferPosition);
         _currentBufferPosition += sizeof(float);
+
+        if (float.IsNaN(value)
+            || float.IsInfinity(value)
+            || float.IsNegativeInfinity(value)
+            || float.IsPositiveInfinity(value))
+        {
+            value = 0.0f;
+        }
+
         return value;
     }
 
@@ -235,6 +244,15 @@ public class GpubinUnpacker
     {
         var value = BitConverter.ToHalf(_currentBuffer, _currentBufferPosition);
         _currentBufferPosition += 2; // 2 bytes in a half
+
+        if (Half.IsNaN(value)
+            || Half.IsInfinity(value)
+            || Half.IsNegativeInfinity(value)
+            || Half.IsPositiveInfinity(value))
+        {
+            value = (Half)0;
+        }
+
         return value;
     }
 

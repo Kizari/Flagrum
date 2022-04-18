@@ -15,9 +15,9 @@ public class AppStateData
 
 public class AppStateService
 {
+    private readonly FlagrumDbContext _context;
     private readonly AppStateData _data;
     private readonly SettingsService _settings;
-    private readonly FlagrumDbContext _context;
 
     public AppStateService(
         SettingsService settings,
@@ -45,6 +45,7 @@ public class AppStateService
     public bool IsModListInitialized { get; set; }
 
     public AssetExplorerNode Node { get; set; }
+    public AssetExplorerNode RootModelBrowserNode { get; set; }
 
     public int ActiveCategoryFilter { get; set; } = 0;
     public int ActiveModTypeFilter { get; set; } = -1;

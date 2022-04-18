@@ -1,0 +1,64 @@
+﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.6)">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="max-width: 90%; max-height: 90%">
+        <div class="rounded-t-lg bg-grey-700 p-3 row">
+            @HeaderView
+        </div>
+        <div class="@(FooterView == null ? "rounded-b-lg" : "") p-@Padding flex flex-row items-center scrollbar-light"
+             style="max-height: 90vh; overflow-y: auto; overflow-x: hidden">
+            @BodyView
+        </div>
+        @if (FooterView != null)
+        {
+            <div class="rounded-b-lg bg-grey-700 p-3 row">
+                @FooterView
+            </div>
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public RenderFragment HeaderView { get; set; }
+
+    [Parameter]
+    public RenderFragment BodyView { get; set; }
+
+    [Parameter]
+    public RenderFragment FooterView { get; set; }
+
+    [Parameter]
+    public int Width { get; set; } = 400;
+
+    [Parameter]
+    public int Height { get; set; } = 300;
+
+    [Parameter]
+    public int Padding { get; set; } = 6;
+
+    private string Display { get; set; } = "hidden";
+    private string Opacity { get; set; } = "opacity-0";
+
+    public async void Open()
+    {
+        Display = "flex";
+        StateHasChanged();
+
+        await Task.Delay(50);
+
+        Opacity = "opacity-100";
+        StateHasChanged();
+    }
+
+    public async void Close(Action onClose = null)
+    {
+        Opacity = "opacity-0";
+        StateHasChanged();
+
+        onClose?.Invoke();
+
+        await Task.Delay(200);
+        Display = "hidden";
+        StateHasChanged();
+    }
+}

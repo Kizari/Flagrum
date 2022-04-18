@@ -22,6 +22,10 @@ public class FlagrumDbContext : DbContext
     public DbSet<AssetUri> AssetUris { get; set; }
     public DbSet<StatePair> StatePairs { get; set; }
 
+    public DbSet<ModelReplacementPreset> ModelReplacementPresets { get; set; }
+    public DbSet<ModelReplacementPath> ModelReplacementPaths { get; set; }
+    public DbSet<ModelReplacementFavourite> ModelReplacementFavourites { get; set; }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

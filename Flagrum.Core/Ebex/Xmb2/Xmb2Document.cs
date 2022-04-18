@@ -29,7 +29,6 @@ public class Xmb2Document
         var rootElementRelativeOffset = BitConverter.ToInt32(xmb2, RootElementOffsetOffset);
         var rootElement = Xmb2Element.FromByteArray(xmb2, RootElementOffsetOffset + rootElementRelativeOffset);
         Debug.Assert(rootElement != null);
-
-        rootElement.Dump(xmb2, output, 0);
+        rootElement.Dump(output, 0);
     }
 }

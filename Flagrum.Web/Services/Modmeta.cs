@@ -123,7 +123,8 @@ public class Modmeta
 
         if (mod.Model2Name == null)
         {
-            builder.AppendLine($"gmdl1={mod.ModelName}.{mod.ModelExtension}");
+            builder.AppendLine($"gmdl1=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
+            builder.AppendLine($"gmdl2=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         }
         else
         {

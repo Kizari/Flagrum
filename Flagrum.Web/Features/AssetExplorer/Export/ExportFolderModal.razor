@@ -1,7 +1,7 @@
 ﻿@using Index = Flagrum.Web.Features.AssetExplorer.Index
-@using System.IO
 @using Flagrum.Core.Archive
 @using Flagrum.Web.Features.AssetExplorer.Data
+@using System.IO
 @using Flagrum.Web.Persistence.Entities
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
@@ -40,7 +40,10 @@
     private Modal Modal { get; set; }
     private bool IsRecursive { get; set; }
     private string Extension { get; set; } = "PNG";
+    private AssetExplorerNode ContextNode { get; set; }
 
+    public void SetContextNode(AssetExplorerNode node) => ContextNode = node;
+    
     public void Open()
     {
         Modal.Open();
@@ -59,7 +62,7 @@
 
                 if (IsRecursive)
                 {
-                    Parent.ContextNode.Traverse(Context, node =>
+                    ContextNode.Traverse(Context, node =>
                     {
                         if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
                         {
@@ -78,7 +81,7 @@
                 }
                 else
                 {
-                    foreach (var node in Parent.ContextNode.Children)
+                    foreach (var node in Context.AssetExplorerNodes.Where(n => n.ParentId == ContextNode.Id))
                     {
                         if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
                         {
@@ -96,16 +99,18 @@
                     }
                 }
 
-                var baseUri = Parent.ContextNode.GetUri(Context);
+                var baseUri = ContextNode.GetUri(Context);
                 var converter = new TextureConverter();
-                
+
                 foreach (var (archiveLocation, uris) in files)
                 {
                     using var unpacker = new Unpacker(archiveLocation);
                     foreach (var uri in uris)
                     {
                         var data = unpacker.UnpackFileByQuery(uri, out _);
-                        if (AssetExplorerItem.GetType(uri) == ExplorerItemType.Texture)
+                        var type = AssetExplorerItem.GetType(uri);
+                        
+                        if (type == ExplorerItemType.Texture)
                         {
                             data = Extension switch
                             {
@@ -113,13 +118,13 @@
                                 "TGA" => converter.BtexToTga(data),
                                 "DDS" => converter.BtexToDds(data),
                                 _ => data
-                            };
+                                };
                         }
 
-                        var relativePath = Parent.ContextNode.Name + "\\" + uri
+                        var relativePath = ContextNode.Name + "\\" + uri
                             .Replace(baseUri, "")
                             .Replace('/', '\\');
-                        
+
                         var currentDirectory = folder;
                         var split = relativePath.Split('\\');
                         for (var index = 0; index < split.Length - 1; index++)
@@ -132,11 +137,17 @@
                             }
                         }
 
-                        var absolutePath = currentDirectory + "\\" + split.Last();
+                        var absolutePath = currentDirectory + "\\" + AssetExplorerItem.GetDisplayName(split.Last(), type);
+
+                        if (type == ExplorerItemType.Texture)
+                        {
+                            absolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + Extension.ToLower();
+                        }
+                        
                         File.WriteAllBytes(absolutePath, data);
                     }
                 }
-                
+
                 Parent.SetLoading(false);
             });
         });

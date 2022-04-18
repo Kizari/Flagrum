@@ -32,10 +32,10 @@ material_enum = (
 material_weight_limit = {
     'NONE': 4,
     'NAMED_HUMAN_OUTFIT': 6,
-    'NAMED_HUMAN_SKIN': 8,
-    'NAMED_HUMAN_HAIR': 8,
+    'NAMED_HUMAN_SKIN': 6,
+    'NAMED_HUMAN_HAIR': 6,
     'NAMED_HUMAN_EYE': 4,
-    'NAMED_HUMAN_GLASS': 8,
+    'NAMED_HUMAN_GLASS': 6,
     'AVATAR_OUTFIT': 4,
     'AVATAR_SKIN': 4,
     'AVATAR_CLOTH': 4,

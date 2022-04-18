@@ -66,6 +66,21 @@ class MaterialData:
 
 
 @dataclass(init=False)
+class BlenderTextureData:
+    Hash: str
+    Name: str
+    Slot: str
+    Path: str
+
+
+@dataclass(init=False)
+class BlenderMaterialData:
+    Hash: str
+    Name: str
+    Textures: dict[str, str]
+
+
+@dataclass(init=False)
 class MeshData:
     Name: str
     VertexPositions: list[Vector3]
@@ -77,6 +92,7 @@ class MeshData:
     WeightValues: list[list[list[float]]]
     UVMaps: list[UVMap]
     Material: MaterialData
+    BlenderMaterial: BlenderMaterialData
 
 
 @dataclass(init=False)
@@ -96,3 +112,15 @@ class BoneData:
         self.id = 0
         self.name = ""
         self.head_position_matrix = 0
+
+
+@dataclass(init=False)
+class EnvironmentModelMetadata:
+    PrefabName: str
+    Index: int
+    Path: str
+    Position: list[float]
+    Rotation: list[float]
+    Scale: float
+    PrefabRotations: list[list[float]]
+    Transform: list[list[float]]

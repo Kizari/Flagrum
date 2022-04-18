@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
 using Flagrum.Core.Gfxbin.Btex;
@@ -74,6 +75,35 @@ public class TextureConverter
         return BuildBtex(TextureType.Preview, name, image);
     }
 
+    public byte[] ConvertThumbnail(string name, byte[] data)
+    {
+        var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
+        var pointer = pinnedData.AddrOfPinnedObject();
+
+        var image = TexHelper.Instance.LoadFromWICMemory(pointer, data.Length, WIC_FLAGS.NONE);
+
+        var metadata = image.GetMetadata();
+        if (!(metadata.Width == 168 && metadata.Height == 242))
+        {
+            image = image.Resize(168, 242, TEX_FILTER_FLAGS.CUBIC);
+        }
+
+        image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
+
+        // Have to do some kind of conversion to force the janky SRGB out conversion
+        // Which bleaches the image to compensate for SE's jank
+        // DirectXTex throws a fit if converting to the same format, so arbitrarily picked R16G16B16A16_UNORM
+        image = image.Convert(DXGI_FORMAT.R16G16B16A16_UNORM, TEX_FILTER_FLAGS.SRGB_OUT, 0.5f);
+
+        // Then need to convert back to the desired format
+        image = image.Convert(DXGI_FORMAT.R8G8B8A8_UNORM, TEX_FILTER_FLAGS.DEFAULT, 0.5f);
+
+        pinnedData.Free();
+
+        var result = BuildBtex(TextureType.Thumbnail, name, image);
+        return result;
+    }
+
     public byte[] ToBtex(string name, string extension, TextureType type, byte[] data)
     {
         return extension.ToLower() switch
@@ -138,9 +168,13 @@ public class TextureConverter
         var pointer = pinnedData.AddrOfPinnedObject();
 
         var image = TexHelper.Instance.LoadFromDDSMemory(pointer, dds.Length, DDS_FLAGS.NONE);
-
+        
         pinnedData.Free();
-
+        
+        // This is required to prevent an access violation exception from DirectXTexNet
+        // When converting a large number of textures at once
+        GC.Collect();
+        
         var metadata = image.GetMetadata();
         if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
         {
@@ -200,7 +234,7 @@ public class TextureConverter
 
         switch (type)
         {
-            case TextureType.AmbientOcclusion:
+            case TextureType.AmbientOcclusion or TextureType.Opacity:
                 image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
                 image = image.Compress(DXGI_FORMAT.BC4_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
                     0.5f);

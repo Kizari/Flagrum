@@ -9,8 +9,10 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using Flagrum.Desktop.Services;
+using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -51,7 +53,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var width = 1680;
         var height = 1024;
 
-        if (width > bounds.Width || height > bounds.Height)
+        if (width > (bounds.Width * 0.95) || height > (bounds.Height * 0.9))
         {
             width = (int)(bounds.Width * 0.95);
             height = (int)(bounds.Height * 0.9);
@@ -97,6 +99,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             InstallWebView2Runtime();
         }
+        
+        // Migrate the database
+        using var context = new FlagrumDbContext();
+        context.Database.MigrateAsync().Wait();
 
         var services = new ServiceCollection();
 
@@ -172,9 +178,16 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         Task.Run(async () =>
         {
-            using (var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum").Result)
+            try
             {
-                await manager.UpdateApp();
+                using (var manager = UpdateManager.GitHubUpdateManager("https://github.com/Kizari/Flagrum").Result)
+                {
+                    await manager.UpdateApp();
+                }
+            }
+            catch
+            {
+                
             }
         });
     }
