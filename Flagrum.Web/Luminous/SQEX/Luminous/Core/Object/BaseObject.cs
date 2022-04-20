@@ -27,7 +27,7 @@ namespace SQEX.Luminous.Core.Object
                 prop.SetValue(this, val, null);
             }
 
-            // NOTE: HACK since Unity hates properties
+            // TODO HACK since Unity hates properties
             if (prop == null)
             {
                 var field = this.GetType().GetField(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
