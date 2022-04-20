@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using Flagrum.Console.Utilities;
+using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
@@ -51,18 +55,32 @@ public class Program
 
         // var finder = new FileFinder();
         // finder.FindByQuery(
-        //     file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+        //     file => file.Uri.EndsWith(".autoext"),
         //     file =>
         //     {
-        //         var builder = new StringBuilder();
-        //         Xmb2Document.Dump(file.GetData(), builder);
-        //         var text = builder.ToString();
-        //         if (text.Contains("stella", StringComparison.OrdinalIgnoreCase))
+        //         var bytes = file.GetData();
+        //         var text = Encoding.UTF8.GetString(bytes);
+        //         if (text.Contains("pr07_031.gmdl", StringComparison.OrdinalIgnoreCase))
         //         {
         //             System.Console.WriteLine(file.Uri);
         //         }
         //     },
         //     true);
+        
+        var finder = new FileFinder();
+        finder.FindByQuery(
+            file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+            file =>
+            {
+                var builder = new StringBuilder();
+                Xmb2Document.Dump(file.GetData(), builder);
+                var text = builder.ToString();
+                if (text.Contains("SequenceActionChocoboSupport", StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Console.WriteLine(file.Uri);
+                }
+            },
+            true);
 
         // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");

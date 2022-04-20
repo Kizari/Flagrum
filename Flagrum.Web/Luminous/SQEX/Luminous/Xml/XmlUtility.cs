@@ -21,8 +21,7 @@ namespace Luminous.Xml
                 return false;
             }
 
-            var intValue = Int32.Parse(text);
-            return intValue != 0;
+            return int.TryParse(text, out var intValue) && intValue != 0;
         }
     }
 }

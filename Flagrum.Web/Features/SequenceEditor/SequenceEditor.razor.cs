@@ -5,22 +5,31 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Blazor.Diagrams.Core;
+using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Components.Graph;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
+using SQEX.Ebony.Framework.Entity;
 
 namespace Flagrum.Web.Features.SequenceEditor;
 
 public partial class SequenceEditor
 {
     private string _autosavePath;
+
     [Inject] private IJSRuntime JSRuntime { get; set; }
     [Inject] private SettingsService Settings { get; set; }
+    [Inject] private FlagrumDbContext Context { get; set; }
+
+    [Parameter] public string UriBase64 { get; set; }
 
     private Diagram Diagram { get; set; }
 
@@ -34,7 +43,26 @@ public partial class SequenceEditor
         Diagram.RegisterModelComponent<StandardNode, StandardNodeRenderer>();
         Diagram.RegisterModelComponent<StandardGroup, StandardGroupRenderer>();
         Diagram.MouseUp += Diagram_MouseUp;
-        LoadData();
+
+        if (UriBase64 != null)
+        {
+            var uri = UriBase64.FromBase64();
+            var xmb2 = Context.GetFileByUri(uri);
+            var loader = new EntityPackageXmlLoader();
+            var package = loader.CreateEntityPackage(xmb2);
+
+            var counter = 1;
+            foreach (var entity in package.entities_)
+            {
+                var node = new StandardNode(entity.GetType(), new Point(300 * counter, 50));
+                Diagram.Nodes.Add(node);
+                counter++;
+            }
+        }
+        else
+        {
+            LoadData();
+        }
     }
 
     private void Diagram_MouseUp(Model sender, MouseEventArgs args)

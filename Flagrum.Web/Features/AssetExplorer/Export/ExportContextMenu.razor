@@ -1,15 +1,16 @@
-﻿@using Flagrum.Web.Persistence.Entities
-@using Index = Flagrum.Web.Features.AssetExplorer.Index
+﻿@using Flagrum.Core.Utilities
 @using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Core.Ebex
+@using Flagrum.Core.Ebex.Xmb2
+@using Index = Flagrum.Web.Features.AssetExplorer.Index
 @using System.IO
 @using System.Text
-@using Flagrum.Core.Ebex.Xmb2
-@using Flagrum.Core.Ebex
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
 @inject EnvironmentPacker EnvironmentPacker
+@inject NavigationManager Navigation
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
@@ -47,6 +48,13 @@
         }
         else if (Parent.ContextItem.Type == ExplorerItemType.Xml)
         {
+            <Item OnClick="OpenInNodeEditor"
+                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                <div class="row">
+                    <span class="material-icons mr-3" style="font-size: 0.9rem">share</span>
+                    <span>Open in Node Editor</span>
+                </div>
+            </Item>
             <Item OnClick="ExportXml"
                   OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                 <div class="row">
@@ -76,12 +84,17 @@
     private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
     private ExportFolderModal ExportFolderModal { get; set; }
 
+    private void OpenInNodeEditor()
+    {
+        Navigation.NavigateTo($"/node/{Parent.ContextNode.GetUri(Context).ToBase64()}");
+    }
+
     private void ExportFolder()
     {
         ExportFolderModal.SetContextNode(Parent.ContextNode);
         ExportFolderModal.Open();
     }
-    
+
     private async Task ExportSingle()
     {
         var item = Parent.ContextItem;
@@ -151,10 +164,7 @@
         {
             await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
 
-            await Task.Run(() =>
-            {
-                EnvironmentPacker.Pack(item.Uri, path);
-            });
+            await Task.Run(() => { EnvironmentPacker.Pack(item.Uri, path); });
 
             await InvokeAsync(() =>
             {

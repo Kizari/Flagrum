@@ -12,7 +12,7 @@ namespace Black.Main
 
         public static void Initialize()
         {
-            //EntityModuleSetup.Setup();
+            EntityModuleSetup.Setup();
         }
     }
 }

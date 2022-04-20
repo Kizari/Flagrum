@@ -353,23 +353,23 @@ public class EnvironmentPacker
                 try
                 {
                     var path = element.GetElementByName("sourcePath_");
-                    var position = element.GetElementByName("position_");
+                    var position = element.GetElementByName("position_")?.GetFloat4Value() ?? new[] {0.0f, 0.0f, 0.0f, 0.0f};
                     var rotation = element.GetElementByName("rotation_");
                     var scale = element.GetElementByName("scaling_");
 
                     var positionAltered =
-                        Vector3.Add(Vector3.Transform(new Vector3(position.GetFloat4Value()), quaternion),
+                        Vector3.Add(Vector3.Transform(new Vector3(position), quaternion),
                             new Vector3(prefabPosition));
 
                     // Luminous ignores scale of 0, so we must too
-                    var scaleFloat = scale.GetFloatValue();
-                    if (scaleFloat is > -0.0001f and < 0.0001f)
+                    var scaleFloat = scale?.GetFloatValue();
+                    if (scaleFloat is null or > -0.0001f and < 0.0001f)
                     {
                         scaleFloat = 1.0f;
                     }
 
                     //var rotationAltered = rotationFloats.Select(p => p + prefabRotation[i++]).ToArray();
-                    var scaleAltered = scaleFloat * prefabScale;
+                    var scaleAltered = (float)scaleFloat * prefabScale;
                     var prefabFileName = uri.Split('\\', '/').Last();
 
                     _models.Add(new EnvironmentModelMetadata
@@ -377,7 +377,7 @@ public class EnvironmentPacker
                         PrefabName = prefabFileName[..prefabFileName.LastIndexOf('.')],
                         Path = $"data://{path.GetTextValue().Replace('\\', '/')}",
                         Position = new[] {positionAltered.X, positionAltered.Y, positionAltered.Z},
-                        Rotation = rotation.GetFloat4Value(),
+                        Rotation = rotation?.GetFloat4Value() ?? new[] {0.0f, 0.0f, 0.0f, 0.0f},
                         PrefabRotations = prefabRotations,
                         Scale = scaleAltered
                     });
