@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
@@ -11,34 +12,37 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var settings = new SettingsService();
-        using var context = new FlagrumDbContext(settings);
-        var gfxData =
-            context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gmdl");
-        var gpuData =
-            context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gpubin");
-        var model = new ModelReader(gfxData, gpuData).Read();
+        var reader = new MaterialReader(@"C:\Users\Kieran\Desktop\Environments\Dump\lambert1.gmtl.gfxbin");
+        var material = reader.Read();
 
-        var types = new List<string>();
-
-        foreach (var meshObject in model.MeshObjects)
-        {
-            foreach (var mesh in meshObject.Meshes)
-            {
-                foreach (var stream in mesh.VertexStreamDescriptions)
-                {
-                    foreach (var description in stream.VertexElementDescriptions)
-                    {
-                        if (!types.Contains(description.Semantic))
-                        {
-                            types.Add(description.Semantic);
-                        }
-                    }
-                }
-            }
-        }
-
-        var x = true;
+        // var settings = new SettingsService();
+        // using var context = new FlagrumDbContext(settings);
+        // var gfxData =
+        //     context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gmdl");
+        // var gpuData =
+        //     context.GetFileByUri("data://environment/altissia/props/al_ar_town03/models/al_ar_town03_typeC.gpubin");
+        // var model = new ModelReader(gfxData, gpuData).Read();
+        //
+        // var types = new List<string>();
+        //
+        // foreach (var meshObject in model.MeshObjects)
+        // {
+        //     foreach (var mesh in meshObject.Meshes)
+        //     {
+        //         foreach (var stream in mesh.VertexStreamDescriptions)
+        //         {
+        //             foreach (var description in stream.VertexElementDescriptions)
+        //             {
+        //                 if (!types.Contains(description.Semantic))
+        //                 {
+        //                     types.Add(description.Semantic);
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        //
+        // var x = true;
 
         // var finder = new FileFinder();
         // finder.FindByQuery(

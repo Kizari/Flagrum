@@ -113,9 +113,6 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
         meshes = {}
 
         for model in data:
-            # if model.Index < 1:
-            #    continue
-
             mesh_data = None
             if model.Index in meshes:
                 if model.PrefabName not in bpy.context.scene.collection.children:

@@ -16,7 +16,7 @@ from .panel.rendering_panel import ToggleEmissionOperator, RenderingPanel
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 11),
+    "version": (1, 0, 12),
     "blender": (2, 93, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",

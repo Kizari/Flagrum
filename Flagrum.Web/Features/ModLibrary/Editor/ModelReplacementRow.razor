@@ -114,12 +114,12 @@
 
     private void CreateCopy()
     {
-        Navigation.NavigateTo($"/mod/presets/copy/{Preset.Id}");
+        Navigation.NavigateTo($"/mod/presets/copy/{Preset.Id}/{Preset.IsDefault}");
     }
 
     private void Edit()
     {
-        Navigation.NavigateTo($"/mod/presets/edit/{Preset.Id}");
+        Navigation.NavigateTo($"/mod/presets/edit/{Preset.Id}/false");
     }
 
     private void ConfirmDelete()

@@ -16,6 +16,17 @@ public class AssetUri
 
 public static class AssetUriExtensions
 {
+    public static string GetArchiveRelativeLocationByUri(this FlagrumDbContext context, string uri)
+    {
+        var uriPattern = $"%{uri}%";
+        var earcRelativePath = context.AssetUris
+            .Where(a => EF.Functions.Like(a.Uri, uriPattern))
+            .Select(a => a.ArchiveLocation.Path)
+            .FirstOrDefault();
+        
+        return earcRelativePath ?? "UNKNOWN";
+    }
+    
     public static byte[] GetFileByUri(this FlagrumDbContext context, string uri)
     {
         var uriPattern = $"%{uri}%";
