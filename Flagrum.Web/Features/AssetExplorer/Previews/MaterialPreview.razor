@@ -12,41 +12,48 @@
             </div>
         </div>
     </div>
-    <div class="box p-4 mb-6">
-        <h5 class="text-grey-300 mb-2">Texture Inputs</h5>
-        <table>
-            @foreach (var (name, fileName, path) in TextureInputs)
-            {
-                <tr>
-                    <td>
-                        <strong>@name</strong>
-                    </td>
-                    <td class="pl-6">
-                        <span>@fileName</span>
-                        <span class="material-icons pl-1 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                              @onclick="() => ShowPath(path)">
-                            open_in_new
-                        </span>
-                    </td>
-                </tr>
-            }
-        </table>
-    </div>
+    
+    @if (TextureInputs.Any())
+    {
+        <div class="box p-4 mb-6">
+            <h5 class="text-grey-300 mb-2">Texture Inputs</h5>
+            <table>
+                @foreach (var (name, fileName, path) in TextureInputs)
+                {
+                    <tr>
+                        <td>
+                            <strong>@name</strong>
+                        </td>
+                        <td class="pl-6">
+                            <span>@fileName</span>
+                            <span class="material-icons pl-1 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                                  @onclick="() => ShowPath(path)">
+                                open_in_new
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    }
 
-    <div class="box p-4">
-        <h5 class="text-grey-300 mb-2">Material Inputs</h5>
-        <table>
-            @foreach (var (name, values) in MaterialInputs)
-            {
-                <tr>
-                    <td>
-                        <strong>@name</strong>
-                    </td>
-                    <td class="pl-6">@string.Join(", ", values)</td>
-                </tr>
-            }
-        </table>
-    </div>
+    @if (HasMaterialInputs)
+    {
+        <div class="box p-4">
+            <h5 class="text-grey-300 mb-2">Material Inputs</h5>
+            <table>
+                @foreach (var (name, values) in MaterialInputs)
+                {
+                    <tr>
+                        <td>
+                            <strong>@name</strong>
+                        </td>
+                        <td class="pl-6">@string.Join(", ", values)</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    }
 </div>
 
 <AlertModal @ref="AlertModal"/>
@@ -63,6 +70,7 @@
     private IEnumerable<(string Name, string FileName, string Path)> TextureInputs { get; set; }
     private AlertModal AlertModal { get; set; }
     private string HighTexturePack { get; set; }
+    private bool HasMaterialInputs { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -87,6 +95,7 @@
 
         HighTexturePack = material.HighTexturePackAsset;
 
+        HasMaterialInputs = material.InterfaceCount > 0;
         MaterialInputs = inputs;
         TextureInputs = textures;
         StateHasChanged();

@@ -77,6 +77,7 @@ class BlenderTextureData:
 class BlenderMaterialData:
     Hash: str
     Name: str
+    UVScale: list[float]
     Textures: dict[str, str]
 
 

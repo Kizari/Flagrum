@@ -209,6 +209,10 @@ public class EnvironmentPacker
                         {
                             Hash = m.DefaultMaterialHash.ToString(),
                             Name = material.Name,
+                            UVScale = material.InterfaceInputs
+                                .Where(i => i.ShaderGenName.Equals("UVScale", StringComparison.OrdinalIgnoreCase))
+                                .Select(i => i.Values)
+                                .FirstOrDefault() ?? new[] {1.0f, 1.0f},
                             Textures = material.Textures
                                 .Where(t => t.ResourceFileHash > 0 && t.Path != null &&
                                             !t.Path.Contains("magicdamage") && !t.Path.Contains("magicdamege"))

@@ -1,4 +1,7 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Persistence.Entities
+@inject FlagrumDbContext Context
+
 @if (Item?.Type == ExplorerItemType.Texture)
 {
     <TexturePreview Item="Item"/>
@@ -15,10 +18,10 @@ else if (Item?.Type == ExplorerItemType.Text)
 {
     <TextPreview Item="Item"/>
 }
-@* else if (Item?.Type == ExplorerItemType.Model) *@
-@* { *@
-@*     <ModelPreview Item="Item"/> *@
-@* } *@
+else if (Item?.Type == ExplorerItemType.Model)
+{
+    <ModelPreview Item="Item"/>
+}
 else
 {
     <div class="flex-grow flex flex-row items-center">

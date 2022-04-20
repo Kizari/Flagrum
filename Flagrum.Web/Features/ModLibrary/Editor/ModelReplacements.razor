@@ -59,7 +59,7 @@
                 Id = r.Id,
                 IsDefault = false,
                 Name = r.Name,
-                Paths = new List<string>()
+                Paths = r.ReplacementPaths.Select(rp => rp.Path)
             })
             .ToList();
 

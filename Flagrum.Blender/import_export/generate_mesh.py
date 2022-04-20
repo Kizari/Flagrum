@@ -165,6 +165,15 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
         multiply.inputs[0].default_value = 1.0
         material.node_tree.links.new(bsdf.inputs['Base Color'], multiply.outputs['Color'])
 
+        needs_scaling = mesh_data.BlenderMaterial.UVScale is not None and (mesh_data.BlenderMaterial.UVScale[0] != 1.0 or mesh_data.BlenderMaterial.UVScale[1] != 1.0)
+        if needs_scaling:
+            map1 = material.node_tree.nodes.new('ShaderNodeUVMap')
+            map1.uv_map = "map1"
+            uv_scale = material.node_tree.nodes.new('ShaderNodeMapping')
+            uv_scale.inputs[3].default_value[0] = mesh_data.BlenderMaterial.UVScale[0]
+            uv_scale.inputs[3].default_value[1] = mesh_data.BlenderMaterial.UVScale[1]
+            material.node_tree.links.new(uv_scale.inputs['Vector'], map1.outputs['UV'])
+
         for t in mesh_data.BlenderMaterial.Textures:
             texture_metadata: BlenderTextureData = t
 
@@ -176,6 +185,9 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
             texture.image = bpy.data.images.load(
                 texture_metadata.Path,
                 check_existing=True)
+
+            if needs_scaling:
+                material.node_tree.links.new(texture.inputs['Vector'], uv_scale.outputs['Vector'])
 
             texture_slot = texture_metadata.Slot.upper()
 

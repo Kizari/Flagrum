@@ -326,6 +326,11 @@ public class MaterialReader
 
     private void ReadInterfaceInputParameters()
     {
+        if (_material.InterfaceCount < 1)
+        {
+            return;
+        }
+        
         _reader.UnpackBlob(out var buffer, out _);
 
         foreach (var input in _material.InterfaceInputs)

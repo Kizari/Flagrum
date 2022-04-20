@@ -1,4 +1,4 @@
-﻿@page "/mod/presets/{Mode}/{PresetId}"
+﻿@page "/mod/presets/{Mode}/{PresetId}/{IsDefault}"
 @using Flagrum.Web.Persistence.Entities
 @using Microsoft.EntityFrameworkCore
 
@@ -48,6 +48,7 @@
 {
     [Parameter] public string Mode { get; set; }
     [Parameter] public string PresetId { get; set; }
+    [Parameter] public string IsDefault { get; set; }
 
     private ModelReplacementPreset Preset { get; set; } = new();
     private ModelBrowserModal Modal { get; set; }
@@ -58,6 +59,8 @@
         var presetId = Convert.ToInt32(PresetId);
         if (presetId > 0)
         {
+            var isDefault = bool.Parse(IsDefault);
+            
             if (Mode == "edit")
             {
                 Preset = Context.ModelReplacementPresets
@@ -66,17 +69,9 @@
             }
             else
             {
-                Preset = Context.ModelReplacementPresets
-                    .Where(p => p.Id == presetId)
-                    .Select(p => new ModelReplacementPreset
-                    {
-                        Name = p.Name + " Copy",
-                        ReplacementPaths = p.ReplacementPaths.Select(r => new ModelReplacementPath
-                        {
-                            Path = r.Path
-                        }).ToList()
-                    })
-                    .FirstOrDefault() ?? ModelReplacementPresets.GetDefaultReplacements()
+                if (isDefault)
+                {
+                    Preset = ModelReplacementPresets.GetDefaultReplacements()
                         .Where(p => p.Index == presetId)
                         .Select(p => new ModelReplacementPreset
                         {
@@ -87,6 +82,21 @@
                             }).ToList()
                         })
                         .FirstOrDefault();
+                }
+                else
+                {
+                    Preset = Context.ModelReplacementPresets
+                        .Where(p => p.Id == presetId)
+                        .Select(p => new ModelReplacementPreset
+                        {
+                            Name = p.Name + " Copy",
+                            ReplacementPaths = p.ReplacementPaths.Select(r => new ModelReplacementPath
+                            {
+                                Path = r.Path
+                            }).ToList()
+                        })
+                        .FirstOrDefault();
+                }
             }
         }
         else
