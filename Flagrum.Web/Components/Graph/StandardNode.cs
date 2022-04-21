@@ -33,13 +33,13 @@ public class StandardNode : NodeModel
         "Isolated_"
     };
 
-    public StandardNode(Type type, Point position = null)
+    public StandardNode(GraphNode node, Point position = null)
         : base(position)
     {
-        Title = type.Name;
-        Type = type;
+        Node = node;
+        Title = node.GetType().Name;
 
-        var tokens = Type.Namespace.Split('.');
+        var tokens = node.GetType().Namespace.Split('.');
         foreach (var token in tokens)
         {
             if (Title.StartsWith(token))
@@ -48,7 +48,7 @@ public class StandardNode : NodeModel
             }
         }
 
-        var fields = type.GetFields();
+        var fields = node.GetType().GetFields();
 
         var comparer = Comparer<Type>.Create((first, second) =>
         {
@@ -78,18 +78,26 @@ public class StandardNode : NodeModel
 
         foreach (var field in inputFields)
         {
-            AddPort(new StandardPort(this, PortAlignment.Left, field.FieldType, field.Name));
+            var pin = (GraphPin)field.GetValue(node);
+            var port = new StandardPort(pin, this, PortAlignment.Left, field.FieldType, field.Name);
+            pin.Port = port;
+
+            AddPort(port);
         }
 
         foreach (var field in outputFields)
         {
-            AddPort(new StandardPort(this, PortAlignment.Right, field.FieldType, field.Name));
+            var pin = (GraphPin)field.GetValue(node);
+            var port = new StandardPort(pin, this, PortAlignment.Right, field.FieldType, field.Name);
+            pin.Port = port;
+
+            AddPort(port);
         }
 
         var fieldsToExclude = fields.Where(f => FieldsToExclude.Contains(f.Name));
         DataFields = fields.Except(inputFields).Except(outputFields).Except(fieldsToExclude);
     }
 
-    public Type Type { get; set; }
+    public GraphNode Node { get; set; }
     public IEnumerable<FieldInfo> DataFields { get; set; }
 }

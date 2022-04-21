@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Ebony.Base.Serialization;
-using Flagrum.Core.Ebex.Entities;
 using Luminous.Core;
 using Luminous.Xml;
 using SQEX.Luminous.Core.Object;
@@ -288,6 +288,14 @@ public class EntityPackageXmlLoader
         switch (property.Type)
         {
             case Property.PrimitiveType.ClassField:
+                if (obj.GetType().GetField(property.Name,
+                        BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic |
+                        BindingFlags.FlattenHierarchy).GetValue(obj).GetType().Name
+                    .Contains("TimerType", StringComparison.OrdinalIgnoreCase))
+                {
+                    var x = true;
+                }
+
                 ReadField(obj, element, Fnv1a.Fnv1a32(".", hashedName), obj.GetPropertyValue<BaseObject>(property));
                 break;
             case Property.PrimitiveType.Int8:
@@ -434,8 +442,8 @@ public class EntityPackageXmlLoader
             var resolvedReferenceAttribute = childElement.GetAttributeByName("object");
             if (isPointerType)
             {
-                Debug.Assert(resolvedReferenceAttribute == null,
-                    $"[EntityPackageXmlLoader] ResolvedReference not found : object path={resolvedReferenceAttribute.GetTextValue()}");
+                //Debug.Assert(resolvedReferenceAttribute == null,
+                //    $"[EntityPackageXmlLoader] ResolvedReference not found : object path={resolvedReferenceAttribute.GetTextValue()}");
             }
             else
             {
@@ -601,7 +609,7 @@ public class EntityPackageXmlLoader
                 Debug.Fail($"[EntityPackageXmlLoader]Reference relativePath not found {relativePath}");
                 return null;
             }
-            
+
             var referencedPropertyElementTypeAttribute = referencedPropertyElement.GetAttributeByName("type");
             if (referencedPropertyElementTypeAttribute == null ||
                 referencedPropertyElementTypeAttribute.GetTextValue() != "enum")

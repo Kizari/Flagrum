@@ -8,6 +8,7 @@
 using System;
 using SQEX.Luminous.Core.Object;
 using System.Collections.Generic;
+using Flagrum.Web.Components.Graph;
 using CodeDom = System.CodeDom;
 
 namespace SQEX.Ebony.Framework.Node
@@ -21,7 +22,7 @@ namespace SQEX.Ebony.Framework.Node
 		public string pinName_= string.Empty;
 		public string name_= string.Empty;
 		public List<SQEX.Ebony.Framework.Node.GraphPin> connections_= new List<SQEX.Ebony.Framework.Node.GraphPin>();
-		
+		public StandardPort Port { get; set; }
         
         new public static void SetupObjectType()
         {

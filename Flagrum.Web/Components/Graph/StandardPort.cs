@@ -10,8 +10,10 @@ public class StandardPort : PortModel
     public const string Control = "#e1d9b7";
     public const string Rose = "#783b4a";
 
-    public StandardPort(NodeModel parent, PortAlignment alignment, Type type, string name) : base(parent, alignment)
+    public StandardPort(GraphPin pin, NodeModel parent, PortAlignment alignment, Type type, string name) : base(parent,
+        alignment)
     {
+        Pin = pin;
         Type = type;
         Name = name;
         Color = GetColorByType();
@@ -27,6 +29,7 @@ public class StandardPort : PortModel
         {typeof(GraphVariableOutputPin), Rose}
     };
 
+    public GraphPin Pin { get; set; }
     public Type Type { get; set; }
     public string Color { get; set; }
     public string Name { get; set; }

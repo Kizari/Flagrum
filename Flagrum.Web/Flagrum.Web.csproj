@@ -9,6 +9,7 @@
         <PackageReference Include="Blazor.ContextMenu" Version="1.11.1" />
         <PackageReference Include="Blazor.Extensions.Canvas" Version="1.1.1" />
         <PackageReference Include="DirectXTexNet" Version="1.0.3" />
+        <PackageReference Include="GraphShape" Version="1.2.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
@@ -16,6 +17,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
+        <PackageReference Include="QuikGraph" Version="2.3.0" />
         <PackageReference Include="Scriban" Version="5.0.0" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />

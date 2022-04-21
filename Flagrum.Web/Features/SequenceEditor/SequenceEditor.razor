@@ -1,9 +1,20 @@
 ﻿@page "/node"
 @page "/node/{UriBase64}"
+@using QuikGraph
+@using GraphShape.Algorithms.Layout
 
 <CascadingValue Value="Diagram">
+    <div class="row">
+        <select @bind="LayoutAlgorithm">
+            @foreach (var algorithm in new StandardLayoutAlgorithmFactory<string, IEdge<string>, IBidirectionalGraph<string, IEdge<string>>>().AlgorithmTypes)
+            {
+                <option value="@algorithm">@algorithm</option>
+            }
+        </select>
+        <Button Text="Run Automatic Layout" OnClick="RunLayout"/>
+    </div>
     <div class="flex-grow h-full flex flex-row">
-        <NodeExplorer/>
+        @* <NodeExplorer/> *@
         <div class="flex-grow" style="width: 100%; height: 100%;">
             <DiagramCanvas Class="grid"/>
         </div>

@@ -79,7 +79,7 @@ public class Program
                 var builder = new StringBuilder();
                 Xmb2Document.Dump(file.GetData(), builder);
                 var text = builder.ToString();
-                if (text.Contains("SequenceActionChocoboSupport", StringComparison.OrdinalIgnoreCase))
+                if (text.Contains("d17_pr_ele_1a.gmdl", StringComparison.OrdinalIgnoreCase))
                 {
                     System.Console.WriteLine(file.Uri);
                 }

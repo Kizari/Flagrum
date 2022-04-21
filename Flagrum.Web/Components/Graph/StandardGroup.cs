@@ -10,8 +10,8 @@ public class StandardGroup : GroupModel
     public StandardGroup() : base(new List<NodeModel>(), 50)
     {
         Size = new Size(400, 300);
-        AddPort(new StandardPort(this, PortAlignment.Left, typeof(GraphTriggerInputPin), "In"));
-        AddPort(new StandardPort(this, PortAlignment.Right, typeof(GraphTriggerOutputPin), "Out"));
+        AddPort(new StandardPort(null, this, PortAlignment.Left, typeof(GraphTriggerInputPin), "In"));
+        AddPort(new StandardPort(null, this, PortAlignment.Right, typeof(GraphTriggerOutputPin), "Out"));
     }
 
     public string Title { get; set; } = "Sequence Tray";

@@ -18,7 +18,7 @@ public class DiagramData
             Id = n.Id,
             X = n.Position.X,
             Y = n.Position.Y,
-            Type = (n as StandardNode).Type.AssemblyQualifiedName
+            Type = (n as StandardNode).Node.GetType().AssemblyQualifiedName
         });
 
         data.Links = diagram.Links.Select(l => new LinkData
