@@ -5,9 +5,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Black.Entity;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmdl;
@@ -44,6 +46,7 @@ public class EnvironmentPacker
 
     private readonly ConcurrentDictionary<string, bool> _textures = new();
     // private readonly ConcurrentDictionary<string, bool> _lowLodPrefabs = new();
+    private readonly ConcurrentDictionary<string, bool> _unreadClassTypes = new();
 
     private string _modelsDirectory;
     private string _texturesDirectory;
@@ -121,6 +124,13 @@ public class EnvironmentPacker
         {
             _logger.LogInformation(type);
         }
+        
+        _logger.LogInformation("\n===== UNREAD CLASS TYPES =====\n");
+        foreach (var (classType, _) in _unreadClassTypes)
+        {
+            _logger.LogInformation(classType);
+        }
+        _logger.LogInformation("\n");
 
         _models.Clear();
         _textures.Clear();
@@ -352,7 +362,11 @@ public class EnvironmentPacker
                 _nodeTypes.Add(typeAttribute);
             }
 
-            if (typeAttribute is "Black.Entity.StaticModelEntity" or "Black.Entity.Actor.HeightFieldEntity")
+            var type = Assembly.GetExecutingAssembly().GetTypes()
+                .FirstOrDefault(t => t.FullName.Contains(typeAttribute));
+            
+            if (type.IsAssignableTo(typeof(StaticModelEntity)))
+            //if (typeAttribute is "Black.Entity.StaticModelEntity" or "Black.Entity.SkeletalModelEntity" or "Black.Entity.Actor.HeightFieldEntity")
             {
                 try
                 {
@@ -439,6 +453,10 @@ public class EnvironmentPacker
                     _logger.LogInformation("Failed to load entity package from {Uri} at path {SourcePath}", uri,
                         path.GetTextValue());
                 }
+            }
+            else
+            {
+                _unreadClassTypes.TryAdd(typeAttribute, true);
             }
             // else if (typeAttribute == "Black.Entity.Node.MapLodEntity")
             // {

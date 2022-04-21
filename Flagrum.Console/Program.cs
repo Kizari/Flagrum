@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using Flagrum.Console.Utilities;
+using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Web.Persistence;
@@ -12,9 +16,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var reader = new MaterialReader(@"C:\Users\Kieran\Desktop\Environments\Dump\lambert1.gmtl.gfxbin");
-        var material = reader.Read();
-
         // var settings = new SettingsService();
         // using var context = new FlagrumDbContext(settings);
         // var gfxData =
@@ -53,20 +54,20 @@ public class Program
         //     },
         //     false);
 
-        // var finder = new FileFinder();
-        // finder.FindByQuery(
-        //     file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
-        //     file =>
-        //     {
-        //         var builder = new StringBuilder();
-        //         Xmb2Document.Dump(file.GetData(), builder);
-        //         var text = builder.ToString();
-        //         if (text.Contains("stella", StringComparison.OrdinalIgnoreCase))
-        //         {
-        //             System.Console.WriteLine(file.Uri);
-        //         }
-        //     },
-        //     true);
+        var finder = new FileFinder();
+        finder.FindByQuery(
+            file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+            file =>
+            {
+                var builder = new StringBuilder();
+                Xmb2Document.Dump(file.GetData(), builder);
+                var text = builder.ToString();
+                if (text.Contains("p_le_ar_GQshop1_door_right.ebex", StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Console.WriteLine(file.Uri);
+                }
+            },
+            true);
 
         // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");
