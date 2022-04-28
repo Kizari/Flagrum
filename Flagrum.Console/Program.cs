@@ -6,6 +6,7 @@ using Flagrum.Console.Utilities;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
@@ -16,8 +17,10 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var reader = new MaterialReader(@"C:\Users\Kieran\Desktop\Environments\Dump\lambert1.gmtl.gfxbin");
-        var material = reader.Read();
+        var hash = Cryptography.Hash32("0666");
+        System.Console.WriteLine(hash);
+        //var reader = new MaterialReader(@"C:\Users\Kieran\Desktop\Environments\Dump\lambert1.gmtl.gfxbin");
+        //var material = reader.Read();
 
         // var settings = new SettingsService();
         // using var context = new FlagrumDbContext(settings);
@@ -70,21 +73,21 @@ public class Program
         //         }
         //     },
         //     true);
-        
-        var finder = new FileFinder();
-        finder.FindByQuery(
-            file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
-            file =>
-            {
-                var builder = new StringBuilder();
-                Xmb2Document.Dump(file.GetData(), builder);
-                var text = builder.ToString();
-                if (text.Contains("d17_pr_ele_1a.gmdl", StringComparison.OrdinalIgnoreCase))
-                {
-                    System.Console.WriteLine(file.Uri);
-                }
-            },
-            true);
+
+        // var finder = new FileFinder();
+        // finder.FindByQuery(
+        //     file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+        //     file =>
+        //     {
+        //         var builder = new StringBuilder();
+        //         Xmb2Document.Dump(file.GetData(), builder);
+        //         var text = builder.ToString();
+        //         if (text.Contains("d17_pr_ele_1a.gmdl", StringComparison.OrdinalIgnoreCase))
+        //         {
+        //             System.Console.WriteLine(file.Uri);
+        //         }
+        //     },
+        //     true);
 
         // var gfx = @"C:\Users\Kieran\Desktop\Environments\Altissia\al_ar_castle01_typ07c.gmdl.gfxbin";
         // var gpu = gfx.Replace(".gmdl.gfxbin", ".gpubin");

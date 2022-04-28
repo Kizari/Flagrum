@@ -1,7 +1,14 @@
 ﻿<GroupContainer Group="Group" Class="bg-grey-900 border-2 border-grey-700 min-w-400 min-h-300">
     <div class="flex flex-row py-2">
         <div>
-            <StandardPortRenderer Port="Group.Ports[0] as StandardPort" />
+            @foreach (var portModel in Group.Ports.Where(p => p.Alignment == PortAlignment.Left))
+            {
+                var port = (StandardPort)portModel;
+                <div class="row">
+                    <StandardPortRenderer Port="port" />
+                    <span class="flex-grow">@port.Name</span>
+                </div>
+            }
         </div>
         <div class="flex-grow text-center flex flex-row items-center">
             <div class="flex-grow"></div>
@@ -18,7 +25,14 @@
             <div class="flex-grow"></div>
         </div>
         <div>
-            <StandardPortRenderer Port="Group.Ports[1] as StandardPort" />
+            @foreach (var portModel in Group.Ports.Where(p => p.Alignment == PortAlignment.Right))
+            {
+                var port = (StandardPort)portModel;
+                <div class="row">
+                    <span class="flex-grow text-right">@port.Name</span>
+                    <StandardPortRenderer Port="port"/>
+                </div>
+            }
         </div>
     </div>
     <GroupLinks />

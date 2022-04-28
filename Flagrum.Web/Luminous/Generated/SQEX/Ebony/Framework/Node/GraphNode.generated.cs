@@ -8,6 +8,7 @@
 using System;
 using SQEX.Luminous.Core.Object;
 using System.Collections.Generic;
+using Flagrum.Web.Components.Graph;
 using CodeDom = System.CodeDom;
 
 namespace SQEX.Ebony.Framework.Node
@@ -18,7 +19,7 @@ namespace SQEX.Ebony.Framework.Node
         new public static ObjectType ObjectType { get; private set; }
         private static PropertyContainer fieldProperties;
 		
-		
+		public StandardNode Node { get; set; }
         
         new public static void SetupObjectType()
         {

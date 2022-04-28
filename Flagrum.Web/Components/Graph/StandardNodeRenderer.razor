@@ -1,6 +1,11 @@
 ﻿<div class="rounded-md @(Node.Selected ? "glow" : "")">
-    <div class="rounded-t-md bg-grey-700 px-4 py-3 font-display text-grey-200">
-        @Node.Title
+    <div class="rounded-t-md bg-grey-700 px-4 py-3 font-display text-grey-200 row">
+        <span class="flex-grow mr-4">
+            @Node.Title
+        </span>
+        <span>
+            @Node.ObjectIndex
+        </span>
     </div>
     <div class="rounded-b-md shadow-md bg-grey-800 text-grey-400 text-sm py-1">
         @{

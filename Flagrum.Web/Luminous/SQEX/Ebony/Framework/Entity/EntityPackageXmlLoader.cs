@@ -5,9 +5,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Black.Sequence.Actor;
 using Ebony.Base.Serialization;
 using Luminous.Core;
 using Luminous.Xml;
+using SQEX.Ebony.Framework.Node;
+using SQEX.Ebony.Framework.Sequence.Tray;
 using SQEX.Luminous.Core.Object;
 using UnityEngine;
 using Object = SQEX.Luminous.Core.Object.Object;
@@ -17,6 +20,8 @@ namespace SQEX.Ebony.Framework.Entity;
 
 public class EntityPackageXmlLoader
 {
+    private readonly List<Action> _failedPointerCalls = new();
+    
     /// <summary>
     /// Offset to the root element's relative offset.
     /// </summary>
@@ -155,7 +160,6 @@ public class EntityPackageXmlLoader
                 package.sourcePath_ = GetDataRelativePath(element, package);
             }
 
-            File.WriteAllText($@"C:\Modding\DumbTest\{i}.txt", "test");
             ReadField(obj, element, 2166136261, null); // ""
 
             if (!(Objects[i] is EntityPackage))
@@ -187,6 +191,12 @@ public class EntityPackageXmlLoader
             }
 
             package.AddLoadedObject(obj, name, objPath);
+        }
+        
+        // Retry failed reference resolutions
+        foreach (var action in _failedPointerCalls)
+        {
+            action();
         }
 
         LoadStatus = LOAD_STATUS.LOAD_ST_CREATE;
@@ -244,7 +254,7 @@ public class EntityPackageXmlLoader
         {
             return null;
         }*/
-
+        
         var instance = type.ConstructFunction2() as Object;
         if (instance != null)
         {
@@ -288,14 +298,6 @@ public class EntityPackageXmlLoader
         switch (property.Type)
         {
             case Property.PrimitiveType.ClassField:
-                if (obj.GetType().GetField(property.Name,
-                        BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic |
-                        BindingFlags.FlattenHierarchy).GetValue(obj).GetType().Name
-                    .Contains("TimerType", StringComparison.OrdinalIgnoreCase))
-                {
-                    var x = true;
-                }
-
                 ReadField(obj, element, Fnv1a.Fnv1a32(".", hashedName), obj.GetPropertyValue<BaseObject>(property));
                 break;
             case Property.PrimitiveType.Int8:
@@ -318,7 +320,7 @@ public class EntityPackageXmlLoader
                 value = ReadPrimitiveValue(element, property);
                 break;
             case Property.PrimitiveType.Pointer:
-                if (ResolvePointer(parentObject, element, out value))
+                if (ResolvePointer(parentObject, element, out value, out var failedCall))
                 {
                     // TODO addPointerListReferedBySequenceIfMatchCondition
                 }
@@ -328,7 +330,7 @@ public class EntityPackageXmlLoader
             case Property.PrimitiveType.IntrusivePointerArray:
                 // GOTCHA: We don't want to create a new List, because other objects can reference the list before it's instantiated
                 value = obj.GetPropertyValue<IList>(property);
-                ReadPointerArray(obj, element, value as IList);
+                ReadPointerArray(obj, element, (IList)value, property);
                 break;
             default:
                 if (property.Type != Property.PrimitiveType.Array)
@@ -346,7 +348,7 @@ public class EntityPackageXmlLoader
         }
     }
 
-    private void ReadPointerArray(BaseObject obj, Xmb2Element element, IList destinationArray)
+    private void ReadPointerArray(BaseObject obj, Xmb2Element element, IList destinationArray, Property property)
     {
         var itemCount = element.ElementCount;
         for (var i = 0; i < itemCount; i++)
@@ -361,10 +363,25 @@ public class EntityPackageXmlLoader
             }
 
             object itemValue = null;
-            if (ResolvePointer(element, child, out itemValue))
+            if (ResolvePointer(element, child, out itemValue, out var failedCall))
             {
                 // TODO addPointerListReferedBySequenceIfMatchCondition
                 destinationArray.Add(itemValue);
+            }
+            else
+            {
+                _failedPointerCalls.Add(() =>
+                {
+                    if (ResolvePointer(element, child, out itemValue, out _))
+                    {
+                        destinationArray.Add(itemValue);
+                    }
+                });
+            }
+
+            if (itemValue == null && failedCall != null)
+            {
+                _failedPointerCalls.Add(() => failedCall(obj, property));
             }
         }
     }
@@ -399,10 +416,10 @@ public class EntityPackageXmlLoader
         return type.ConstructFunction2();
     }
 
-    private bool ResolvePointer(Xmb2Element parentElement, Xmb2Element childElement, out object destination)
+    private bool ResolvePointer(Xmb2Element parentElement, Xmb2Element childElement, out object destination, out Action<BaseObject, Property> failedCall)
     {
         var referencedObjectIndex = 0;
-        destination = ReadReference(childElement, out referencedObjectIndex);
+        destination = ReadReference(childElement, out referencedObjectIndex, out failedCall);
         if (destination != null)
         {
             return true;
@@ -529,8 +546,10 @@ public class EntityPackageXmlLoader
         return true;
     }
 
-    private BaseObject ReadReference(Xmb2Element childElement, out int objectIndex)
+    private BaseObject ReadReference(Xmb2Element childElement, out int objectIndex, out Action<BaseObject, Property> failedCall)
     {
+        failedCall = null;
+        
         objectIndex = -1;
         var referenceAttribute = childElement.GetAttributeByName("reference");
         if (referenceAttribute == null)
@@ -567,12 +586,15 @@ public class EntityPackageXmlLoader
             return referencedObject;
         }
 
-        return ReadReference(relativePathAttribute.GetTextValue(), referencedObject, referencedObjectElement);
+        var value = ReadReference(relativePathAttribute.GetTextValue(), referencedObject, referencedObjectElement, out failedCall);
+        return value;
     }
 
-    private BaseObject ReadReference(string relativePath, Object destinationObject,
-        Xmb2Element destinationObjectElement)
+    private BaseObject ReadReference(string relativePath, BaseObject destinationObject,
+        Xmb2Element destinationObjectElement, out Action<BaseObject, Property> failedCall)
     {
+        failedCall = null;
+        
         if (relativePath == null)
         {
             return null;
@@ -614,7 +636,7 @@ public class EntityPackageXmlLoader
             if (referencedPropertyElementTypeAttribute == null ||
                 referencedPropertyElementTypeAttribute.GetTextValue() != "enum")
             {
-                return ReadReference(relativePathSegments[1], referencedPropertyValue, referencedPropertyElement);
+                return ReadReference(relativePathSegments[1], referencedPropertyValue, referencedPropertyElement, out failedCall);
             }
 
             Debug.Fail($"[EntityPackageXmlLoader]Reference relativePath not found {relativePath}");
@@ -623,6 +645,38 @@ public class EntityPackageXmlLoader
 
         // TODO read pointer array item
         //return this.ReadReference(relativePath, destinationObject, destinationObjectElement);
+
+        var pointerArray = destinationObject.GetPropertyValue<IList>(property);
+        var xmb2Array = destinationObjectElement.GetElementByName(relativePathSegments[0]);
+        var xmb2ArrayElements = xmb2Array.GetElements();
+        if (pointerArray.Count < xmb2ArrayElements.Count)
+        {
+            failedCall = (obj, prop) =>
+            {
+                var value = ReadReferenceArray(xmb2ArrayElements, relativePathSegments[1], pointerArray);
+                obj.SetPropertyValue(prop, value);
+            };
+        }
+        else
+        {
+            return ReadReferenceArray(xmb2ArrayElements, relativePathSegments[1], pointerArray);
+        }
+
+        return null;
+    }
+
+    private BaseObject ReadReferenceArray(IList<Xmb2Element> xmb2ArrayElements, string relativePath, IList pointerArray)
+    {
+        for (var i = 0; i < xmb2ArrayElements.Count; i++)
+        {
+            var xmb2ArrayItem = xmb2ArrayElements[i];
+            if (xmb2ArrayItem.Name == relativePath)
+            {
+                return (BaseObject)pointerArray[i];
+                //return ReadReference(relativePath, (BaseObject)pointerArray[i], xmb2ArrayItem, out _);
+            }
+        }
+
         return null;
     }
 

@@ -8,6 +8,7 @@
 using System;
 using SQEX.Luminous.Core.Object;
 using System.Collections.Generic;
+using Flagrum.Web.Components.Graph;
 using CodeDom = System.CodeDom;
 
 namespace SQEX.Ebony.Framework.Sequence.Tray
@@ -20,6 +21,7 @@ namespace SQEX.Ebony.Framework.Sequence.Tray
 		
 		public List<SQEX.Ebony.Framework.Sequence.SequenceNode> nodes_= new List<SQEX.Ebony.Framework.Sequence.SequenceNode>();
 		
+		public StandardGroup Group { get; set; }
         
         new public static void SetupObjectType()
         {

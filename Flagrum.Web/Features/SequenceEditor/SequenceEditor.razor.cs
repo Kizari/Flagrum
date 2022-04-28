@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using QuikGraph;
 using SQEX.Ebony.Framework.Entity;
 using SQEX.Ebony.Framework.Node;
+using SQEX.Ebony.Framework.Sequence.Tray;
 using Point = Blazor.Diagrams.Core.Geometry.Point;
 using Size = GraphShape.Size;
 
@@ -55,39 +56,99 @@ public partial class SequenceEditor
             var xmb2 = Context.GetFileByUri(uri);
             var loader = new EntityPackageXmlLoader();
             var package = loader.CreateEntityPackage(xmb2);
-
-            // Add valid node objects to the diagram
-            foreach (var @object in package.loadedObjects_)
+            
+            try
             {
-                if (@object is GraphNode node)
+                Diagram.SuspendRefresh = true;
+                
+                // Add valid node objects to the diagram
+                foreach (var @object in package.loadedObjects_)
                 {
-                    var standardNode = new StandardNode(node, new Point(350, 50));
-                    Diagram.Nodes.Add(standardNode);
-                }
-            }
-
-            // Add node links to the diagram
-            foreach (var node in Diagram.Nodes)
-            {
-                foreach (StandardPort sourcePort in node.Ports.Where(p => (p as StandardPort)?.Pin is GraphOutputPin))
-                {
-                    foreach (var targetPort in sourcePort.Pin.connections_
-                                 .Select(c => c?.Port)
-                                 .Where(p => p != null))
+                    if (@object is SequenceTrayBase tray)
                     {
-                        var newLink = new LinkModel(sourcePort!, targetPort);
-
-                        var color = sourcePort?.Color ?? targetPort.Color;
-                        if (color == StandardPort.Control)
-                        {
-                            newLink.TargetMarker = LinkMarker.NewArrow(16, 8);
-                            newLink.Width = 4;
-                        }
-
-                        newLink.Color = color;
-                        Diagram.Links.Add(newLink);
+                        var standardGroup = new StandardGroup(tray);
+                        tray.Group = standardGroup;
+                        Diagram.AddGroup(standardGroup);
+                    }
+                    else if (@object is GraphNode node)
+                    {
+                        var standardNode = new StandardNode(node, new Point(350, 50));
+                        standardNode.ObjectIndex = package.loadedObjects_.IndexOf(node);
+                        node.Node = standardNode;
+                        Diagram.Nodes.Add(standardNode);
                     }
                 }
+                
+                // Add nodes to groups if applicable
+                foreach (var @object in package.loadedObjects_)
+                {
+                    if (@object is SequenceTrayBase tray)
+                    {
+                        foreach (var node in tray.nodes_)
+                        {
+                            // TODO: Make sure nothing important is being missed out by this check
+                            if (node.Node != null)
+                            {
+                                tray.Group.AddChild(node.Node);
+                            }
+                        }
+                    }
+                }
+
+                // Add node links to the diagram
+                foreach (var node in Diagram.Nodes)
+                {
+                    foreach (StandardPort sourcePort in node.Ports.Where(p => (p as StandardPort)?.Pin is GraphOutputPin))
+                    {
+                        if (sourcePort.Pin.connections_ != null)
+                        {
+                            foreach (var targetPort in sourcePort.Pin.connections_
+                                         .Select(c => c?.Port)
+                                         .Where(p => p != null))
+                            {
+                                var newLink = new LinkModel(sourcePort!, targetPort);
+
+                                var color = sourcePort?.Color ?? targetPort.Color;
+                                if (color == StandardPort.Control)
+                                {
+                                    newLink.TargetMarker = LinkMarker.NewArrow(16, 8);
+                                    newLink.Width = 4;
+                                }
+
+                                newLink.Color = color;
+                                Diagram.Links.Add(newLink);
+                            }
+                        }
+                    }
+                }
+                
+                // Add group links to the diagram
+                foreach (var group in Diagram.Groups)
+                {
+                    foreach (StandardPort sourcePort in group.Ports.Where(p => (p as StandardPort)?.Pin is GraphOutputPin))
+                    {
+                        foreach (var targetPort in sourcePort.Pin.connections_
+                                     .Select(c => c?.Port)
+                                     .Where(p => p != null))
+                        {
+                            var newLink = new LinkModel(sourcePort!, targetPort);
+
+                            var color = sourcePort?.Color ?? targetPort.Color;
+                            if (color == StandardPort.Control)
+                            {
+                                newLink.TargetMarker = LinkMarker.NewArrow(16, 8);
+                                newLink.Width = 4;
+                            }
+
+                            newLink.Color = color;
+                            Diagram.Links.Add(newLink);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                Diagram.SuspendRefresh = false;
             }
         }
         else
@@ -104,10 +165,15 @@ public partial class SequenceEditor
         var edges = Diagram.Links.OfType<LinkModel>()
             .Select(lm =>
             {
-                var source = nodes.Single(dn => dn.Id == lm.SourceNode.Id);
-                var target = nodes.Single(dn => dn.Id == lm?.TargetNode?.Id);
+                var source = nodes.FirstOrDefault(dn => dn.Id == lm.SourceNode?.Id);
+                var target = nodes.FirstOrDefault(dn => dn.Id == lm.TargetNode?.Id);
+                if (source == null || target == null)
+                {
+                    return null;
+                }
                 return new Edge<NodeModel>(source, target);
             })
+            .Where(e => e != null)
             .ToList();
         graph.AddVertexRange(nodes);
         graph.AddEdgeRange(edges);

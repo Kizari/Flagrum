@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 using SQEX.Ebony.Framework.Node;
+using SQEX.Ebony.Framework.Sequence.Group;
+using ZLibNet;
 
 namespace Flagrum.Web.Components.Graph;
 
@@ -72,32 +75,62 @@ public class StandardNode : NodeModel
 
             return 0;
         });
+        
+        var inputPins = new List<(GraphPin pin, string name, Type type)>();
+        var outputPins = new List<(GraphPin pin, string name, Type type)>();
+        
+        inputPins.AddRange(fields
+            .Where(f => f.FieldType.IsAssignableTo(typeof(GraphInputPin)))
+            .Select(f => ((GraphPin)f.GetValue(node), f.Name, f.FieldType)));
+        
+        outputPins.AddRange(fields
+            .Where(f => f.FieldType.IsAssignableTo(typeof(GraphOutputPin)))
+            .Select(f => ((GraphPin)f.GetValue(node), f.Name, f.FieldType)));
+        
+        var pinListFields = fields.Where(f => f.FieldType.GetInterface("IList") != null && f.FieldType.GenericTypeArguments.Any(t => t.IsAssignableTo(typeof(GraphPin))));
 
-        var inputFields = fields.Where(f => InputTypes.Contains(f.FieldType)).OrderBy(f => f.FieldType, comparer);
-        var outputFields = fields.Where(f => OutputTypes.Contains(f.FieldType)).OrderBy(f => f.FieldType, comparer);
-
-        foreach (var field in inputFields)
+        foreach (var pinList in pinListFields)
         {
-            var pin = (GraphPin)field.GetValue(node);
-            var port = new StandardPort(pin, this, PortAlignment.Left, field.FieldType, field.Name);
-            pin.Port = port;
+            var pins = (List<GraphPin>)pinList.GetValue(node);
+            foreach (var pin in pins)
+            {
+                if (pin.GetType().IsAssignableTo(typeof(GraphInputPin)))
+                {
+                    inputPins.Add((pin, pin.pinName_, pin.GetType()));
+                }
+                else if (pin.GetType().IsAssignableTo(typeof(GraphOutputPin)))
+                {
+                    outputPins.Add((pin, pin.pinName_, pin.GetType()));
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unknown pin type {pin.GetType()}");
+                }
+            }
+        }
+        
+        inputPins.Sort((first, second) => comparer.Compare(first.type, second.type));
+        outputPins.Sort((first, second) => comparer.Compare(first.type, second.type));
 
+        foreach (var (pin, name, type) in inputPins)
+        {
+            var port = new StandardPort(pin, this, PortAlignment.Left, type, name);
+            pin.Port = port;
             AddPort(port);
         }
 
-        foreach (var field in outputFields)
+        foreach (var (pin, name, type) in outputPins)
         {
-            var pin = (GraphPin)field.GetValue(node);
-            var port = new StandardPort(pin, this, PortAlignment.Right, field.FieldType, field.Name);
+            var port = new StandardPort(pin, this, PortAlignment.Right, type, name);
             pin.Port = port;
-
             AddPort(port);
         }
 
         var fieldsToExclude = fields.Where(f => FieldsToExclude.Contains(f.Name));
-        DataFields = fields.Except(inputFields).Except(outputFields).Except(fieldsToExclude);
+        DataFields = fields.Where(f => !f.FieldType.IsAssignableTo(typeof(GraphPin))).Except(fieldsToExclude);
     }
 
+    public int ObjectIndex { get; set; }
     public GraphNode Node { get; set; }
     public IEnumerable<FieldInfo> DataFields { get; set; }
 }
