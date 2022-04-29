@@ -45,6 +45,7 @@ public class EnvironmentPacker
     private readonly SettingsService _settings;
 
     private readonly ConcurrentDictionary<string, bool> _textures = new();
+
     // private readonly ConcurrentDictionary<string, bool> _lowLodPrefabs = new();
     private readonly ConcurrentDictionary<string, bool> _unreadClassTypes = new();
 
@@ -65,7 +66,7 @@ public class EnvironmentPacker
         // exponent portion when parsing floats
         var previousCulture = Thread.CurrentThread.CurrentCulture;
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-        
+
         var basePathTokens = outputPath.Split('\\')[..^1];
         var basePath = string.Join('\\', basePathTokens);
         var outputFileName = outputPath.Split('\\').Last();
@@ -124,12 +125,13 @@ public class EnvironmentPacker
         {
             _logger.LogInformation(type);
         }
-        
+
         _logger.LogInformation("\n===== UNREAD CLASS TYPES =====\n");
         foreach (var (classType, _) in _unreadClassTypes)
         {
             _logger.LogInformation(classType);
         }
+
         _logger.LogInformation("\n");
 
         _models.Clear();
@@ -363,15 +365,15 @@ public class EnvironmentPacker
             }
 
             var type = Assembly.GetExecutingAssembly().GetTypes()
-                .FirstOrDefault(t => t.FullName.Contains(typeAttribute));
-            
-            if (type.IsAssignableTo(typeof(StaticModelEntity)))
-            //if (typeAttribute is "Black.Entity.StaticModelEntity" or "Black.Entity.SkeletalModelEntity" or "Black.Entity.Actor.HeightFieldEntity")
+                .FirstOrDefault(t => t.FullName?.Contains(typeAttribute) == true);
+
+            if (type?.IsAssignableTo(typeof(StaticModelEntity)) == true)
             {
                 try
                 {
                     var path = element.GetElementByName("sourcePath_");
-                    var position = element.GetElementByName("position_")?.GetFloat4Value() ?? new[] {0.0f, 0.0f, 0.0f, 0.0f};
+                    var position = element.GetElementByName("position_")?.GetFloat4Value() ??
+                                   new[] {0.0f, 0.0f, 0.0f, 0.0f};
                     var rotation = element.GetElementByName("rotation_");
                     var scale = element.GetElementByName("scaling_");
 
@@ -386,7 +388,6 @@ public class EnvironmentPacker
                         scaleFloat = 1.0f;
                     }
 
-                    //var rotationAltered = rotationFloats.Select(p => p + prefabRotation[i++]).ToArray();
                     var scaleAltered = (float)scaleFloat * prefabScale;
                     var prefabFileName = uri.Split('\\', '/').Last();
 

@@ -61,4 +61,9 @@ public class JSInterop
     {
         await _jsRuntime.InvokeVoidAsync("interop.scrollToElement", id);
     }
+
+    public ValueTask SetFocusToElement(string id)
+    {
+        return _jsRuntime.InvokeVoidAsync("interop.setFocusToElement", id);
+    }
 }

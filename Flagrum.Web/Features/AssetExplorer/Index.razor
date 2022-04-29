@@ -69,13 +69,14 @@
             else
             {
                 var relativePath = Context.GetArchiveRelativeLocationByUri(SelectedItem.Uri);
-                <Hyperlink Uri="@($@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}")" Text="@relativePath" />
+                <Hyperlink Uri="@($@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}")" Text="@relativePath"/>
             }
         </div>
     </div>
 
     <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
-        <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
+        <div class="border-r border-dark-550 overflow-auto py-2"
+             style="flex: 0 0 315px; height: 100%;">
             <CascadingValue Value="this">
                 @if (View == 1)
                 {

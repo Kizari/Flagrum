@@ -1,12 +1,12 @@
 ﻿@using Flagrum.Web.Persistence.Entities
 @using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Core.Gfxbin.Gmtl.Data
 @using Flagrum.Core.Gfxbin.Data
 @using Flagrum.Core.Gfxbin.Gmtl
 @using System.IO
 @using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
 @using Flagrum.Core.Archive
 @using System.Text
-@using Flagrum.Core.Gfxbin.Gmtl.Data
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
@@ -69,6 +69,11 @@
                 Modal.Close();
             });
 
+    // For some reason this ends up with multiple copies of the extension for some people
+    // This will ensure all copies are wiped, and then we'll just add ONE set back
+            path = path.Replace(".gmdl.gfxbin", "");
+            path += ".gmdl.gfxbin";
+
             var gfxbin = item.Data();
             var reader = new BinaryReader(gfxbin);
             var header = new GfxbinHeader();
@@ -105,15 +110,15 @@
 
                 if (IncludeHighTextures && !string.IsNullOrWhiteSpace(material.HighTexturePackAsset))
                 {
-                    // Process high resolution textures
+    // Process high resolution textures
                     var highTexturePackUri = material.HighTexturePackAsset.Replace(".htpk", ".autoext");
                     var highMaterial = ProcessHighTextures(material, highTexturePackUri, textures, false);
                     if (highMaterial.Length > 0)
                     {
                         highMaterials.Add(highTexturePackUri, highMaterial);
                     }
-                    
-                    // Attempt to process 4K texture pack
+
+    // Attempt to process 4K texture pack
                     highTexturePackUri = highTexturePackUri.Insert(highTexturePackUri.LastIndexOf('.'), "2");
                     highMaterial = ProcessHighTextures(material, highTexturePackUri, highTextures, true);
                     if (highMaterial.Length > 0)
@@ -150,7 +155,7 @@
                 var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}.gfxbin";
                 File.WriteAllBytes(materialPath, data);
             }
-            
+
             foreach (var (uri, data) in highMaterials)
             {
                 var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}";
@@ -164,7 +169,7 @@
                 var texturePath = $"{texturesDirectory}\\{fileName}";
                 File.WriteAllBytes(texturePath, data);
             }
-            
+
             foreach (var (uri, data) in highTextures)
             {
                 var fileName = uri.Split('/').Last();

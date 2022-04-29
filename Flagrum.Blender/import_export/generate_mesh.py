@@ -9,7 +9,7 @@ from ..entities import MeshData, BlenderTextureData
 
 
 def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table,
-                  use_blue_normals: bool, use_correction_matrix: bool = True):
+                  use_correction_matrix: bool = True):
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
         [1, 0, 0],
@@ -161,13 +161,15 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
         multiply.inputs[0].default_value = 1.0
         material.node_tree.links.new(bsdf.inputs['Base Color'], multiply.outputs['Color'])
 
-        needs_scaling = mesh_data.BlenderMaterial.UVScale is not None and (mesh_data.BlenderMaterial.UVScale[0] != 1.0 or mesh_data.BlenderMaterial.UVScale[1] != 1.0)
+        needs_scaling = mesh_data.BlenderMaterial.UVScale is not None and (
+                mesh_data.BlenderMaterial.UVScale[0] != 1.0 or mesh_data.BlenderMaterial.UVScale[1] != 1.0)
         if needs_scaling:
             map1 = material.node_tree.nodes.new('ShaderNodeUVMap')
             map1.uv_map = "map1"
             uv_scale = material.node_tree.nodes.new('ShaderNodeMapping')
             uv_scale.inputs[3].default_value[0] = mesh_data.BlenderMaterial.UVScale[0]
-            uv_scale.inputs[3].default_value[1] = mesh_data.BlenderMaterial.UVScale[1]
+            uv_scale.inputs[3].default_value[1] = mesh_data.BlenderMaterial.UVScale[
+                len(mesh_data.BlenderMaterial.UVScale) - 1]
             material.node_tree.links.new(uv_scale.inputs['Vector'], map1.outputs['UV'])
 
         for t in mesh_data.BlenderMaterial.Textures:
@@ -225,18 +227,21 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
                     material.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb.outputs['B'])
                     material.node_tree.links.new(combine_rgb.inputs['B'], rgb.outputs['Color'])
                 else:
-                    if use_blue_normals:
-                        material.node_tree.links.new(norm_map.inputs['Color'], texture.outputs['Color'])
-                    else:
-                        separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-                        combine_rgb = material.node_tree.nodes.new('ShaderNodeCombineRGB')
-                        invert = material.node_tree.nodes.new('ShaderNodeInvert')
-                        material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-                        material.node_tree.links.new(combine_rgb.inputs['R'], separate_rgb.outputs['R'])
-                        material.node_tree.links.new(combine_rgb.inputs['G'], separate_rgb.outputs['G'])
-                        material.node_tree.links.new(norm_map.inputs['Color'], combine_rgb.outputs['Image'])
-                        material.node_tree.links.new(invert.inputs['Color'], separate_rgb.outputs['B'])
-                        material.node_tree.links.new(combine_rgb.inputs['B'], invert.outputs['Color'])
+                    separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
+                    combine_rgb = material.node_tree.nodes.new('ShaderNodeCombineRGB')
+                    less_than = material.node_tree.nodes.new('ShaderNodeMath')
+                    less_than.operation = 'LESS_THAN'
+                    less_than.inputs[1].default_value = 0.01
+                    maximum = material.node_tree.nodes.new('ShaderNodeMath')
+                    maximum.operation = 'MAXIMUM'
+                    material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
+                    material.node_tree.links.new(combine_rgb.inputs['R'], separate_rgb.outputs['R'])
+                    material.node_tree.links.new(combine_rgb.inputs['G'], separate_rgb.outputs['G'])
+                    material.node_tree.links.new(norm_map.inputs['Color'], combine_rgb.outputs['Image'])
+                    material.node_tree.links.new(less_than.inputs[0], separate_rgb.outputs['B'])
+                    material.node_tree.links.new(maximum.inputs[0], separate_rgb.outputs['B'])
+                    material.node_tree.links.new(maximum.inputs[1], less_than.outputs['Value'])
+                    material.node_tree.links.new(combine_rgb.inputs['B'], maximum.outputs['Value'])
             elif "MRS0" in texture_slot:
                 texture.image.colorspace_settings.name = 'Non-Color'
                 separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')

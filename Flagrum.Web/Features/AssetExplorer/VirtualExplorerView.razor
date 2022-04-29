@@ -1,17 +1,30 @@
-﻿@using Flagrum.Web.Persistence
-@using Flagrum.Web.Persistence.Entities
+﻿@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.AssetExplorer.Data
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
+@inject JSInterop JSInterop
+@inject AppStateService AppState
 
-@foreach (var node in Context.AssetExplorerNodes
-    .Where(n => n.ParentId == Node.Id)
-    .OrderByDescending(n => n.Children.Any())
-    .ThenBy(n => n.Name))
-{
-    <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => Parent.SetContextNode(node)">
-        <VirtualExplorerRow Node="node"/>
-    </ContextMenuTrigger>
-}
+<div id="directoryView"
+     class="outline-none"
+     tabindex="0"
+     @onkeydown="OnKeyDown"
+     @onkeydown:preventDefault="true">
+    @{
+        Nodes = Context.AssetExplorerNodes
+            .Where(n => n.ParentId == Node.Id)
+            .OrderByDescending(n => n.Children.Any())
+            .ThenBy(n => n.Name)
+            .ToList();
+
+        foreach (var node in Nodes)
+        {
+            <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => Parent.SetContextNode(node)">
+                <VirtualExplorerRow Node="node"/>
+            </ContextMenuTrigger>
+        }
+    }
+</div>
 
 @code
 {
@@ -20,4 +33,57 @@
 
     [Parameter]
     public AssetExplorerNode Node { get; set; }
+
+    private List<AssetExplorerNode> Nodes { get; set; } = new();
+
+    protected override async Task OnAfterRenderAsync(bool first)
+    {
+        if (first)
+        {
+            await JSInterop.SetFocusToElement("directoryView");
+        }
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                ShiftNode(true);
+                break;
+            case "ArrowDown":
+                ShiftNode(false);
+                break;
+        }
+    }
+
+    private void ShiftNode(bool up)
+    {
+        var currentNode = Nodes.FirstOrDefault(n => n.GetUri(Context) == Parent.SelectedItem?.Uri);
+        if (currentNode == null && Nodes.Any())
+        {
+            currentNode = up ? Nodes[Nodes.Count > 1 ? 1 : 0] : Nodes[0];
+        }
+
+        if (currentNode != null)
+        {
+            var index = Nodes.IndexOf(currentNode);
+            if (up)
+            {
+                index--;
+                if (index >= 0)
+                {
+                    Parent.SetSelectedItem(AssetExplorerItem.FromNode(Nodes[index], Context));
+                }
+            }
+            else
+            {
+                index++;
+                if (index < Nodes.Count)
+                {
+                    Parent.SetSelectedItem(AssetExplorerItem.FromNode(Nodes[index], Context));
+                }
+            }
+        }
+    }
 }

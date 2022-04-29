@@ -43,8 +43,7 @@ class ImportOperator(Operator, ImportHelper):
             generate_mesh(import_context,
                           collection=import_context.collection,
                           mesh_data=mesh,
-                          bone_table=mesh_data.BoneTable.__dict__,
-                          use_blue_normals=True)
+                          bone_table=mesh_data.BoneTable.__dict__)
 
         return {'FINISHED'}
 
@@ -153,8 +152,7 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
                 collection = bpy.data.collections[model.PrefabName]
 
             # Import the mesh and position it according to the level data
-            mesh = generate_mesh(context, collection, mesh_metadata, [], use_blue_normals=False,
-                                 use_correction_matrix=False)
+            mesh = generate_mesh(context, collection, mesh_metadata, [], use_correction_matrix=False)
             mesh["Model URI"] = model.Path
             self.transform_mesh(mesh, model)
 

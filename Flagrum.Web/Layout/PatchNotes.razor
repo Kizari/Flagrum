@@ -1,6 +1,22 @@
 ﻿<h3 class="text-grey-300 mb-6">Flagrum has been updated to @Version!</h3>
 
 <div class="bg-grey-900 rounded-md border border-grey-700 p-4">
+    <h4 class="text-grey-300 mb-4">Flagrum 1.1.14</h4>
+    <h5 class="text-grey-300 mb-4">Minor Improvements</h5>
+    <ul class="list-disc ml-6 mb-6">
+        <li>Blender Importers now handle both blue and yellow normal maps automatically</li>
+        <li>Moving props are now exported when using the Export as Environment feature</li>
+        <li>The asset list can now be navigated with the up/down arrows in Asset Explorer</li>
+    </ul>
+    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
+    <ul class="list-disc ml-6 mb-6">
+        <li>Fixed bug where Environment Import would fail due to UV scaling</li>
+        <li>Fixed bug where Environment Exporter would occasionally crash Flagrum</li>
+        <li>Fixed bug where multiple extensions would sometimes appear on exported models</li>
+    </ul>
+</div>
+
+<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
     <h4 class="text-grey-300 mb-4">Flagrum 1.1.13</h4>
     <h5 class="text-grey-300 mb-4">Asset Explorer</h5>
     <ul class="list-disc ml-6 mb-6">
@@ -245,5 +261,6 @@
 
 @code
 {
-    [Parameter] public string Version { get; set; }
+    [Parameter]
+    public string Version { get; set; }
 }

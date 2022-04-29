@@ -26,13 +26,12 @@ public class FlagrumDbContext : DbContext
     public DbSet<ModelReplacementPath> ModelReplacementPaths { get; set; }
     public DbSet<ModelReplacementFavourite> ModelReplacementFavourites { get; set; }
 
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var databasePath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\flagrum.db";
 
-        optionsBuilder.UseSqlite($"Data Source={databasePath};", options => { options.CommandTimeout(90); });
+        optionsBuilder.UseSqlite($"Data Source={databasePath};", options => { options.CommandTimeout(180); });
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
