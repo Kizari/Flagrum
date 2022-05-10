@@ -23,6 +23,32 @@ public class FileFinder
 
     private ConcurrentBag<FileData> _map;
 
+    public void CheckFileTypes()
+    {
+        var types = new ConcurrentDictionary<string, bool>();
+        CheckFileTypesRecursively(DataDirectory, types);
+        foreach (var (type, _) in types)
+        {
+            System.Console.WriteLine(type);
+        }
+    }
+
+    private void CheckFileTypesRecursively(string directory, ConcurrentDictionary<string, bool> types)
+    {
+        foreach (var file in Directory.EnumerateFiles(directory))
+        {
+            var extension = file[file.LastIndexOf('.')..];
+            types.TryAdd(extension, true);
+
+            if (extension == ".pfp")
+            {
+                System.Console.WriteLine(file);
+            }
+        }
+
+        Parallel.ForEach(Directory.EnumerateDirectories(directory), d => CheckFileTypesRecursively(d, types));
+    }
+
     public void GenerateMap()
     {
         System.Console.WriteLine("Started mapping...");
@@ -88,7 +114,8 @@ public class FileFinder
         System.Console.WriteLine($"Search finished after {watch.ElapsedMilliseconds} milliseconds.");
     }
 
-    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch, bool unpackMatchedFiles)
+    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch,
+        bool unpackMatchedFiles)
     {
         foreach (var file in Directory.EnumerateFiles(directory, "*.earc"))
         {
@@ -99,7 +126,7 @@ public class FileFinder
                 {
                     unpacker.ReadFileData(archiveFile);
                 }
-                
+
                 onMatch(archiveFile);
             }
         }

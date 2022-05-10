@@ -162,7 +162,9 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
         material.node_tree.links.new(bsdf.inputs['Base Color'], multiply.outputs['Color'])
 
         needs_scaling = mesh_data.BlenderMaterial.UVScale is not None and (
-                mesh_data.BlenderMaterial.UVScale[0] != 1.0 or mesh_data.BlenderMaterial.UVScale[1] != 1.0)
+                mesh_data.BlenderMaterial.UVScale[0] != 1.0 or (
+                len(mesh_data.BlenderMaterial.UVScale) > 1 and mesh_data.BlenderMaterial.UVScale[1] != 1.0))
+
         if needs_scaling:
             map1 = material.node_tree.nodes.new('ShaderNodeUVMap')
             map1.uv_map = "map1"

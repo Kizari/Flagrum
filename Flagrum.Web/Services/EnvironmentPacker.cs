@@ -86,7 +86,8 @@ public class EnvironmentPacker
 
         // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
         using var outerContext = new FlagrumDbContext(_settings);
-        GetPathsRecursively(uri, outerContext.GetFileByUri(uri), new[] {0.0f, 0.0f, 0.0f, 0.0f},
+
+        GetPathsRecursively(uri, outerContext.GetFileByUri(uri), new[] {23552f, 0.0f, 14336f, 0.0f},
             new[] {0.0f, 0.0f, 0.0f, 0.0f},
             1.0f,
             new List<float[]>());
