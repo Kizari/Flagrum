@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
-using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
@@ -238,20 +236,6 @@ public class BinmodBuilder
                 {
                     mesh.ColorMaps[2].Colors.Add(new Color4 {R = 255, G = 255, B = 255, A = 255});
                 }
-            }
-        }
-        
-        // TODO: Remove this test code!
-        model.BoneHeaders.Clear();
-        foreach (var meshObject in model.MeshObjects)
-        {
-            foreach (var mesh in meshObject.Meshes)
-            {
-                mesh.BoneIds = Array.Empty<uint>();
-                mesh.VertexLayoutType = VertexLayoutType.NULL;
-                mesh.WeightIndices.Clear();
-                mesh.WeightValues.Clear();
-                mesh.ColorMaps.Clear();
             }
         }
 
