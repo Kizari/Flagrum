@@ -2,34 +2,60 @@
 @using Flagrum.Core.Utilities
 @using System.IO
 
-<div class="flex flex-row items-start p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
-    <Button Icon="add" Text="Create Mod" CssClass="mr-3"/>
-    <Button Icon="folder_zip" Text="Install from ZIP" CssClass="mr-3"/>
+@inject NavigationManager Navigation
+@inject FlagrumDbContext Context
+
+<div class="flex flex-row items-center p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+    <div class="flex flex-row items-center">
+        <ModTypeButtonGroup Target="0" OnItemSelected="FilterCategory">
+            <ModTypeButton Text="Active Mods" Value="0"/>
+            <ModTypeButton Text="Disabled Mods" Value="1"/>
+        </ModTypeButtonGroup>
+    </div>
+    <div class="flex-grow"></div>
+    <Button Icon="add" Text="Create Mod" CssClass="mr-4" OnClick="@(() => Navigation.NavigateTo("/earc/editor"))"/>
+    <Button Icon="folder_zip" Text="Install from ZIP"/>
 </div>
 
-<h4 class="ml-6 mt-6 text-grey-300">Active Mods</h4>
-<div class="px-6 pt-6 pb-6 flex flex-row flex-wrap">
-    @for (var i = 0; i < 4; i++)
+@{
+    var items = Context.EarcMods.Where(m => m.IsActive == ShowActive);
+    if (items.Any())
     {
-        <EarcModCard IsDisabled="false"/>
+        <div class="p-8 flex flex-row flex-wrap">
+            @foreach (var item in items)
+            {
+                <EarcModCard Mod="item" IsDisabled="false"/>
+            }
+        </div>
     }
-</div>
-
-<h4 class="ml-6 text-grey-300">Disabled Mods</h4>
-<div class="px-6 pt-6 pb-6 flex flex-row flex-wrap">
-    @for (var i = 0; i < 2; i++)
+    else
     {
-        <EarcModCard IsDisabled="true"/>
+        var type = !Context.EarcMods.Any() ? "" : ShowActive ? "active " : "disabled ";
+        <div class="p-8 flex flex-row h-full">
+            <div class="self-center mx-auto text-center">
+                <span class="text-grey-600 material-icons block mb-4" style="font-size: 120px;">inbox</span>
+                <span class="text-grey-600 text-lg font-display">
+                    No @(type)EARC mods to show
+                </span>
+            </div>
+        </div>
     }
-</div>
+}
 
 @code
 {
+    public bool ShowActive { get; set; } = true;
+
     protected override void OnInitialized()
     {
-    //var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
         var defaultPreviewPath = @"C:\Users\Kieran\Desktop\Cursed\fabulous.jpg";
         var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
         File.Copy(defaultPreviewPath, currentPreviewPath, true);
+    }
+
+    private void FilterCategory(int category)
+    {
+        ShowActive = category == 0;
+        StateHasChanged();
     }
 }

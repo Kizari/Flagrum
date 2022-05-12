@@ -125,3 +125,18 @@ class EnvironmentModelMetadata:
     Scale: float
     PrefabRotations: list[list[float]]
     Transform: list[list[float]]
+
+
+@dataclass(init=False)
+class HebHeightMap:
+    Width: int
+    Height: int
+    Altitudes: list[float]
+
+
+@dataclass(init=False)
+class TerrainMetadata:
+    PrefabName: str
+    Name: str
+    Position: list[float]
+    HeightMap: HebHeightMap

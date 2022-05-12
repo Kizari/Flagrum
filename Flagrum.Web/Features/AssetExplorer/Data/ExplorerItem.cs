@@ -9,7 +9,8 @@ public enum ExplorerItemType
     Texture,
     Model,
     Xml,
-    Text
+    Text,
+    AnimationPackage
 }
 
 public class ExplorerItem

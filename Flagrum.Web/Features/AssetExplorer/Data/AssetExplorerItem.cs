@@ -74,6 +74,7 @@ public class AssetExplorerItem
             "gmdl" => ExplorerItemType.Model,
             "ebex" or "prefab" => ExplorerItemType.Xml,
             "autoext" => ExplorerItemType.Text,
+            "pka" => ExplorerItemType.AnimationPackage,
             _ => ExplorerItemType.Unsupported
         };
     }
@@ -88,6 +89,7 @@ public class AssetExplorerItem
             ExplorerItemType.Model => "view_in_ar",
             ExplorerItemType.Xml => "account_tree",
             ExplorerItemType.Text => "article",
+            ExplorerItemType.AnimationPackage => "widgets",
             _ => "insert_drive_file"
         };
     }

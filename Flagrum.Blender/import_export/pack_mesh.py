@@ -1,11 +1,10 @@
 ﻿import bmesh
 import bpy
-from bpy.types import Object, Mesh
+from bpy.types import Object, Mesh, DataTransferModifier
 from mathutils import Matrix, Vector
 
 from .export_context import ExportContext
 from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
-from ..operations.merge_normals import merge_normals
 from ..panel.material_data import material_weight_limit
 
 # Matrix that converts the axes back to FBX coordinate system
@@ -16,7 +15,7 @@ conversion_matrix = Matrix([
 ])
 
 
-def pack_mesh(export_context: ExportContext):
+def pack_mesh():
     mesh_data = Gpubin()
     mesh_data.Meshes = []
 
@@ -36,7 +35,12 @@ def pack_mesh(export_context: ExportContext):
             bpy.context.view_layer.objects.active = mesh_copy
 
             # Apply any outstanding transformations
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+            matrix_basis = mesh_copy.matrix_basis
+            if hasattr(mesh_copy.data, "transform"):
+                mesh_copy.data.transform(matrix_basis)
+            for child in mesh_copy.children:
+                child.matrix_local = matrix_basis @ child.matrix_local
+            mesh_copy.matrix_basis.identity()
 
             # Make sure all verts are selected otherwise some of the bmesh operations shit themselves
             for vertex in mesh_copy.data.vertices:
@@ -72,9 +76,16 @@ def pack_mesh(export_context: ExportContext):
             bmesh.update_edit_mesh(mesh_copy.data)
             bpy.ops.object.mode_set(mode='OBJECT')
 
-            # Merge normals on doubles if set in export settings
-            if export_context.smooth_normals:
-                merge_normals(mesh_copy.data, export_context.distance)
+            # Apply correct normals from original to fix issues from edge-splitting
+            mesh_copy.data.use_auto_smooth = True
+            modifier: DataTransferModifier = mesh_copy.modifiers.new(name="custom_normals_correction_" + mesh_copy.name,
+                                                                     type='DATA_TRANSFER')
+            modifier.use_loop_data = True
+            modifier.data_types_loops = {'CUSTOM_NORMAL'}
+            modifier.loop_mapping = 'NEAREST_NORMAL'
+            modifier.mix_mode = 'REPLACE'
+            modifier.object = obj
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
 
             # Pack the mesh data
             mesh.VertexPositions = _pack_vertex_positions(mesh_copy)

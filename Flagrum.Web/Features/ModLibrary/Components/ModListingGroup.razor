@@ -2,9 +2,14 @@
 @inject JSInterop Interop
 
 <CascadingValue Value="this">
-    @foreach (var mod in Mods)
-    {
-        <ModListingCard @key="mod.Uuid" Mod="mod"/>
+    @{
+        var counter = 0;
+        foreach (var mod in Mods)
+        {
+            var key = counter;
+            <ModListingCard @key="key" Mod="mod"/>
+            counter++;
+        }
     }
 </CascadingValue>
 
@@ -14,15 +19,6 @@
     public IEnumerable<Binmod> Mods { get; set; }
 
     private List<ModListingCard> Children { get; set; } = new();
-
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     await base.OnAfterRenderAsync(firstRender);
-    //     foreach (var uuid in Children.Select(c => c.Mod.Uuid).ToList())
-    //     {
-    //         await Interop.SetBackgroundImage(uuid);
-    //     }
-    // }
 
     public void AddChild(ModListingCard child)
     {

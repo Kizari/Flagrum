@@ -1,0 +1,175 @@
+﻿@page "/earc/editor"
+@page "/earc/editor/{ModId}"
+@using Microsoft.EntityFrameworkCore
+@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.EarcMods.Modals
+@using Flagrum.Core.Utilities
+@using System.IO
+
+@inject NavigationManager Navigation
+@inject IWpfService WpfService
+@inject FlagrumDbContext Context
+
+<EditForm Model="Mod" OnValidSubmit="OnSubmit" class="h-full">
+    <DataAnnotationsValidator/>
+    <div class="p-6 flex flex-row h-full">
+
+        <div class="mr-6 h-full" style="flex: 0 0 330px;">
+            <div class="box p-6 mb-6">
+                <h4 class="text-grey-200">New EARC Mod</h4>
+            </div>
+            <div class="bg-grey-800 rounded shadow-md">
+                <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div>
+                <div class="p-4">
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="Mod Name"/>
+                    <ValidationMessage For="() => Mod.Name"/>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="Author" Class="mt-3"/>
+                    <ValidationMessage For="() => Mod.Author"/>
+                    <Textbox Size="Textbox.Variant.Stretch" Rows="5" @bind-Value="Mod.Description" Placeholder="Description" Class="mt-3"/>
+                    <ValidationMessage For="() => Mod.Description"/>
+                </div>
+            </div>
+            <div class="box p-4 mt-6 flex flex-row">
+                <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
+                <Button Icon="save" Text="Save" Type="submit" CssClass="mr-3"/>
+                <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/earc"))"/>
+            </div>
+        </div>
+
+        <div class="flex-grow h-full flex flex-col">
+            <div class="box p-6 mb-6 flex flex-row items-center">
+                <h4 class="text-grey-200 flex-grow">Files to Replace</h4>
+                <Button Icon="folder" Text="Replace Asset" OnClick="() => Modal?.Open()"/>
+            </div>
+            <div class="flex-grow box px-6 pb-6 pt-2 overflow-auto">
+                @if (Mod.Earcs.Any())
+                {
+                    <table>
+                        @foreach (var earc in Mod.Earcs)
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <h5 class="text-grey-300 mt-4">@earc.EarcRelativePath</h5>
+                                </td>
+                            </tr>
+                            foreach (var replacement in earc.Replacements)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="text-right mx-4 mt-2">
+                                            <strong>Replace:</strong><br/>
+                                            <strong>With:</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="mt-2">
+                                            @replacement.Uri<br/>
+                                            @replacement.ReplacementFilePath
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="ml-8 mt-2">
+                                            <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                }
+                else
+                {
+                    <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
+                        No file replacements set
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</EditForm>
+
+<CascadingValue Value="this">
+    <UriSelectModal @ref="Modal" OnFileSelected="OnFileSelected"/>
+</CascadingValue>
+
+<AlertModal @ref="Alert"/>
+
+@code
+{
+    [Parameter]
+    public string ModId { get; set; }
+
+    private EarcMod Mod { get; set; } = new();
+
+    private UriSelectModal Modal { get; set; }
+    private AlertModal Alert { get; set; }
+    private string ImageName { get; set; } = "current_earc_preview";
+
+    protected override void OnInitialized()
+    {
+        var currentPreviewPath = $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png";
+
+        if (ModId == null)
+        {
+            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\preview.png";
+            File.Copy(defaultPreviewPath, currentPreviewPath, true);
+        }
+        else
+        {
+            var modId = Convert.ToInt32(ModId);
+            Mod = Context.EarcMods
+                .Include(e => e.Earcs)
+                .ThenInclude(e => e.Replacements)
+                .FirstOrDefault(m => m.Id == modId)!;
+            File.Copy($@"{IOHelper.GetWebRoot()}\EarcMods\{Mod.Id}.png", currentPreviewPath, true);
+        }
+    }
+
+    private async Task OnFileSelected(string uri)
+    {
+        if (Mod.Earcs.Any(e => e.Replacements.Any(r => r.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase))))
+        {
+            Alert.Open("Warning", "Invalid Action", "You cannot replace the same file twice.", null);
+        }
+
+        const string filter = "All Files|*.*";
+        await WpfService.OpenFileDialogAsync(filter, async file =>
+        {
+            Mod.AddReplacement(Context.GetArchiveRelativeLocationByUri(uri), uri, file);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void RemoveReplacement(EarcModEarc earc, EarcModReplacement replacement)
+    {
+        earc.Replacements.Remove(replacement);
+
+        if (earc.Replacements.Count == 0)
+        {
+            Mod.Earcs.Remove(earc);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SelectImage()
+    {
+        await WpfService.OpenFileDialogAsync(
+            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            async path =>
+            {
+                File.Copy(path, $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png", true);
+    // This jank is required or the UI won't update the image if the value hasn't changed
+                ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private async Task OnSubmit()
+    {
+        await Mod.Save(Context);
+        Navigation.NavigateTo("/earc");
+    }
+}

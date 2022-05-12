@@ -1,28 +1,32 @@
-﻿<div class="bg-grey-800 rounded shadow-md mr-6 mb-6" style="width: 330px; @(IsDisabled ? "filter: grayscale(100%);" : "")">
-    <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/current_preview.png')">
+﻿@using Flagrum.Web.Persistence.Entities
+@inject NavigationManager Navigation
+
+<div class="bg-grey-800 rounded shadow-lg mr-6 mb-6 transition-transform transition-shadow transform hover:scale-105 cursor-pointer hover:shadow-xl"
+     style="width: 330px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
+     @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Id}"))">
+    <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png')">
         <div class="absolute top-1 right-1 border-2 border-grey-500 bg-dark-600 opacity-75 inline-block rounded-full p-1.5"
              style="width: 42px; height: 42px;">
             <span class="material-icons text-grey-300">more_vert</span>
         </div>
     </div>
     <div class="p-4">
-        <strong class="block text-grey-200 flex-grow font-display mb-2">Core Gameplay Mod</strong>
+        <strong class="block text-grey-200 flex-grow font-display mb-2">@Mod.Name</strong>
+        <div class="block text-grey-200 flex-grow mb-2 flex flex-row items-center">
+            <span class="material-icons text-grey-200 mr-2">person</span>
+            <span class="flex-grow">@Mod.Author</span>
+        </div>
         <span class="text-sm">
-            Description line 1<br/>
-            Description line 2<br/>
-            Description line 3
+            @Mod.Description
         </span>
     </div>
-    @* <div class="p-3 row bg-dark-550"> *@
-    @*     <Button Icon="edit" Text="Edit" CssClass="mr-3"/> *@
-    @*     <Button Icon="unpublished" Text="Disable"/> *@
-    @*     <div class="flex-grow"></div> *@
-    @*     <Button Icon="delete_forever" Text="Delete"/> *@
-    @* </div> *@
 </div>
 
 @code
 {
     [Parameter]
     public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public EarcMod Mod { get; set; }
 }

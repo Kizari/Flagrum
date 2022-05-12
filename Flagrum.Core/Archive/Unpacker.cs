@@ -209,7 +209,7 @@ public class Unpacker : IDisposable
     {
         var hash = ArchiveFile.HeaderHash ^ _header.Hash;
 
-        if ((_header.Flags & (uint)ArchiveFileFlag.Copyguard) > 0)
+        if ((_header.Flags & (uint)ArchiveFileFlag.NoEarc) > 0)
         {
             hash ^= ArchiveHeader.CopyguardHash;
         }

@@ -5,19 +5,20 @@ from bpy.utils import register_class, unregister_class
 
 from . import addon_updater_ops
 from .globals import FlagrumGlobals
-from .import_export.menu import ImportOperator, ExportOperator, ImportEnvironmentOperator, FlagrumImportMenu
+from .import_export.menu import ImportOperator, ExportOperator, ImportEnvironmentOperator, FlagrumImportMenu, \
+    ImportTerrainOperator
 from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, \
     NormaliseWeightsOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
 from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, \
     ClearTextureOperator, MaterialImportOperator, MaterialCopyOperator, MaterialPasteOperator
-from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEdgesOperator, MergeNormalsOperator
+from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEdgesOperator
 from .panel.rendering_panel import ToggleEmissionOperator, RenderingPanel
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 0, 14),
-    "blender": (2, 93, 0),
+    "version": (1, 2, 0),
+    "blender": (3, 0, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
     "category": "Import-Export",
@@ -73,6 +74,7 @@ classes = (
     ImportOperator,
     ExportOperator,
     ImportEnvironmentOperator,
+    ImportTerrainOperator,
     FlagrumImportMenu,
     FlagrumMaterialProperty,
     FlagrumMaterialPropertyCollection,
@@ -86,7 +88,6 @@ classes = (
     MaterialSettings,
     UseCustomNormalsOperator,
     SplitEdgesOperator,
-    MergeNormalsOperator,
     DeleteUnusedBonesOperator,
     DeleteUnusedVGroupsOperator,
     NormaliseWeightsOperator,

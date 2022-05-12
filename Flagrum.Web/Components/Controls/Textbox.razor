@@ -3,9 +3,10 @@
 @if (Rows > 0)
 {
     <textarea rows="@Rows"
-           class="input bg-dark-550"
+           class="input bg-dark-550 @Class"
            style="@Style"
-            readonly="@IsReadOnly"
+           readonly="@IsReadOnly"
+            placeholder="@Placeholder"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput">
     </textarea>
@@ -13,9 +14,10 @@
 else
 {
     <input type="text"
-           class="input bg-dark-550"
+           class="input bg-dark-550 @Class"
            style="@Style"
            readonly="@IsReadOnly"
+           placeholder="@Placeholder"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput"/>
 }
@@ -38,11 +40,17 @@ else
     [Parameter]
     public bool IsReadOnly { get; set; }
 
+    [Parameter]
+    public string Placeholder { get; set; }
+
+    [Parameter]
+    public string Class { get; set; }
+
     private string Style => Size switch
     {
         Variant.Small => "width: 80px;",
         Variant.Normal => "",
-        Variant.Stretch => "width: 100%;",
+        Variant.Stretch => "display: block; width: 100%;",
         _ => ""
         };
 

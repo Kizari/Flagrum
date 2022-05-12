@@ -1,12 +1,13 @@
-﻿<div class="@(IsDisabled ? "bg-grey-800 text-grey-400" : "bg-accent2-900 text-grey-100 hover:bg-accent2-700") pl-1 pr-1.5 pt-1 pb-0.5 inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer transition-colors select-none @CssClass"
-     @onclick="HandleClick">
+﻿<button type="@Type"
+        class="@(IsDisabled ? "bg-grey-800 text-grey-400" : "bg-accent2-900 text-grey-100 hover:bg-accent2-700") pl-1 pr-1.5 pt-1 pb-0.5 inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer transition-colors select-none @CssClass"
+        @onclick="HandleClick">
     <div>
         <span class="material-icons-outlined text-sm">@Icon</span>
     </div>
     <div class="flex-grow pl-1 pb-0.5 text-sm font-bold">
         @Text
     </div>
-</div>
+</button>
 
 @code
 {
@@ -27,6 +28,9 @@
 
     [Parameter]
     public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public string Type { get; set; } = "button";
 
     private async Task HandleClick()
     {

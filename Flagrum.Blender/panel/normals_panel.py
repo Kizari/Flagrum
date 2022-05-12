@@ -4,8 +4,6 @@ import bmesh
 import bpy
 from bpy.types import Panel, Operator, Mesh
 
-from ..operations.merge_normals import merge_normals
-
 
 class UseCustomNormalsOperator(Operator):
     bl_idname = "flagrum.use_custom_normals"
@@ -102,27 +100,6 @@ class SplitEdgesOperator(Operator):
         return {'FINISHED'}
 
 
-class MergeNormalsOperator(Operator):
-    bl_idname = "flagrum.merge_normals"
-    bl_label = "Merge Normals"
-    bl_description = "Averages normals across doubles on selected meshes to smooth out the shading along seams"
-
-    @classmethod
-    def poll(cls, context):
-        selected_meshes = []
-        for obj in context.view_layer.objects.selected:
-            if obj.type == 'MESH':
-                selected_meshes.append(obj)
-        return len(selected_meshes) > 0
-
-    def execute(self, context):
-        for obj in context.view_layer.objects.selected:
-            if obj.type == 'MESH':
-                merge_normals(obj.data, 0.0001)
-
-        return {'FINISHED'}
-
-
 class NormalsPanel(Panel):
     bl_idname = "VIEW_3D_PT_flagrum_normals"
     bl_label = "Custom Normals"
@@ -134,4 +111,3 @@ class NormalsPanel(Panel):
         layout = self.layout
         layout.operator(UseCustomNormalsOperator.bl_idname)
         layout.operator(SplitEdgesOperator.bl_idname)
-        layout.operator(MergeNormalsOperator.bl_idname)

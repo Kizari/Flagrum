@@ -1,5 +1,9 @@
 ﻿using System.IO;
 using Flagrum.Core.Animation;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 
 namespace Flagrum.Console;
 
@@ -16,24 +20,30 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // File path to the PKA you want to edit
-        const string pkaFile = @"C:\Somewhere\base_move.pka";
+        using var context = new FlagrumDbContext(new SettingsService());
+        var data = context.GetFileByUri("data://environment/common/props/co_pr_GSobj4/models/co_pr_GSobj4_objC.gmdl");
+        var data2 = context.GetFileByUri("data://environment/common/props/co_pr_GSobj4/models/co_pr_GSobj4_objC.gpubin");
+        var model = new ModelReader(data, data2).Read();
+        bool x = true;
 
-        // File path where you want to save the modified PKA
-        const string outputPath = @"C:\Somewhere\base_move_modified.pka";
-
-        // Load the PKA into memory
-        var data = File.ReadAllBytes(pkaFile);
-        var pack = AnimationPackage.FromData(data);
-
-        // Swap out the animation(s)
-        pack.ReplaceAnimation(0, @"C:\Somewhere\new_animation_0.ani");
-        pack.ReplaceAnimation(1, @"C:\Somewhere\new_animation_1.ani");
-        pack.ReplaceAnimation(2, @"C:\Somewhere\new_animation_2.ani");
-
-        // Repack the PKA
-        var outputData = AnimationPackage.ToData(pack);
-        File.WriteAllBytes(outputPath, outputData);
+        // // File path to the PKA you want to edit
+        // const string pkaFile = @"C:\Somewhere\base_move.pka";
+        //
+        // // File path where you want to save the modified PKA
+        // const string outputPath = @"C:\Somewhere\base_move_modified.pka";
+        //
+        // // Load the PKA into memory
+        // var data = File.ReadAllBytes(pkaFile);
+        // var pack = AnimationPackage.FromData(data);
+        //
+        // // Swap out the animation(s)
+        // pack.ReplaceAnimation(0, @"C:\Somewhere\new_animation_0.ani");
+        // pack.ReplaceAnimation(1, @"C:\Somewhere\new_animation_1.ani");
+        // pack.ReplaceAnimation(2, @"C:\Somewhere\new_animation_2.ani");
+        //
+        // // Repack the PKA
+        // var outputData = AnimationPackage.ToData(pack);
+        // File.WriteAllBytes(outputPath, outputData);
 
         // using var context = new FlagrumDbContext(new SettingsService());
         // var data = context.GetFileByUri("data://character/nh/nh00/anim/pack/base_move.pka");

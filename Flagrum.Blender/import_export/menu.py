@@ -4,19 +4,18 @@ import os
 from types import SimpleNamespace
 
 import bpy
-from bpy.props import StringProperty, FloatProperty, BoolProperty
+from bpy.props import StringProperty
 from bpy.types import Operator, Menu, Mesh
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from mathutils import Matrix, Euler, Vector
 
-from .export_context import ExportContext
 from .generate_armature import generate_armature
 from .generate_mesh import generate_mesh
 from .import_context import ImportContext
 from .interop import Interop
 from .pack_mesh import pack_mesh
 from .read_armature_data import import_armature_data
-from ..entities import EnvironmentModelMetadata, Gpubin
+from ..entities import EnvironmentModelMetadata, Gpubin, TerrainMetadata
 
 
 class ImportOperator(Operator, ImportHelper):
@@ -59,30 +58,8 @@ class ExportOperator(Operator, ExportHelper):
         options={'HIDDEN'}
     )
 
-    smooth_normals: BoolProperty(
-        name="Smooth Normals on Doubles",
-        description="When the exporter splits edges for compatibility with FFXV, this functionality will smooth "
-                    "the seams caused by the edge-splitting",
-        default=False
-    )
-
-    distance: FloatProperty(
-        name="Distance",
-        description="The maximum distance between doubles for which to merge normals",
-        default=0.0001,
-        min=0.0001,
-        precision=4
-    )
-
-    def draw(self, context):
-        layout = self.layout
-        layout.label(text="FMD Export Options")
-        layout.prop(self, property="smooth_normals")
-        layout.prop(self, property="distance")
-
     def execute(self, context):
-        export_context = ExportContext(self.smooth_normals, self.distance)
-        data = pack_mesh(export_context)
+        data = pack_mesh()
         Interop.export_mesh(self.filepath, data)
 
         return {'FINISHED'}
@@ -213,6 +190,72 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
         mesh.rotation_euler[2] += math.radians(rotation_y)
 
 
+class ImportTerrainOperator(Operator, ImportHelper):
+    """Imports data from a Flagrum Terrain Pack"""
+    bl_idname = "flagrum.terrain_import"
+    bl_label = "Import Flagrum Terrain (.ftd)"
+    filename_ext = ".ftd"
+
+    filter_glob: StringProperty(
+        default="*.ftd",
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context):
+        terrain_path = self.filepath
+        import_file = open(terrain_path, mode='r')
+        import_data = import_file.read()
+
+        data: list[TerrainMetadata] = json.loads(import_data, object_hook=lambda d: SimpleNamespace(**d))
+
+        for tile in data:
+            if tile.HeightMap is None:
+                continue
+
+            if tile.PrefabName not in bpy.data.collections:
+                collection = bpy.data.collections.new(tile.PrefabName)
+                bpy.context.scene.collection.children.link(collection)
+            else:
+                collection = bpy.data.collections[tile.PrefabName]
+
+            vertices = []
+            w = 512 / (tile.HeightMap.Width - 1)
+            h = 512 / (tile.HeightMap.Height - 1)
+
+            for x in range(tile.HeightMap.Width):
+                for y in range(tile.HeightMap.Height):
+                    vertices.append(
+                        [(x * w) - 256, (y * h) - 256, tile.HeightMap.Altitudes[(x * tile.HeightMap.Width) + y]])
+
+            faces = []
+            for x in range(tile.HeightMap.Width - 1):
+                for y in range(tile.HeightMap.Height - 1):
+                    tl = x * tile.HeightMap.Height + y
+                    bl = tl + 1
+                    tr = tl + tile.HeightMap.Height
+                    br = tr + 1
+                    faces.append([tl, tr, bl])
+                    faces.append([tr, br, bl])
+
+            mesh = bpy.data.meshes.new(tile.Name)
+            mesh.from_pydata(vertices, [], faces)
+
+            mesh.validate()
+            mesh.update()
+
+            mesh_object = bpy.data.objects.new(tile.Name, mesh)
+            collection.objects.link(mesh_object)
+
+            layer = bpy.context.view_layer
+            layer.update()
+
+            mesh_object.location[0] = tile.Position[0] + 256
+            mesh_object.location[1] = (tile.Position[2] * -1) - 256
+            mesh_object.rotation_euler[2] = math.radians(-90)
+
+        return {'FINISHED'}
+
+
 class FlagrumImportMenu(Menu):
     bl_idname = "flagrum.import"
     bl_label = "Flagrum"
@@ -221,3 +264,4 @@ class FlagrumImportMenu(Menu):
         layout = self.layout
         layout.operator(ImportOperator.bl_idname)
         layout.operator(ImportEnvironmentOperator.bl_idname)
+        layout.operator(ImportTerrainOperator.bl_idname)

@@ -13,7 +13,7 @@ public enum ArchiveFileFlag : uint
     Autoload = 1,
     Compressed = 2,
     Reference = 4,
-    Copyguard = 8,
+    NoEarc = 8,             // Not sure what this means, possibly copyguard? (i.e. ffxvbinmod)
     Patched = 16,
     PatchedDeleted = 32,
     Encrypted = 64,

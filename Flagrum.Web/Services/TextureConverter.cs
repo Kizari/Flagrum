@@ -21,7 +21,7 @@ public class TextureConverter
             var filter = TexHelper.Instance.IsSRGB(metadata.Format) ? TEX_FILTER_FLAGS.SRGB : TEX_FILTER_FLAGS.DEFAULT;
             image = image.Convert(DXGI_FORMAT.R8G8B8A8_UNORM, filter, 0.5f);
         }
-        
+
         if (!(metadata.Width == 600 && metadata.Height == 600))
         {
             // Resize to the mandatory 600x600 without stretching
@@ -174,13 +174,13 @@ public class TextureConverter
         var pointer = pinnedData.AddrOfPinnedObject();
 
         var image = TexHelper.Instance.LoadFromDDSMemory(pointer, dds.Length, DDS_FLAGS.NONE);
-        
+
         pinnedData.Free();
-        
+
         // This is required to prevent an access violation exception from DirectXTexNet
         // When converting a large number of textures at once
         GC.Collect();
-        
+
         var metadata = image.GetMetadata();
         if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
         {
@@ -227,17 +227,6 @@ public class TextureConverter
 
     private ScratchImage BuildDds(TextureType type, ScratchImage image)
     {
-        // var filterFlags = TEX_FILTER_FLAGS.CUBIC;
-        // var compressFlags = TEX_COMPRESS_FLAGS.DEFAULT;
-        // var metadata = image.GetMetadata();
-        // if (metadata.Format is DXGI_FORMAT.B8G8R8A8_UNORM_SRGB
-        //     or DXGI_FORMAT.B8G8R8X8_UNORM_SRGB
-        //     or DXGI_FORMAT.R8G8B8A8_UNORM_SRGB)
-        // {
-        //     compressFlags = TEX_COMPRESS_FLAGS.SRGB;
-        //     filterFlags |= TEX_FILTER_FLAGS.SRGB;
-        // }
-
         switch (type)
         {
             case TextureType.AmbientOcclusion or TextureType.Opacity:

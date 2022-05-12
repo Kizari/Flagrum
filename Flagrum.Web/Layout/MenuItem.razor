@@ -1,4 +1,5 @@
-﻿@inject NavigationManager Navigation
+﻿@using System.Diagnostics
+@inject NavigationManager Navigation
 
 <div class="py-4 pl-5 pr-6 flex flex-row items-center hover:bg-grey-700 transition-colors cursor-pointer select-none @(IsActive ? "bg-grey-800" : "transparent")"
      @onclick="OnClick">
@@ -59,7 +60,17 @@
 
     private void OnClick()
     {
-        Parent.SetActiveItem(this);
-        Navigation.NavigateTo(Uri);
+        if (Uri.StartsWith("http"))
+        {
+            Process.Start(new ProcessStartInfo(Uri)
+            {
+                UseShellExecute = true
+            });
+        }
+        else
+        {
+            Parent.SetActiveItem(this);
+            Navigation.NavigateTo(Uri);
+        }
     }
 }

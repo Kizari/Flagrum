@@ -1,6 +1,16 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace Flagrum.Core.Archive;
+
+[Flags]
+public enum ArchiveHeaderFlags : uint
+{
+    HasLooseData = 1,
+    HasLocaleData = 2,
+    DebugArchive = 4,
+    Copyguard = 8
+}
 
 public class ArchiveHeader
 {
@@ -25,7 +35,7 @@ public class ArchiveHeader
     public uint UriListOffset { get; set; }
     public uint PathListOffset { get; set; }
     public uint DataOffset { get; set; }
-    public uint Flags { get; set; }
+    public ArchiveHeaderFlags Flags { get; set; }
     public uint ChunkSize { get; set; }
     public ulong Hash { get; set; }
 

@@ -34,8 +34,12 @@
     }
 
     .input {
-        @apply bg-dark-550 m-0 p-2 text-grey-400 rounded-md;
+        @apply bg-dark-550 p-2 text-grey-400 rounded-md;
         outline: none;
+    }
+
+    .validation-message {
+        @apply mt-1 text-error;
     }
 
     .min-w-400 {

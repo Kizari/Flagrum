@@ -4,12 +4,13 @@
 @using System.IO
 @using System.Text
 @using Flagrum.Core.Ebex.Xmb2
-@using Flagrum.Core.Ebex
+@using Flagrum.Core.Animation
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
 @inject EnvironmentPacker EnvironmentPacker
+@inject TerrainPacker TerrainPacker
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
@@ -61,6 +62,23 @@
                     <span>Export as Environment</span>
                 </div>
             </Item>
+            <Item OnClick="ExportTerrain"
+                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                <div class="row">
+                    <span class="material-icons mr-3" style="font-size: 0.9rem">grass</span>
+                    <span>Export as Terrain</span>
+                </div>
+            </Item>
+        }
+        else if (Parent.ContextItem.Type == ExplorerItemType.AnimationPackage)
+        {
+            <Item OnClick="ExportAnimationClips"
+                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                <div class="row">
+                    <span class="material-icons mr-3" style="font-size: 0.9rem">widgets</span>
+                    <span>Export Animation Clips</span>
+                </div>
+            </Item>
         }
     }
 </ContextMenu>
@@ -81,7 +99,7 @@
         ExportFolderModal.SetContextNode(Parent.ContextNode);
         ExportFolderModal.Open();
     }
-    
+
     private async Task ExportSingle()
     {
         var item = Parent.ContextItem;
@@ -145,16 +163,13 @@
     private async Task ExportEnvironment()
     {
         var item = Parent.ContextItem;
-        var filter = "Flagrum Environment Data|*.fed";
+        const string filter = "Flagrum Environment Data|*.fed";
 
         await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
         {
             await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
 
-            await Task.Run(() =>
-            {
-                EnvironmentPacker.Pack(item.Uri, path);
-            });
+            await Task.Run(() => { EnvironmentPacker.Pack(item.Uri, path); });
 
             await InvokeAsync(() =>
             {
@@ -162,5 +177,35 @@
                 WpfService.ShowWindowsNotification("Environment Export Complete");
             });
         });
+    }
+
+    private async Task ExportTerrain()
+    {
+        var item = Parent.ContextItem;
+        const string filter = "Flagrum Terrain Data|*.ftd";
+
+        await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".ftd", filter, async path =>
+        {
+            await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
+            await Task.Run(() => { TerrainPacker.Pack(item.Uri, path); });
+            await InvokeAsync(() => Parent.SetLoading(false));
+        });
+    }
+
+    private async Task ExportAnimationClips()
+    {
+        var item = Parent.ContextItem;
+        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+            async folderPath =>
+            {
+                await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
+                var data = Context.GetFileByUri(item.Uri);
+                var package = AnimationPackage.FromData(data);
+                foreach (var animation in package.Items)
+                {
+                    await File.WriteAllBytesAsync($@"{folderPath}\{package.Items.IndexOf(animation)}.ani", animation.Ani);
+                }
+                await InvokeAsync(() => Parent.SetLoading(false));
+            });
     }
 }

@@ -18,12 +18,11 @@ using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
-using Flagrum.Web.Services;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vector3 = System.Numerics.Vector3;
 
-namespace Flagrum.Core.Ebex;
+namespace Flagrum.Web.Services;
 
 public class EnvironmentModelMetadata
 {

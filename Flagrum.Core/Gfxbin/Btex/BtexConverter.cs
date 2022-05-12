@@ -46,70 +46,6 @@ public static class BtexConverter
         return WriteDds(ddsHeader, btexHeader.Data);
     }
 
-    public static IEnumerable<(string extension, object data)> HebToDds(HebHeader heb)
-    {
-        const float magic = 0.000015259022f;
-
-        foreach (var header in heb.ImageHeaders)
-        {
-            if (header.Type == HebImageType.TYPE_HEIGHT_MAP)
-            {
-                // var range = header.MaxValue - header.MinValue;
-                // //var altitudeScale = (header.MaxValue - header.MinValue) * magic;
-                // var imageSize = (int)(header.TextureWidth * header.TextureHeight * 12);
-                // var buffer = new byte[imageSize];
-                // for (var i = 0; i < header.TextureWidth * header.TextureHeight; i++)
-                // {
-                //     var startIndex = i * 12;
-                //     var ushortValue = BitConverter.ToUInt16(header.DdsData, i * 2);
-                //     var value = ushortValue * magic;
-                //     //var value = (ushortValue - header.MinValue) / (float)range;
-                //     var floatBytes = BitConverter.GetBytes(value);
-                //     buffer[startIndex] = floatBytes[0];
-                //     buffer[startIndex + 1] = floatBytes[1];
-                //     buffer[startIndex + 2] = floatBytes[2];
-                //     buffer[startIndex + 3] = floatBytes[3];
-                // }
-                //
-                // header.DdsData = buffer;
-                // header.TextureSizeBytes = (uint)buffer.Length;
-
-                //var altitudeScale = (header.MaxValue - header.MinValue) * magic;
-                var buffer = new float[header.TextureWidth * header.TextureHeight];
-
-                for (var i = 0; i < header.TextureWidth * header.TextureHeight; i++)
-                {
-                    var ushortValue = BitConverter.ToUInt16(header.DdsData, i * 2);
-                    var value = ushortValue * magic * 8000; //* altitudeScale;
-                    buffer[i] = value;
-                }
-
-                yield return ("json", (header.TextureWidth, header.TextureHeight, buffer));
-                continue;
-            }
-
-            var ddsHeader = new DdsHeader
-            {
-                Height = header.TextureHeight,
-                Width = header.TextureWidth,
-                //PitchOrLinearSize = (header.TextureHeight * header.TextureWidth) / 2,
-                PitchOrLinearSize = header.TextureSizeBytes,
-                Depth = 1,
-                MipMapCount = header.MipCount > 0 ? header.MipCount : 1u,
-                Flags = DDSFlags.Texture | DDSFlags.Pitch | DDSFlags.Depth | DDSFlags.MipMapCount,
-                PixelFormat = new PixelFormat(),
-                DX10Header = new DX10
-                {
-                    ArraySize = 1,
-                    Format = header.TextureFormat > 0 ? BtexFormatToDX10Format(header.TextureFormat) : 6, //55,
-                    ResourceDimension = 3
-                }
-            };
-
-            yield return ("dds", WriteDds(ddsHeader, header.DdsData));
-        }
-    }
-
     public static byte[] DdsToBtex(TextureType type, string fileName, byte[] dds)
     {
         var ddsHeader = ReadDdsHeader(dds, out var ddsContent);
@@ -161,7 +97,7 @@ public static class BtexConverter
         return stream.ToArray();
     }
 
-    private static byte[] WriteDds(DdsHeader header, byte[] data)
+    public static byte[] WriteDds(DdsHeader header, byte[] data)
     {
         using var memoryStream = new MemoryStream();
         using var writer = new BinaryWriter(memoryStream, Encoding.UTF8);
@@ -280,7 +216,7 @@ public static class BtexConverter
         return memoryStream.ToArray();
     }
 
-    private static ushort DX10FormatToBtexFormat(uint dx10Format)
+    public static ushort DX10FormatToBtexFormat(uint dx10Format)
     {
         return dx10Format switch
         {
@@ -296,7 +232,7 @@ public static class BtexConverter
         };
     }
 
-    private static uint BtexFormatToDX10Format(ushort format)
+    public static uint BtexFormatToDX10Format(ushort format)
     {
         return format switch
         {

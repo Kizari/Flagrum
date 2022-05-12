@@ -1,5 +1,4 @@
-﻿using Flagrum.Core.Ebex;
-using Flagrum.Web.Persistence;
+﻿using Flagrum.Web.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Flagrum.Web.Services;
@@ -20,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<ModelReplacementPresets>();
         services.AddScoped<Modmeta>();
         services.AddScoped<EnvironmentPacker>();
+        services.AddScoped<TerrainPacker>();
 
         services.AddBlazorContextMenu(options =>
         {
