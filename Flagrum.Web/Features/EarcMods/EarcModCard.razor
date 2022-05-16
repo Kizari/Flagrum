@@ -1,14 +1,18 @@
 ﻿@using Flagrum.Web.Persistence.Entities
 @inject NavigationManager Navigation
 
-<div class="bg-grey-800 rounded shadow-lg mr-6 mb-6 transition-transform transition-shadow transform hover:scale-105 cursor-pointer hover:shadow-xl"
-     style="width: 330px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
+<div class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform" 
+     style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
      @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Id}"))">
-    <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png')">
-        <div class="absolute top-1 right-1 border-2 border-grey-500 bg-dark-600 opacity-75 inline-block rounded-full p-1.5"
-             style="width: 42px; height: 42px;">
-            <span class="material-icons text-grey-300">more_vert</span>
-        </div>
+    <div class="relative rounded-t" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png')">
+        <ContextMenuTrigger MenuId="earcContextMenu" 
+                            Data="Mod"
+                            MouseButtonTrigger="MouseButtonTrigger.Left">
+            <div class="absolute top-1 right-1 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white"
+                 style="width: 38px; height: 38px; padding: 5px;">
+                <span class="material-icons">more_vert</span>
+            </div>
+        </ContextMenuTrigger>
     </div>
     <div class="p-4">
         <strong class="block text-grey-200 flex-grow font-display mb-2">@Mod.Name</strong>
@@ -17,13 +21,16 @@
             <span class="flex-grow">@Mod.Author</span>
         </div>
         <span class="text-sm">
-            @Mod.Description
+            @(Mod.Description.Length > 171 ? Mod.Description[..170] + "..." : Mod.Description)
         </span>
     </div>
 </div>
 
 @code
 {
+    [CascadingParameter]
+    public Index Parent { get; set; }
+    
     [Parameter]
     public bool IsDisabled { get; set; }
 

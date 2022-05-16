@@ -2,6 +2,7 @@
 @using System.Timers
 @inject AppStateService AppState
 @inject FlagrumDbContext Context
+@inject SettingsService Settings
 
 <Modal @ref="Modal" Padding="0" Width="9999" Height="9999">
     <HeaderView>
@@ -36,13 +37,16 @@
                 <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
                     <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
                         <CascadingValue Value="this">
-                            @foreach (var node in Context.AssetExplorerNodes
-                                .Where(n => n.ParentId == AppState.Node.Id)
-                                .OrderByDescending(n => n.Children.Any())
-                                .ThenBy(n => n.Name)
-                                .ToList())
-                            {
-                                <UriSelectModalRow Node="node"/>
+                            @{
+                                using var context = new FlagrumDbContext(Settings);
+                                foreach (var node in context.AssetExplorerNodes
+                                    .Where(n => n.ParentId == AppState.Node.Id)
+                                    .OrderByDescending(n => n.Children.Any())
+                                    .ThenBy(n => n.Name)
+                                    .ToList())
+                                {
+                                    <UriSelectModalRow Node="node"/>
+                                }
                             }
                         </CascadingValue>
                     </div>

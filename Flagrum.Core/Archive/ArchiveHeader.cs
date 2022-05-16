@@ -4,7 +4,7 @@ using System.Text;
 namespace Flagrum.Core.Archive;
 
 [Flags]
-public enum ArchiveHeaderFlags : uint
+public enum ArchiveHeaderFlags
 {
     HasLooseData = 1,
     HasLocaleData = 2,
@@ -19,6 +19,7 @@ public class ArchiveHeader
     public const uint Size = 64;
     public const uint DefaultChunkSize = 128;
     public const ulong CopyguardHash = 10026789885951819402;
+    public const uint ProtectVersionHash = 2147483648;
 
     public ArchiveHeader()
     {
@@ -29,6 +30,8 @@ public class ArchiveHeader
 
     public byte[] Tag { get; set; }
     public uint Version { get; set; }
+    public ushort VersionMajor { get; set; }
+    public ushort VersionMinor { get; set; }
     public uint FileCount { get; set; }
     public uint BlockSize { get; set; }
     public uint FileHeadersOffset { get; set; }
@@ -39,5 +42,5 @@ public class ArchiveHeader
     public uint ChunkSize { get; set; }
     public ulong Hash { get; set; }
 
-    public bool IsProtectedArchive => (Version & 2147483648) > 0;
+    public bool IsProtectedArchive => (Version & ProtectVersionHash) > 0;
 }

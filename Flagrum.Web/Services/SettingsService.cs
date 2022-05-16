@@ -36,6 +36,12 @@ public class SettingsService
             Directory.CreateDirectory(FlagrumDirectory);
         }
 
+        EarcModsDirectory = $@"{FlagrumDirectory}\earc";
+        if (!Directory.Exists(EarcModsDirectory))
+        {
+            Directory.CreateDirectory(EarcModsDirectory);
+        }
+
         SettingsPath = $"{FlagrumDirectory}\\settings.json";
 
         if (File.Exists(SettingsPath))
@@ -134,6 +140,7 @@ public class SettingsService
 
     public bool IsReady { get; set; }
     public string FlagrumDirectory { get; }
+    public string EarcModsDirectory { get; }
     public string SettingsPath { get; }
     public string TempDirectory { get; }
 

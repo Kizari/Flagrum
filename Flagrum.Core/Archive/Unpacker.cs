@@ -10,8 +10,6 @@ namespace Flagrum.Core.Archive;
 
 public class Unpacker : IDisposable
 {
-    private const ulong KeyMultiplier = 1103515245;
-    private const ulong KeyAdditive = 12345;
     private readonly ArchiveHeader _header;
 
     private readonly FileStream _stream;
@@ -60,11 +58,29 @@ public class Unpacker : IDisposable
                 ReadFileData(match);
             }
 
-            return match.GetUnencryptedData();
+            return match.GetReadableData();
         }
 
         uri = null;
         return Array.Empty<byte>();
+    }
+
+    public byte[] UnpackRawByUri(string uri)
+    {
+        _files ??= ReadFileHeaders().ToList();
+
+        var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            if (!match.HasData)
+            {
+                ReadFileData(match);
+            }
+
+            return match.GetRawData();
+        }
+
+        throw new FileNotFoundException("The file at the given URI was not found", uri);
     }
 
     public Dictionary<string, byte[]> UnpackFilesByQuery(string query)
@@ -80,7 +96,7 @@ public class Unpacker : IDisposable
                 ReadFileData(match);
             }
 
-            result.Add(match.Uri, match.GetUnencryptedData());
+            result.Add(match.Uri, match.GetReadableData());
         }
 
         return result;
@@ -98,118 +114,36 @@ public class Unpacker : IDisposable
             }
         }
 
-        var packer = Packer.FromFileList(_files);
+        var packer = Packer.FromUnpacker(_header, _files);
         Dispose();
         return packer;
     }
 
-    public void ReadFileData(ArchiveFile file)
+    private void ReadFileData(ArchiveFile file)
     {
         _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
         var buffer = new byte[file.ProcessedSize];
         _stream.Read(buffer, 0, (int)file.ProcessedSize);
 
-        if (file.Key > 0)
-        {
-            var partialKey = file.Key * KeyMultiplier + KeyAdditive;
-            var finalKey = partialKey * KeyMultiplier + KeyAdditive;
-
-            var firstNumber = BitConverter.ToUInt32(buffer, 0);
-            var secondNumber = BitConverter.ToUInt32(buffer, 4);
-
-            firstNumber ^= (uint)(finalKey >> 32);
-            secondNumber ^= (uint)finalKey;
-
-            var firstKey = BitConverter.GetBytes(firstNumber);
-            var secondKey = BitConverter.GetBytes(secondNumber);
-
-            for (var k = 0; k < 4; k++)
-            {
-                buffer[k] = firstKey[k];
-            }
-
-            for (var k = 0; k < 4; k++)
-            {
-                buffer[k + 4] = secondKey[k];
-            }
-        }
-
         if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
-            buffer = Decompress(file, buffer);
+            file.SetCompressedData(buffer);
         }
         else if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
         {
-            buffer = Cryptography.Decrypt(buffer);
-        }
-
-        if (file.ProcessedSize > file.Size)
-        {
-            var finalData = new byte[file.Size];
-            Array.Copy(buffer, 0, finalData, 0, file.Size);
-            file.SetData(finalData);
+            file.SetEncryptedData(buffer);
         }
         else
         {
-            file.SetData(buffer);
+            file.SetRawData(buffer);
         }
-    }
-
-    private byte[] Decompress(ArchiveFile file, byte[] data)
-    {
-        var chunkSize = (int)_header.ChunkSize * 1024;
-        var chunks = file.Size / chunkSize;
-
-        // If the integer division wasn't even, add 1 more chunk
-        if (file.Size % chunkSize != 0)
-        {
-            chunks++;
-        }
-
-        using var memoryStream = new MemoryStream(data);
-        using var outStream = new MemoryStream();
-        using var writer = new BinaryWriter(outStream);
-
-        for (var index = 0; index < chunks; index++)
-        {
-            // Align the bytes
-            if (index > 0)
-            {
-                var offset = 4 - (int)((_header.DataOffset + memoryStream.Position) % 4);
-                if (offset > 3)
-                {
-                    offset = 0;
-                }
-
-                memoryStream.Seek(offset, SeekOrigin.Current);
-            }
-
-            // Read the data sizes
-            var buffer = new byte[4];
-            memoryStream.Read(buffer, 0, 4);
-            var compressedSize = BitConverter.ToUInt32(buffer);
-            buffer = new byte[4];
-            memoryStream.Read(buffer, 0, 4);
-            var decompressedSize = BitConverter.ToUInt32(buffer);
-
-            // Decompress the current chunk and write to the output stream
-            buffer = new byte[compressedSize];
-            memoryStream.Read(buffer, 0, (int)compressedSize);
-            using var stream = new MemoryStream(buffer);
-            using var zlibStream = new ZLibStream(stream, CompressionMode.Decompress);
-            var decompressedBuffer = new byte[decompressedSize];
-            zlibStream.Read(decompressedBuffer, 0, (int)decompressedSize);
-            writer.Write(decompressedBuffer);
-        }
-
-        return outStream.ToArray();
     }
 
     private IEnumerable<ArchiveFile> ReadFileHeaders()
     {
         var hash = ArchiveFile.HeaderHash ^ _header.Hash;
 
-        if ((_header.Flags & (uint)ArchiveFileFlag.NoEarc) > 0)
+        if (_header.Flags.HasFlag(ArchiveHeaderFlags.Copyguard))
         {
             hash ^= ArchiveHeader.CopyguardHash;
         }
@@ -223,7 +157,7 @@ public class Unpacker : IDisposable
                 UriAndTypeHash = ReadUint64(),
                 Size = ReadUint32(),
                 ProcessedSize = ReadUint32(),
-                Flags = (ArchiveFileFlag)ReadUint32(),
+                Flags = (ArchiveFileFlag)ReadInt32(),
                 UriOffset = ReadUint32(),
                 DataOffset = ReadUint64(),
                 RelativePathOffset = ReadUint32(),
@@ -231,7 +165,7 @@ public class Unpacker : IDisposable
                 Locale = ReadByte(),
                 Key = ReadUint16()
             };
-
+            
             if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected))
             {
                 var subhash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
@@ -268,10 +202,14 @@ public class Unpacker : IDisposable
         header.UriListOffset = ReadUint32();
         header.PathListOffset = ReadUint32();
         header.DataOffset = ReadUint32();
-        header.Flags = ReadUint32();
+        header.Flags = (ArchiveHeaderFlags)ReadInt32();
         header.ChunkSize = ReadUint32();
         header.Hash = ReadUint64();
 
+        var version = header.Version & ~ArchiveHeader.ProtectVersionHash;
+        header.VersionMajor = (ushort)(version >> 16);
+        header.VersionMinor = (ushort)(version & ushort.MaxValue);
+        
         return header;
     }
 
@@ -300,6 +238,13 @@ public class Unpacker : IDisposable
         var buffer = new byte[4];
         _stream.Read(buffer, 0, 4);
         return BitConverter.ToUInt32(buffer);
+    }
+    
+    private int ReadInt32()
+    {
+        var buffer = new byte[4];
+        _stream.Read(buffer, 0, 4);
+        return BitConverter.ToInt32(buffer);
     }
 
     private ulong ReadUint64()

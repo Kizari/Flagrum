@@ -9,92 +9,98 @@
 @inject NavigationManager Navigation
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
+@inject ILogger<Editor> Logger
 
-<EditForm Model="Mod" OnValidSubmit="OnSubmit" class="h-full">
-    <DataAnnotationsValidator/>
-    <div class="p-6 flex flex-row h-full">
+<LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
+    <EditForm Model="Mod" OnValidSubmit="OnSubmit" class="h-full w-full">
+        <DataAnnotationsValidator/>
+        <div class="p-6 flex flex-row h-full">
 
-        <div class="mr-6 h-full" style="flex: 0 0 330px;">
-            <div class="box p-6 mb-6">
-                <h4 class="text-grey-200">New EARC Mod</h4>
-            </div>
-            <div class="bg-grey-800 rounded shadow-md">
-                <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div>
-                <div class="p-4">
-                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="Mod Name"/>
-                    <ValidationMessage For="() => Mod.Name"/>
-                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="Author" Class="mt-3"/>
-                    <ValidationMessage For="() => Mod.Author"/>
-                    <Textbox Size="Textbox.Variant.Stretch" Rows="5" @bind-Value="Mod.Description" Placeholder="Description" Class="mt-3"/>
-                    <ValidationMessage For="() => Mod.Description"/>
+            <div class="mr-6 h-full" style="flex: 0 0 330px;">
+                <div class="bg-grey-800 rounded shadow-md h-full flex flex-col">
+                    <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div>
+                    <div class="p-4 flex-grow flex flex-col">
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="Mod Name"/>
+                        <ValidationMessage For="() => Mod.Name"/>
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="Author" Class="mt-3"/>
+                        <ValidationMessage For="() => Mod.Author"/>
+                        <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="Description" Class="mt-3 flex-grow"/>
+                        <ValidationMessage For="() => Mod.Description"/>
+                    </div>
+                    <div class="px-4 pb-4 flex flex-row">
+                        <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
+                        @if (Mod.IsActive)
+                        {
+                            <Button Icon="block" Text="Disable" CssClass="mr-3" OnClickAsync="Disable"/>
+                        }
+                        else
+                        {
+                            <Button Icon="done" Text="Enable" CssClass="mr-3" OnClickAsync="Enable"/>
+                        }
+                        <Button Icon="delete_forever" Text="Delete" CssClass="mr-3" OnClickAsync="Delete"/>
+                    </div>
                 </div>
             </div>
-            <div class="box p-4 mt-6 flex flex-row">
-                <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
-                <Button Icon="save" Text="Save" Type="submit" CssClass="mr-3"/>
-                <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/earc"))"/>
-            </div>
-        </div>
 
-        <div class="flex-grow h-full flex flex-col">
-            <div class="box p-6 mb-6 flex flex-row items-center">
-                <h4 class="text-grey-200 flex-grow">Files to Replace</h4>
-                <Button Icon="folder" Text="Replace Asset" OnClick="() => Modal?.Open()"/>
-            </div>
-            <div class="flex-grow box px-6 pb-6 pt-2 overflow-auto">
-                @if (Mod.Earcs.Any())
-                {
-                    <table>
-                        @foreach (var earc in Mod.Earcs)
+            <div class="flex-grow h-full flex flex-col">
+                <div class="box p-6 mb-6 flex flex-row items-center">
+                    <h4 class="text-grey-200 flex-grow">@(ModId == null ? "New" : "Edit") EARC Mod</h4>
+                    <Button Icon="save" Text="Save" Type="submit" CssClass="mr-3"/>
+                    <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/earc"))"/>
+                </div>
+                <div class="flex-grow box p-6 overflow-auto">
+                    <div class="mb-4 flex flex-row items-center">
+                        <h5 class="text-grey-200 flex-grow">Files to Replace</h5>
+                        <Button Icon="folder" Text="Replace Asset" OnClick="() => Modal?.Open()"/>
+                    </div>
+                    @if (Mod.Earcs.Any())
+                    {
+                        foreach (var earc in Mod.Earcs)
                         {
-                            <tr>
-                                <td colspan="4">
-                                    <h5 class="text-grey-300 mt-4">@earc.EarcRelativePath</h5>
-                                </td>
-                            </tr>
+                            <h5 class="text-grey-300 mt-4">@earc.EarcRelativePath</h5>
                             foreach (var replacement in earc.Replacements)
                             {
-                                <tr>
-                                    <td>
-                                        <div class="text-right mx-4 mt-2">
-                                            <strong>Replace:</strong><br/>
-                                            <strong>With:</strong>
+                                <div class="flex flex-row pt-2">
+                                    <div class="text-right mx-4" style="flex: 0 0 80px;">
+                                        <strong>Replace:</strong><br/>
+                                        <strong>With:</strong>
+                                    </div>
+                                    <div style="flex: 1 1 auto;">
+                                        <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                            <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                            <div>/@replacement.Uri.Split('/').Last()</div>
+                                        </div><br/>
+                                        <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                            <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
+                                            <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div class="mt-2">
-                                            @replacement.Uri<br/>
-                                            @replacement.ReplacementFilePath
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="ml-8 mt-2">
-                                            <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
-                                        </div>
-                                    </td>
-                                    <td></td>
-                                </tr>
+                                    </div>
+                                    <div class="ml-8">
+                                        <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
+                                    </div>
+                                </div>
                             }
                         }
-                    </table>
-                }
-                else
-                {
-                    <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
-                        No file replacements set
-                    </div>
-                }
+                    }
+                    else
+                    {
+                        <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
+                            No file replacements set
+                        </div>
+                    }
+                </div>
             </div>
-        </div>
 
-    </div>
-</EditForm>
+        </div>
+    </EditForm>
+</LoadingView>
 
 <CascadingValue Value="this">
     <UriSelectModal @ref="Modal" OnFileSelected="OnFileSelected"/>
 </CascadingValue>
 
 <AlertModal @ref="Alert"/>
+<PromptModal @ref="Prompt"/>
 
 @code
 {
@@ -103,8 +109,11 @@
 
     private EarcMod Mod { get; set; } = new();
 
+    private bool IsLoading { get; set; }
+    private string LoadingText { get; set; }
     private UriSelectModal Modal { get; set; }
     private AlertModal Alert { get; set; }
+    private PromptModal Prompt { get; set; }
     private string ImageName { get; set; } = "current_earc_preview";
 
     protected override void OnInitialized()
@@ -113,7 +122,7 @@
 
         if (ModId == null)
         {
-            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\preview.png";
+            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
             File.Copy(defaultPreviewPath, currentPreviewPath, true);
         }
         else
@@ -122,8 +131,21 @@
             Mod = Context.EarcMods
                 .Include(e => e.Earcs)
                 .ThenInclude(e => e.Replacements)
-                .FirstOrDefault(m => m.Id == modId)!;
-            File.Copy($@"{IOHelper.GetWebRoot()}\EarcMods\{Mod.Id}.png", currentPreviewPath, true);
+                .Where(m => m.Id == modId)
+                .AsNoTracking()
+                .ToList()
+                .FirstOrDefault()!;
+
+            var file = $@"{IOHelper.GetWebRoot()}\EarcMods\{Mod.Id}.png";
+            if (File.Exists(file))
+            {
+                File.Copy(file, currentPreviewPath, true);
+            }
+            else
+            {
+                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\preview.png";
+                File.Copy(defaultPreviewPath, currentPreviewPath, true);
+            }
         }
     }
 
@@ -132,6 +154,7 @@
         if (Mod.Earcs.Any(e => e.Replacements.Any(r => r.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase))))
         {
             Alert.Open("Warning", "Invalid Action", "You cannot replace the same file twice.", null);
+            return;
         }
 
         const string filter = "All Files|*.*";
@@ -169,7 +192,112 @@
 
     private async Task OnSubmit()
     {
-        await Mod.Save(Context);
+        var deadFiles = Mod.Earcs.SelectMany(e => e.Replacements
+            .Where(r => !File.Exists(r.ReplacementFilePath)))
+            .Select(r => r.ReplacementFilePath)
+            .ToList();
+
+        if (deadFiles.Any())
+        {
+            var message = deadFiles.Aggregate("The mod could not be built as the following files were missing:<ul>",
+                (current, file) => current + $"<li>{file}</li>");
+            Alert.Open("Error", "Missing Files", message + "</ul>", null);
+            return;
+        }
+
+        LoadingText = "Saving Mod";
+        IsLoading = true;
+        StateHasChanged();
+
+        await Task.Run(async () => await CheckConflicts(
+            async () =>
+            {
+                await Mod.Save(Context, Logger);
+                Navigation.NavigateTo("/earc");
+            }));
+    }
+
+    private async Task Delete()
+    {
+        LoadingText = "Deleting Mod";
+        IsLoading = true;
+        StateHasChanged();
+
+        await Task.Run(async () => await Mod.Delete(Context));
         Navigation.NavigateTo("/earc");
+    }
+
+    private async Task Enable()
+    {
+        LoadingText = "Enabling Mod";
+        IsLoading = true;
+        StateHasChanged();
+
+        await Task.Run(async () => await CheckConflicts(
+            async () =>
+            {
+                await Mod.Enable(Context, Logger);
+                Navigation.NavigateTo("/earc");
+            }));
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task Disable()
+    {
+        LoadingText = "Disabling Mod";
+        IsLoading = true;
+        StateHasChanged();
+
+        await Task.Run(async () => await Mod.Disable(Context));
+        Navigation.NavigateTo("/earc");
+    }
+
+    private async Task CheckConflicts(Func<Task> onContinue)
+    {
+        var uris = Mod.Earcs
+            .SelectMany(e => e.Replacements.Select(r => r.Uri))
+            .ToList();
+
+        var conflicts = Context.EarcMods
+            .Where(m => m.IsActive
+                && m.Id != Mod.Id
+                && m.Earcs.Any(e => e.Replacements
+                    .Any(r => uris.Contains(r.Uri))))
+            .Select(m => new {m.Id, m.Name})
+            .ToList();
+
+        if (conflicts.Any())
+        {
+            var message = conflicts.Aggregate("The following mod(s) conflict with this one:<br/><br/>",
+                (previous, mod) => previous + $"<strong>{mod.Name}</strong><br/>");
+            Prompt.Title = "Warning";
+            Prompt.Heading = "Conflicts Detected";
+            Prompt.Subtext = message + "<br/>Would you like to disable the above mod(s) now?";
+            Prompt.OnYes = async () =>
+            {
+                foreach (var mod in conflicts)
+                {
+                    var match = Context.EarcMods
+                        .Include(m => m.Earcs)
+                        .ThenInclude(e => e.Replacements)
+                        .Where(m => m.Id == mod.Id)
+                        .AsNoTracking()
+                        .ToList()
+                        .FirstOrDefault()!;
+
+                    await match.Disable(Context);
+                }
+                
+                await onContinue();
+            };
+            
+            await InvokeAsync(Prompt.Open);
+        }
+        else
+        {
+            await onContinue();
+        }
     }
 }

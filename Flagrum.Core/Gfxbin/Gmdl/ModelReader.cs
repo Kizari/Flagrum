@@ -132,7 +132,7 @@ public class ModelReader
             // Not sure what it does
             if (i > 0)
             {
-                _ = _reader.ReadBool();
+                var _ = _reader.ReadBool();
             }
 
             var meshObject = new MeshObject

@@ -182,7 +182,11 @@ public class TextureConverter
         GC.Collect();
 
         var metadata = image.GetMetadata();
-        if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
+        // if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
+        // {
+        //     image = image.Decompress(DXGI_FORMAT.R8G8B8A8_UNORM);
+        // }
+        if (TexHelper.Instance.IsCompressed(metadata.Format))
         {
             image = image.Decompress(DXGI_FORMAT.R8G8B8A8_UNORM);
         }
@@ -229,10 +233,22 @@ public class TextureConverter
     {
         switch (type)
         {
+            case TextureType.Normal:
+                image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
+                image = image.Compress(DXGI_FORMAT.BC5_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
+                    0.5f);
+                break;
             case TextureType.AmbientOcclusion or TextureType.Opacity:
                 image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
                 image = image.Compress(DXGI_FORMAT.BC4_UNORM, TEX_COMPRESS_FLAGS.DEFAULT | TEX_COMPRESS_FLAGS.PARALLEL,
                     0.5f);
+                break;
+            case TextureType.MenuSprites:
+                var metadata = image.GetMetadata();
+                if (metadata.Format != DXGI_FORMAT.B8G8R8A8_UNORM)
+                {
+                    image = image.Convert(DXGI_FORMAT.B8G8R8A8_UNORM, TEX_FILTER_FLAGS.CUBIC, 0.5f);
+                }
                 break;
             default:
                 image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);

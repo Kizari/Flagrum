@@ -25,10 +25,12 @@
                 <Textbox IsReadOnly="true" @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch"/>
             </EditForm>
         </div>
-        <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
-            <ModTypeButton Text="Game View" Value="1"/>
-            <ModTypeButton Text="File System" Value="2"/>
-        </ModTypeButtonGroup>
+        <div class="flex flex-row">
+            <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
+                <ModTypeButton Text="Game View" Value="1"/>
+                <ModTypeButton Text="File System" Value="2"/>
+            </ModTypeButtonGroup>
+        </div>
     </div>
 
     <div class="flex flex-row">

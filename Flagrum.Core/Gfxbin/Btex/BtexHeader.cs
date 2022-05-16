@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Gfxbin.Btex;
 
@@ -71,7 +72,7 @@ public class BtexHeader
 
     public ushort ArraySize { get; set; } = 0;
 
-    public ushort Format { get; set; } = 0;
+    public BtexFormat Format { get; set; } = 0;
 
     public byte Depth { get; set; } = 0;
 

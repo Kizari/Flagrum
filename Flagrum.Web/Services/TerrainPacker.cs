@@ -249,7 +249,7 @@ public class TerrainPacker
                     Data = heightMap
                 };
             }
-            else
+            else if (header.TextureFormat > 0)
             {
                 var ddsHeader = new DdsHeader
                 {
@@ -263,7 +263,7 @@ public class TerrainPacker
                     DX10Header = new DX10
                     {
                         ArraySize = 1,
-                        Format = BtexConverter.BtexFormatToDX10Format(header.TextureFormat),
+                        Format = BtexConverter.FormatMap[header.TextureFormat],
                         ResourceDimension = 3
                     }
                 };

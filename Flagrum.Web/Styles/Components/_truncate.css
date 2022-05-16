@@ -1,0 +1,17 @@
+﻿.truncate-middle {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    max-width: 100%;
+}
+
+.truncate-middle > div:first-child {
+    flex: 0 1 auto;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.truncate-middle > div + div {
+    flex: 1 0 auto;
+    white-space: nowrap;
+}

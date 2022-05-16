@@ -6,7 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Blazor.ContextMenu" Version="1.11.1" />
         <PackageReference Include="Blazor.Extensions.Canvas" Version="1.1.1" />
         <PackageReference Include="DirectXTexNet" Version="1.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
@@ -64,6 +63,11 @@
       <None Update="Features\Information\Markup\Roadmap.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Folder Include="Services\Vendor" />
     </ItemGroup>
 
 </Project>

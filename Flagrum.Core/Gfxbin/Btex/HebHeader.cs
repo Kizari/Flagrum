@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Gfxbin.Btex;
 
@@ -71,7 +72,7 @@ public class HebImageHeader
     public long TextureDataOffsetOffset { get; set; }
     public uint TextureDataOffset { get; set; }
     public float AverageHeight { get; set; }
-    public byte TextureFormat { get; set; }
+    public BtexFormat TextureFormat { get; set; }
     public HebImageTileMode TileMode { get; set; }
     public ushort Reserved1 { get; set; }
     public ushort MinValue { get; set; }
@@ -146,7 +147,7 @@ public class HebHeader
                 TextureDataOffsetOffset = stream.Position,
                 TextureDataOffset = reader.ReadUInt32(),
                 AverageHeight = reader.ReadSingle(),
-                TextureFormat = reader.ReadByte(),
+                TextureFormat = (BtexFormat)reader.ReadByte(),
                 TileMode = (HebImageTileMode)reader.ReadByte(),
                 Reserved1 = reader.ReadUInt16(),
                 MinValue = reader.ReadUInt16(),
@@ -201,7 +202,7 @@ public class HebHeader
             image.TextureDataOffset = totalDataSize - (uint)memoryStream.Position;
             writer.Write(image.TextureDataOffset);
             writer.Write(image.AverageHeight);
-            writer.Write(image.TextureFormat);
+            writer.Write((byte)image.TextureFormat);
             writer.Write((byte)image.TileMode);
             writer.Write(image.Reserved1);
             writer.Write(image.MinValue);

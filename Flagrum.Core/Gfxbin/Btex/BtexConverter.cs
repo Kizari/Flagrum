@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Gfxbin.Btex;
 
@@ -14,11 +15,27 @@ public enum TextureType
     Mrs,
     Opacity,
     Preview,
-    Thumbnail
+    Thumbnail,
+    MenuSprites
 }
 
 public static class BtexConverter
 {
+    public static Map<DxgiFormat, BtexFormat> FormatMap { get; } = new();
+
+    static BtexConverter()
+    {
+        FormatMap.Add(DxgiFormat.BC6H_UF16, BtexFormat.BC6H_UF16);
+        FormatMap.Add(DxgiFormat.BC1_UNORM, BtexFormat.BC1_UNORM);
+        FormatMap.Add(DxgiFormat.BC2_UNORM, BtexFormat.BC2_UNORM);
+        FormatMap.Add(DxgiFormat.BC3_UNORM, BtexFormat.BC3_UNORM);
+        FormatMap.Add(DxgiFormat.BC4_UNORM, BtexFormat.BC4_UNORM);
+        FormatMap.Add(DxgiFormat.BC5_UNORM, BtexFormat.BC5_UNORM);
+        FormatMap.Add(DxgiFormat.BC7_UNORM, BtexFormat.BC7_UNORM);
+        FormatMap.Add(DxgiFormat.R8G8B8A8_UNORM, BtexFormat.R8G8B8A8_UNORM);
+        FormatMap.Add(DxgiFormat.B8G8R8A8_UNORM, BtexFormat.B8G8R8A8_UNORM);
+    }
+
     public static byte[] BtexToDds(byte[] btex)
     {
         // Remove SEDB header
@@ -38,7 +55,7 @@ public static class BtexConverter
             DX10Header = new DX10
             {
                 ArraySize = btexHeader.ArraySize,
-                Format = BtexFormatToDX10Format(btexHeader.Format),
+                Format = FormatMap[btexHeader.Format],
                 ResourceDimension = btexHeader.Dimension + 1u
             }
         };
@@ -57,7 +74,7 @@ public static class BtexConverter
             Depth = (byte)ddsHeader.Depth,
             MipMapCount = (byte)ddsHeader.MipMapCount,
             ArraySize = (ushort)ddsHeader.DX10Header.ArraySize,
-            Format = DX10FormatToBtexFormat(ddsHeader.DX10Header.Format),
+            Format = FormatMap[ddsHeader.DX10Header.Format],
             Dimension = (byte)(ddsHeader.DX10Header.ResourceDimension - 1u),
             Data = ddsContent,
             p_ImageFileSize = (uint)ddsContent.Length,
@@ -134,7 +151,7 @@ public static class BtexConverter
         writer.Write(header.p_Caps3);
         writer.Write(header.p_Caps4);
         writer.Write(0);
-        writer.Write(header.DX10Header.Format);
+        writer.Write((uint)header.DX10Header.Format);
         writer.Write(header.DX10Header.ResourceDimension);
         writer.Write(header.DX10Header.MiscFlags);
         writer.Write(header.DX10Header.ArraySize);
@@ -181,7 +198,7 @@ public static class BtexConverter
         writer.Write(header.Width);
         writer.Write(header.Height);
         writer.Write(header.Pitch);
-        writer.Write(header.Format);
+        writer.Write((ushort)header.Format);
         writer.Write(header.MipMapCount);
         writer.Write(header.Depth);
         writer.Write(header.Dimension);
@@ -216,38 +233,6 @@ public static class BtexConverter
         return memoryStream.ToArray();
     }
 
-    public static ushort DX10FormatToBtexFormat(uint dx10Format)
-    {
-        return dx10Format switch
-        {
-            28 => 0x0B,
-            74 => 0x19,
-            77 => 0x1A,
-            80 => 0x21,
-            83 => 0x22,
-            95 => 0x23,
-            98 => 0x24,
-            71 => 0x18,
-            _ => 0x18
-        };
-    }
-
-    public static uint BtexFormatToDX10Format(ushort format)
-    {
-        return format switch
-        {
-            0x0B => 28,
-            0x19 => 74,
-            0x1A => 77,
-            0x21 => 80,
-            0x22 => 83,
-            0x23 => 95,
-            0x24 => 98,
-            0x18 => 71,
-            _ => 71
-        };
-    }
-
     private static byte ImageFlagsForType(TextureType type)
     {
         return type switch
@@ -279,7 +264,7 @@ public static class BtexConverter
         };
     }
 
-    private static BtexHeader ReadBtexHeader(byte[] btex)
+    public static BtexHeader ReadBtexHeader(byte[] btex)
     {
         var header = new BtexHeader();
         using var memoryStream = new MemoryStream(btex);
@@ -303,7 +288,7 @@ public static class BtexConverter
         header.Width = reader.ReadUInt16();
         header.Height = reader.ReadUInt16();
         header.Pitch = reader.ReadUInt16();
-        header.Format = reader.ReadUInt16();
+        header.Format = (BtexFormat)reader.ReadUInt16();
         header.MipMapCount = reader.ReadByte();
         header.Depth = reader.ReadByte();
         header.Dimension = reader.ReadByte();
@@ -393,7 +378,7 @@ public static class BtexConverter
 
         header.DX10Header = new DX10
         {
-            Format = reader.ReadUInt32(),
+            Format = (DxgiFormat)reader.ReadUInt32(),
             ResourceDimension = reader.ReadUInt32(),
             MiscFlags = reader.ReadUInt32(),
             ArraySize = reader.ReadUInt32(),

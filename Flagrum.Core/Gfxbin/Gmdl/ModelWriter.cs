@@ -81,6 +81,11 @@ public class ModelWriter
         _writer.WriteArraySize((uint)_model.MeshObjects.Count);
         foreach (var meshObject in _model.MeshObjects)
         {
+            if (_model.MeshObjects.IndexOf(meshObject) > 0)
+            {
+                _writer.Write(true);
+            }
+            
             _writer.WriteString(meshObject.Name);
             _writer.WriteArraySize((uint)meshObject.ClusterCount);
             _writer.WriteString(meshObject.ClusterName);

@@ -8,6 +8,7 @@
 @import "Components/node";
 @import "Components/switch";
 @import "Components/indicator";
+@import "Components/truncate";
 }
 
 @layer utilities {

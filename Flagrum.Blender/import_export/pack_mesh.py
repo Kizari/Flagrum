@@ -1,9 +1,8 @@
 ﻿import bmesh
 import bpy
-from bpy.types import Object, Mesh, DataTransferModifier
+from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector
 
-from .export_context import ExportContext
 from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
 from ..panel.material_data import material_weight_limit
 
@@ -78,8 +77,7 @@ def pack_mesh():
 
             # Apply correct normals from original to fix issues from edge-splitting
             mesh_copy.data.use_auto_smooth = True
-            modifier: DataTransferModifier = mesh_copy.modifiers.new(name="custom_normals_correction_" + mesh_copy.name,
-                                                                     type='DATA_TRANSFER')
+            modifier = mesh_copy.modifiers.new(name="custom_normals_correction_" + mesh_copy.name, type='DATA_TRANSFER')
             modifier.use_loop_data = True
             modifier.data_types_loops = {'CUSTOM_NORMAL'}
             modifier.loop_mapping = 'NEAREST_NORMAL'

@@ -10,8 +10,8 @@ namespace Flagrum.Core.Archive;
 
 public class Packer
 {
-    public const uint PointerSize = 8;
-    public const uint BlockSize = 512;
+    private const uint PointerSize = 8;
+    private const uint BlockSize = 512;
     private List<ArchiveFile> _files;
     private readonly ArchiveHeader _header;
 
@@ -24,31 +24,23 @@ public class Packer
         _files = new List<ArchiveFile>();
     }
 
-    private Packer(List<ArchiveFile> files) : this()
+    private Packer(ArchiveHeader header, List<ArchiveFile> files) : this()
     {
+        _header = header;
         _files = files;
     }
 
-    public static Packer FromFileList(List<ArchiveFile> files)
+    public static Packer FromUnpacker(ArchiveHeader header, List<ArchiveFile> files)
     {
-        return new Packer(files);
+        return new Packer(header, files);
     }
 
     public bool HasFile(string uri) => _files.Any(f => f.Uri == uri);
 
-    public void AddCompressedFile(byte[] data, string uri)
-    {
-        var file = new ArchiveFile(uri);
-        file.SetData(data);
-        file.Flags |= ArchiveFileFlag.Compressed;
-
-        _files.Add(file);
-    }
-    
     public void AddFile(byte[] data, string uri)
     {
         var file = new ArchiveFile(uri);
-        file.SetData(data);
+        file.SetRawData(data);
 
         _files.Add(file);
     }
@@ -58,7 +50,7 @@ public class Packer
         var match = _files.FirstOrDefault(f => f.Uri.EndsWith(query));
         if (match != null)
         {
-            match.SetData(data);
+            match.SetRawData(data);
         }
         else
         {
@@ -67,16 +59,17 @@ public class Packer
         }
     }
 
-    public void RemoveFile(string query)
+    public void UpdateFileWithProcessedData(string uri, byte[] data)
     {
-        var match = _files.FirstOrDefault(f => f.Uri.EndsWith(query));
-        if (match == null)
+        var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
         {
-            throw new ArgumentException($"Could not find file ending with \"{query}\" in the archive.",
-                nameof(query));
+            match.SetProcessedData(data);
         }
-
-        _files.Remove(match);
+        else
+        {
+            throw new FileNotFoundException("File was not found in the archive", uri);
+        }
     }
 
     public void WriteToFile(string path)
@@ -85,7 +78,18 @@ public class Packer
 
         _logger.LogInformation("Packing archive...");
 
-        _files = _files.OrderBy(f => f.TypeHash).ThenBy(f => f.UriHash).ToList();
+        if (_header.Flags.HasFlag(ArchiveHeaderFlags.Copyguard))
+        {
+            _header.Version |= ArchiveHeader.ProtectVersionHash;
+        }
+
+        _files = _files
+            .OrderBy(f => f.Flags.HasFlag(ArchiveFileFlag.Autoload))
+            .ThenBy(f => f.Uri.EndsWith(".autoext"))
+            .ThenBy(f => f.Flags.HasFlag(ArchiveFileFlag.Reference))
+            .ThenBy(f => f.TypeHash)
+            .ThenBy(f => f.UriHash)
+            .ToList();
 
         _header.UriListOffset = ArchiveHeader.Size +
                                 Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,
@@ -133,7 +137,7 @@ public class Packer
         stream.Write(BitConverter.GetBytes(_header.UriListOffset));
         stream.Write(BitConverter.GetBytes(_header.PathListOffset));
         stream.Write(BitConverter.GetBytes(_header.DataOffset));
-        stream.Write(BitConverter.GetBytes(_header.Flags));
+        stream.Write(BitConverter.GetBytes((uint)_header.Flags));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
 
         // Archive hash must be zero before the whole header is hashed
@@ -154,7 +158,7 @@ public class Packer
         stream.Write(BitConverter.GetBytes(_header.UriListOffset));
         stream.Write(BitConverter.GetBytes(_header.PathListOffset));
         stream.Write(BitConverter.GetBytes(_header.DataOffset));
-        stream.Write(BitConverter.GetBytes(_header.Flags));
+        stream.Write(BitConverter.GetBytes((uint)_header.Flags));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
         stream.Write(BitConverter.GetBytes(_header.Hash));
 
@@ -177,11 +181,9 @@ public class Packer
             var size = file.Size;
             var processedSize = file.ProcessedSize;
             var dataOffset = file.DataOffset;
-            ushort key = 0;
 
             if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected))
             {
-                key = file.Key;
                 hash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
                 size ^= (uint)(hash >> 32);
                 processedSize ^= (uint)hash;
@@ -198,7 +200,7 @@ public class Packer
             stream.Write(BitConverter.GetBytes(file.RelativePathOffset));
             stream.WriteByte(file.LocalizationType);
             stream.WriteByte(file.Locale);
-            stream.Write(BitConverter.GetBytes(key));
+            stream.Write(BitConverter.GetBytes(file.Key));
         }
 
         stream.Seek(0, SeekOrigin.Begin);
@@ -255,9 +257,14 @@ public class Packer
 
         foreach (var file in _files)
         {
+            if (!file.Flags.HasFlag(ArchiveFileFlag.Compressed) && !file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
+            {
+                file.Key = 0;
+            }
+            
             file.DataOffset = _header.DataOffset + (uint)currentDataOffset;
 
-            var fileData = file.GetData();
+            var fileData = file.GetDataForExport();
             stream.Write(fileData, 0, fileData.Length);
 
             var finalSize = Serialization.GetAlignment(file.ProcessedSize, BlockSize);

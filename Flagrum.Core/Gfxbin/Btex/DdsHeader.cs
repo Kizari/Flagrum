@@ -1,4 +1,5 @@
 ﻿using System;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Gfxbin.Btex;
 
@@ -28,7 +29,7 @@ public enum DDSCaps : uint
 
 public class DX10
 {
-    public uint Format { get; set; } = 0;
+    public DxgiFormat Format { get; set; } = 0;
 
     public uint ResourceDimension { get; set; } = 0;
 

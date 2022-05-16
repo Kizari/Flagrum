@@ -6,7 +6,8 @@ namespace Flagrum.Web.Persistence.Entities;
 
 public enum StateKey
 {
-    CurrentAssetNode
+    CurrentAssetNode,
+    CurrentEarcCategory
 }
 
 public class StatePair

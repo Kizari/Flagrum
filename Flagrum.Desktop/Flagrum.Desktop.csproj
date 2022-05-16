@@ -73,6 +73,10 @@
         <Content Update="wwwroot\interop.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <None Remove="Resources\earc.png" />
+        <Content Include="Resources\earc.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>

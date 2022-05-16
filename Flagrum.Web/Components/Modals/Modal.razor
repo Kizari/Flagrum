@@ -54,11 +54,11 @@
     {
         Opacity = "opacity-0";
         StateHasChanged();
-
-        onClose?.Invoke();
-
+        
         await Task.Delay(200);
         Display = "hidden";
         StateHasChanged();
+
+        onClose?.Invoke();
     }
 }
