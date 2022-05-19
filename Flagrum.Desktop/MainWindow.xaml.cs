@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -43,9 +44,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             OnPropertyChanged(nameof(HasWebView2Runtime));
         }
     }
-
-    public string SpinnerPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Resources\loading.gif");
-
+    
     public MainWindow()
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
@@ -118,6 +117,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         services.AddScoped<IWpfService, WpfService>(services => new WpfService(this));
         services.AddBlazorWebView();
+        
         services.AddFlagrum();
         Resources.Add("services", services.BuildServiceProvider());
 

@@ -1,19 +1,40 @@
-﻿@using Flagrum.Web.Persistence.Entities
-@using System.IO.Compression
-@using System.IO
-@using System.Text
-@using Flagrum.Core.Utilities
-@using Flagrum.Web.Features.EarcMods.Data
-@using Microsoft.EntityFrameworkCore
+﻿@using Microsoft.EntityFrameworkCore
 @using Newtonsoft.Json
-
+@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.EarcMods.Data
+@using System.IO
+@using System.IO.Compression
+@using Flagrum.Core.Utilities
+@using System.Text
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
+@inject NavigationManager Navigation
+@inject ILogger<EarcContextMenu> Logger
 
 <ContextMenu Id="earcContextMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
              OverrideDefaultListCssClass="p-0"
              Direction="ContextMenuDirection.Right">
+    @if (((EarcMod)context.Data).IsActive)
+    {
+        <Item OnClick="() => Disable((EarcMod)context.Data)"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">block</span>
+                <span>Disable Mod</span>
+            </div>
+        </Item>
+    }
+    else
+    {
+        <Item OnClick="() => Enable((EarcMod)context.Data)"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">check</span>
+                <span>Enable Mod</span>
+            </div>
+        </Item>
+    }
     <Item OnClick="async () => await Export((EarcMod)context.Data)"
           OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
         <div class="row">
@@ -25,8 +46,72 @@
 
 @code
 {
-    [CascadingParameter] public Index Parent { get; set; }
-    
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private async Task CheckConflicts(EarcMod mod, Func<Task> onContinue)
+    {
+        var uris = mod.Earcs
+            .SelectMany(e => e.Replacements.Select(r => r.Uri))
+            .ToList();
+
+        var conflicts = Context.EarcMods
+            .Where(m => m.IsActive
+                        && m.Id != mod.Id
+                        && m.Earcs.Any(e => e.Replacements
+                            .Any(r => uris.Contains(r.Uri))))
+            .Select(m => new {m.Id, m.Name})
+            .ToList();
+
+        if (conflicts.Any())
+        {
+            var message = conflicts.Aggregate("The following mod(s) conflict with this one:<br/><br/>",
+                (previous, m) => previous + $"<strong>{m.Name}</strong><br/>");
+            Parent.Prompt.Title = "Warning";
+            Parent.Prompt.Heading = "Conflicts Detected";
+            Parent.Prompt.Subtext = message + "<br/>Would you like to disable the above mod(s) now?";
+            Parent.Prompt.OnYes = async () =>
+            {
+                foreach (var mod in conflicts)
+                {
+                    var match = Context.EarcMods
+                        .Include(m => m.Earcs)
+                        .ThenInclude(e => e.Replacements)
+                        .Where(m => m.Id == mod.Id)
+                        .AsNoTracking()
+                        .ToList()
+                        .FirstOrDefault()!;
+
+                    await match.Disable(Context);
+                }
+
+                await onContinue();
+            };
+
+            await InvokeAsync(Parent.Prompt.Open);
+        }
+        else
+        {
+            await onContinue();
+        }
+    }
+
+    private async void Enable(EarcMod mod)
+    {
+        await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
+        await Task.Run(async () => await CheckConflicts(mod,
+            async () => { await mod.Enable(Context, Logger); }));
+
+        await InvokeAsync(() => Parent.SetLoading(false));
+    }
+
+    private async void Disable(EarcMod mod)
+    {
+        await InvokeAsync(() => Parent.SetLoading(true, "Disabling Mod"));
+        await Task.Run(async () => await mod.Disable(Context));
+        await InvokeAsync(() => Parent.SetLoading(false));
+    }
+
     private async Task Export(EarcMod mod)
     {
         var defaultName = mod.Name.ToLower().Replace(" ", "_") + ".zip";
@@ -44,7 +129,7 @@
                     .AsNoTracking()
                     .ToList()
                     .FirstOrDefault()!;
-                
+
                 var metadata = new[] {earcMod}
                     .Select(m => new EarcModMetadata
                     {
@@ -69,7 +154,7 @@
                         entryStream.Write(File.ReadAllBytes(replacement.ReplacementFilePath));
                     }
                 }
-                
+
                 var json = JsonConvert.SerializeObject(metadata);
                 var jsonEntry = zip.CreateEntry("flagrum.json", CompressionLevel.Optimal);
                 using (var jsonStream = jsonEntry.Open())
@@ -82,7 +167,7 @@
                 using var thumbnailStream = thumbnailEntry.Open();
                 thumbnailStream.Write(File.ReadAllBytes(thumbnail));
             });
-            
+
             await InvokeAsync(() => Parent.SetLoading(false));
         });
     }

@@ -59,12 +59,12 @@ public class Packer
         }
     }
 
-    public void UpdateFileWithProcessedData(string uri, byte[] data)
+    public void UpdateFileWithProcessedData(string uri, uint originalSize, byte[] data)
     {
         var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
-            match.SetProcessedData(data);
+            match.SetProcessedData(originalSize, data);
         }
         else
         {

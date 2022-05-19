@@ -1,18 +1,33 @@
-﻿@using Flagrum.Web.Persistence.Entities
+﻿@using Microsoft.EntityFrameworkCore
+@using Newtonsoft.Json
+@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.EarcMods.Data
+@using System.IO
+@using System.IO.Compression
+@using Flagrum.Core.Utilities
+@using System.Text
 @inject NavigationManager Navigation
+@inject FlagrumDbContext Context
+@inject IWpfService WpfService
+@inject ILogger<EarcModCard> Logger
 
-<div class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform" 
+<div class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform"
      style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
      @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Id}"))">
     <div class="relative rounded-t" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png')">
-        <ContextMenuTrigger MenuId="earcContextMenu" 
-                            Data="Mod"
-                            MouseButtonTrigger="MouseButtonTrigger.Left">
-            <div class="absolute top-1 right-1 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white"
-                 style="width: 38px; height: 38px; padding: 5px;">
-                <span class="material-icons">more_vert</span>
-            </div>
-        </ContextMenuTrigger>
+        <Checkbox CssStyle="position:absolute;top:5px;right:5px;"
+                  IsChecked="@Mod.IsActive"
+                  OnChange="ToggleMod"/>
+        @* <ContextMenuTrigger MenuId="earcContextMenu" *@
+        @*                     Data="Mod" *@
+        @*                     MouseButtonTrigger="MouseButtonTrigger.Left"> *@
+        <div class="absolute bottom-2 left-2 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
+             @onclick="Export"
+             @onclick:stopPropagation="true"
+             style="width: 38px; height: 38px; padding: 5px;">
+            <span class="material-icons select-none">file_download</span>
+        </div>
+        @* </ContextMenuTrigger> *@
     </div>
     <div class="p-4">
         <strong class="block text-grey-200 flex-grow font-display mb-2">@Mod.Name</strong>
@@ -30,10 +45,152 @@
 {
     [CascadingParameter]
     public Index Parent { get; set; }
-    
+
     [Parameter]
     public bool IsDisabled { get; set; }
 
     [Parameter]
     public EarcMod Mod { get; set; }
+
+    private async Task<bool> CheckConflicts(Func<Task> onContinue)
+    {
+        var uris = Context.EarcMods
+            .Where(m => m.Id == Mod.Id)
+            .SelectMany(m => m.Earcs.SelectMany(e => e.Replacements.Select(r => r.Uri)))
+            .ToList();
+
+        var conflicts = Context.EarcMods
+            .Where(m => m.IsActive
+                        && m.Id != Mod.Id
+                        && m.Earcs.Any(e => e.Replacements
+                            .Any(r => uris.Contains(r.Uri))))
+            .Select(m => new {m.Id, m.Name})
+            .ToList();
+
+        if (conflicts.Any())
+        {
+            var message = conflicts.Aggregate("The following mod(s) conflict with this one:<br/><br/>",
+                (previous, m) => previous + $"<strong>{m.Name}</strong><br/>");
+            Parent.Prompt.Title = "Warning";
+            Parent.Prompt.Heading = "Conflicts Detected";
+            Parent.Prompt.Subtext = message + "<br/>Would you like to disable the above mod(s) now?";
+            Parent.Prompt.OnYes = async () =>
+            {
+                foreach (var mod in conflicts)
+                {
+                    var match = Context.EarcMods
+                        .Include(m => m.Earcs)
+                        .ThenInclude(e => e.Replacements)
+                        .Where(m => m.Id == mod.Id)
+                        .AsNoTracking()
+                        .ToList()
+                        .FirstOrDefault()!;
+
+                    await match.Disable(Context);
+                }
+
+                await onContinue();
+            };
+
+            await InvokeAsync(Parent.Prompt.Open);
+            return true;
+        }
+        await onContinue();
+        return false;
+    }
+
+    private void ToggleMod(bool newState)
+    {
+        if (newState)
+        {
+            Enable();
+        }
+        else
+        {
+            Disable();
+        }
+    }
+
+    private async void Enable()
+    {
+        await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
+        await Task.Run(async () =>
+        {
+            if (!await CheckConflicts(async () =>
+            {
+                await Mod.Enable(Context, Logger);
+                await InvokeAsync(() => Parent.SetLoading(false));
+            }))
+            {
+                await InvokeAsync(() => Parent.SetLoading(false));
+            }
+        });
+    }
+
+    private async void Disable()
+    {
+        await InvokeAsync(() => Parent.SetLoading(true, "Disabling Mod"));
+        await Task.Run(async () => await Mod.Disable(Context));
+        await InvokeAsync(() => Parent.SetLoading(false));
+    }
+
+    private async Task Export()
+    {
+        var defaultName = Mod.Name.ToLower().Replace(" ", "_") + ".zip";
+        const string filter = "ZIP Archive|*.zip";
+        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, async savePath =>
+        {
+            await InvokeAsync(() => Parent.SetLoading(true, "Exporting Mod Pack"));
+
+            await Task.Run(() =>
+            {
+                var earcMod = Context.EarcMods
+                    .Include(m => m.Earcs)
+                    .ThenInclude(e => e.Replacements)
+                    .Where(m => m.Id == Mod.Id)
+                    .AsNoTracking()
+                    .ToList()
+                    .FirstOrDefault()!;
+
+                var metadata = new[] {earcMod}
+                    .Select(m => new EarcModMetadata
+                    {
+                        Name = m.Name,
+                        Author = m.Author,
+                        Description = m.Description,
+                        Replacements = m.Earcs.ToDictionary(
+                            e => e.EarcRelativePath,
+                            e => e.Replacements.Select(r => r.Uri))
+                    })
+                    .FirstOrDefault()!;
+
+                using var stream = new FileStream(savePath, FileMode.Create);
+                using var zip = new ZipArchive(stream, ZipArchiveMode.Create, true);
+
+                foreach (var earc in earcMod.Earcs)
+                {
+                    foreach (var replacement in earc.Replacements)
+                    {
+                        var entry = zip.CreateEntry($"{Cryptography.HashFileUri64(replacement.Uri)}.{replacement.ReplacementFilePath[(replacement.ReplacementFilePath.LastIndexOf('.') + 1)..]}", CompressionLevel.Optimal);
+                        using var entryStream = entry.Open();
+                        entryStream.Write(File.ReadAllBytes(replacement.ReplacementFilePath));
+                    }
+                }
+
+                var json = JsonConvert.SerializeObject(metadata);
+                var jsonEntry = zip.CreateEntry("flagrum.json", CompressionLevel.Optimal);
+                using (var jsonStream = jsonEntry.Open())
+                {
+                    jsonStream.Write(Encoding.UTF8.GetBytes(json));
+                }
+
+                var thumbnail = $@"{IOHelper.GetWebRoot()}\EarcMods\{earcMod.Id}.png";
+                var thumbnailEntry = zip.CreateEntry("flagrum.png", CompressionLevel.Optimal);
+                using var thumbnailStream = thumbnailEntry.Open();
+                thumbnailStream.Write(File.ReadAllBytes(thumbnail));
+            });
+
+            await InvokeAsync(() => Parent.SetLoading(false));
+        });
+    }
 }

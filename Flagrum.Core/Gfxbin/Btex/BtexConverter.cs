@@ -21,7 +21,7 @@ public enum TextureType
 
 public static class BtexConverter
 {
-    public static Map<DxgiFormat, BtexFormat> FormatMap { get; } = new();
+    public static FallbackMap<DxgiFormat, BtexFormat> FormatMap { get; } = new(DxgiFormat.BC1_UNORM, BtexFormat.BC1_UNORM);
 
     static BtexConverter()
     {

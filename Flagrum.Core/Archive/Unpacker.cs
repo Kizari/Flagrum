@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Flagrum.Core.Utilities;
-using ZLibNet;
 
 namespace Flagrum.Core.Archive;
 
@@ -41,7 +40,7 @@ public class Unpacker : IDisposable
     }
 
     /// <summary>
-    ///     Retrieves the data for one file in the archive
+    /// Retrieves the data for one file in the archive
     /// </summary>
     /// <param name="query">A string that must be contained in the URI</param>
     /// <returns>Buffer containing the file data</returns>
@@ -65,7 +64,7 @@ public class Unpacker : IDisposable
         return Array.Empty<byte>();
     }
 
-    public byte[] UnpackRawByUri(string uri)
+    public byte[] UnpackRawByUri(string uri, out uint originalSize)
     {
         _files ??= ReadFileHeaders().ToList();
 
@@ -77,6 +76,7 @@ public class Unpacker : IDisposable
                 ReadFileData(match);
             }
 
+            originalSize = match.Size;
             return match.GetRawData();
         }
 
@@ -119,7 +119,7 @@ public class Unpacker : IDisposable
         return packer;
     }
 
-    private void ReadFileData(ArchiveFile file)
+    public void ReadFileData(ArchiveFile file)
     {
         _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
         var buffer = new byte[file.ProcessedSize];
@@ -165,7 +165,7 @@ public class Unpacker : IDisposable
                 Locale = ReadByte(),
                 Key = ReadUint16()
             };
-            
+
             if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected))
             {
                 var subhash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
@@ -209,7 +209,7 @@ public class Unpacker : IDisposable
         var version = header.Version & ~ArchiveHeader.ProtectVersionHash;
         header.VersionMajor = (ushort)(version >> 16);
         header.VersionMinor = (ushort)(version & ushort.MaxValue);
-        
+
         return header;
     }
 
@@ -239,7 +239,7 @@ public class Unpacker : IDisposable
         _stream.Read(buffer, 0, 4);
         return BitConverter.ToUInt32(buffer);
     }
-    
+
     private int ReadInt32()
     {
         var buffer = new byte[4];

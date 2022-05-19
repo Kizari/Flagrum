@@ -156,9 +156,11 @@ public class ArchiveFile
 
     public byte[] GetRawData() => _buffer;
 
-    public void SetProcessedData(byte[] data)
+    public void SetProcessedData(uint originalSize, byte[] data)
     {
         _buffer = data;
+        Size = originalSize;
+        ProcessedSize = (uint)data.Length;
     }
     
     public void SetRawData(byte[] data)

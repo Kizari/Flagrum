@@ -1,13 +1,12 @@
 ﻿@page "/earc"
-
 @using Microsoft.EntityFrameworkCore
+@using Newtonsoft.Json
 @using Flagrum.Web.Persistence.Entities
 @using System.IO
 @using System.IO.Compression
-@using System.Text
 @using Flagrum.Core.Utilities
 @using Flagrum.Web.Features.EarcMods.Data
-@using Newtonsoft.Json
+@using System.Text
 
 @inject NavigationManager Navigation
 @inject FlagrumDbContext Context
@@ -27,42 +26,43 @@
     <Button Icon="folder_zip" Text="Install from ZIP" OnClickAsync="InstallFromZip"/>
 </div>
 
-<LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
-    @{
-        var items = Context.EarcMods
-            .Where(m => m.IsActive == ShowActive)
-            .AsNoTracking()
-            .ToList();
-        
-        if (items.Any())
-        {
-            <div class="px-4 pb-8 flex flex-row flex-wrap">
-                @foreach (var item in items)
-                {
-                    <EarcModCard Mod="item" IsDisabled="false"/>
-                }
-            </div>
-        }
-        else
-        {
-            var type = !Context.EarcMods.Any() ? "" : ShowActive ? "active " : "disabled ";
-            <div class="p-8 flex flex-row h-full">
-                <div class="self-center mx-auto text-center">
-                    <span class="text-grey-600 material-icons block mb-4" style="font-size: 120px;">inbox</span>
-                    <span class="text-grey-600 text-lg font-display">
-                        No @(type)EARC mods to show
-                    </span>
-                </div>
-            </div>
-        }
-    }
-</LoadingView>
-
 <CascadingValue Value="this">
+    <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
+        @{
+            using var context = new FlagrumDbContext(new SettingsService());
+            var items = context.EarcMods
+                .Where(m => m.IsActive == ShowActive)
+                .AsNoTracking()
+                .ToList();
+
+            if (items.Any())
+            {
+                <div class="px-4 pb-8 flex flex-row flex-wrap">
+                    @foreach (var item in items)
+                    {
+                        <EarcModCard Mod="item" IsDisabled="false"/>
+                    }
+                </div>
+            }
+            else
+            {
+                var type = !Context.EarcMods.Any() ? "" : ShowActive ? "active " : "disabled ";
+                <div class="p-8 flex flex-row h-full">
+                    <div class="self-center mx-auto text-center">
+                        <span class="text-grey-600 material-icons block mb-4" style="font-size: 120px;">inbox</span>
+                        <span class="text-grey-600 text-lg font-display">
+                            No @(type)EARC mods to show
+                        </span>
+                    </div>
+                </div>
+            }
+        }
+    </LoadingView>
+
     <EarcContextMenu/>
 </CascadingValue>
 
-<PromptModal @ref="Prompt" />
+<PromptModal @ref="Prompt"/>
 
 @code
 {
@@ -71,7 +71,7 @@
 
     private int Category { get; set; }
     private bool ShowActive => Category == 0;
-    private PromptModal Prompt { get; set; }
+    public PromptModal Prompt { get; set; }
 
     protected override void OnInitialized()
     {
@@ -90,7 +90,7 @@
                 }
                 catch
                 {
-                    // Ignore, try again next time
+    // Ignore, try again next time
                 }
             }
         }
@@ -102,7 +102,7 @@
         LoadingText = message;
         StateHasChanged();
     }
-    
+
     private void SetCategory(int category)
     {
         Category = category;
@@ -115,7 +115,7 @@
         await WpfService.OpenFileDialogAsync("ZIP Archive|*.zip", async path =>
         {
             await InvokeAsync(() => SetLoading(true, "Installing Mod"));
-            
+
             await Task.Run(async () =>
             {
                 try
@@ -136,7 +136,7 @@
                         Description = metadata.Description,
                         IsActive = false
                     };
-                    
+
                     await Context.EarcMods.AddAsync(earcMod);
                     await Context.SaveChangesAsync();
 
@@ -145,7 +145,7 @@
                     await using var thumbnailMemoryStream = new MemoryStream();
                     await thumbnailStream.CopyToAsync(thumbnailMemoryStream);
                     await File.WriteAllBytesAsync($@"{IOHelper.GetWebRoot()}\EarcMods\{earcMod.Id}.png", thumbnailMemoryStream.ToArray());
-                    
+
                     var directory = $@"{Settings.EarcModsDirectory}\{earcMod.Id}";
                     if (!Directory.Exists(directory))
                     {
@@ -160,29 +160,26 @@
                             var hash = Cryptography.HashFileUri64(replacement).ToString();
                             var matchEntry = zip.Entries.FirstOrDefault(e => e.Name.Contains(hash))!;
                             var filePath = $@"{Settings.FlagrumDirectory}\earc\{earcMod.Id}\{matchEntry.Name}";
-                            
+
                             await using var entryStream = matchEntry.Open();
                             await using var entryMemoryStream = new MemoryStream();
                             await entryStream.CopyToAsync(entryMemoryStream);
                             await File.WriteAllBytesAsync(filePath, entryMemoryStream.ToArray());
-                            
+
                             earc.Replacements.Add(new EarcModReplacement
                             {
                                 Uri = replacement,
                                 ReplacementFilePath = filePath
                             });
                         }
-                        
+
                         earcMod.Earcs.Add(earc);
                     }
 
                     await Context.SaveChangesAsync();
 
-                    await CheckConflicts(earcMod, async () =>
-                    {
-                        await earcMod.Enable(Context, Logger);
-                    });
-                    
+                    await CheckConflicts(earcMod, async () => { await earcMod.Enable(Context, Logger); });
+
                     Context.ChangeTracker.Clear();
                 }
                 catch (Exception e)
@@ -194,7 +191,7 @@
             await InvokeAsync(() => SetLoading(false));
         });
     }
-    
+
     private async Task CheckConflicts(EarcMod mod, Func<Task> onContinue)
     {
         var uris = mod.Earcs
@@ -230,10 +227,10 @@
 
                     await match.Disable(Context);
                 }
-                
+
                 await onContinue();
             };
-            
+
             await InvokeAsync(Prompt.Open);
         }
         else

@@ -90,8 +90,11 @@ public class TerrainPacker
             {
                 var diffuseHeb =
                     HebHeader.FromData(File.ReadAllBytes($@"{hebDirectory}\diffuse\{tile.Name}.{dimensions}.heb"));
-                var diffuse = HebToImages(diffuseHeb).First();
-                File.WriteAllBytes($@"{tileDirectory}\diffuse.{diffuse.Extension}", ((HebImageData)diffuse).Data);
+                var diffuse = HebToImages(diffuseHeb).FirstOrDefault();
+                if (diffuse != null)
+                {
+                    File.WriteAllBytes($@"{tileDirectory}\diffuse.{diffuse.Extension}", ((HebImageData)diffuse).Data);
+                }
             }
 
             dimensions = 1024;
@@ -108,8 +111,11 @@ public class TerrainPacker
             {
                 var normalHeb =
                     HebHeader.FromData(File.ReadAllBytes($@"{hebDirectory}\normal\{tile.Name}.{dimensions}.heb"));
-                var normal = HebToImages(normalHeb).First();
-                File.WriteAllBytes($@"{tileDirectory}\normal.{normal.Extension}", ((HebImageData)normal).Data);
+                var normal = HebToImages(normalHeb).FirstOrDefault();
+                if (normal != null)
+                {
+                    File.WriteAllBytes($@"{tileDirectory}\normal.{normal.Extension}", ((HebImageData)normal).Data);
+                }
             }
 
             var lodIndex = 0;

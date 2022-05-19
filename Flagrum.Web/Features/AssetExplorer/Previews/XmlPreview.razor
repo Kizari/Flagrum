@@ -1,20 +1,20 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
 @using System.Text
+@using System.Text.Json
 @using Flagrum.Core.Ebex.Xmb2
 <div class="p-6">
     <div class="box p-4">
-        @foreach (var line in Lines)
-        {
-            <span class="block">@line</span>
-        }
+        <Virtualize Items="Lines">
+            <span @key="context.Index" class="block">@context.Line</span>
+        </Virtualize>
     </div>
 </div>
 
 @code
 {
     private AssetExplorerItem _previousItem;
-
-    private List<string> Lines { get; set; }
+    
+    private List<(int Index, string Line)> Lines { get; set; }
 
     [Parameter]
     public AssetExplorerItem Item { get; set; }
@@ -25,11 +25,18 @@
         {
             return;
         }
-
+        
         var xmb2 = Item.Data();
         var stringBuilder = new StringBuilder();
         Xmb2Document.Dump(xmb2, stringBuilder);
-        Lines = stringBuilder.ToString().Replace(" ", "\u00A0").Split('\n').ToList();
+        var counter = 0;
+        
+        Lines = stringBuilder.ToString()
+            .Replace(" ", "\u00A0")
+            .Split('\n')
+            .Select(l => (counter++, l))
+            .ToList();
+        
         StateHasChanged();
     }
 }

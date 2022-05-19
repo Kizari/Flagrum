@@ -42,6 +42,12 @@ public class SettingsService
             Directory.CreateDirectory(EarcModsDirectory);
         }
 
+        var earcImagesDirectory = $@"{IOHelper.GetWebRoot()}\EarcMods";
+        if (!Directory.Exists(earcImagesDirectory))
+        {
+            Directory.CreateDirectory(earcImagesDirectory);
+        }
+
         SettingsPath = $"{FlagrumDirectory}\\settings.json";
 
         if (File.Exists(SettingsPath))

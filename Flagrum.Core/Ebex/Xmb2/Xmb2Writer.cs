@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Flagrum.Core.Ebex.Xmb2;
@@ -11,10 +12,22 @@ namespace Flagrum.Core.Ebex.Xmb2;
 public class Xmb2Writer
 {
     private readonly Element RootElement;
+    private static string[] _compiledExpressions;
+    private static int _compiledExpressionsCounter;
 
     public Xmb2Writer(byte[] xml)
     {
-        using var stream = new MemoryStream(xml);
+        var xmlString = Encoding.UTF8.GetString(xml);
+        _compiledExpressions = new Regex("<compiledExpression_ type=\"string\">(.+?)</compiledExpression_>")
+            .Matches(xmlString)
+            .Select(m => m.Groups[1].Value)
+            .ToArray();
+
+        xmlString = Regex.Replace(xmlString,
+            "(<compiledExpression_ type=\"string\">)(.+?)(</compiledExpression_>)",
+            m => m.Groups[1].Value + m.Groups[3].Value);
+
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xmlString));
         var root = XDocument.Load(stream).Root;
         EVEAList = new List<List<int>>();
         OffsetList = new List<int>();
@@ -432,8 +445,15 @@ public class Xmb2Writer
             return new Element
             {
                 Name = node.Name.ToString(),
-                Value = node.ShallowValue().Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">")
-                    .Replace("&quot;", "&#34;").Replace("&apos;", "'").Replace("\"", "\""),
+                Value = node.Name.ToString() == "compiledExpression_"
+                    ? _compiledExpressions[_compiledExpressionsCounter++]
+                    : node.ShallowValue()
+                    .Replace("&amp;", "&")
+                    .Replace("&lt;", "<")
+                    .Replace("&gt;", ">")
+                    .Replace("&quot;", "&#34;")
+                    .Replace("&apos;", "'")
+                    .Replace("\"", "\""),
                 ChildElementList = new List<Element>(),
                 AttributeList = new List<Attribute>(),
                 Count = node.Elements().Count()

@@ -54,7 +54,7 @@
 //         // bool x = true;
 //
 //         // using var context = new FlagrumDbContext(new SettingsService());
-//         // var data = context.GetFileByUri("data://environment/world/sourceimages/terrainarraytex_00_b.tif");
+//         // var data = context.GetFileByUri("data://environment/world/sourceimages/terrainarraytex_displacement/terrainarraytex_00_h.png");
 //         // data = BtexConverter.BtexToDds(data);
 //         // File.WriteAllBytes(@"C:\Modding\HebTest\test.dds", data);
 //         //

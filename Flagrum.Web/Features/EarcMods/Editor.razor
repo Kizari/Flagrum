@@ -29,14 +29,6 @@
                     </div>
                     <div class="px-4 pb-4 flex flex-row">
                         <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
-                        @if (Mod.IsActive)
-                        {
-                            <Button Icon="block" Text="Disable" CssClass="mr-3" OnClickAsync="Disable"/>
-                        }
-                        else
-                        {
-                            <Button Icon="done" Text="Enable" CssClass="mr-3" OnClickAsync="Enable"/>
-                        }
                         <Button Icon="delete_forever" Text="Delete" CssClass="mr-3" OnClickAsync="Delete"/>
                     </div>
                 </div>
@@ -224,33 +216,6 @@
         StateHasChanged();
 
         await Task.Run(async () => await Mod.Delete(Context));
-        Navigation.NavigateTo("/earc");
-    }
-
-    private async Task Enable()
-    {
-        LoadingText = "Enabling Mod";
-        IsLoading = true;
-        StateHasChanged();
-
-        await Task.Run(async () => await CheckConflicts(
-            async () =>
-            {
-                await Mod.Enable(Context, Logger);
-                Navigation.NavigateTo("/earc");
-            }));
-
-        IsLoading = false;
-        StateHasChanged();
-    }
-
-    private async Task Disable()
-    {
-        LoadingText = "Disabling Mod";
-        IsLoading = true;
-        StateHasChanged();
-
-        await Task.Run(async () => await Mod.Disable(Context));
         Navigation.NavigateTo("/earc");
     }
 

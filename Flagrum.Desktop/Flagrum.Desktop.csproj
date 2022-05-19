@@ -83,9 +83,6 @@
         <Resource Include="flagrum-titlebar.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <Content Include="Resources\loading.gif">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
 
     <PropertyGroup>

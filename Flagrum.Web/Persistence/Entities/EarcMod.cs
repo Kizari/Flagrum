@@ -89,7 +89,7 @@ public class EarcMod
         foreach (var earc in Earcs)
         {
             var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
-            var backupDirectory = $@"{context.Settings.FlagrumDirectory}\earc";
+            var backupDirectory = $@"{context.Settings.FlagrumDirectory}\earc\backup";
 
             if (!Directory.Exists(backupDirectory))
             {
@@ -100,12 +100,12 @@ public class EarcMod
             using var unpacker = new Unpacker(path);
             foreach (var replacement in earc.Replacements)
             {
-                var hash = Cryptography.HashFileUri64(replacement.Uri);
+                var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
                 var filePath = $@"{backupDirectory}\{hash}";
-                if (!File.Exists(filePath))
+                if (!Directory.EnumerateFiles(backupDirectory).Any(f => f.Split('\\').Last().StartsWith(hash)))
                 {
-                    var data = unpacker.UnpackRawByUri(replacement.Uri);
-                    File.WriteAllBytes(filePath, data);
+                    var data = unpacker.UnpackRawByUri(replacement.Uri, out var originalSize);
+                    File.WriteAllBytes($"{filePath}+{originalSize}", data);
                 }
             }
 
@@ -159,7 +159,7 @@ public class EarcMod
 
                 earc.Id = 0;
             }
-            
+
             context.Update(this);
         }
         else
@@ -226,7 +226,7 @@ public class EarcMod
             var converter = new TextureConverter();
             data = converter.ToBtex(originalNameWithoutExtension, extension, originalType, data);
         }
-        
+
         // Convert any XML files to XMB2
         else if (assetType == ExplorerItemType.Xml)
         {
@@ -253,7 +253,7 @@ public class EarcMod
         {
             Revert(context);
         }
-        
+
         context.Remove(this);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
@@ -270,9 +270,18 @@ public class EarcMod
 
     public async Task Enable(FlagrumDbContext context, ILogger logger)
     {
-        BuildAndApplyMod(context, logger);
-        IsActive = true;
-        context.Update(this);
+        // Get the mod again since the sub collections aren't populated
+        var mod = context.EarcMods
+            .Include(m => m.Earcs)
+            .ThenInclude(e => e.Replacements)
+            .Where(m => m.Id == Id)
+            .AsNoTracking()
+            .ToList()
+            .FirstOrDefault()!;
+
+        mod.BuildAndApplyMod(context, logger);
+        mod.IsActive = true;
+        context.Update(mod);
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
     }
@@ -287,29 +296,32 @@ public class EarcMod
             .AsNoTracking()
             .ToList()
             .FirstOrDefault()!;
-        
+
         foreach (var earc in unmodified.Earcs)
         {
             var earcPath = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
-            var backupDirectory = $@"{context.Settings.FlagrumDirectory}\earc";
+            var backupDirectory = $@"{context.Settings.FlagrumDirectory}\earc\backup";
 
             using var unpacker = new Unpacker(earcPath);
             var packer = unpacker.ToPacker();
 
             foreach (var replacement in earc.Replacements)
             {
-                var hash = Cryptography.HashFileUri64(replacement.Uri);
-                var backupFilePath = $@"{backupDirectory}\{hash}";
+                var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
+                var backupFilePath = Directory.EnumerateFiles(backupDirectory)
+                    .FirstOrDefault(f => f.Split('\\').Last().StartsWith(hash))!;
+                var originalSize = uint.Parse(backupFilePath.Split('+').Last());
                 var original = File.ReadAllBytes(backupFilePath);
-                packer.UpdateFileWithProcessedData(replacement.Uri, original);
+                packer.UpdateFileWithProcessedData(replacement.Uri, originalSize, original);
             }
 
             packer.WriteToFile(earcPath);
-            
+
+            var backupFiles = Directory.EnumerateFiles(backupDirectory).ToList();
             foreach (var replacement in earc.Replacements)
             {
-                var hash = Cryptography.HashFileUri64(replacement.Uri);
-                var backupFilePath = $@"{backupDirectory}\{hash}";
+                var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
+                var backupFilePath = backupFiles.FirstOrDefault(f => f.Split('\\').Last().StartsWith(hash))!;
                 File.Delete(backupFilePath);
             }
         }
