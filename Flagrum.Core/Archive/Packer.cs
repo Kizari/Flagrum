@@ -12,10 +12,10 @@ public class Packer
 {
     private const uint PointerSize = 8;
     private const uint BlockSize = 512;
-    private List<ArchiveFile> _files;
     private readonly ArchiveHeader _header;
 
     private readonly Logger _logger;
+    private List<ArchiveFile> _files;
 
     public Packer()
     {
@@ -35,7 +35,10 @@ public class Packer
         return new Packer(header, files);
     }
 
-    public bool HasFile(string uri) => _files.Any(f => f.Uri == uri);
+    public bool HasFile(string uri)
+    {
+        return _files.Any(f => f.Uri == uri);
+    }
 
     public void AddFile(byte[] data, string uri)
     {
@@ -59,6 +62,19 @@ public class Packer
         }
     }
 
+    public void RemoveFile(string uri)
+    {
+        var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            _files.Remove(match);
+        }
+        else
+        {
+            throw new ArgumentException("Could not find file in the archive", nameof(uri));
+        }
+    }
+
     public void UpdateFileWithProcessedData(string uri, uint originalSize, byte[] data)
     {
         var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
@@ -70,6 +86,14 @@ public class Packer
         {
             throw new FileNotFoundException("File was not found in the archive", uri);
         }
+    }
+
+    public void AddFileFromBackup(string uri, string relativePath, uint size, ArchiveFileFlag flags,
+        byte localizationType, byte locale, ushort key, byte[] data)
+    {
+        var file = new ArchiveFile(uri, relativePath, size, flags, localizationType, locale, key);
+        file.SetDataByFlags(data);
+        _files.Add(file);
     }
 
     public void WriteToFile(string path)
@@ -261,7 +285,7 @@ public class Packer
             {
                 file.Key = 0;
             }
-            
+
             file.DataOffset = _header.DataOffset + (uint)currentDataOffset;
 
             var fileData = file.GetDataForExport();

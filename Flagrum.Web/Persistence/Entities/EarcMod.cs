@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
@@ -15,6 +16,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Persistence.Entities;
 
+public enum EarcChangeType
+{
+    Replace,
+    Add,
+    Remove
+}
+
 public class EarcModReplacement
 {
     public int Id { get; set; }
@@ -24,6 +32,7 @@ public class EarcModReplacement
 
     public string Uri { get; set; }
     public string ReplacementFilePath { get; set; }
+    public EarcChangeType Type { get; set; }
 }
 
 public class EarcModEarc
@@ -41,12 +50,34 @@ public class EarcModEarc
 public class EarcMod
 {
     public int Id { get; set; }
-    [Required] [StringLength(50)] public string Name { get; set; }
-    [Required] [StringLength(50)] public string Author { get; set; }
+    [Required] [StringLength(37)] public string Name { get; set; }
+    [Required] [StringLength(32)] public string Author { get; set; }
     [Required] [StringLength(1000)] public string Description { get; set; }
     public bool IsActive { get; set; }
 
     public ICollection<EarcModEarc> Earcs { get; set; } = new List<EarcModEarc>();
+
+    public void AddRemoval(string earcPath, string uri)
+    {
+        var earc = Earcs
+            .FirstOrDefault(e => e.EarcRelativePath.Equals(earcPath, StringComparison.OrdinalIgnoreCase));
+
+        if (earc == null)
+        {
+            earc = new EarcModEarc
+            {
+                EarcRelativePath = earcPath
+            };
+
+            Earcs.Add(earc);
+        }
+
+        earc.Replacements.Add(new EarcModReplacement
+        {
+            Uri = uri,
+            Type = EarcChangeType.Remove
+        });
+    }
 
     public void AddReplacement(string earcPath, string replacementUri, string replacementFilePath)
     {
@@ -66,7 +97,8 @@ public class EarcMod
         earc.Replacements.Add(new EarcModReplacement
         {
             Uri = replacementUri,
-            ReplacementFilePath = replacementFilePath
+            ReplacementFilePath = replacementFilePath,
+            Type = EarcChangeType.Replace
         });
     }
 
@@ -104,8 +136,21 @@ public class EarcMod
                 var filePath = $@"{backupDirectory}\{hash}";
                 if (!Directory.EnumerateFiles(backupDirectory).Any(f => f.Split('\\').Last().StartsWith(hash)))
                 {
-                    var data = unpacker.UnpackRawByUri(replacement.Uri, out var originalSize);
-                    File.WriteAllBytes($"{filePath}+{originalSize}", data);
+                    var file = unpacker.Files.FirstOrDefault(f => f.Uri == replacement.Uri)!;
+                    context.EarcModBackups.Add(new EarcModBackup
+                    {
+                        Uri = replacement.Uri,
+                        RelativePath = file.RelativePath,
+                        Size = file.Size,
+                        Flags = file.Flags,
+                        LocalizationType = file.LocalizationType,
+                        Locale = file.Locale,
+                        Key = file.Key
+                    });
+
+                    var data = unpacker.UnpackRawByUri(replacement.Uri);
+                    File.WriteAllBytes($"{filePath}", data);
+                    context.SaveChanges();
                 }
             }
 
@@ -113,8 +158,15 @@ public class EarcMod
             var packer = unpacker.ToPacker();
             foreach (var replacement in earc.Replacements)
             {
-                var data = ConvertAsset(replacement, logger, uri => unpacker.UnpackFileByQuery(uri, out _));
-                packer.UpdateFile(replacement.Uri, data);
+                if (replacement.Type == EarcChangeType.Replace)
+                {
+                    var data = ConvertAsset(replacement, logger, uri => unpacker.UnpackFileByQuery(uri, out _));
+                    packer.UpdateFile(replacement.Uri, data);
+                }
+                else
+                {
+                    packer.RemoveFile(replacement.Uri);
+                }
             }
 
             // Repack the EARC
@@ -307,23 +359,221 @@ public class EarcMod
 
             foreach (var replacement in earc.Replacements)
             {
-                var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
-                var backupFilePath = Directory.EnumerateFiles(backupDirectory)
-                    .FirstOrDefault(f => f.Split('\\').Last().StartsWith(hash))!;
-                var originalSize = uint.Parse(backupFilePath.Split('+').Last());
+                var hash = Cryptography.HashFileUri64(replacement.Uri);
+                var backupFilePath = $@"{backupDirectory}\{hash}";
                 var original = File.ReadAllBytes(backupFilePath);
-                packer.UpdateFileWithProcessedData(replacement.Uri, originalSize, original);
+                var backup = context.EarcModBackups.Find(replacement.Uri)!;
+
+                if (replacement.Type == EarcChangeType.Replace)
+                {
+                    packer.UpdateFileWithProcessedData(replacement.Uri, backup.Size, original);
+                }
+                else
+                {
+                    packer.AddFileFromBackup(backup.Uri, backup.RelativePath, backup.Size, backup.Flags,
+                        backup.LocalizationType, backup.Locale, backup.Key, original);
+                }
             }
 
             packer.WriteToFile(earcPath);
 
-            var backupFiles = Directory.EnumerateFiles(backupDirectory).ToList();
             foreach (var replacement in earc.Replacements)
             {
                 var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
-                var backupFilePath = backupFiles.FirstOrDefault(f => f.Split('\\').Last().StartsWith(hash))!;
+                var backupFilePath = $@"{backupDirectory}\{hash}";
                 File.Delete(backupFilePath);
+                var backup = context.EarcModBackups.Find(replacement.Uri)!;
+                context.EarcModBackups.Remove(backup);
             }
+
+            context.SaveChanges();
+            context.ChangeTracker.Clear();
         }
     }
+
+    public static async Task<EarcLegacyConversionResult> ConvertLegacyZip(string path, FlagrumDbContext context,
+        Func<Dictionary<string, List<string>>, Task> handleConflicts)
+    {
+        // Get EARC files from the ZIP
+        using var zip = ZipFile.OpenRead(path);
+        var earcs = zip.Entries.Where(e => e.Name.EndsWith(".earc")).ToList();
+
+        // Make sure there is at least one EARC present
+        if (!earcs.Any())
+        {
+            return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.NoEarcs};
+        }
+
+        // Check for conflicts
+        var earcPaths = new Dictionary<string, List<string>>();
+        foreach (var entry in earcs)
+        {
+            var earc = entry.ToArray();
+            using var unpacker = new Unpacker(earc);
+            string originalEarcPath = null;
+            foreach (var sample in unpacker.Files.Select(_ => unpacker.Files.FirstOrDefault(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))!))
+            {
+                originalEarcPath = context.GetArchiveRelativeLocationByUri(sample.Uri);
+                if (originalEarcPath != "UNKNOWN")
+                {
+                    break;
+                }
+            }
+
+            if (originalEarcPath == "UNKNOWN")
+            {
+                return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.AlteredStructure};
+            }
+            
+            using var originalUnpacker = new Unpacker($@"{context.Settings.GameDataDirectory}\{originalEarcPath}");
+
+            if (!CompareArchives(originalUnpacker, unpacker))
+            {
+                return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.AlteredStructure};
+            }
+
+            if (earcPaths.TryGetValue(originalEarcPath, out var zipPaths))
+            {
+                zipPaths.Add(entry.FullName);
+            }
+            else
+            {
+                earcPaths[originalEarcPath] = new List<string> {entry.FullName};
+            }
+        }
+
+        if (earcPaths.Any(e => e.Value.Count > 1))
+        {
+            await handleConflicts(earcPaths);
+        }
+
+        // Create the mod metadata
+        var earcMod = new EarcMod
+        {
+            Name = new string(path.Split('\\').Last().Take(37).ToArray()),
+            Author = "Unknown",
+            Description = "Legacy mod converted by Flagrum",
+            IsActive = false
+        };
+
+        await context.AddAsync(earcMod);
+        await context.SaveChangesAsync();
+
+        // Create a folder for the mod files
+        var directory = $@"{context.Settings.EarcModsDirectory}\{earcMod.Id}";
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // Create default thumbnail for the mod
+        var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+        File.Copy(defaultPreviewPath, $@"{IOHelper.GetWebRoot()}\EarcMods\{earcMod.Id}.png", true);
+
+        // Check which files have changed
+        foreach (var (original, earc) in earcPaths)
+        {
+            var earcModEarc = new EarcModEarc {EarcRelativePath = original};
+            var entry = zip.Entries.First(e => e.FullName == earc[0]);
+            using var unpacker = new Unpacker(entry.ToArray());
+            using var originalUnpacker = new Unpacker($@"{context.Settings.GameDataDirectory}\{original}");
+
+            foreach (var file in unpacker.Files.Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference)))
+            {
+                var match = originalUnpacker.Files.FirstOrDefault(f => f.Uri == file.Uri);
+                if (match != null)
+                {
+                    if (file.Size != match.Size || !CompareFiles(originalUnpacker, match, unpacker, file))
+                    {
+                        // Save the file to the device
+                        var fileName = $@"{directory}\{file.RelativePath.Split('/', '\\').Last()}";
+                        var extension = fileName[fileName.LastIndexOf('.')..];
+                        var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
+                        var counter = 2;
+
+                        while (File.Exists(fileName))
+                        {
+                            fileName = $"{fileNameWithoutExtension}{counter++}{extension}";
+                        }
+
+                        unpacker.ReadFileData(file);
+                        await File.WriteAllBytesAsync(fileName, file.GetReadableData());
+                        earcModEarc.Replacements.Add(new EarcModReplacement
+                        {
+                            Uri = match.Uri,
+                            ReplacementFilePath = fileName,
+                            Type = EarcChangeType.Replace
+                        });
+                    }
+                }
+            }
+
+            foreach (var file in originalUnpacker.Files)
+            {
+                if (!unpacker.HasFile(file.Uri))
+                {
+                    earcModEarc.Replacements.Add(new EarcModReplacement
+                    {
+                        Uri = file.Uri,
+                        Type = EarcChangeType.Remove
+                    });
+                }
+            }
+
+            earcMod.Earcs.Add(earcModEarc);
+        }
+
+        await context.SaveChangesAsync();
+        return new EarcLegacyConversionResult
+        {
+            Status = EarcLegacyConversionStatus.Success,
+            Mod = earcMod
+        };
+    }
+
+    private static bool CompareFiles(Unpacker originalUnpacker, ArchiveFile original, Unpacker unpacker,
+        ArchiveFile file)
+    {
+        originalUnpacker.ReadFileData(original);
+        unpacker.ReadFileData(file);
+
+        var originalData = original.GetRawData();
+        var data = file.GetRawData();
+
+        for (var i = 0; i < originalData.Length; i++)
+        {
+            if (originalData[i] != data[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool CompareArchives(Unpacker original, Unpacker unpacker)
+    {
+        var originalFileList = original.Files.Select(f => f.Uri).ToList();
+        var hasNewFiles = unpacker.Files.Any(f => !originalFileList.Contains(f.Uri));
+        return !hasNewFiles;
+    }
+}
+
+public class EarcLegacyConversionResult
+{
+    public EarcLegacyConversionStatus Status { get; set; }
+    public EarcMod Mod { get; set; }
+}
+
+public enum EarcLegacyConversionStatus
+{
+    Success,
+    NoEarcs,
+    AlteredStructure
+}
+
+public class EarcLegacyConflict
+{
+    public string EarcName { get; set; }
+    public List<string> Options { get; set; }
 }

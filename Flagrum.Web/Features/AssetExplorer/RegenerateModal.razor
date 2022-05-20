@@ -24,6 +24,9 @@
 @code
 {
     [CascadingParameter]
+    public MainLayout MainLayout { get; set; }
+    
+    [CascadingParameter]
     public Index Parent { get; set; }
     
     private Modal Modal { get; set; }
@@ -34,7 +37,7 @@
     {
         AppState.Node = null;
         Parent.ClearSelectedItem();
-        Parent.CallStateHasChanged();
+        MainLayout.CallStateHasChanged();
         Modal.Close();
         
         await Task.Run(() =>
@@ -45,7 +48,7 @@
             AppState.Node = Context.AssetExplorerNodes
                 .FirstOrDefault(n => n.Id == 1);
 
-            InvokeAsync(() => Parent.CallStateHasChanged());
+            InvokeAsync(() => MainLayout.CallStateHasChanged());
         });
     }
 }

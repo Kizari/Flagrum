@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.IO;
+using System.IO.Compression;
+using System.Numerics;
 
 namespace Flagrum.Core.Utilities;
 
@@ -13,5 +15,13 @@ public static class Extensions
             {matrix.M31, matrix.M32, matrix.M33, matrix.M34},
             {matrix.M41, matrix.M42, matrix.M43, matrix.M44}
         };
+    }
+
+    public static byte[] ToArray(this ZipArchiveEntry entry)
+    {
+        using var stream = entry.Open();
+        using var memoryStream = new MemoryStream();
+        stream.CopyTo(memoryStream);
+        return memoryStream.ToArray();
     }
 }

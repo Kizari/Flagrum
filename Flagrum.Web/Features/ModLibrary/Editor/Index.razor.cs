@@ -161,7 +161,7 @@ public partial class Index : ComponentBase
 
     private void Cancel()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/mod");
     }
 
     private async Task SelectImage()
@@ -205,7 +205,7 @@ public partial class Index : ComponentBase
         AppState.UpdateBinmodList();
         File.Delete(Mod.Path);
 
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/mod");
     }
 
     private void Save()
@@ -260,7 +260,7 @@ public partial class Index : ComponentBase
         packer.WriteToFile(Mod.Path);
 
         AppState.ActiveMod.UpdateFrom(Mod);
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/mod");
     }
 
     private async void BuildAsync()
@@ -307,7 +307,7 @@ public partial class Index : ComponentBase
         }
 
         AppState.UpdateBinmodList();
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/mod");
     }
 
     private void Upload()

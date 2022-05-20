@@ -11,8 +11,14 @@ public class Unpacker : IDisposable
 {
     private readonly ArchiveHeader _header;
 
-    private readonly FileStream _stream;
+    private readonly Stream _stream;
     private List<ArchiveFile> _files;
+
+    public Unpacker(byte[] archive)
+    {
+        _stream = new MemoryStream(archive);
+        _header = ReadHeader();
+    }
 
     public Unpacker(string archivePath)
     {
@@ -64,7 +70,7 @@ public class Unpacker : IDisposable
         return Array.Empty<byte>();
     }
 
-    public byte[] UnpackRawByUri(string uri, out uint originalSize)
+    public byte[] UnpackRawByUri(string uri)
     {
         _files ??= ReadFileHeaders().ToList();
 
@@ -76,7 +82,6 @@ public class Unpacker : IDisposable
                 ReadFileData(match);
             }
 
-            originalSize = match.Size;
             return match.GetRawData();
         }
 
@@ -105,18 +110,18 @@ public class Unpacker : IDisposable
     public Packer ToPacker()
     {
         _files ??= ReadFileHeaders().ToList();
-
-        foreach (var file in _files)
-        {
-            if (!file.HasData)
-            {
-                ReadFileData(file);
-            }
-        }
-
+        ReadDataForAllFiles();
         var packer = Packer.FromUnpacker(_header, _files);
         Dispose();
         return packer;
+    }
+
+    public void ReadDataForAllFiles()
+    {
+        foreach (var file in _files.Where(file => !file.HasData))
+        {
+            ReadFileData(file);
+        }
     }
 
     public void ReadFileData(ArchiveFile file)

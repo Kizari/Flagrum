@@ -38,13 +38,14 @@
                 <div class="box p-6 mb-6 flex flex-row items-center">
                     <h4 class="text-grey-200 flex-grow">@(ModId == null ? "New" : "Edit") EARC Mod</h4>
                     <Button Icon="save" Text="Save" Type="submit" CssClass="mr-3"/>
-                    <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/earc"))"/>
+                    <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/"))"/>
                 </div>
-                <div class="flex-grow box p-6 overflow-auto">
-                    <div class="mb-4 flex flex-row items-center">
-                        <h5 class="text-grey-200 flex-grow">Files to Replace</h5>
-                        <Button Icon="folder" Text="Replace Asset" OnClick="() => Modal?.Open()"/>
-                    </div>
+                <div class="box flex flex-row items-center p-6 border-b border-dark-600">
+                    <h5 class="text-grey-200 flex-grow">Files to Change</h5>
+                    <Button Icon="folder" Text="Replace Asset" CssClass="mr-3" OnClick="OpenReplaceModal"/>
+                    <Button Icon="block" Text="Remove Asset" OnClick="OpenRemoveModal"/>
+                </div>
+                <div class="flex-grow box px-6 pt-2 pb-6 overflow-auto">
                     @if (Mod.Earcs.Any())
                     {
                         foreach (var earc in Mod.Earcs)
@@ -54,18 +55,35 @@
                             {
                                 <div class="flex flex-row pt-2">
                                     <div class="text-right mx-4" style="flex: 0 0 80px;">
-                                        <strong>Replace:</strong><br/>
-                                        <strong>With:</strong>
+                                        @if (replacement.Type == EarcChangeType.Replace)
+                                        {
+                                            <strong>Replace:</strong><br/>
+                                            <strong>With:</strong>
+                                        }
+                                        else
+                                        {
+                                            <strong>Remove:</strong>
+                                        }
                                     </div>
                                     <div style="flex: 1 1 auto;">
-                                        <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                            <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
-                                            <div>/@replacement.Uri.Split('/').Last()</div>
-                                        </div><br/>
-                                        <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                            <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
-                                            <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
-                                        </div>
+                                        @if (replacement.Type == EarcChangeType.Replace)
+                                        {
+                                            <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                                <div>/@replacement.Uri.Split('/').Last()</div>
+                                            </div><br/>
+                                            <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
+                                                <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                                <div>/@replacement.Uri.Split('/').Last()</div>
+                                            </div>
+                                        }
                                     </div>
                                     <div class="ml-8">
                                         <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
@@ -107,6 +125,7 @@
     private AlertModal Alert { get; set; }
     private PromptModal Prompt { get; set; }
     private string ImageName { get; set; } = "current_earc_preview";
+    private EarcChangeType ModalType { get; set; }
 
     protected override void OnInitialized()
     {
@@ -135,26 +154,46 @@
             }
             else
             {
-                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\preview.png";
+                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
                 File.Copy(defaultPreviewPath, currentPreviewPath, true);
             }
         }
+    }
+
+    private void OpenReplaceModal()
+    {
+        ModalType = EarcChangeType.Replace;
+        Modal.Open();
+    }
+
+    private void OpenRemoveModal()
+    {
+        ModalType = EarcChangeType.Remove;
+        Modal.Open();
     }
 
     private async Task OnFileSelected(string uri)
     {
         if (Mod.Earcs.Any(e => e.Replacements.Any(r => r.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase))))
         {
-            Alert.Open("Warning", "Invalid Action", "You cannot replace the same file twice.", null);
+            Alert.Open("Warning", "Invalid Action", "You cannot alter the same file twice.", null);
             return;
         }
 
-        const string filter = "All Files|*.*";
-        await WpfService.OpenFileDialogAsync(filter, async file =>
+        if (ModalType == EarcChangeType.Replace)
         {
-            Mod.AddReplacement(Context.GetArchiveRelativeLocationByUri(uri), uri, file);
+            const string filter = "All Files|*.*";
+            await WpfService.OpenFileDialogAsync(filter, async file =>
+            {
+                Mod.AddReplacement(Context.GetArchiveRelativeLocationByUri(uri), uri, file);
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        else
+        {
+            Mod.AddRemoval(Context.GetArchiveRelativeLocationByUri(uri), uri);
             await InvokeAsync(StateHasChanged);
-        });
+        }
     }
 
     private void RemoveReplacement(EarcModEarc earc, EarcModReplacement replacement)
@@ -205,7 +244,7 @@
             async () =>
             {
                 await Mod.Save(Context, Logger);
-                Navigation.NavigateTo("/earc");
+                Navigation.NavigateTo("/");
             }));
     }
 
@@ -216,7 +255,7 @@
         StateHasChanged();
 
         await Task.Run(async () => await Mod.Delete(Context));
-        Navigation.NavigateTo("/earc");
+        Navigation.NavigateTo("/");
     }
 
     private async Task CheckConflicts(Func<Task> onContinue)
@@ -227,9 +266,9 @@
 
         var conflicts = Context.EarcMods
             .Where(m => m.IsActive
-                && m.Id != Mod.Id
-                && m.Earcs.Any(e => e.Replacements
-                    .Any(r => uris.Contains(r.Uri))))
+                        && m.Id != Mod.Id
+                        && m.Earcs.Any(e => e.Replacements
+                            .Any(r => uris.Contains(r.Uri))))
             .Select(m => new {m.Id, m.Name})
             .ToList();
 
@@ -254,10 +293,10 @@
 
                     await match.Disable(Context);
                 }
-                
+
                 await onContinue();
             };
-            
+
             await InvokeAsync(Prompt.Open);
         }
         else

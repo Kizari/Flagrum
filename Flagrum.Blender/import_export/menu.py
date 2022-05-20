@@ -325,7 +325,7 @@ class ImportTerrainOperator(Operator, ImportHelper):
 
 
 class FlagrumImportMenu(Menu):
-    bl_idname = "flagrum.import"
+    bl_idname = "TOPBAR_MT_flagrum_import"
     bl_label = "Flagrum"
 
     def draw(self, context):

@@ -17,6 +17,7 @@ public class FlagrumDbContext : DbContext
 
     public SettingsService Settings { get; }
 
+    public DbSet<EarcModBackup> EarcModBackups { get; set; }
     public DbSet<EarcMod> EarcMods { get; set; }
     public DbSet<EarcModEarc> EarcModEarcs { get; set; }
     public DbSet<EarcModReplacement> EarcModReplacements { get; set; }

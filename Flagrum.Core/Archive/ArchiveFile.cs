@@ -47,7 +47,7 @@ public class ArchiveFile
         var tokens = RelativePath.Split('\\', '/');
         var fileName = tokens.Last();
         var index = fileName.IndexOf('.');
-        var type = index < 0 ? "" : fileName.Substring(index + 1);
+        var type = index < 0 ? "" : fileName[(index + 1)..];
 
         UriHash = Cryptography.Hash64(Uri);
         TypeHash = Cryptography.Hash64(type);
@@ -55,6 +55,27 @@ public class ArchiveFile
         UriAndTypeHash = (ulong)(((long)UriHash & 17592186044415L) | (((long)TypeHash << 44) & -17592186044416L));
 
         Flags = GetDefaultBinmodFlags();
+    }
+
+    public ArchiveFile(string uri, string relativePath, uint size, ArchiveFileFlag flags, byte localizationType,
+        byte locale, ushort key)
+    {
+        RelativePath = relativePath;
+        Uri = uri;
+        Size = size;
+        Flags = flags;
+        LocalizationType = localizationType;
+        Locale = locale;
+        Key = key;
+        
+        var tokens = RelativePath.Split('\\', '/');
+        var fileName = tokens.Last();
+        var index = fileName.IndexOf('.');
+        var type = index < 0 ? "" : fileName[(index + 1)..];
+        
+        UriHash = Cryptography.Hash64(Uri);
+        TypeHash = Cryptography.Hash64(type);
+        UriAndTypeHash = (ulong)(((long)UriHash & 17592186044415L) | (((long)TypeHash << 44) & -17592186044416L));
     }
 
     public ulong TypeHash { get; set; }
@@ -144,7 +165,7 @@ public class ArchiveFile
             return encryptedData;
         }
         
-        if (!IsDataCompressed && Flags.HasFlag(ArchiveFileFlag.Compressed) && Size > 512)
+        if (!IsDataCompressed && Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
             var compressedData = CompressData(_buffer);
             ProcessedSize = (uint)compressedData.Length;
@@ -156,6 +177,13 @@ public class ArchiveFile
 
     public byte[] GetRawData() => _buffer;
 
+    public void SetDataByFlags(byte[] data)
+    {
+        _buffer = data;
+        IsDataCompressed = Flags.HasFlag(ArchiveFileFlag.Compressed);
+        IsDataEncrypted = Flags.HasFlag(ArchiveFileFlag.Encrypted);
+    }
+    
     public void SetProcessedData(uint originalSize, byte[] data)
     {
         _buffer = data;

@@ -9,3 +9,8 @@ public class EarcModMetadata
     public string Description { get; set; }
     public Dictionary<string, IEnumerable<string>> Replacements { get; set; }
 }
+
+public class EarcConflictString
+{
+    public string Value { get; set; }
+}
