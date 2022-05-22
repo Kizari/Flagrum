@@ -1,5 +1,7 @@
 ﻿@using SQEX.Ebony.Framework.Sequence.Tray
 @using Flagrum.Web.Components.Graph
+@using Blazor.Diagrams.Core.Geometry
+@using SQEX.Ebony.Framework.Node
 @if (TypeTree.IsVisible)
 {
     <div class="flex flex-row cursor-pointer hover:bg-grey-800 items-center text-grey-400" style="padding-left: @(Indentation)px" @onclick="OnClick">
@@ -48,17 +50,22 @@
 
     private void OnClick()
     {
-        // if (TypeTree.Children.Count() > 0)
-        // {
-        //     TypeTree.IsCollapsed = !TypeTree.IsCollapsed;
-        // }
-        // else
-        // {
-        //     if (TypeTree.Type == typeof(SequenceTray))
-        //     {
-        //         var group = new StandardGroup();
-        //         Diagram.AddGroup(group);
-        //     }
-        // }
+        if (TypeTree.Children.Any())
+        {
+            TypeTree.IsCollapsed = !TypeTree.IsCollapsed;
+        }
+        else
+        {
+            if (TypeTree.Type == typeof(SequenceTray))
+            {
+                var group = new StandardGroup(new SequenceTray());
+                Diagram.AddGroup(group);
+            }
+            else
+            {
+                var node = new StandardNode((GraphNode)Activator.CreateInstance(TypeTree.Type), Point.Zero);
+                Diagram.Nodes.Add(node);
+            }
+        }
     }
 }
