@@ -29,17 +29,22 @@ public class TerrainMetadata
 
 public class TerrainPacker
 {
+    private readonly FlagrumDbContext _context;
     private readonly ILogger<TerrainPacker> _logger;
     private readonly SettingsService _settings;
 
     private readonly ConcurrentBag<TerrainMetadata> _tiles = new();
 
+    private string _texturesDirectory;
+
     public TerrainPacker(
         ILogger<TerrainPacker> logger,
-        SettingsService settings)
+        SettingsService settings,
+        FlagrumDbContext context)
     {
         _logger = logger;
         _settings = settings;
+        _context = context;
     }
 
     public void Pack(string uri, string outputPath)
@@ -53,13 +58,16 @@ public class TerrainPacker
         var basePath = string.Join('\\', basePathTokens);
         var outputFileName = outputPath.Split('\\').Last();
         var outputFileNameWithoutExtension = outputFileName[..outputFileName.LastIndexOf('.')];
-        var texturesDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_terrain_textures";
+        _texturesDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_terrain_textures";
         var hebDirectory = $@"{_settings.GameDataDirectory}\environment\world\heightmaps";
 
-        if (!Directory.Exists(texturesDirectory))
+        if (!Directory.Exists(_texturesDirectory))
         {
-            Directory.CreateDirectory(texturesDirectory);
+            Directory.CreateDirectory(_texturesDirectory);
         }
+
+        // Export the texture arrays if they aren't present
+        ExportTerrainTextures(basePath);
 
         // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
         using var outerContext = new FlagrumDbContext(_settings);
@@ -70,12 +78,6 @@ public class TerrainPacker
         // an access violation exception because we can't clear the memory quickly enough
         foreach (var tile in _tiles)
         {
-            var tileDirectory = $@"{texturesDirectory}\{tile.Name}";
-            if (!Directory.Exists(tileDirectory))
-            {
-                Directory.CreateDirectory(tileDirectory);
-            }
-
             var dimensions = 1024;
             while (!File.Exists($@"{hebDirectory}\diffuse\{tile.Name}.{dimensions}.heb"))
             {
@@ -93,7 +95,8 @@ public class TerrainPacker
                 var diffuse = HebToImages(diffuseHeb).FirstOrDefault();
                 if (diffuse != null)
                 {
-                    File.WriteAllBytes($@"{tileDirectory}\diffuse.{diffuse.Extension}", ((HebImageData)diffuse).Data);
+                    File.WriteAllBytes($@"{GetTileDirectory(tile.Name)}\diffuse.{diffuse.Extension}",
+                        ((HebImageData)diffuse).Data);
                 }
             }
 
@@ -114,7 +117,8 @@ public class TerrainPacker
                 var normal = HebToImages(normalHeb).FirstOrDefault();
                 if (normal != null)
                 {
-                    File.WriteAllBytes($@"{tileDirectory}\normal.{normal.Extension}", ((HebImageData)normal).Data);
+                    File.WriteAllBytes($@"{GetTileDirectory(tile.Name)}\normal.{normal.Extension}",
+                        ((HebImageData)normal).Data);
                 }
             }
 
@@ -134,7 +138,12 @@ public class TerrainPacker
             }
 
             var lodHeb = HebHeader.FromData(File.ReadAllBytes($@"{hebDirectory}\lod0{lodIndex}\{tile.Name}.heb"));
-            var textures = HebToImages(lodHeb);
+            var textures = HebToImages(lodHeb, new[]
+            {
+                HebImageType.TYPE_HEIGHT_MAP,
+                HebImageType.TYPE_MERGED_MASK_MAP,
+                HebImageType.TYPE_SLOPE_MAP
+            });
 
             foreach (var texture in textures)
             {
@@ -148,7 +157,10 @@ public class TerrainPacker
                 }
                 else
                 {
-                    File.WriteAllBytes($@"{tileDirectory}\{texture.Index}.{texture.Extension}",
+                    var name = texture.Type == HebImageType.TYPE_MERGED_MASK_MAP
+                        ? "merged_mask_map"
+                        : "slope_map";
+                    File.WriteAllBytes($@"{GetTileDirectory(tile.Name)}\{name}.{texture.Extension}",
                         ((HebImageData)texture).Data);
                 }
             }
@@ -159,6 +171,119 @@ public class TerrainPacker
         _tiles.Clear();
 
         Thread.CurrentThread.CurrentCulture = previousCulture;
+    }
+
+    private void ExportTerrainTextures(string baseDirectory)
+    {
+        var directory = $@"{baseDirectory}\common";
+        var diffuse = $@"{baseDirectory}\common\diffuse";
+        var displacement = $@"{baseDirectory}\common\displacement";
+        var normal = $@"{baseDirectory}\common\normal";
+        var hro = $@"{baseDirectory}\common\hro";
+
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        if (!Directory.Exists(diffuse))
+        {
+            Directory.CreateDirectory(diffuse);
+        }
+
+        if (!Directory.Exists(displacement))
+        {
+            Directory.CreateDirectory(displacement);
+        }
+
+        if (!Directory.Exists(normal))
+        {
+            Directory.CreateDirectory(normal);
+        }
+
+        if (!Directory.Exists(hro))
+        {
+            Directory.CreateDirectory(hro);
+        }
+
+        var needsDiffuse = false;
+        var needsDisplacement = false;
+        var needsNormal = false;
+        var needsHro = false;
+        for (var i = 0; i < 26; i++)
+        {
+            if (!File.Exists($@"{diffuse}\{i}.tga"))
+            {
+                needsDiffuse = true;
+            }
+
+            if (!File.Exists($@"{displacement}\{i}.tga"))
+            {
+                needsDisplacement = true;
+            }
+
+            if (!File.Exists($@"{normal}\{i}.tga"))
+            {
+                needsNormal = true;
+            }
+
+            if (!File.Exists($@"{hro}\{i}.tga"))
+            {
+                needsHro = true;
+            }
+        }
+
+        if (needsDiffuse)
+        {
+            ExportTextureArray(diffuse, "data://environment/world/sourceimages/terrainarraytex_00_b.tif");
+        }
+
+        if (needsDisplacement)
+        {
+            ExportTextureArray(displacement,
+                "data://environment/world/sourceimages/terrainarraytex_displacement/terrainarraytex_00_h.png");
+        }
+
+        if (needsNormal)
+        {
+            ExportTextureArray(normal, "data://environment/world/sourceimages/terrainarraytex_00_n.tif");
+        }
+
+        if (needsHro)
+        {
+            ExportTextureArray(hro, "data://environment/world/sourceimages/terrainarraytex_00_hro.tif");
+        }
+    }
+
+    private void ExportTextureArray(string outputDirectory, string uri)
+    {
+        var btex = _context.GetFileByUri(uri);
+        var data = BtexConverter.BtexToDds(btex);
+
+        var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
+        var pointer = pinnedData.AddrOfPinnedObject();
+
+        var image = TexHelper.Instance.LoadFromDDSMemory(pointer, data.Length, DDS_FLAGS.NONE);
+        var metadata = image.GetMetadata();
+
+        pinnedData.Free();
+
+        for (var i = 0; i < metadata.ArraySize; i++)
+        {
+            var result = image.Decompress(i * 11, DXGI_FORMAT.R8G8B8A8_UNORM);
+            result.SaveToTGAFile(0, $@"{outputDirectory}\{i}.tga");
+        }
+    }
+
+    private string GetTileDirectory(string tileName)
+    {
+        var tileDirectory = $@"{_texturesDirectory}\{tileName}";
+        if (!Directory.Exists(tileDirectory))
+        {
+            Directory.CreateDirectory(tileDirectory);
+        }
+
+        return tileDirectory;
     }
 
     private void GetPathsRecursively(string uri, byte[] xmb2)
@@ -224,11 +349,12 @@ public class TerrainPacker
         });
     }
 
-    private IEnumerable<HebImageDataBase> HebToImages(HebHeader heb)
+    private IEnumerable<HebImageDataBase> HebToImages(HebHeader heb, IEnumerable<HebImageType> allowTypes = null)
     {
         const float magic = 0.000015259022f;
+        allowTypes ??= Enum.GetValues<HebImageType>();
 
-        foreach (var header in heb.ImageHeaders)
+        foreach (var header in heb.ImageHeaders.Where(h => allowTypes.Contains(h.Type)))
         {
             if (header.Type == HebImageType.TYPE_HEIGHT_MAP)
             {
@@ -298,6 +424,7 @@ public class TerrainPacker
                 ddsStream.CopyTo(stream);
                 yield return new HebImageData
                 {
+                    Type = header.Type,
                     Index = heb.ImageHeaders.IndexOf(header),
                     Extension = "tga",
                     Data = stream.ToArray()

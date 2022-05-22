@@ -140,3 +140,11 @@ class TerrainMetadata:
     Name: str
     Position: list[float]
     HeightMap: HebHeightMap
+
+
+@dataclass
+class TerrainImportContext:
+    directory: str
+    filename_without_extension: str
+    mesh_resolution: int
+    use_high_materials: bool

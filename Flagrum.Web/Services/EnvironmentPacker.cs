@@ -86,8 +86,9 @@ public class EnvironmentPacker
         // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
         using var outerContext = new FlagrumDbContext(_settings);
 
-        GetPathsRecursively(uri, outerContext.GetFileByUri(uri), new[] {23552f, 0.0f, 14336f, 0.0f},
-            new[] {0.0f, 0.0f, 0.0f, 0.0f},
+        GetPathsRecursively(uri, outerContext.GetFileByUri(uri),
+            null,
+            null,
             1.0f,
             new List<float[]>());
 
@@ -346,12 +347,33 @@ public class EnvironmentPacker
         using var stream = new MemoryStream(xmb2);
         var package = Xmb2Document.GetRootElement(stream);
         var objects = package.GetElementByName("objects");
+        var elements = objects.GetElements();
+
+        if (prefabPosition == null)
+        {
+            try
+            {
+                var element = elements.First();
+                prefabPosition = element.GetElementByName("position_").GetFloat4Value() ??
+                                 new[] {0.0f, 0.0f, 0.0f, 0.0f};
+                prefabRotation = element.GetElementByName("rotation_").GetFloat4Value() ??
+                                 new[] {0.0f, 0.0f, 0.0f, 0.0f};
+                prefabScale = element.GetElementByName("scaling_")?.GetFloatValue() ?? 1.0f;
+            }
+            catch
+            {
+                prefabPosition = new[] {0.0f, 0.0f, 0.0f, 0.0f};
+                prefabRotation = new[] {0.0f, 0.0f, 0.0f, 0.0f};
+                prefabScale = 1.0f;
+                _logger.LogInformation("Failed to get root transform from {Uri}", uri);
+            }
+        }
+
         var quaternion = Quaternion.CreateFromYawPitchRoll(
             DegreesToRadians(prefabRotation[1]),
             DegreesToRadians(prefabRotation[0]),
             DegreesToRadians(prefabRotation[2]));
 
-        var elements = objects.GetElements();
         Parallel.For(0, elements.Count, counter =>
         {
             var element = elements.ElementAt(counter);
@@ -459,16 +481,6 @@ public class EnvironmentPacker
             {
                 _unreadClassTypes.TryAdd(typeAttribute, true);
             }
-            // else if (typeAttribute == "Black.Entity.Node.MapLodEntity")
-            // {
-            //     var lowLodList = element.GetElementByName("mapLodLowItemList_");
-            //     var lowLods = lowLodList.GetElements();
-            //     foreach (var lowLod in lowLods)
-            //     {
-            //         var filePath = lowLod.GetElementByName("filePath_");
-            //         _lowLodPrefabs.TryAdd(filePath.GetTextValue(), true);
-            //     }
-            // }
         });
     }
 

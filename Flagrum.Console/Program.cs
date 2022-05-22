@@ -1,12 +1,5 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.Json;
-using DirectXTexNet;
-using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
@@ -19,19 +12,22 @@ using Flagrum.Web.Services;
 //     Console.WriteLine($"{property.Name}");
 // }
 
-// using var context = new FlagrumDbContext(new SettingsService());
-// var data = context.GetFileByUri("data://environment/world/heightmaps/material/terrainmaterial.tpd");
-// var tpd = TerrainPaletteData.Read(data);
-//
-// var toleranceRange = 1.0 / tpd.Count / 2.0;
-//
-// Console.WriteLine("Texture\t\tValue\t\tEpsilon");
-// Console.WriteLine("-----------------------------------------");
-//
-// foreach (var item in tpd.Items.OrderBy(i => i.Value))
-// {
-//     Console.WriteLine($"{item.TextureIndex}\t\t{item.Value:0.00000}\t\t{item.Epsilon:0.00000}");
-// }
+using var context = new FlagrumDbContext(new SettingsService());
+var data = context.GetFileByUri("data://environment/world/heightmaps/material/terrainmaterial.tpd");
+var tpd = TerrainPaletteData.Read(data);
+
+var toleranceRange = 1.0 / tpd.Count / 2.0;
+
+Console.WriteLine("Texture\t\tValue\t\tEpsilon");
+Console.WriteLine("-----------------------------------------");
+
+foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
+{
+    //Console.WriteLine($"{item.TextureIndex}\t\t{item.Value:0.00000}\t\t{item.Epsilon:0.00000}");
+    Console.WriteLine($"({item.TextureIndex}, {item.Value}, {item.Epsilon}),");
+}
+
+Console.WriteLine(tpd.Items.Sum(i => i.Epsilon));
 
 // foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
 // {
@@ -39,8 +35,6 @@ using Flagrum.Web.Services;
 // }
 //
 // Console.WriteLine(tpd.Items.Sum(i => toleranceRange / (i.MaybeToleranceDivisor == 0 ? 2 : i.MaybeToleranceDivisor)));
-
-
 
 
 // using var context = new FlagrumDbContext(new SettingsService());

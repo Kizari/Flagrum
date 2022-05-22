@@ -87,6 +87,7 @@ public class HebImageDataBase
 {
     public int Index { get; set; }
     public string Extension { get; set; }
+    public HebImageType Type { get; set; }
 }
 
 public class HebHeightMapData : HebImageDataBase

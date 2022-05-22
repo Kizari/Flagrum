@@ -5,10 +5,10 @@ namespace Flagrum.Core.Gfxbin.Btex;
 
 public enum TerrainPaletteDataVersion
 {
-    Version_Unknown  = 0,
-    Version_Safe     = 1,
-    Version_Lastest  = 2,
-    Version_Count    = 3
+    Version_Unknown = 0,
+    Version_Safe = 1,
+    Version_Lastest = 2,
+    Version_Count = 3
 }
 
 public class TerrainPaletteDataItem
@@ -57,7 +57,7 @@ public class TerrainPaletteData
         using var stream = new MemoryStream(tpd);
         return Read(stream);
     }
-    
+
     public static TerrainPaletteData Read(Stream stream)
     {
         using var reader = new BinaryReader(stream);
@@ -75,7 +75,7 @@ public class TerrainPaletteData
 
         for (var i = 0; i < data.Count; i++)
         {
-            data.Items.Add(new TerrainPaletteDataItem
+            var item = new TerrainPaletteDataItem
             {
                 ArrayIndex = (uint)i,
                 TextureIndex = reader.ReadUInt32(),
@@ -90,9 +90,12 @@ public class TerrainPaletteData
                 AlwaysOne = reader.ReadSingle(),
                 AlwaysZero = reader.ReadSingle(),
                 MaybeToleranceDivisor = reader.ReadSingle(),
-                Value = i / (float)data.Count,
-                Epsilon = 1.0f / data.Count / 2.0f
-            });
+                Value = i / (float)data.Count
+            };
+
+            var toleranceRange = 1.0f / data.Count / 2.0f;
+            item.Epsilon = toleranceRange * 2; // / (item.MaybeToleranceDivisor == 0 ? 2 : item.MaybeToleranceDivisor);
+            data.Items.Add(item);
         }
 
         for (var i = 0; i < data.ExtraDataCount; i++)

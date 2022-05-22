@@ -1,106 +1,125 @@
-﻿<h3 class="text-grey-300 mb-6">Flagrum has been updated to @Version!</h3>
+﻿@* <h3 class="text-grey-300 mb-6">Flagrum has been updated to @Version!</h3> *@
+<h3 class="text-grey-300 mb-6">Flagrum 1.2 has arrived!</h3>
 
 <div class="bg-grey-900 rounded-md border border-grey-700 p-4">
-    <h4 class="text-grey-300 mb-4">Flagrum 1.1.14</h4>
-    <h5 class="text-grey-300 mb-4">Minor Improvements</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Blender Importers now handle both blue and yellow normal maps automatically</li>
-        <li>Moving props are now exported when using the Export as Environment feature</li>
-        <li>The asset list can now be navigated with the up/down arrows in Asset Explorer</li>
-    </ul>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where Environment Import would fail due to UV scaling</li>
-        <li>Fixed bug where Environment Exporter would occasionally crash Flagrum</li>
-        <li>Fixed bug where multiple extensions would sometimes appear on exported models</li>
-    </ul>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Flagrum 1.1.13</h4>
-    <h5 class="text-grey-300 mb-4">Asset Explorer</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Clickable link to EARC location now displayed above preview when a file is selected</li>
-        <li>Selecting a gmdl.gfxbin file now displays material locations for each mesh</li>
-        <li>Updated Environment Exporter/Importer to setup nodes for UV scaling</li>
-    </ul>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where paths were not showing in the information window for custom presets</li>
-        <li>Fixed bug where cloning a default preset would clone a custom preset instead</li>
-        <li>Fixed bug where environment models without certain tags would fail to export</li>
-        <li>Fixed bug where a couple of very rare materials would fail to read</li>
-    </ul>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Flagrum 1.1.12</h4>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where environment rotations were sometimes incorrect on some systems</li>
-        <li>Fixed bug where Environment Exporter would sometimes crash Flagrum on some systems</li>
-    </ul>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Flagrum 1.1.11</h4>
-    <h5 class="text-grey-300 mb-4">Minor Improvements</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Added automatic node setup for opacity mask textures</li>
-        <li>Added notification for when environment exports are complete</li>
-        <li>Added button to disconnect/reconnect all emission textures for rendering</li>
-        <li>Enabled backface culling on all environment materials to improve performance</li>
-        <li>Removed automatic node setup for emission on environments when texture is blank</li>
-    </ul>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed rotation issues with exported environments</li>
-        <li>Fixed bug where environments would accumulate if not restarting between exports</li>
-        <li>Fixed bug where environment export would crash when encountering an invalid URI</li>
-        <li>Fixed bug where environment import would occasionally fail on certain textures</li>
-        <li>Fixed bug where texture preview would crash Flagrum on File System view</li>
-        <li>Fixed edge-case where certain imports would fail due to non-numeric vertex coords</li>
-    </ul>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Flagrum 1.1.10</h4>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where Export with Dependencies was failing for some models with 4K textures</li>
-        <li>Fixed bug where Export Folder was failing on all folders</li>
-        <li>Fixed bug where Export Folder was exporting files with their virtual extensions</li>
-        <li>Fixed bug where exporting environments with model nodes without paths caused export to fail</li>
-        <li>Fixed bug where rarely exporting multiple environments in same session would crash Flagrum</li>
-    </ul>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-6">Flagrum 1.1.9</h4>
-    <h3 class="text-grey-300 mb-2">Introducing the Environment Exporter!</h3>
-    <span class="block mb-6">
-        A great tool for exploring the world.
-        <Hyperlink Text="Check it out" Uri="https://github.com/Kizari/Flagrum/wiki/Environment-Exporter"/>
-        on the Flagrum Wiki!
+    <h4 class="text-grey-300 mb-4">Introducing the Mod Manager</h4>
+    <span>
+        Install and uninstall mods with a single click, create EARC mods with ease, import legacy mods,
+        and share your mods with the community!<br/>
+        <Hyperlink Text="Learn More" Uri="https://github.com/Kizari/Flagrum/wiki/Mod-Manager" />
     </span>
-    <h5 class="text-grey-300 mb-4">Asset Explorer</h5>
+</div>
+
+<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
+    <h4 class="text-grey-300 mb-4">Introducing the Terrain Exporter</h4>
+    <span>
+        For the first time ever, we can now export terrain from FFXV!<br/>
+        <Hyperlink Text="Learn More" Uri="https://github.com/Kizari/Flagrum/wiki/Terrain-Exporter" />
+    </span>
+</div>
+
+<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
+    <h4 class="text-grey-300 mb-4">Patch Notes</h4>
+    <h5 class="text-grey-300 mb-4">New Features</h5>
     <ul class="list-disc ml-6 mb-6">
-        <li>EXML files can now be exported as Flagrum Environment Data (FED)</li>
-        <li>EXML files can now be exported to XML</li>
-        <li>EXML files can now be previewed as their XML representation inside Flagrum</li>
-        <li>Export with Dependencies on GFXBIN files now exports high res materials</li>
-    </ul>
-    <h5 class="text-grey-300 mb-4">Blender Add-on (please update to 1.0.9)</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Added support for importing Environment (FED) files</li>
-        <li>GFXBIN and FED importers now automatically sets up materials and textures if they are present</li>
+        <li>BTEX support has been extended to cover textures that were previously unreadable</li>
+        <li>Transformations are now automatically applied when exporting to FMD</li>
+        <li>Seam normals are now automatically corrected when exporting to FMD</li>
+        <li>Tutorials tab has been replaced with Wiki tab to keep the information up-to-date</li>
     </ul>
     <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
     <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where 4K textures were not being exported via Export with Dependencies</li>
-        <li>Fixed bug where some edge-case models could not be imported into Blender due to broken UV coordinates</li>
+        <li>Fixed bug where creating a new Model Replacement Preset would return a 404 error</li>
+        <li>Fixed bug where Flagrum would crash when subscribing to your own Workshop Mods</li>
+        <li>Workshop Mods will no longer deep fry sRGB thumbnails</li>
     </ul>
 </div>
+
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.13</h4> *@
+@*     <h5 class="text-grey-300 mb-4">Asset Explorer</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Clickable link to EARC location now displayed above preview when a file is selected</li> *@
+@*         <li>Selecting a gmdl.gfxbin file now displays material locations for each mesh</li> *@
+@*         <li>Updated Environment Exporter/Importer to setup nodes for UV scaling</li> *@
+@*     </ul> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where paths were not showing in the information window for custom presets</li> *@
+@*         <li>Fixed bug where cloning a default preset would clone a custom preset instead</li> *@
+@*         <li>Fixed bug where environment models without certain tags would fail to export</li> *@
+@*         <li>Fixed bug where a couple of very rare materials would fail to read</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.12</h4> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where environment rotations were sometimes incorrect on some systems</li> *@
+@*         <li>Fixed bug where Environment Exporter would sometimes crash Flagrum on some systems</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.11</h4> *@
+@*     <h5 class="text-grey-300 mb-4">Minor Improvements</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Added automatic node setup for opacity mask textures</li> *@
+@*         <li>Added notification for when environment exports are complete</li> *@
+@*         <li>Added button to disconnect/reconnect all emission textures for rendering</li> *@
+@*         <li>Enabled backface culling on all environment materials to improve performance</li> *@
+@*         <li>Removed automatic node setup for emission on environments when texture is blank</li> *@
+@*     </ul> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed rotation issues with exported environments</li> *@
+@*         <li>Fixed bug where environments would accumulate if not restarting between exports</li> *@
+@*         <li>Fixed bug where environment export would crash when encountering an invalid URI</li> *@
+@*         <li>Fixed bug where environment import would occasionally fail on certain textures</li> *@
+@*         <li>Fixed bug where texture preview would crash Flagrum on File System view</li> *@
+@*         <li>Fixed edge-case where certain imports would fail due to non-numeric vertex coords</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.10</h4> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where Export with Dependencies was failing for some models with 4K textures</li> *@
+@*         <li>Fixed bug where Export Folder was failing on all folders</li> *@
+@*         <li>Fixed bug where Export Folder was exporting files with their virtual extensions</li> *@
+@*         <li>Fixed bug where exporting environments with model nodes without paths caused export to fail</li> *@
+@*         <li>Fixed bug where rarely exporting multiple environments in same session would crash Flagrum</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-6">Flagrum 1.1.9</h4> *@
+@*     <h3 class="text-grey-300 mb-2">Introducing the Environment Exporter!</h3> *@
+@*     <span class="block mb-6"> *@
+@*         A great tool for exploring the world. *@
+@*         <Hyperlink Text="Check it out" Uri="https://github.com/Kizari/Flagrum/wiki/Environment-Exporter"/> *@
+@*         on the Flagrum Wiki! *@
+@*     </span> *@
+@*     <h5 class="text-grey-300 mb-4">Asset Explorer</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>EXML files can now be exported as Flagrum Environment Data (FED)</li> *@
+@*         <li>EXML files can now be exported to XML</li> *@
+@*         <li>EXML files can now be previewed as their XML representation inside Flagrum</li> *@
+@*         <li>Export with Dependencies on GFXBIN files now exports high res materials</li> *@
+@*     </ul> *@
+@*     <h5 class="text-grey-300 mb-4">Blender Add-on (please update to 1.0.9)</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Added support for importing Environment (FED) files</li> *@
+@*         <li>GFXBIN and FED importers now automatically sets up materials and textures if they are present</li> *@
+@*     </ul> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where 4K textures were not being exported via Export with Dependencies</li> *@
+@*         <li>Fixed bug where some edge-case models could not be imported into Blender due to broken UV coordinates</li> *@
+@*     </ul> *@
+@* </div> *@
 
 @* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
 @*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.8</h4> *@

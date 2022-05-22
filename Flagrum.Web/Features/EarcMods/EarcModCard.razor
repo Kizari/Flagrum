@@ -43,6 +43,8 @@
 
 @code
 {
+    private TaskCompletionSource<bool> _taskCompletionSource;
+    
     [CascadingParameter]
     public Index Parent { get; set; }
 
@@ -52,7 +54,7 @@
     [Parameter]
     public EarcMod Mod { get; set; }
 
-    private async Task<bool> CheckConflicts(Func<Task> onContinue)
+    private async Task CheckConflicts(Func<Task> onContinue)
     {
         var uris = Context.EarcMods
             .Where(m => m.Id == Mod.Id)
@@ -90,44 +92,56 @@
                 }
 
                 await onContinue();
+                _taskCompletionSource.SetResult(true);
+            };
+            Parent.Prompt.OnNo = () =>
+            {
+                _taskCompletionSource.SetResult(false);
             };
 
             await InvokeAsync(Parent.Prompt.Open);
-            return true;
-        }
-        await onContinue();
-        return false;
-    }
-
-    private void ToggleMod(bool newState)
-    {
-        if (newState)
-        {
-            Enable();
         }
         else
         {
-            Disable();
+            await onContinue();
+            _taskCompletionSource.SetResult(true);
         }
     }
 
-    private async void Enable()
+    private async void ToggleMod(bool newState)
     {
-        await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
+        if (newState)
+        {
+            await Enable();
+        }
+        else
+        {
+            await Disable();
+        }
+    }
+
+    private async Task Enable()
+    {
         await Task.Run(async () =>
         {
-            if (!await CheckConflicts(async () =>
+            _taskCompletionSource = new TaskCompletionSource<bool>();
+            await CheckConflicts(async () =>
             {
+                await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
                 await Mod.Enable(Context, Logger);
                 await InvokeAsync(() => Parent.SetLoading(false));
-            }))
+            });
+
+            var success = await _taskCompletionSource.Task;
+            if (!success)
             {
-                await InvokeAsync(() => Parent.SetLoading(false));
+                Mod.IsActive = false;   // Ensures the checkbox doesn't stay checked
+                await InvokeAsync(StateHasChanged);
             }
         });
     }
 
-    private async void Disable()
+    private async Task Disable()
     {
         await InvokeAsync(() => Parent.SetLoading(true, "Disabling Mod"));
         await Task.Run(async () => await Mod.Disable(Context));

@@ -1,23 +1,23 @@
 import json
 import math
 import os
-from os.path import exists
 from types import SimpleNamespace
 
 import bpy
-import numpy
-from bpy.props import StringProperty
+from bpy.props import StringProperty, EnumProperty, BoolProperty
 from bpy.types import Operator, Menu, Mesh
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from mathutils import Matrix, Euler, Vector
 
 from .generate_armature import generate_armature
 from .generate_mesh import generate_mesh
+from .generate_terrain import generate_terrain
 from .import_context import ImportContext
 from .interop import Interop
 from .pack_mesh import pack_mesh
 from .read_armature_data import import_armature_data
-from ..entities import EnvironmentModelMetadata, Gpubin, TerrainMetadata
+from ..entities import EnvironmentModelMetadata, Gpubin, TerrainMetadata, TerrainImportContext
+from ..helpers import draw_lines
 
 
 class ImportOperator(Operator, ImportHelper):
@@ -203,124 +203,46 @@ class ImportTerrainOperator(Operator, ImportHelper):
         options={'HIDDEN'}
     )
 
+    mesh_resolution: EnumProperty(
+        items=(
+            ('0', '512x512', ''),
+            ('1', '256x256', ''),
+            ('2', '128x128', ''),
+            ('3', '64x64', ''),
+            ('4', '32x32', ''),
+            ('5', '16x16', '')
+        ),
+        name="Quads",
+        description="The resolution of each terrain tile, measured in quads",
+        default='0'
+    )
+
+    use_high_textures: BoolProperty(
+        name="Use Experimental Shader",
+        description="Import with texture splatting shader setup"
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="FTD Import Options")
+        layout.prop(self, property="mesh_resolution")
+
+        layout.label(text=" ")
+        layout.label(text="!!! WARNING: Experimental !!!")
+        draw_lines(layout,
+                   text="This feature is experimental and will only run in cycles. The shader will only run on extremely good hardware.")
+        layout.prop(self, property="use_high_textures")
+
     def execute(self, context):
         terrain_path = self.filepath
         directory = os.path.dirname(terrain_path)
         filename_without_extension = terrain_path.split("\\")[-1].replace(".ftd", "")
         import_file = open(terrain_path, mode='r')
         import_data = import_file.read()
-
         data: list[TerrainMetadata] = json.loads(import_data, object_hook=lambda d: SimpleNamespace(**d))
-
-        for tile in data:
-            if tile.HeightMap is None:
-                continue
-
-            if tile.PrefabName not in bpy.data.collections:
-                collection = bpy.data.collections.new(tile.PrefabName)
-                bpy.context.scene.collection.children.link(collection)
-            else:
-                collection = bpy.data.collections[tile.PrefabName]
-
-            vertices = []
-            coords = []
-            w = 512 / (tile.HeightMap.Width - 1)
-            h = 512 / (tile.HeightMap.Height - 1)
-            u = 1.0 / (tile.HeightMap.Width - 1)
-            v = 1.0 / (tile.HeightMap.Height - 1)
-
-            for x in range(tile.HeightMap.Width):
-                for y in range(tile.HeightMap.Height):
-                    vertices.append(
-                        [(x * w) - 256, (y * h) - 256, tile.HeightMap.Altitudes[(x * tile.HeightMap.Width) + y]])
-                    coords.append([x * u, y * v])
-
-            faces = []
-            for x in range(tile.HeightMap.Width - 1):
-                for y in range(tile.HeightMap.Height - 1):
-                    tl = x * tile.HeightMap.Height + y
-                    bl = tl + 1
-                    tr = tl + tile.HeightMap.Height
-                    br = tr + 1
-                    faces.append([tl, tr, bl])
-                    faces.append([tr, br, bl])
-
-            mesh = bpy.data.meshes.new(tile.Name)
-            mesh.from_pydata(vertices, [], faces)
-
-            for face in mesh.polygons:
-                face.use_smooth = True
-
-            map1 = mesh.uv_layers.new(name="map1")
-            uv_dictionary = {i: uv for i, uv in enumerate(coords)}
-            per_loop_list = [0.0] * len(mesh.loops)
-
-            for loop in mesh.loops:
-                per_loop_list[loop.index] = uv_dictionary.get(loop.vertex_index)
-
-            per_loop_list = numpy.asarray([uv for pair in per_loop_list for uv in pair])
-            pivot = Vector((0.5, 0.5))
-            angle = numpy.radians(-90)
-            aspect_ratio = 1
-            rotation = Matrix((
-                (numpy.cos(angle), numpy.sin(angle) / aspect_ratio),
-                (-aspect_ratio * numpy.sin(angle), numpy.cos(angle)),
-            ))
-
-            uvs = numpy.dot(per_loop_list.reshape((-1, 2)) - pivot, rotation) + pivot
-
-            map1.data.foreach_set("uv", uvs.ravel())
-
-            mesh.validate()
-            mesh.update()
-
-            mesh_object = bpy.data.objects.new(tile.Name, mesh)
-            collection.objects.link(mesh_object)
-
-            layer = bpy.context.view_layer
-            layer.update()
-
-            material = bpy.data.materials.new(name=tile.Name)
-
-            material.use_nodes = True
-            material.use_backface_culling = True
-            bsdf = material.node_tree.nodes["Principled BSDF"]
-            bsdf.inputs[9].default_value = 0.8  # Roughness
-
-            texture = material.node_tree.nodes.new('ShaderNodeTexImage')
-            diffuse_path = directory + "\\" + filename_without_extension + "_terrain_textures\\" + tile.Name + "\\diffuse.tga"
-            if exists(diffuse_path):
-                texture.image = bpy.data.images.load(diffuse_path, check_existing=True)
-            material.node_tree.links.new(bsdf.inputs['Base Color'], texture.outputs['Color'])
-
-            texture = material.node_tree.nodes.new('ShaderNodeTexImage')
-            normal_path = directory + "\\" + filename_without_extension + "_terrain_textures\\" + tile.Name + "\\normal.tga"
-            if exists(normal_path):
-                texture.image = bpy.data.images.load(normal_path, check_existing=True)
-                texture.image.colorspace_settings.name = 'Non-Color'
-            norm_map = material.node_tree.nodes.new('ShaderNodeNormalMap')
-            material.node_tree.links.new(bsdf.inputs['Normal'], norm_map.outputs['Normal'])
-            separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-            combine_rgb = material.node_tree.nodes.new('ShaderNodeCombineRGB')
-            less_than = material.node_tree.nodes.new('ShaderNodeMath')
-            less_than.operation = 'LESS_THAN'
-            less_than.inputs[1].default_value = 0.01
-            maximum = material.node_tree.nodes.new('ShaderNodeMath')
-            maximum.operation = 'MAXIMUM'
-            material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-            material.node_tree.links.new(combine_rgb.inputs['R'], separate_rgb.outputs['R'])
-            material.node_tree.links.new(combine_rgb.inputs['G'], separate_rgb.outputs['G'])
-            material.node_tree.links.new(norm_map.inputs['Color'], combine_rgb.outputs['Image'])
-            material.node_tree.links.new(less_than.inputs[0], separate_rgb.outputs['B'])
-            material.node_tree.links.new(maximum.inputs[0], separate_rgb.outputs['B'])
-            material.node_tree.links.new(maximum.inputs[1], less_than.outputs['Value'])
-            material.node_tree.links.new(combine_rgb.inputs['B'], maximum.outputs['Value'])
-            mesh_object.data.materials.append(material)
-
-            mesh_object.location[0] = tile.Position[0] + 256
-            mesh_object.location[1] = (tile.Position[2] * -1) - 256
-            mesh_object.rotation_euler[2] = math.radians(-90)
-
+        context = TerrainImportContext(directory, filename_without_extension, self.mesh_resolution,
+                                       self.use_high_textures)
+        generate_terrain(context, data)
         return {'FINISHED'}
 
 
