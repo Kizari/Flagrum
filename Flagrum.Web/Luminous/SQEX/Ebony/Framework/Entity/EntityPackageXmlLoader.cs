@@ -646,6 +646,7 @@ public class EntityPackageXmlLoader
         // TODO read pointer array item
         //return this.ReadReference(relativePath, destinationObject, destinationObjectElement);
 
+        // TODO: This is a whole mess that needs fixing
         var pointerArray = destinationObject.GetPropertyValue<IList>(property);
         var xmb2Array = destinationObjectElement.GetElementByName(relativePathSegments[0]);
         var xmb2ArrayElements = xmb2Array.GetElements();
@@ -653,8 +654,15 @@ public class EntityPackageXmlLoader
         {
             failedCall = (obj, prop) =>
             {
-                var value = ReadReferenceArray(xmb2ArrayElements, relativePathSegments[1], pointerArray);
-                obj.SetPropertyValue(prop, value);
+                try
+                {
+                    var value = ReadReferenceArray(xmb2ArrayElements, relativePathSegments[1], pointerArray);
+                    obj.SetPropertyValue(prop, value);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             };
         }
         else

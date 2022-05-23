@@ -263,7 +263,7 @@ public partial class SequenceEditor
         {
             var diagramData = DiagramData.FromDiagram(Diagram);
             var json = JsonConvert.SerializeObject(diagramData);
-            await File.WriteAllTextAsync(_autosavePath, json);
+            //await File.WriteAllTextAsync(_autosavePath, json);
         };
 
         SaveTimer.Start();
