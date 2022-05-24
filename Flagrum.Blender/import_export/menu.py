@@ -60,8 +60,19 @@ class ExportOperator(Operator, ExportHelper):
         options={'HIDDEN'}
     )
 
+    preserve_normals: BoolProperty(
+        name="Autocorrect Seam Normals",
+        description="Automatically corrects seam normals after edge-splitting for Luminous. May cause issues for double-sided meshes.",
+        default=True
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="FMD Export Options")
+        layout.prop(data=self, property="preserve_normals")
+
     def execute(self, context):
-        data = pack_mesh()
+        data = pack_mesh(self.preserve_normals)
         Interop.export_mesh(self.filepath, data)
 
         return {'FINISHED'}

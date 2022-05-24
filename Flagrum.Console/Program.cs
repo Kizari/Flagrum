@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
@@ -11,6 +12,10 @@ using Flagrum.Web.Services;
 // {
 //     Console.WriteLine($"{property.Name}");
 // }
+
+var flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Compressed;
+Console.WriteLine((int)flags);
+return;
 
 using var context = new FlagrumDbContext(new SettingsService());
 var data = context.GetFileByUri("data://environment/world/heightmaps/material/terrainmaterial.tpd");

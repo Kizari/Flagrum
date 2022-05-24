@@ -1,4 +1,6 @@
 ﻿@using System.Diagnostics
+@using System.IO
+@using Flagrum.Core.Utilities
 @inject IWpfService WpfService
 @inject SettingsService Settings
 
@@ -52,6 +54,24 @@
         {
             if (Settings.LastVersionNotes != Version)
             {
+                var previousAppDirectory = Directory
+                    .EnumerateDirectories(Settings.FlagrumDirectory)
+                    .FirstOrDefault(d => d.Contains(@"\app-") && !d.Contains($@"\app-{Version}"));
+
+                var previousThumbnailDirectory = $@"{previousAppDirectory}\wwwroot\EarcMods";
+
+                foreach (var thumbnail in Directory.EnumerateFiles(previousThumbnailDirectory))
+                {
+                    try
+                    {
+                        File.Move(thumbnail, $@"{IOHelper.GetWebRoot()}\EarcMods\{thumbnail.Split('\\').Last()}");
+                    }
+                    catch
+                    {
+    // Ignore
+                    }
+                }
+
                 VersionNotesModal.Open();
                 Settings.SetLastVersionNotes(Version);
             }

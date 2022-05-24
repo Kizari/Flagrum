@@ -34,7 +34,8 @@ public class UriMapper
         _context.Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.ArchiveLocations)}';");
         
         _assets = new ConcurrentDictionary<ArchiveLocation, IEnumerable<string>>();
-        var assetUris = new List<AssetUri>();
+        var assetUris = new Dictionary<string, AssetUri>();
+        var allUris = new Dictionary<string, ArchiveLocation>();
 
         MapDirectory(_settings.GameDataDirectory);
         Parallel.ForEach(Directory.EnumerateDirectories(_settings.GameDataDirectory), GenerateMapRecursively);
@@ -53,12 +54,20 @@ public class UriMapper
                     continue;
                 }
 
-                assetUris.Add(new AssetUri
-                {
-                    ArchiveLocation = archive,
-                    Uri = "data://" + uri
-                });
+                var fullUri = "data://" + uri;
+                allUris.TryAdd(fullUri, archive);
                 
+                var earcDirectory = Path.GetDirectoryName(archive.Path)!;
+                var uriReplaced = Path.GetDirectoryName(uri.Replace('/', '\\'));
+                if (earcDirectory.Equals(uriReplaced, StringComparison.OrdinalIgnoreCase))
+                {
+                    assetUris.TryAdd(fullUri, new AssetUri
+                    {
+                        ArchiveLocation = archive,
+                        Uri = fullUri
+                    });
+                }
+
                 var tokens = uri.Split('/');
                 var currentNode = root;
                 foreach (var token in tokens)
@@ -82,9 +91,20 @@ public class UriMapper
             }
         }
 
-        var distinctUris = assetUris.DistinctBy(a => a.Uri);
+        foreach (var (uri, archiveLocation) in allUris)
+        {
+            if (!assetUris.ContainsKey(uri))
+            {
+                assetUris.TryAdd(uri, new AssetUri
+                {
+                    ArchiveLocation = archiveLocation,
+                    Uri = uri
+                });
+            }
+        }
+        
         _context.Add(root);
-        _context.AddRange(distinctUris);
+        _context.AddRange(assetUris.Select(kvp => kvp.Value));
         _context.SaveChanges();
     }
 
