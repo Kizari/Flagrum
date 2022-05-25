@@ -16,7 +16,17 @@
                 content to the game or installed mods from other sources), you can regenerate the file index
                 to repair the Asset Explorer's Game View. This may take several minutes to complete.
             </span>
-            <Button Icon="refresh" Text="Regenerate Index" OnClickAsync="OnClick" />
+            @if (Context.EarcMods.Any(m => m.IsActive))
+            {
+                <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
+                    You cannot regenerate the file index while you have active EARC mods. Please disable all active
+                    mods in the Mod Manager and try again.
+                </div>
+            }
+            else
+            {
+                <Button Icon="refresh" Text="Regenerate Index" OnClickAsync="OnClick" />
+            }
         </div>
     </BodyView>
 </Modal>

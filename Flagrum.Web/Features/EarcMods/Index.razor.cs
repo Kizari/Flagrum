@@ -19,7 +19,7 @@ namespace Flagrum.Web.Features.EarcMods;
 public partial class Index
 {
     private Timer _timer;
-    
+
     private bool IsLoading { get; set; }
     private string LoadingText { get; set; }
 
@@ -31,8 +31,10 @@ public partial class Index
     private Dictionary<string, List<string>> LegacyConflicts { get; set; }
     private List<EarcConflictString> SelectedLegacyConflicts { get; set; }
     private TaskCompletionSource TaskCompletionSource { get; set; }
+    private string DisplayText { get; set; }
+    private string SubText { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (AppState.Node == null)
         {
@@ -47,7 +49,7 @@ public partial class Index
             };
             _timer.Start();
         }
-        
+
         var category = Context.GetInt(StateKey.CurrentEarcCategory);
         Category = category > -1 ? category : 0;
 
@@ -67,6 +69,11 @@ public partial class Index
                 }
             }
         }
+
+        // Jank delay to stop this showing on every launch
+        await Task.Delay(500);
+        DisplayText = "Mod Manager Unavailable While Indexing Files";
+        SubText = "Please wait until file indexing has completed";
     }
 
     public void SetLoading(bool isLoading, string message = null)
@@ -128,6 +135,8 @@ public partial class Index
                                 Context.ChangeTracker.Clear();
                                 break;
                         }
+
+                        Context.ChangeTracker.Clear();
                     }
                     else
                     {
@@ -186,10 +195,10 @@ public partial class Index
                         }
 
                         await Context.SaveChangesAsync();
+                        Context.ChangeTracker.Clear();
                     }
 
                     await CheckConflicts(earcMod, async () => { await earcMod!.Enable(Context, Logger); });
-                    Context.ChangeTracker.Clear();
                 }
                 catch (Exception e)
                 {

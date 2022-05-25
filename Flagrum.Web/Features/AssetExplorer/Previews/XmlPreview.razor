@@ -1,11 +1,10 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
 @using System.Text
-@using System.Text.Json
 @using Flagrum.Core.Ebex.Xmb2
-<div class="p-6">
-    <div class="box p-4">
+<div class="p-6 h-full">
+    <div class="box p-4 h-full overflow-auto">
         <Virtualize Items="Lines">
-            <span @key="context.Index" class="block">@context.Line</span>
+            <span @key="context.Index" class="block" style="white-space: nowrap">@context.Line</span>
         </Virtualize>
     </div>
 </div>
@@ -13,7 +12,7 @@
 @code
 {
     private AssetExplorerItem _previousItem;
-    
+
     private List<(int Index, string Line)> Lines { get; set; }
 
     [Parameter]
@@ -25,18 +24,18 @@
         {
             return;
         }
-        
+
         var xmb2 = Item.Data();
         var stringBuilder = new StringBuilder();
         Xmb2Document.Dump(xmb2, stringBuilder);
         var counter = 0;
-        
+
         Lines = stringBuilder.ToString()
             .Replace(" ", "\u00A0")
             .Split('\n')
             .Select(l => (counter++, l))
             .ToList();
-        
+
         StateHasChanged();
     }
 }

@@ -9,7 +9,6 @@ using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Layout;
@@ -161,16 +160,23 @@ public class Bootstrapper : ComponentBase
     {
         await Task.Run(() =>
         {
-            var exceptions = AppState.Mods
-                .Select(m => $"{IOHelper.GetWebRoot()}\\images\\{m.Uuid}.png")
-                .ToList();
-
-            foreach (var image in Directory.EnumerateFiles($"{IOHelper.GetWebRoot()}\\images"))
+            try
             {
-                if (!exceptions.Contains(image))
+                var exceptions = AppState.Mods
+                    .Select(m => $"{IOHelper.GetWebRoot()}\\images\\{m.Uuid}.png")
+                    .ToList();
+
+                foreach (var image in Directory.EnumerateFiles($"{IOHelper.GetWebRoot()}\\images"))
                 {
-                    File.Delete(image);
+                    if (!exceptions.Contains(image))
+                    {
+                        File.Delete(image);
+                    }
                 }
+            }
+            catch
+            {
+                // Ignore, try again next time
             }
         });
     }

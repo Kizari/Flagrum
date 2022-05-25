@@ -14,7 +14,7 @@ conversion_matrix = Matrix([
 ])
 
 
-def pack_mesh():
+def pack_mesh(preserve_normals: bool):
     mesh_data = Gpubin()
     mesh_data.Meshes = []
 
@@ -75,15 +75,18 @@ def pack_mesh():
             bmesh.update_edit_mesh(mesh_copy.data)
             bpy.ops.object.mode_set(mode='OBJECT')
 
-            # Apply correct normals from original to fix issues from edge-splitting
-            mesh_copy.data.use_auto_smooth = True
-            modifier = mesh_copy.modifiers.new(name="custom_normals_correction_" + mesh_copy.name, type='DATA_TRANSFER')
-            modifier.use_loop_data = True
-            modifier.data_types_loops = {'CUSTOM_NORMAL'}
-            modifier.loop_mapping = 'NEAREST_NORMAL'
-            modifier.mix_mode = 'REPLACE'
-            modifier.object = obj
-            bpy.ops.object.modifier_apply(modifier=modifier.name)
+            # Have set this as an export option as it can mess up normals on double-sided meshes
+            if preserve_normals:
+                # Apply correct normals from original to fix issues from edge-splitting
+                mesh_copy.data.use_auto_smooth = True
+                modifier = mesh_copy.modifiers.new(name="custom_normals_correction_" + mesh_copy.name,
+                                                   type='DATA_TRANSFER')
+                modifier.use_loop_data = True
+                modifier.data_types_loops = {'CUSTOM_NORMAL'}
+                modifier.loop_mapping = 'NEAREST_NORMAL'
+                modifier.mix_mode = 'REPLACE'
+                modifier.object = obj
+                bpy.ops.object.modifier_apply(modifier=modifier.name)
 
             # Pack the mesh data
             mesh.VertexPositions = _pack_vertex_positions(mesh_copy)

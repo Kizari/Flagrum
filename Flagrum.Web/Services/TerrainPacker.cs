@@ -39,12 +39,10 @@ public class TerrainPacker
 
     public TerrainPacker(
         ILogger<TerrainPacker> logger,
-        SettingsService settings,
-        FlagrumDbContext context)
+        SettingsService settings)
     {
         _logger = logger;
         _settings = settings;
-        _context = context;
     }
 
     public void Pack(string uri, string outputPath)
@@ -257,7 +255,8 @@ public class TerrainPacker
 
     private void ExportTextureArray(string outputDirectory, string uri)
     {
-        var btex = _context.GetFileByUri(uri);
+        using var context = new FlagrumDbContext(new SettingsService());
+        var btex = context.GetFileByUri(uri);
         var data = BtexConverter.BtexToDds(btex);
 
         var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
