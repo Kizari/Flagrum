@@ -1,14 +1,14 @@
-﻿using System;
+﻿using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
-using Flagrum.Core.Archive;
 using Flagrum.Core.Ps4;
-using Flagrum.Core.Utilities;
 
 var btex = Btex.FromData(File.ReadAllBytes(
-    @"C:\Modding\Chocomog\Scout\character\nh\nh24\model_000\sourceimages\nh24_000_skin_00_n.btex"));
+    @"C:\Modding\Chocomog\menu\feather_title\swftitle01\swftitle01.btex"));
+
+btex.Bitmap.Save(@"C:\Modding\Chocomog\menu\feather_title\swftitle01\swftitle01.png", ImageFormat.Png);
+return;
 
 var dds = btex.ToDds();
 
