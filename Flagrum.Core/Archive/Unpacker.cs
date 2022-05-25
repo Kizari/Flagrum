@@ -171,7 +171,7 @@ public class Unpacker : IDisposable
                 Key = ReadUint16()
             };
 
-            if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected))
+            if (!file.Flags.HasFlag(ArchiveFileFlag.MaskProtected) && _header.IsProtectedArchive)
             {
                 var subhash = Cryptography.MergeHashes(hash, file.UriAndTypeHash);
                 file.Size ^= (uint)(subhash >> 32);
