@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Utilities;
@@ -52,7 +51,7 @@ public class Material
 
     public List<(string Path, string OffsetPath)> StringPropertyPaths { get; set; } = new();
 
-    public void UpdateTexture(string textureSlot, string newPath)
+    public bool UpdateTexture(string textureSlot, string newPath)
     {
         var match = Textures.FirstOrDefault(t => t.ShaderGenName == textureSlot);
 
@@ -62,15 +61,24 @@ public class Material
             match.PathHash = Cryptography.Hash32(newPath);
             match.ResourceFileHash = Cryptography.HashFileUri64(newPath);
         }
+
+        return match != null;
     }
-    
+
     public void UpdateName(string modDirectoryName, string materialName)
     {
         Name = materialName;
         Uri = $"data://mod/{modDirectoryName}/materials/{materialName}.gmtl";
         NameHash = Cryptography.Hash32(materialName);
     }
-    
+
+    public void UpdateNameAndUri(string name, string uri)
+    {
+        Name = name;
+        Uri = uri;
+        NameHash = Cryptography.Hash32(name);
+    }
+
     public void RegenerateDependencyTable()
     {
         var assetUri = Uri.Remove(Uri.LastIndexOf('/') + 1);

@@ -81,6 +81,10 @@ public static class Program
                     {
                         material = new MaterialReader(materialFilePath).Read();
                     }
+                    else
+                    {
+                        Console.WriteLine($"Couldn't find {materialFilePath}");
+                    }
 
                     var mesh = new GpubinMesh
                     {
@@ -142,7 +146,7 @@ public static class Program
                                         ? Directory.EnumerateFiles(sourceImagesDirectory)
                                             .Where(f => !f.EndsWith(".btex"))
                                         : new List<string>();
-                                    
+
                                     var finalPath = highImagesFiles.FirstOrDefault(f =>
                                                         f.Contains(fileNameWithoutExtension,
                                                             StringComparison.OrdinalIgnoreCase)) ??

@@ -10,6 +10,7 @@ namespace Flagrum.Core.Archive;
 public class Unpacker : IDisposable
 {
     private readonly ArchiveHeader _header;
+    private readonly object _lock = new();
 
     private readonly Stream _stream;
     private List<ArchiveFile> _files;
@@ -88,6 +89,24 @@ public class Unpacker : IDisposable
         throw new FileNotFoundException("The file at the given URI was not found", uri);
     }
 
+    public byte[] UnpackReadableByUri(string uri)
+    {
+        _files ??= ReadFileHeaders().ToList();
+
+        var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            if (!match.HasData)
+            {
+                ReadFileData(match);
+            }
+
+            return match.GetReadableData();
+        }
+
+        throw new FileNotFoundException("The file at the given URI was not found", uri);
+    }
+
     public Dictionary<string, byte[]> UnpackFilesByQuery(string query)
     {
         _files ??= ReadFileHeaders().ToList();
@@ -126,9 +145,14 @@ public class Unpacker : IDisposable
 
     public void ReadFileData(ArchiveFile file)
     {
-        _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
-        var buffer = new byte[file.ProcessedSize];
-        _stream.Read(buffer, 0, (int)file.ProcessedSize);
+        byte[] buffer;
+
+        lock (_lock)
+        {
+            _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
+            buffer = new byte[file.ProcessedSize];
+            _stream.Read(buffer, 0, (int)file.ProcessedSize);
+        }
 
         if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
@@ -221,7 +245,7 @@ public class Unpacker : IDisposable
     public static byte[] GetFileByLocation(string earcLocation, string fileQuery)
     {
         using var unpacker = new Unpacker(earcLocation);
-        return unpacker.UnpackFileByQuery(fileQuery, out _);
+        return unpacker.UnpackReadableByUri(fileQuery);
     }
 
     private byte ReadByte()

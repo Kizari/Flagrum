@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
@@ -8,6 +9,9 @@ namespace Flagrum.Web.Persistence;
 
 public class FlagrumDbContext : DbContext
 {
+    private readonly string _databasePath =
+        $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\flagrum.db";
+
     public FlagrumDbContext() { }
 
     public FlagrumDbContext(SettingsService settings)
@@ -15,8 +19,20 @@ public class FlagrumDbContext : DbContext
         Settings = settings;
     }
 
+    public FlagrumDbContext(SettingsService settings, string pathOverride)
+    {
+        Settings = settings;
+        _databasePath = pathOverride;
+    }
+
     public SettingsService Settings { get; }
 
+    public DbSet<FestivalFinalDependency> FestivalFinalDependencies { get; set; }
+    public DbSet<FestivalAllDependency> FestivalAllDependencies { get; set; }
+    public DbSet<FestivalMaterialDependency> FestivalMaterialDependencies { get; set; }
+    public DbSet<FestivalModelDependency> FestivalModelDependencies { get; set; }
+    public DbSet<FestivalSubdependency> FestivalSubdependencies { get; set; }
+    public DbSet<FestivalDependency> FestivalDependencies { get; set; }
     public DbSet<EarcModBackup> EarcModBackups { get; set; }
     public DbSet<EarcMod> EarcMods { get; set; }
     public DbSet<EarcModEarc> EarcModEarcs { get; set; }
@@ -32,10 +48,7 @@ public class FlagrumDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var databasePath =
-            $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\flagrum.db";
-
-        optionsBuilder.UseSqlite($"Data Source={databasePath};", options => { options.CommandTimeout(180); });
+        optionsBuilder.UseSqlite($"Data Source={_databasePath};", options => { options.CommandTimeout(180); });
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,5 +57,11 @@ public class FlagrumDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(
             Assembly.GetAssembly(typeof(FlagrumDbContext))
             ?? throw new InvalidOperationException("Assembly cannot be null"));
+    }
+
+    public void ClearTable(string name)
+    {
+        Database.ExecuteSqlRaw($"DELETE FROM {name};");
+        Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{name}';");
     }
 }

@@ -3,6 +3,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
 using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Ps4;
+using Flagrum.Core.Utilities;
+using BtexHeader = Flagrum.Core.Ps4.BtexHeader;
 
 namespace Flagrum.Web.Services;
 
@@ -189,6 +192,51 @@ public class TextureConverter
         if (TexHelper.Instance.IsCompressed(metadata.Format))
         {
             image = image.Decompress(DXGI_FORMAT.R8G8B8A8_UNORM);
+        }
+
+        return image;
+    }
+
+    public byte[] PngToBtex(Btex original, byte[] data)
+    {
+        var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
+        var pointer = pinnedData.AddrOfPinnedObject();
+
+        var image = TexHelper.Instance.LoadFromWICMemory(pointer, data.Length, WIC_FLAGS.NONE);
+        image = BuildDds(image, original.ImageData.MipCount, original.ImageData.Format);
+
+        pinnedData.Free();
+        return BuildBtex(original, image);
+    }
+    
+    private byte[] BuildBtex(Btex original, ScratchImage image)
+    {
+        using var stream = new MemoryStream();
+        using var ddsStream = image.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT | DDS_FLAGS.FORCE_DX10_EXT_MISC2);
+        ddsStream.CopyTo(stream);
+        return BtexConverter.DdsToBtex(original, stream.ToArray());
+    }
+    
+    private ScratchImage BuildDds(ScratchImage image, int mips, BtexFormat format)
+    {
+        if (mips > 1)
+        {
+            image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, mips);
+        }
+
+        if (format is BtexFormat.BC6H_UF16 or BtexFormat.BC1_UNORM or BtexFormat.BC2_UNORM or BtexFormat.BC3_UNORM
+            or BtexFormat.BC4_UNORM or BtexFormat.BC5_UNORM or BtexFormat.BC7_UNORM)
+        {
+            image = image.Compress((DXGI_FORMAT)BtexConverter.FormatMap[format],
+                TEX_COMPRESS_FLAGS.SRGB | TEX_COMPRESS_FLAGS.PARALLEL, 0.5f);
+        }
+        else if (format is BtexFormat.B8G8R8A8_UNORM)
+        {
+            image = image.Convert((DXGI_FORMAT)BtexConverter.FormatMap[format], TEX_FILTER_FLAGS.SRGB, 0.5f);
+        }
+        else if (format != BtexFormat.R8G8B8A8_UNORM)
+        {
+            throw new ArgumentException($"Unhandled format {format}", nameof(format));
         }
 
         return image;

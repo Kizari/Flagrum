@@ -150,7 +150,7 @@ public class SettingsService
     public string SettingsPath { get; }
     public string TempDirectory { get; }
 
-    public string GamePath { get; private set; }
+    public string GamePath { get; set; }
     public string BinmodListPath { get; private set; }
     public string WorkshopPath { get; private set; }
     public string LastVersionNotes { get; private set; }

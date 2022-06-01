@@ -15,6 +15,12 @@ public class Xmb2Document
     public ushort Version { get; }
     public int RootElementOffset { get; }
 
+    public static Xmb2Element GetRootElement(byte[] xmb2)
+    {
+        using var stream = new MemoryStream(xmb2);
+        return GetRootElement(stream);
+    }
+
     public static Xmb2Element GetRootElement(Stream stream)
     {
         var xmb2 = new byte[stream.Length];

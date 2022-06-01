@@ -8,7 +8,6 @@ using Flagrum.Core.Archive;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Services;
 
@@ -17,6 +16,7 @@ public class UriMapper
     private readonly FlagrumDbContext _context;
     private readonly SettingsService _settings;
     private ConcurrentDictionary<ArchiveLocation, IEnumerable<string>> _assets;
+    private bool _usePs4Mode;
 
     public UriMapper(
         FlagrumDbContext context,
@@ -26,13 +26,20 @@ public class UriMapper
         _settings = settings;
     }
 
+    public void UsePs4Mode()
+    {
+        _usePs4Mode = true;
+    }
+
     public void RegenerateMap()
     {
         _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.AssetExplorerNodes)};");
         _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.ArchiveLocations)};");
-        _context.Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.AssetExplorerNodes)}';");
-        _context.Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.ArchiveLocations)}';");
-        
+        _context.Database.ExecuteSqlRaw(
+            $"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.AssetExplorerNodes)}';");
+        _context.Database.ExecuteSqlRaw(
+            $"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.ArchiveLocations)}';");
+
         _assets = new ConcurrentDictionary<ArchiveLocation, IEnumerable<string>>();
         var assetUris = new Dictionary<string, AssetUri>();
         var allUris = new Dictionary<string, ArchiveLocation>();
@@ -56,16 +63,27 @@ public class UriMapper
 
                 var fullUri = "data://" + uri;
                 allUris.TryAdd(fullUri, archive);
-                
-                var earcDirectory = Path.GetDirectoryName(archive.Path)!;
-                var uriReplaced = Path.GetDirectoryName(uri.Replace('/', '\\'));
-                if (earcDirectory.Equals(uriReplaced, StringComparison.OrdinalIgnoreCase))
+
+                if (_usePs4Mode && archive.Path.Contains("CUSA01633-patch_115"))
                 {
                     assetUris.TryAdd(fullUri, new AssetUri
                     {
                         ArchiveLocation = archive,
                         Uri = fullUri
                     });
+                }
+                else
+                {
+                    var earcDirectory = Path.GetDirectoryName(archive.Path)!;
+                    var uriReplaced = Path.GetDirectoryName(uri.Replace('/', '\\'));
+                    if (earcDirectory.Equals(uriReplaced, StringComparison.OrdinalIgnoreCase))
+                    {
+                        assetUris.TryAdd(fullUri, new AssetUri
+                        {
+                            ArchiveLocation = archive,
+                            Uri = fullUri
+                        });
+                    }
                 }
 
                 var tokens = uri.Split('/');
@@ -102,7 +120,7 @@ public class UriMapper
                 });
             }
         }
-        
+
         _context.Add(root);
         _context.AddRange(assetUris.Select(kvp => kvp.Value));
         _context.SaveChanges();

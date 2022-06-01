@@ -120,6 +120,7 @@
         {
             "btex" => ExplorerItemType.Texture,
             "gmtl.gfxbin" => ExplorerItemType.Material,
+            "exml" or "ebex" or "prefab" => ExplorerItemType.Xml,
             //"gmdl.gfxbin" => ExplorerItemType.Model,
             null or "" => ExplorerItemType.Directory,
             _ => ExplorerItemType.Unsupported

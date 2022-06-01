@@ -3,6 +3,7 @@ using System;
 using Flagrum.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flagrum.Web.Persistence.Migrations
 {
     [DbContext(typeof(FlagrumDbContext))]
-    partial class FlagrumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220526114821_FestivalDependencies")]
+    partial class FestivalDependencies
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
@@ -166,20 +168,6 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.ToTable("EarcModReplacements");
                 });
 
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.FestivalAllDependency", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Uri")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FestivalAllDependencies");
-                });
-
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.FestivalDependency", b =>
                 {
                     b.Property<int>("Id")
@@ -192,48 +180,6 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FestivalDependencies");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.FestivalFinalDependency", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Uri")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FestivalFinalDependencies");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.FestivalMaterialDependency", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Uri")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FestivalMaterialDependencies");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.FestivalModelDependency", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Uri")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FestivalModelDependencies");
                 });
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.FestivalSubdependency", b =>

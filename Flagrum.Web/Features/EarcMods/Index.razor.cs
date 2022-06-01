@@ -110,7 +110,7 @@ public partial class Index
                         var result = await EarcMod.ConvertLegacyZip(path, Context, conflicts =>
                         {
                             LegacyConflicts = conflicts;
-                            SelectedLegacyConflicts = new string[conflicts.Count]
+                            SelectedLegacyConflicts = new string[conflicts.Count(c => c.Value.Count > 1)]
                                 .Select(s => new EarcConflictString {Value = s}).ToList();
                             InvokeAsync(StateHasChanged);
                             TaskCompletionSource = new TaskCompletionSource();

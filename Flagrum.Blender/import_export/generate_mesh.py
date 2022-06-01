@@ -1,4 +1,5 @@
 from array import array
+from os.path import exists
 
 import bpy
 from bpy.types import Collection
@@ -178,7 +179,7 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
             texture_metadata: BlenderTextureData = t
 
             # Skip this texture if it doesn't exist in the file system
-            if texture_metadata.Path is None:
+            if texture_metadata.Path is None or not exists(texture_metadata.Path):
                 continue
 
             texture = material.node_tree.nodes.new('ShaderNodeTexImage')

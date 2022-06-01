@@ -23,7 +23,8 @@ public class FileData
 
 public class FileFinder
 {
-    private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
+    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
+    private const string DataDirectory = @"C:\Modding\Chocomog\Final Fantasy XV - RAW PS4\datas";
 
     private ConcurrentBag<FileData> _map;
 
@@ -105,7 +106,8 @@ public class FileFinder
         }
     }
 
-    public void FindByQuery(Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch, bool unpackMatchedFiles)
+    public void FindByQuery(Func<ArchiveFile, bool> condition, Action<string, ArchiveFile> onMatch,
+        bool unpackMatchedFiles)
     {
         System.Console.WriteLine("Starting search...");
         var watch = Stopwatch.StartNew();
@@ -118,7 +120,8 @@ public class FileFinder
         System.Console.WriteLine($"Search finished after {watch.ElapsedMilliseconds} milliseconds.");
     }
 
-    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch,
+    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition,
+        Action<string, ArchiveFile> onMatch,
         bool unpackMatchedFiles)
     {
         foreach (var file in Directory.EnumerateFiles(directory, "*.earc"))
@@ -131,7 +134,7 @@ public class FileFinder
                     unpacker.ReadFileData(archiveFile);
                 }
 
-                onMatch(archiveFile);
+                onMatch(file, archiveFile);
             }
         }
 
@@ -145,7 +148,7 @@ public class FileFinder
         var finder = new FileFinder();
         finder.FindByQuery(
             file => file.Uri.Contains(query, StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith("." + extension),
-            file => { list.Add(file.Uri); },
+            (_, file) => { list.Add(file.Uri); },
             false);
 
         return list;
@@ -155,8 +158,8 @@ public class FileFinder
     {
         var finder = new FileFinder();
         finder.FindByQuery(
-            file => file.Uri.Contains(query, StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith(".btex"),
-            file => { System.Console.WriteLine(file.Uri); },
+            file => file.Uri.Contains(query, StringComparison.OrdinalIgnoreCase),
+            (_, file) => { System.Console.WriteLine(file.Uri); },
             false);
     }
 
@@ -165,14 +168,18 @@ public class FileFinder
         var finder = new FileFinder();
         finder.FindByQuery(
             file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
-            file =>
+            (_, file) =>
             {
-                var builder = new StringBuilder();
-                Xmb2Document.Dump(file.GetReadableData(), builder);
-                var text = builder.ToString();
-                if (text.Contains(query, StringComparison.OrdinalIgnoreCase))
+                var data = file.GetReadableData();
+                if (data[0] == 'X' && data[1] == 'M' && data[2] == 'B' && data[3] == '2')
                 {
-                    System.Console.WriteLine(file.Uri);
+                    var builder = new StringBuilder();
+                    Xmb2Document.Dump(data, builder);
+                    var text = builder.ToString();
+                    if (text.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Console.WriteLine(file.Uri);
+                    }
                 }
             },
             true);
@@ -183,7 +190,7 @@ public class FileFinder
         var finder = new FileFinder();
         finder.FindByQuery(
             file => file.Uri.EndsWith(".gmtl"),
-            file =>
+            (_, file) =>
             {
                 var reader = new MaterialReader(file.GetReadableData()).Read();
                 if (reader.Textures.Any(t => t.Path.Contains(query)))

@@ -12,23 +12,24 @@ public class Packer
 {
     private const uint PointerSize = 8;
     private const uint BlockSize = 512;
-    private readonly ArchiveHeader _header;
 
     private readonly Logger _logger;
     private List<ArchiveFile> _files;
 
     public Packer()
     {
-        _logger = new ConsoleLogger();
-        _header = new ArchiveHeader();
+        _logger = new DeadConsoleLogger();
+        Header = new ArchiveHeader();
         _files = new List<ArchiveFile>();
     }
 
     private Packer(ArchiveHeader header, List<ArchiveFile> files) : this()
     {
-        _header = header;
+        Header = header;
         _files = files;
     }
+
+    public ArchiveHeader Header { get; }
 
     public static Packer FromUnpacker(ArchiveHeader header, List<ArchiveFile> files)
     {
@@ -40,11 +41,37 @@ public class Packer
         return _files.Any(f => f.Uri == uri);
     }
 
+    public void AddCompressedFile(string uri, byte[] data)
+    {
+        var file = new ArchiveFile(uri)
+        {
+            Flags = ArchiveFileFlag.Compressed
+        };
+
+        file.SetRawData(data);
+        _files.Add(file);
+    }
+
     public void AddFile(byte[] data, string uri)
     {
         var file = new ArchiveFile(uri);
         file.SetRawData(data);
 
+        _files.Add(file);
+    }
+
+    public void AddAutoloadFile(string uri, byte[] data)
+    {
+        var file = new ArchiveFile(uri);
+        file.SetRawData(data);
+        file.Flags = ArchiveFileFlag.Autoload;
+        _files.Add(file);
+    }
+
+    public void AddReference(string uri)
+    {
+        var file = new ArchiveFile(uri);
+        file.Flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Reference;
         _files.Add(file);
     }
 
@@ -102,9 +129,9 @@ public class Packer
 
         _logger.LogInformation("Packing archive...");
 
-        if (_header.Flags.HasFlag(ArchiveHeaderFlags.Copyguard))
+        if (Header.Flags.HasFlag(ArchiveHeaderFlags.Copyguard))
         {
-            _header.Version |= ArchiveHeader.ProtectVersionHash;
+            Header.Version |= ArchiveHeader.ProtectVersionHash;
         }
 
         _files = _files
@@ -115,25 +142,25 @@ public class Packer
             .ThenBy(f => f.UriHash)
             .ToList();
 
-        _header.UriListOffset = ArchiveHeader.Size +
-                                Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,
-                                    PointerSize);
+        Header.UriListOffset = ArchiveHeader.Size +
+                               Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,
+                                   PointerSize);
 
         var endOfUriList = SerializeUriList(out var uriListStream);
-        archiveStream.Seek(_header.UriListOffset, SeekOrigin.Begin);
+        archiveStream.Seek(Header.UriListOffset, SeekOrigin.Begin);
         uriListStream.CopyTo(archiveStream);
 
-        _header.PathListOffset =
-            Serialization.GetAlignment((uint)(_header.UriListOffset + endOfUriList), PointerSize);
+        Header.PathListOffset =
+            Serialization.GetAlignment((uint)(Header.UriListOffset + endOfUriList), PointerSize);
 
         var endOfPathList = SerializePathList(out var pathListStream);
-        archiveStream.Seek(_header.PathListOffset, SeekOrigin.Begin);
+        archiveStream.Seek(Header.PathListOffset, SeekOrigin.Begin);
         pathListStream.CopyTo(archiveStream);
 
-        _header.DataOffset = Serialization.GetAlignment(_header.PathListOffset + (uint)endOfPathList, BlockSize);
+        Header.DataOffset = Serialization.GetAlignment(Header.PathListOffset + (uint)endOfPathList, BlockSize);
 
         var dataStream = SerializeFileData();
-        archiveStream.Seek(_header.DataOffset, SeekOrigin.Begin);
+        archiveStream.Seek(Header.DataOffset, SeekOrigin.Begin);
         dataStream.CopyTo(archiveStream);
 
         var headerStream = SerializeHeader();
@@ -154,14 +181,14 @@ public class Packer
         var stream = new MemoryStream();
 
         stream.Write(ArchiveHeader.DefaultTag);
-        stream.Write(BitConverter.GetBytes(_header.Version));
+        stream.Write(BitConverter.GetBytes(Header.Version));
         stream.Write(BitConverter.GetBytes((uint)_files.Count));
         stream.Write(BitConverter.GetBytes(BlockSize));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.Size));
-        stream.Write(BitConverter.GetBytes(_header.UriListOffset));
-        stream.Write(BitConverter.GetBytes(_header.PathListOffset));
-        stream.Write(BitConverter.GetBytes(_header.DataOffset));
-        stream.Write(BitConverter.GetBytes((uint)_header.Flags));
+        stream.Write(BitConverter.GetBytes(Header.UriListOffset));
+        stream.Write(BitConverter.GetBytes(Header.PathListOffset));
+        stream.Write(BitConverter.GetBytes(Header.DataOffset));
+        stream.Write(BitConverter.GetBytes((uint)Header.Flags));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
 
         // Archive hash must be zero before the whole header is hashed
@@ -170,21 +197,21 @@ public class Packer
         // Constant padding
         stream.Write(new byte[16]);
 
-        _header.Hash = Cryptography.Base64Hash(stream.ToArray());
+        Header.Hash = Cryptography.Base64Hash(stream.ToArray());
 
         stream = new MemoryStream();
 
         stream.Write(ArchiveHeader.DefaultTag);
-        stream.Write(BitConverter.GetBytes(_header.Version));
+        stream.Write(BitConverter.GetBytes(Header.Version));
         stream.Write(BitConverter.GetBytes((uint)_files.Count));
         stream.Write(BitConverter.GetBytes(BlockSize));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.Size));
-        stream.Write(BitConverter.GetBytes(_header.UriListOffset));
-        stream.Write(BitConverter.GetBytes(_header.PathListOffset));
-        stream.Write(BitConverter.GetBytes(_header.DataOffset));
-        stream.Write(BitConverter.GetBytes((uint)_header.Flags));
+        stream.Write(BitConverter.GetBytes(Header.UriListOffset));
+        stream.Write(BitConverter.GetBytes(Header.PathListOffset));
+        stream.Write(BitConverter.GetBytes(Header.DataOffset));
+        stream.Write(BitConverter.GetBytes((uint)Header.Flags));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.DefaultChunkSize));
-        stream.Write(BitConverter.GetBytes(_header.Hash));
+        stream.Write(BitConverter.GetBytes(Header.Hash));
 
         // Constant padding
         stream.Write(new byte[16]);
@@ -198,7 +225,7 @@ public class Packer
         _logger.LogInformation("Serializing File Headers");
 
         var stream = new MemoryStream();
-        var hash = ArchiveFile.HeaderHash ^ _header.Hash;
+        var hash = ArchiveFile.HeaderHash ^ Header.Hash;
 
         foreach (var file in _files)
         {
@@ -241,7 +268,7 @@ public class Packer
         foreach (var file in _files)
         {
             var size = EncodeString(file.Uri, out var bytes);
-            file.UriOffset = _header.UriListOffset + (uint)currentUriOffset;
+            file.UriOffset = Header.UriListOffset + (uint)currentUriOffset;
             uriListStream.Seek(currentUriOffset, SeekOrigin.Begin);
             uriListStream.Write(bytes, 0, size);
             currentUriOffset += (int)Serialization.GetAlignment((uint)size, PointerSize);
@@ -261,7 +288,7 @@ public class Packer
         foreach (var file in _files)
         {
             var size = EncodeString(file.RelativePath, out var bytes);
-            file.RelativePathOffset = _header.PathListOffset + (uint)currentPathOffset;
+            file.RelativePathOffset = Header.PathListOffset + (uint)currentPathOffset;
             pathListStream.Seek(currentPathOffset, SeekOrigin.Begin);
             pathListStream.Write(bytes, 0, size);
             currentPathOffset += (int)Serialization.GetAlignment((uint)size, PointerSize);
@@ -276,17 +303,27 @@ public class Packer
         _logger.LogInformation("Serializing File Data");
 
         var stream = new MemoryStream();
-        var rng = new Random((int)_header.Hash);
+        var rng = new Random((int)Header.Hash);
         var currentDataOffset = 0L;
 
         foreach (var file in _files)
         {
+            if (file.Key == 0 && Header.IsProtectedArchive)
+            {
+                var hashCode = file.Uri.GetHashCode();
+                file.Key = (ushort)((hashCode >> 16) ^ hashCode);
+                if (file.Key == 0)
+                {
+                    file.Key = 57005;
+                }
+            }
+
             if (!file.Flags.HasFlag(ArchiveFileFlag.Compressed) && !file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
             {
                 file.Key = 0;
             }
 
-            file.DataOffset = _header.DataOffset + (uint)currentDataOffset;
+            file.DataOffset = Header.DataOffset + (uint)currentDataOffset;
 
             var fileData = file.GetDataForExport();
             stream.Write(fileData, 0, fileData.Length);

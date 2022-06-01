@@ -113,6 +113,55 @@ public static class BtexConverter
         writer.Write(btex);
         return stream.ToArray();
     }
+    
+    public static byte[] DdsToBtex(Ps4.Btex original, byte[] dds)
+    {
+        var ddsHeader = ReadDdsHeader(dds, out var ddsContent);
+        var btexHeader = new BtexHeader
+        {
+            Height = original.ImageData.Height,
+            Width = original.ImageData.Width,
+            Pitch = original.ImageData.Pitch,
+            Depth = original.ImageData.Depth,
+            MipMapCount = original.ImageData.MipCount,
+            ArraySize = (ushort)original.ImageData.ArrayCount,
+            Format = original.ImageData.Format,
+            Dimension = original.ImageData.DimensionsCount,
+            Data = ddsContent,
+            p_ImageFileSize = (uint)ddsContent.Length,
+            p_ImageFlags = original.ImageData.ImageFlags,
+            p_Name = original.ImageData.Name,
+            p_SurfaceCount = (ushort)ddsHeader.MipMapCount
+        };
+
+        uint width = btexHeader.Width;
+        uint height = btexHeader.Height;
+
+        for (var i = 0; i < btexHeader.MipMapCount; i++)
+        {
+            btexHeader.MipMaps.Add(new BtexMipMap
+            {
+                Offset = i == 0 ? 0 : btexHeader.MipMaps[i - 1].Offset + btexHeader.MipMaps[i - 1].Size,
+                Size = (uint)(Math.Max(GetBlockSize(original.ImageData.Format) * 4, CalculatePitch(width, TextureType.BaseColor) * height))
+            });
+
+            width /= 2;
+            height /= 2;
+        }
+
+        var btex = WriteBtex(btexHeader);
+
+        var sedbHeader = new SedbBtexHeader
+        {
+            FileSize = (ulong)btex.Length + 128 // Size of this header itself
+        };
+
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, Encoding.UTF8);
+        writer.Write(sedbHeader.ToBytes());
+        writer.Write(btex);
+        return stream.ToArray();
+    }
 
     public static byte[] WriteDds(DdsHeader header, byte[] data)
     {
@@ -260,6 +309,16 @@ public static class BtexConverter
             TextureType.AmbientOcclusion => 2,
             TextureType.Mrs => 2,
             TextureType.Undefined => 2,
+            _ => 4
+        };
+    }
+
+    private static int GetBlockSize(BtexFormat format)
+    {
+        return format switch
+        {
+            BtexFormat.BC6H_UF16 or BtexFormat.BC1_UNORM or BtexFormat.BC2_UNORM or BtexFormat.BC3_UNORM
+                or BtexFormat.BC4_UNORM or BtexFormat.BC5_UNORM or BtexFormat.BC7_UNORM => 2,
             _ => 4
         };
     }
