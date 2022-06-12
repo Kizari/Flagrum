@@ -224,7 +224,7 @@
     private async Task OnSubmit()
     {
         var deadFiles = Mod.Earcs.SelectMany(e => e.Replacements
-            .Where(r => !File.Exists(r.ReplacementFilePath)))
+            .Where(r => r.Type != EarcChangeType.Remove && !File.Exists(r.ReplacementFilePath)))
             .Select(r => r.ReplacementFilePath)
             .ToList();
 

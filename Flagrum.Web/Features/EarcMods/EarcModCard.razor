@@ -169,12 +169,17 @@
                 var metadata = new[] {earcMod}
                     .Select(m => new EarcModMetadata
                     {
+                        Version = 1,
                         Name = m.Name,
                         Author = m.Author,
                         Description = m.Description,
-                        Replacements = m.Earcs.ToDictionary(
+                        Changes = m.Earcs.ToDictionary(
                             e => e.EarcRelativePath,
-                            e => e.Replacements.Select(r => r.Uri))
+                            e => e.Replacements.Select(r => new EarcModMetadataChange
+                            {
+                                Type = r.Type,
+                                Uri = r.Uri
+                            }))
                     })
                     .FirstOrDefault()!;
 
@@ -183,7 +188,7 @@
 
                 foreach (var earc in earcMod.Earcs)
                 {
-                    foreach (var replacement in earc.Replacements)
+                    foreach (var replacement in earc.Replacements.Where(r => r.Type != EarcChangeType.Remove))
                     {
                         var entry = zip.CreateEntry($"{Cryptography.HashFileUri64(replacement.Uri)}.{replacement.ReplacementFilePath[(replacement.ReplacementFilePath.LastIndexOf('.') + 1)..]}", CompressionLevel.Optimal);
                         using var entryStream = entry.Open();

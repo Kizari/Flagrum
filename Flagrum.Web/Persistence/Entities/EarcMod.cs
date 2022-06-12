@@ -422,14 +422,14 @@ public class EarcMod
 
             if (originalEarcPath == "UNKNOWN")
             {
-                return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.AlteredStructure};
+                return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.EarcNotFound};
             }
             
             using var originalUnpacker = new Unpacker($@"{context.Settings.GameDataDirectory}\{originalEarcPath}");
 
-            if (!CompareArchives(originalUnpacker, unpacker))
+            if (!CompareArchives(context, originalEarcPath, originalUnpacker, unpacker, out var result))
             {
-                return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.AlteredStructure};
+                return result;
             }
 
             if (earcPaths.TryGetValue(originalEarcPath, out var zipPaths))
@@ -551,16 +551,49 @@ public class EarcMod
         return true;
     }
 
-    private static bool CompareArchives(Unpacker original, Unpacker unpacker)
+    private static bool CompareArchives(FlagrumDbContext context, string originalEarcPath, Unpacker original, Unpacker unpacker, out EarcLegacyConversionResult result)
     {
-        var originalFileList = original.Files.Select(f => f.Uri).ToList();
-        var hasNewFiles = unpacker.Files.Any(f => !originalFileList.Contains(f.Uri));
-        return !hasNewFiles;
+        result = null;
+        
+        var modsThatRemoveFilesFromThisEarc = context.EarcModEarcs
+            .Where(e => e.EarcMod.IsActive && e.EarcRelativePath == originalEarcPath && e.Replacements.Any(r => r.Type == EarcChangeType.Remove))
+            .Select(e => new
+            {
+                ModId = e.EarcMod.Id,
+                ModName = e.EarcMod.Name,
+                Uris = e.Replacements
+                    .Where(r => r.Type == EarcChangeType.Remove)
+                    .Select(r => r.Uri)
+            })
+            .ToList();
+
+        if (modsThatRemoveFilesFromThisEarc.Any())
+        {
+            result = new EarcLegacyConversionResult
+            {
+                Status = EarcLegacyConversionStatus.NeedsDisabling,
+                ModsToDisable = modsThatRemoveFilesFromThisEarc.ToDictionary(m => m.ModId, m => m.ModName)
+            };
+        }
+        else
+        {
+            var originalFileList = original.Files
+                .Select(f => f.Uri)
+                .ToList();
+
+            if (unpacker.Files.Any(f => !originalFileList.Contains(f.Uri)))
+            {
+                result = new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.NewFiles};
+            }
+        }
+
+        return result == null;
     }
 }
 
 public class EarcLegacyConversionResult
 {
+    public Dictionary<int, string> ModsToDisable { get; set; }
     public EarcLegacyConversionStatus Status { get; set; }
     public EarcMod Mod { get; set; }
 }
@@ -569,7 +602,9 @@ public enum EarcLegacyConversionStatus
 {
     Success,
     NoEarcs,
-    AlteredStructure
+    EarcNotFound,
+    NewFiles,
+    NeedsDisabling
 }
 
 public class EarcLegacyConflict

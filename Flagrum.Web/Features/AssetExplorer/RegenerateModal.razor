@@ -4,7 +4,7 @@
 @inject UriMapper Mapper
 @inject FlagrumDbContext Context
 
-<Modal @ref="Modal">
+<AutosizeModal @ref="Modal" MaxWidth="420px">
     <HeaderView>
         <span class="text-grey-300 flex-grow">Rebuild File Index</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
@@ -29,7 +29,7 @@
             }
         </div>
     </BodyView>
-</Modal>
+</AutosizeModal>
 
 @code
 {
@@ -39,7 +39,7 @@
     [CascadingParameter]
     public Index Parent { get; set; }
     
-    private Modal Modal { get; set; }
+    private AutosizeModal Modal { get; set; }
 
     public void Open() => Modal.Open();
 

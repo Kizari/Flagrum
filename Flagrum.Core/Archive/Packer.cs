@@ -91,7 +91,7 @@ public class Packer
     public void AddFileFromBackup(string uri, string relativePath, uint size, ArchiveFileFlag flags,
         byte localizationType, byte locale, ushort key, byte[] data)
     {
-        var file = new ArchiveFile(uri, relativePath, size, flags, localizationType, locale, key);
+        var file = new ArchiveFile(uri, relativePath, size, (uint)data.Length, flags, localizationType, locale, key);
         file.SetDataByFlags(data);
         _files.Add(file);
     }

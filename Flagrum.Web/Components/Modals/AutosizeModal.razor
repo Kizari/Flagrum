@@ -1,5 +1,5 @@
 ﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.6)">
-    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="max-width: 90%; max-height: 90%">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="max-width: @MaxWidth; max-height: 90%">
         <div class="rounded-t-lg bg-grey-700 p-3 row">
             @HeaderView
         </div>
@@ -35,6 +35,9 @@
 
     [Parameter]
     public int Padding { get; set; } = 6;
+
+    [Parameter]
+    public string MaxWidth { get; set; } = "90%";
 
     private string Display { get; set; } = "hidden";
     private string Opacity { get; set; } = "opacity-0";

@@ -163,7 +163,12 @@ namespace Flagrum.Core.Ebex.Xmb2
             switch (this.ValueType)
             {
                 case Type.String:
-                    return this.Value as string;
+                    return (Value as string)?
+                        .Replace("&", "&amp;")
+                        .Replace("<", "&lt;")
+                        .Replace(">", "&gt;")
+                        .Replace("'", "&apos;")
+                        .Replace("\"", "&quot;");
                 case Type.Bool:
                     if ((bool)this.Value)
                     {

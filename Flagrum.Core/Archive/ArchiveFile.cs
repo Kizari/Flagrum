@@ -57,12 +57,13 @@ public class ArchiveFile
         Flags = GetDefaultBinmodFlags();
     }
 
-    public ArchiveFile(string uri, string relativePath, uint size, ArchiveFileFlag flags, byte localizationType,
+    public ArchiveFile(string uri, string relativePath, uint size, uint processedSize, ArchiveFileFlag flags, byte localizationType,
         byte locale, ushort key)
     {
         RelativePath = relativePath;
         Uri = uri;
         Size = size;
+        ProcessedSize = processedSize;
         Flags = flags;
         LocalizationType = localizationType;
         Locale = locale;

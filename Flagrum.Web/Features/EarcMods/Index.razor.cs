@@ -110,7 +110,7 @@ public partial class Index
                         var result = await EarcMod.ConvertLegacyZip(path, Context, conflicts =>
                         {
                             LegacyConflicts = conflicts;
-                            SelectedLegacyConflicts = new string[conflicts.Count]
+                            SelectedLegacyConflicts = new string[conflicts.Count(c => c.Value.Count > 1)]
                                 .Select(s => new EarcConflictString {Value = s}).ToList();
                             InvokeAsync(StateHasChanged);
                             TaskCompletionSource = new TaskCompletionSource();
@@ -122,13 +122,35 @@ public partial class Index
                         {
                             case EarcLegacyConversionStatus.NoEarcs:
                                 await InvokeAsync(() => Alert.Open("Error", "Invalid Mod Pack",
-                                    "Could not find compatible mod data in this ZIP. Please refer to the mod author's original installation instructions.",
+                                    "Could not find compatible mod data in this ZIP. Please refer to the mod " +
+                                    "author's original installation instructions.",
                                     null));
                                 return;
-                            case EarcLegacyConversionStatus.AlteredStructure:
+                            case EarcLegacyConversionStatus.NewFiles:
                                 await InvokeAsync(() => Alert.Open("Error", "Incompatible Mod Pack",
-                                    "The ZIP contains valid mod data, but is not compatible with Flagrum's legacy mod converter at this time. Please refer to the mod author's original installation instructions.",
-                                    null));
+                                    "One or more of the mods in this ZIP add new files to the game. Flagrum " +
+                                    "does not currently support adding new files, but will do so in a future update. " +
+                                    "In the meantime, please refer to the mod author's original installation instructions.",
+                                    null, 500, 400));
+                                return;
+                            case EarcLegacyConversionStatus.EarcNotFound:
+                                await InvokeAsync(() => Alert.Open("Error", "Incompatible Mod Pack",
+                                    "An EARC was found in this mod pack that does not appear in your game files " +
+                                    "to modify. Flagrum does not currently support adding new EARCs to the game, " +
+                                    "but will do so in a future update. In the meantime, please refer to the mod " +
+                                    "author's original installation instructions.",
+                                    null, 500, 400));
+                                return;
+                            case EarcLegacyConversionStatus.NeedsDisabling:
+                                var modsToDisable = result.ModsToDisable
+                                    .Aggregate("", (previous, kvp) => $"{previous}<strong>{kvp.Value}</strong>");
+                                await InvokeAsync(() => Alert.Open("Error", "Unable to Compare Data",
+                                    "As this mod was not created with Flagrum, and the mod contains changes " +
+                                    "for files that are currently modified by an active mod on your system, " +
+                                    "the mods must be temporarily disabled to complete the installation.<br/><br/>" +
+                                    "Please disable the following mod(s) and then try again:<br/><br/>" +
+                                    modsToDisable,
+                                    null, 500, 400));
                                 return;
                             case EarcLegacyConversionStatus.Success:
                                 earcMod = result.Mod;
@@ -170,28 +192,63 @@ public partial class Index
                             Directory.CreateDirectory(directory);
                         }
 
-                        foreach (var (earcPath, replacements) in metadata.Replacements)
+                        if (metadata.Version == 0)
                         {
-                            var earc = new EarcModEarc {EarcRelativePath = earcPath};
-                            foreach (var replacement in replacements)
+                            foreach (var (earcPath, replacements) in metadata.Replacements)
                             {
-                                var hash = Cryptography.HashFileUri64(replacement).ToString();
-                                var matchEntry = zip.Entries.FirstOrDefault(e => e.Name.Contains(hash))!;
-                                var filePath = $@"{Settings.FlagrumDirectory}\earc\{earcMod.Id}\{matchEntry.Name}";
-
-                                await using var entryStream = matchEntry.Open();
-                                await using var entryMemoryStream = new MemoryStream();
-                                await entryStream.CopyToAsync(entryMemoryStream);
-                                await File.WriteAllBytesAsync(filePath, entryMemoryStream.ToArray());
-
-                                earc.Replacements.Add(new EarcModReplacement
+                                var earc = new EarcModEarc {EarcRelativePath = earcPath};
+                                foreach (var replacement in replacements)
                                 {
-                                    Uri = replacement,
-                                    ReplacementFilePath = filePath
-                                });
-                            }
+                                    var hash = Cryptography.HashFileUri64(replacement).ToString();
+                                    var matchEntry = zip.Entries.FirstOrDefault(e => e.Name.Contains(hash))!;
+                                    var filePath = $@"{Settings.FlagrumDirectory}\earc\{earcMod.Id}\{matchEntry.Name}";
 
-                            earcMod.Earcs.Add(earc);
+                                    await using var entryStream = matchEntry.Open();
+                                    await using var entryMemoryStream = new MemoryStream();
+                                    await entryStream.CopyToAsync(entryMemoryStream);
+                                    await File.WriteAllBytesAsync(filePath, entryMemoryStream.ToArray());
+
+                                    earc.Replacements.Add(new EarcModReplacement
+                                    {
+                                        Uri = replacement,
+                                        ReplacementFilePath = filePath
+                                    });
+                                }
+
+                                earcMod.Earcs.Add(earc);
+                            }
+                        }
+                        else
+                        {
+                            foreach (var (earcPath, changes) in metadata.Changes)
+                            {
+                                var earc = new EarcModEarc {EarcRelativePath = earcPath};
+                                foreach (var change in changes)
+                                {
+                                    string filePath = null;
+                                    
+                                    if (change.Type == EarcChangeType.Replace)
+                                    {
+                                        var hash = Cryptography.HashFileUri64(change.Uri).ToString();
+                                        var matchEntry = zip.Entries.FirstOrDefault(e => e.Name.Contains(hash))!;
+                                        filePath = $@"{Settings.FlagrumDirectory}\earc\{earcMod.Id}\{matchEntry.Name}";
+
+                                        await using var entryStream = matchEntry.Open();
+                                        await using var entryMemoryStream = new MemoryStream();
+                                        await entryStream.CopyToAsync(entryMemoryStream);
+                                        await File.WriteAllBytesAsync(filePath, entryMemoryStream.ToArray());
+                                    }
+                                    
+                                    earc.Replacements.Add(new EarcModReplacement
+                                    {
+                                        Uri = change.Uri,
+                                        ReplacementFilePath = filePath,
+                                        Type = change.Type
+                                    });
+                                    
+                                    earcMod.Earcs.Add(earc);
+                                }
+                            }
                         }
 
                         await Context.SaveChangesAsync();
