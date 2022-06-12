@@ -324,7 +324,7 @@ public class Xmb2Element
     public string GetTextValue()
     {
         var attribute = GetValueAttribute();
-        return attribute.GetTextValue();
+        return attribute?.GetTextValue();
     }
 
     /// <summary>

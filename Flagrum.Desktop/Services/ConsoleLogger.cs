@@ -27,10 +27,10 @@ public class ConsoleLoggerConfiguration
 public class ConsoleLogger : ILogger
 {
     private readonly Func<ConsoleLoggerConfiguration> _getCurrentConfiguration;
+
+    private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly string _logFile;
     private readonly string _name;
-
-    private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
     public ConsoleLogger(
         string name,

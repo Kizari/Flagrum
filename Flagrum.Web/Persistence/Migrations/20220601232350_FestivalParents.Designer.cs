@@ -3,6 +3,7 @@ using System;
 using Flagrum.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flagrum.Web.Persistence.Migrations
 {
     [DbContext(typeof(FlagrumDbContext))]
-    partial class FlagrumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220601232350_FestivalParents")]
+    partial class FestivalParents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
@@ -310,49 +312,6 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.ToTable("ModelReplacementPresets");
                 });
 
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4ArchiveAsset", b =>
-                {
-                    b.Property<int>("Ps4ArchiveLocationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Ps4AssetUriId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Ps4ArchiveLocationId", "Ps4AssetUriId");
-
-                    b.HasIndex("Ps4AssetUriId");
-
-                    b.ToTable("Ps4ArchiveAssets");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4ArchiveLocation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Path")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Ps4ArchiveLocations");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4AssetUri", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Uri")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Ps4AssetUris");
-                });
-
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.StatePair", b =>
                 {
                     b.Property<int>("Key")
@@ -459,25 +418,6 @@ namespace Flagrum.Web.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4ArchiveAsset", b =>
-                {
-                    b.HasOne("Flagrum.Web.Persistence.Entities.Ps4ArchiveLocation", "Ps4ArchiveLocation")
-                        .WithMany("ArchiveAssets")
-                        .HasForeignKey("Ps4ArchiveLocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Flagrum.Web.Persistence.Entities.Ps4AssetUri", "Ps4AssetUri")
-                        .WithMany("ArchiveAssets")
-                        .HasForeignKey("Ps4AssetUriId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Ps4ArchiveLocation");
-
-                    b.Navigation("Ps4AssetUri");
-                });
-
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ArchiveLocation", b =>
                 {
                     b.Navigation("AssetUris");
@@ -518,16 +458,6 @@ namespace Flagrum.Web.Persistence.Migrations
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementPreset", b =>
                 {
                     b.Navigation("ReplacementPaths");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4ArchiveLocation", b =>
-                {
-                    b.Navigation("ArchiveAssets");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4AssetUri", b =>
-                {
-                    b.Navigation("ArchiveAssets");
                 });
 #pragma warning restore 612, 618
         }

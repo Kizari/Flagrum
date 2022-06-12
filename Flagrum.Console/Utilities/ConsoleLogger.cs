@@ -24,7 +24,7 @@ public class ConsoleLoggerConfiguration
     };
 }
 
-public class ConsoleLogger : ILogger
+public class ConsoleLogger<T> : ILogger<T>
 {
     private readonly Func<ConsoleLoggerConfiguration> _getCurrentConfiguration;
     private readonly string _logFile;
@@ -71,9 +71,9 @@ public class ConsoleLogger : ILogger
     }
 }
 
-public class ConsoleLoggerProvider : ILoggerProvider
+public class ConsoleLoggerProvider<T> : ILoggerProvider
 {
-    private readonly ConcurrentDictionary<string, ConsoleLogger> _loggers = new();
+    private readonly ConcurrentDictionary<string, ConsoleLogger<T>> _loggers = new();
     private readonly IDisposable _onChangeToken;
     private ConsoleLoggerConfiguration _currentConfig;
 
@@ -86,7 +86,7 @@ public class ConsoleLoggerProvider : ILoggerProvider
 
     public ILogger CreateLogger(string categoryName)
     {
-        return _loggers.GetOrAdd(categoryName, name => new ConsoleLogger(name, GetCurrentConfig));
+        return _loggers.GetOrAdd(categoryName, name => new ConsoleLogger<T>(name, GetCurrentConfig));
     }
 
     public void Dispose()

@@ -41,12 +41,17 @@ public class Packer
         return _files.Any(f => f.Uri == uri);
     }
 
-    public void AddCompressedFile(string uri, byte[] data)
+    public void AddCompressedFile(string uri, byte[] data, bool autoload = false)
     {
         var file = new ArchiveFile(uri)
         {
             Flags = ArchiveFileFlag.Compressed
         };
+
+        if (autoload)
+        {
+            file.Flags |= ArchiveFileFlag.Autoload;
+        }
 
         file.SetRawData(data);
         _files.Add(file);
@@ -68,10 +73,16 @@ public class Packer
         _files.Add(file);
     }
 
-    public void AddReference(string uri)
+    public void AddReference(string uri, bool autoload)
     {
         var file = new ArchiveFile(uri);
-        file.Flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Reference;
+        file.Flags = ArchiveFileFlag.Reference;
+
+        if (autoload)
+        {
+            file.Flags |= ArchiveFileFlag.Autoload;
+        }
+
         _files.Add(file);
     }
 

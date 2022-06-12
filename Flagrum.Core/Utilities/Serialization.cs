@@ -69,6 +69,26 @@ public static class Serialization
 
     public static void Align(this Stream stream, int blockSize)
     {
-        stream.Seek(Align((uint)stream.Position, (uint)blockSize), SeekOrigin.Current);
+        var size = Align((uint)stream.Position, (uint)blockSize);
+        if (size == blockSize)
+        {
+            return;
+        }
+        
+        stream.Seek(size, SeekOrigin.Current);
+    }
+
+    public static void Align(this BinaryWriter writer, int blockSize, byte paddingByte)
+    {
+        var size = Align((uint)writer.BaseStream.Position, (uint)blockSize);
+        if (size == blockSize)
+        {
+            return;
+        }
+        
+        for (var i = 0; i < size; i++)
+        {
+            writer.Write(paddingByte);
+        }
     }
 }

@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Numerics;
+using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Core.Utilities;
 
@@ -23,5 +26,45 @@ public static class Extensions
         using var memoryStream = new MemoryStream();
         stream.CopyTo(memoryStream);
         return memoryStream.ToArray();
+    }
+
+    public static DateTime LogTimeSince(this ILogger logger, string message, DateTime startTime)
+    {
+        logger.LogInformation("{Message} after {Milliseconds} milliseconds", message,
+            (DateTime.Now - startTime).TotalMilliseconds);
+        return DateTime.Now;
+    }
+
+    public static void Align(this Stream stream, long blockSize)
+    {
+        var offset = stream.Position;
+        var size = blockSize + blockSize * (offset / blockSize) - offset;
+        if (size > 0 && size < blockSize)
+        {
+            stream.Seek(size, SeekOrigin.Current);
+        }
+    }
+
+    public static string ReadNullTerminatedString(this BinaryReader reader)
+    {
+        var result = new List<char>();
+        char next;
+
+        while ((next = reader.ReadChar()) != 0x0)
+        {
+            result.Add(next);
+        }
+
+        return new string(result.ToArray());
+    }
+
+    public static void WriteNullTerminatedString(this BinaryWriter writer, string value)
+    {
+        foreach (var character in value)
+        {
+            writer.Write(character);
+        }
+
+        writer.Write((byte)0x00);
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Flagrum.Core.Gfxbin.Gmdl;
 
@@ -16,18 +15,18 @@ public class AOFixer
         var reader = new ModelReader(gfxbinData, gpubinData);
         var model = reader.Read();
 
-        var match = model.MeshObjects[0].Meshes.FirstOrDefault(m => m.Name == "EyelashShape");
-        if (match == null)
-        {
-            throw new InvalidOperationException("That ain't gonna work!");
-        }
+        var meshes = new[] {"EyelashShape", "BodyShape"};
+        var matches = model.MeshObjects[0].Meshes.Where(m => meshes.Contains(m.Name));
 
-        foreach (var color in match.ColorMaps[2].Colors)
+        foreach (var match in matches)
         {
-            color.R = byte.MaxValue;
-            color.G = byte.MaxValue;
-            color.B = byte.MaxValue;
-            color.A = byte.MaxValue;
+            foreach (var color in match.ColorMaps[2].Colors)
+            {
+                color.R = byte.MaxValue;
+                color.G = byte.MaxValue;
+                color.B = byte.MaxValue;
+                color.A = byte.MaxValue;
+            }
         }
 
         var (gfxbin, gpubin) = new ModelWriter(model).Write();

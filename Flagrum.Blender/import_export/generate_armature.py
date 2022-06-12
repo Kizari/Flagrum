@@ -83,8 +83,13 @@ def processArmatureData(armature_data):
             bone.matrix = Matrix(solve(bone.transformation_matrix, Matrix.Identity(4)))
     for bone in armature_data.bones:
         if bone.id:
-            bone.parent = miniscene[armature_data.parent_IDs[bone.id - 1]]
-            miniscene[armature_data.parent_IDs[bone.id - 1]].children.append(bone)
+            bone_index = bone.id - 1
+            if bone_index in armature_data.parent_IDs:
+                bone.parent = miniscene[armature_data.parent_IDs[bone_index]]
+                miniscene[armature_data.parent_IDs[bone.id - 1]].children.append(bone)
+            else:
+                bone.parent = miniscene[0]
+                miniscene[0].children.append(bone)
         else:
             root.append(bone)
             bone.parent = None

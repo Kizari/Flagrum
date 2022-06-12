@@ -311,7 +311,27 @@ public class Btex
 
         switch (btex.GnfHeader.DataFormat)
         {
-            //case GnfDataFormat.Format8_8_8_8: imageBinary.InputPixelFormat = (PixelDataFormat.Bpp32 | channelOrder | PixelDataFormat.RedBits8 | PixelDataFormat.GreenBits8 | PixelDataFormat.BlueBits8 | PixelDataFormat.AlphaBits8); break;
+            case GnfDataFormat.Format8_8_8_8:
+                PixelDataFormat channelOrder;
+                if (btex.GnfHeader.DestinationX == GnfSqSel.SelX && btex.GnfHeader.DestinationY == GnfSqSel.SelY &&
+                    btex.GnfHeader.DestinationZ == GnfSqSel.SelZ && btex.GnfHeader.DestinationW == GnfSqSel.SelW)
+                {
+                    channelOrder = PixelDataFormat.ChannelsAbgr;
+                }
+                else if (btex.GnfHeader.DestinationX == GnfSqSel.SelZ && btex.GnfHeader.DestinationY == GnfSqSel.SelY &&
+                         btex.GnfHeader.DestinationZ == GnfSqSel.SelX && btex.GnfHeader.DestinationW == GnfSqSel.SelW)
+                {
+                    channelOrder = PixelDataFormat.ChannelsArgb;
+                }
+                else
+                {
+                    throw new Exception(
+                        $"Unhandled GNF channel destinations (X={btex.GnfHeader.DestinationX}, Y={btex.GnfHeader.DestinationY}, Z={btex.GnfHeader.DestinationZ}, W={btex.GnfHeader.DestinationW})");
+                }
+                imageBinary.InputPixelFormat = PixelDataFormat.Bpp32 | channelOrder | PixelDataFormat.RedBits8 |
+                                               PixelDataFormat.GreenBits8 | PixelDataFormat.BlueBits8 |
+                                               PixelDataFormat.AlphaBits8;
+                break;
             case GnfDataFormat.FormatBC1:
                 imageBinary.InputPixelFormat = PixelDataFormat.FormatDXT1Rgba;
                 break;

@@ -384,5 +384,13 @@ public class ArchiveFile
         {
             RelativePath = RelativePath.Replace(".ebex@", ".earc");
         }
+        else if (RelativePath.EndsWith(".prefab@"))
+        {
+            RelativePath = RelativePath.Replace(".prefab@", ".earc");
+        }
+        else if (RelativePath.EndsWith(".htpk"))
+        {
+            RelativePath = RelativePath.Replace(".htpk", ".earc");
+        }
     }
 }

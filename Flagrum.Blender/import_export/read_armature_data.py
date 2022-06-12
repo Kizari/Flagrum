@@ -1,6 +1,7 @@
-import numpy
 import os
 import struct
+
+import numpy
 from mathutils import Matrix
 
 from ..entities import ArmatureData, BoneData
@@ -102,13 +103,15 @@ def _read_armature_data(amdl_file):
         amdl_file.seek(trans_header["count_1"] * 16, 1)
         amdl_file.seek(_align(amdl_file.tell(), 16), 0)
 
+    bone_count_bind_only = trans_header["xfrm_count"]
+
     transforms_offset = amdl_file.tell()
     amdl_file.seek(names_start, 0)
 
     if is_duscae:
         name_count = parent_count
     else:
-        name_count = bone_count
+        name_count = bone_count_bind_only
 
     for i in range(name_count):
         bone_name = _read_string(amdl_file)
@@ -118,7 +121,7 @@ def _read_armature_data(amdl_file):
 
     parent_IDs = []
     amdl_file.seek(parent_IDs_start, 0)
-    for p in range(parent_count):
+    for p in range(bone_count_bind_only):
         id = struct.unpack("<H", amdl_file.read(2))[0]
         if id == 65535:
             continue
@@ -130,7 +133,7 @@ def _read_armature_data(amdl_file):
     armature_data.parent_IDs = parent_IDs
     amdl_file.seek(transforms_offset, 0)
 
-    for i in range(parent_count):
+    for i in range(bone_count_bind_only):
         temporary_matrix = numpy.fromfile(
             amdl_file, dtype='<f', count=16).reshape((4, 4))
 

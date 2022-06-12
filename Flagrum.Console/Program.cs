@@ -1,9 +1,50 @@
-﻿using Flagrum.Console.Utilities;
+﻿using System.IO;
+using Flagrum.Console.Ps4.Festivals;
+using Flagrum.Core.Animation;
+
+//var amdlData = File.ReadAllBytes(@"C:\Modding\Chocomog\Testing\XML\ds33_000.amdl");
+// var amdl = AnimationModel.FromData(amdlData, true);
+//
+// var info = (LmSkeletalAnimInfo)amdl.CustomUserData.CustomUserDatas[0];
+// for (var i = 0; i < info.ChildInfoOffset.Length; i++)
+// {
+//     if (info.ChildInfoOffset[i] >= 40)
+//     {
+//         info.ChildInfoOffset[i] -= 40;
+//     }
+// }
+//
+// for (var i = 0; i < info.MaybeParentIndexOffsets.Length; i++)
+// {
+//     if (info.MaybeParentIndexOffsets[i] >= 40)
+//     {
+//         info.MaybeParentIndexOffsets[i] -= 40;
+//     }
+// }
+//
+// var data = AnimationModel.ToData(amdl);
+// File.WriteAllBytes(@"C:\Modding\Chocomog\Testing\XML\nh02.amdl", data);
+//File.WriteAllBytes(@"C:\Modding\Chocomog\Testing\XML\ds33_000_modified.amdl", AnimationModel.ToPC(amdlData));
+//return;
+// var x = true;
 
 // var packer = new Ps4EnvironmentPacker(new ConsoleLogger("Logger", () => new ConsoleLoggerConfiguration()),
 //     new SettingsService());
 // packer.Pack("data://level/dlc_ex/mog/area_ravettrice_mog.ebex",
 //     @"C:\Modding\Chocomog\Testing\Environment\area_ravettrice_mog.fed");
+
+//var packer = new EnvironmentPacker(new ConsoleLogger<EnvironmentPacker>("Test", () => new ConsoleLoggerConfiguration()),
+//    new SettingsService());
+//packer.Pack("data://level/dlc_ex/mog/area_ravettrice_mog.ebex", @"C:\Modding\Chocomog\Testing\Environment\area_ravettrice_mog.fed");
+
+// foreach (var file in Directory.EnumerateFiles(@"C:\Modding\Chocomog\Testing\XML"))
+// {
+//     var data = File.ReadAllBytes(file);
+//     var result = AnimationModel.ToPC(data);
+//     File.WriteAllBytes(file.Replace(".amdl", "_modified.amdl"), result);
+// }
+//
+// return;
 
 await ChocomogPorter.Run();
 

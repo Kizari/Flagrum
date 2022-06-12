@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 
 namespace Flagrum.Web.Persistence;
 
@@ -27,6 +27,9 @@ public class FlagrumDbContext : DbContext
 
     public SettingsService Settings { get; }
 
+    public DbSet<Ps4ArchiveAsset> Ps4ArchiveAssets { get; set; }
+    public DbSet<Ps4AssetUri> Ps4AssetUris { get; set; }
+    public DbSet<Ps4ArchiveLocation> Ps4ArchiveLocations { get; set; }
     public DbSet<FestivalFinalDependency> FestivalFinalDependencies { get; set; }
     public DbSet<FestivalAllDependency> FestivalAllDependencies { get; set; }
     public DbSet<FestivalMaterialDependency> FestivalMaterialDependencies { get; set; }
@@ -48,7 +51,9 @@ public class FlagrumDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        //_databasePath = @"C:\Users\Kieran\AppData\Local\Flagrum-PS4\flagrum.db";
         optionsBuilder.UseSqlite($"Data Source={_databasePath};", options => { options.CommandTimeout(180); });
+        Batteries.Init();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

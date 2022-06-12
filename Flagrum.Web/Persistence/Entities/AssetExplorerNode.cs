@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Services;
 
 namespace Flagrum.Web.Persistence.Entities;
@@ -14,7 +15,7 @@ public class AssetExplorerNode
     public int? ParentId { get; set; }
     public AssetExplorerNode Parent { get; set; }
 
-    public ICollection<AssetExplorerNode> Children { get; set; } = new HashSet<AssetExplorerNode>();
+    public ICollection<AssetExplorerNode> Children { get; set; } = new ConcurrentCollection<AssetExplorerNode>();
 
     public void Traverse(FlagrumDbContext context, Action<AssetExplorerNode> visitor)
     {
@@ -24,7 +25,7 @@ public class AssetExplorerNode
             node.Traverse(context, visitor);
         }
     }
-    
+
     public void TraverseDescending(FlagrumDbContext context, Action<AssetExplorerNode> visitor)
     {
         visitor(this);
@@ -39,10 +40,11 @@ public class AssetExplorerNode
     public string GetUri(FlagrumDbContext context)
     {
         var uri = "";
-        TraverseDescending(context, node => uri = node.Name + (uri.Length > 0 && !node.Name.EndsWith('/') ? "/" : "") + uri);
+        TraverseDescending(context,
+            node => uri = node.Name + (uri.Length > 0 && !node.Name.EndsWith('/') ? "/" : "") + uri);
         return uri;
     }
-    
+
     public string GetLocation(FlagrumDbContext context, SettingsService settings)
     {
         var uri = GetUri(context);
