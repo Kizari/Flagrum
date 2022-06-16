@@ -511,6 +511,8 @@ public class AnimationModel
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream);
 
+        var modelTypeSpecificInfoOffset = 0UL;
+
         // Skip header
         stream.Seek(476, SeekOrigin.Begin);
 
@@ -588,6 +590,7 @@ public class AnimationModel
             switch (node.Type)
             {
                 case LmEAnimCustomDataType.eCustomUserDataType_SkeletalAnimInfo:
+                    modelTypeSpecificInfoOffset = (ulong)stream.Position - 112;
                     var skeletalAnimInfo = (LmSkeletalAnimInfo)model.CustomUserData.CustomUserDatas[i];
                     writer.Write(skeletalAnimInfo.BoneCount);
                     writer.Write(skeletalAnimInfo.BoneCountFullSkeleton);
@@ -716,13 +719,7 @@ public class AnimationModel
 
         for (var i = 0; i < model.InstanceDataTypesCount; i++)
         {
-            var offset = model.InstanceDataOffsets[i];
-            if (offset > 0)
-            {
-                offset -= 32;
-            }
-
-            writer.Write(offset);
+            writer.Write(model.InstanceDataOffsets[i]);
         }
 
         writer.Write(model.ActiveInstances);
@@ -744,7 +741,7 @@ public class AnimationModel
         {
             writer.Write(channel.EntriesCount);
             writer.Write(channel.DataOffset);
-            writer.Write(channel.ModelTypeSpecificInfoOffset);
+            writer.Write(channel.ModelTypeSpecificInfoOffset > 0 ? (ulong)modelTypeSpecificInfoOffset : 0UL);
             writer.Write(channel.PartMaskStartBitIndex);
             writer.Align(8, 0xFF);
         }
@@ -761,22 +758,22 @@ public class AnimationModel
     {
         var amdl = FromData(ps4Amdl, true);
 
-        var info = (LmSkeletalAnimInfo)amdl.CustomUserData.CustomUserDatas[0];
-        for (var i = 0; i < info.ChildInfoOffset.Length; i++)
-        {
-            if (info.ChildInfoOffset[i] >= 40)
-            {
-                info.ChildInfoOffset[i] -= 40;
-            }
-        }
+        //var info = (LmSkeletalAnimInfo)amdl.CustomUserData.CustomUserDatas[0];
+        //for (var i = 0; i < info.ChildInfoOffset.Length; i++)
+        //{
+        //    if (info.ChildInfoOffset[i] >= 40)
+        //    {
+        //        info.ChildInfoOffset[i] -= 40;
+        //    }
+        //}
 
-        for (var i = 0; i < info.MaybeParentIndexOffsets.Length; i++)
-        {
-            if (info.MaybeParentIndexOffsets[i] >= 40)
-            {
-                info.MaybeParentIndexOffsets[i] -= 40;
-            }
-        }
+        //for (var i = 0; i < info.MaybeParentIndexOffsets.Length; i++)
+        //{
+        //    if (info.MaybeParentIndexOffsets[i] >= 40)
+        //    {
+        //        info.MaybeParentIndexOffsets[i] -= 40;
+        //    }
+        //}
 
         return ToData(amdl);
     }

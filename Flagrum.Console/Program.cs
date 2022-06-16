@@ -1,9 +1,19 @@
-﻿using System.IO;
+﻿using Flagrum.Console.Ps4;
 using Flagrum.Console.Ps4.Festivals;
-using Flagrum.Core.Animation;
+using Flagrum.Console.Utilities;
 
-//var amdlData = File.ReadAllBytes(@"C:\Modding\Chocomog\Testing\XML\ds33_000.amdl");
-// var amdl = AnimationModel.FromData(amdlData, true);
+FileFinder.FindStringInExml("swf.btex");
+return;
+//await ChocomogPorter.Run(); 
+
+// using Flagrum.Console.Ps4.Festivals;
+// using Flagrum.Core.Animation;
+//
+// var amdlData = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh02\nh02.amdl");
+// var amdl = AnimationModel.FromData(amdlData, false);
+// File.WriteAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh02\nh02_modified.amdl", AnimationModel.ToData(amdl));
+// return;
+
 //
 // var info = (LmSkeletalAnimInfo)amdl.CustomUserData.CustomUserDatas[0];
 // for (var i = 0; i < info.ChildInfoOffset.Length; i++)
@@ -45,8 +55,6 @@ using Flagrum.Core.Animation;
 // }
 //
 // return;
-
-await ChocomogPorter.Run();
 
 // FileFinder.FindUriByString("al_pr_mogcho_gameGate.gmdl");
 // return;
