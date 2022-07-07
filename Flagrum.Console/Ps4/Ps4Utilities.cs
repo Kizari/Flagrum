@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using Flagrum.Console.Ps4.Porting;
 using Flagrum.Core.Archive;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
@@ -12,11 +13,18 @@ public static class Ps4Utilities
     private static readonly object _lock = new();
     private static readonly ConcurrentDictionary<string, Unpacker> _unpackers = new();
 
+    private static readonly object _settingsLock = new();
     private static SettingsService _settings;
-    public static SettingsService Settings => _settings ??= new SettingsService {GamePath = Ps4Constants.GamePath};
+    private static SettingsService Settings => _settings ??= new SettingsService {GamePath = Ps4Constants.GamePath};
 
-    public static FlagrumDbContext NewContext() => new(Settings, Ps4Constants.DatabasePath);
-    
+    public static FlagrumDbContext NewContext()
+    {
+        lock (_settingsLock)
+        {
+            return new FlagrumDbContext(Settings, Ps4Constants.DatabasePath);
+        }
+    }
+
     public static byte[] GetFileByUri(FlagrumDbContext context, string uri)
     {
         uri = uri.ToLower();

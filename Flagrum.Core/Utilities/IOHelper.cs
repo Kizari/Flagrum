@@ -15,6 +15,20 @@ public static class IOHelper
         return $"{GetExecutingDirectory()}\\wwwroot";
     }
 
+    public static void EnsureDirectoryExists(string directoryPath)
+    {
+        var directories = directoryPath.Split('\\');
+        var currentPath = "";
+        foreach (var directory in directories)
+        {
+            currentPath += directory + '\\';
+            if (!Directory.Exists(currentPath))
+            {
+                Directory.CreateDirectory(currentPath);
+            }
+        }
+    }
+
     public static void EnsureDirectoriesExistForFilePath(string path)
     {
         path = path.Replace('/', '\\');

@@ -3,6 +3,7 @@ using System;
 using Flagrum.Web.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Flagrum.Web.Persistence.Migrations
 {
     [DbContext(typeof(FlagrumDbContext))]
-    partial class FlagrumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220627082710_DependenciesManyToMany")]
+    partial class DependenciesManyToMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.5");
@@ -233,9 +235,6 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.Property<string>("Uri")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("VertexLayoutType")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.ToTable("FestivalModelDependencies");
@@ -366,19 +365,6 @@ namespace Flagrum.Web.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Ps4AssetUris");
-                });
-
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.Ps4VertexLayoutTypeMap", b =>
-                {
-                    b.Property<string>("Uri")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("VertexLayoutType")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Uri");
-
-                    b.ToTable("Ps4VertexLayoutTypeMaps");
                 });
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.StatePair", b =>

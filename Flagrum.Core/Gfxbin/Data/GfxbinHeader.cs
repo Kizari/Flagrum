@@ -31,6 +31,11 @@ public class GfxbinHeader
         //     _logger.LogInformation($"Gfxbin Version {Version}");
         // }
 
+        if (Version < 20150713)
+        {
+            var unknown = reader.Read();
+        }
+
         var dependencyCount = reader.ReadMapCount();
 
         for (var _ = 0; _ < dependencyCount; _++)

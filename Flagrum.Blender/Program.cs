@@ -49,6 +49,13 @@ public static class Program
         var reader = new ModelReader(gfxbin, gpubin);
         var model = reader.Read();
 
+        var gmdl2 = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\model_000\nh00_000.gmdl.gfxbin");
+        var gpubin2 = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\model_000\nh00_000.gpubin");
+        reader = new ModelReader(gmdl2, gpubin2);
+        var model2 = reader.Read();
+        var boneTable2 = model2.BoneHeaders.ToDictionary(b => (int)(b.UniqueIndex == 65535 ? 0 : b.UniqueIndex),
+            b => b.Name);
+
         Dictionary<int, string> boneTable;
         if (model.BoneHeaders.Count(b => b.UniqueIndex == ushort.MaxValue) > 1)
         {
@@ -60,6 +67,11 @@ public static class Program
         {
             boneTable = model.BoneHeaders.ToDictionary(b => (int)(b.UniqueIndex == 65535 ? 0 : b.UniqueIndex),
                 b => b.Name);
+        }
+
+        foreach (var (key, value) in boneTable2)
+        {
+            boneTable.TryAdd(key, value);
         }
 
         var meshData = new Gpubin

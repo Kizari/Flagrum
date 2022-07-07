@@ -16,6 +16,8 @@ public class Packer
     private readonly Logger _logger;
     private List<ArchiveFile> _files;
 
+    public List<ArchiveFile> Files => _files;
+
     public Packer()
     {
         _logger = new DeadConsoleLogger();

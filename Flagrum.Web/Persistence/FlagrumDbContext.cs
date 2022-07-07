@@ -9,7 +9,7 @@ namespace Flagrum.Web.Persistence;
 
 public class FlagrumDbContext : DbContext
 {
-    private readonly string _databasePath =
+    private string _databasePath =
         $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\flagrum.db";
 
     public FlagrumDbContext() { }
@@ -27,15 +27,18 @@ public class FlagrumDbContext : DbContext
 
     public SettingsService Settings { get; }
 
+    public DbSet<Ps4VertexLayoutTypeMap> Ps4VertexLayoutTypeMaps { get; set; }
     public DbSet<Ps4ArchiveAsset> Ps4ArchiveAssets { get; set; }
     public DbSet<Ps4AssetUri> Ps4AssetUris { get; set; }
     public DbSet<Ps4ArchiveLocation> Ps4ArchiveLocations { get; set; }
-    public DbSet<FestivalFinalDependency> FestivalFinalDependencies { get; set; }
-    public DbSet<FestivalAllDependency> FestivalAllDependencies { get; set; }
     public DbSet<FestivalMaterialDependency> FestivalMaterialDependencies { get; set; }
     public DbSet<FestivalModelDependency> FestivalModelDependencies { get; set; }
     public DbSet<FestivalSubdependency> FestivalSubdependencies { get; set; }
     public DbSet<FestivalDependency> FestivalDependencies { get; set; }
+    public DbSet<FestivalDependencyFestivalDependency> FestivalDependencyFestivalDependency { get; set; }
+    public DbSet<FestivalDependencyFestivalSubdependency> FestivalDependencyFestivalSubdependency { get; set; }
+    public DbSet<FestivalSubdependencyFestivalModelDependency> FestivalSubdependencyFestivalModelDependency { get; set; }
+    public DbSet<FestivalModelDependencyFestivalMaterialDependency> FestivalModelDependencyFestivalMaterialDependency { get; set; }
     public DbSet<EarcModBackup> EarcModBackups { get; set; }
     public DbSet<EarcMod> EarcMods { get; set; }
     public DbSet<EarcModEarc> EarcModEarcs { get; set; }

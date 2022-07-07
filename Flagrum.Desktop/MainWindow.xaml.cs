@@ -1,4 +1,6 @@
-﻿using System;
+// Hot-Reload
+
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -88,7 +90,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         File.Create(logFile);
-
+        
+        
         try
         {
             CoreWebView2Environment.GetAvailableBrowserVersionString();

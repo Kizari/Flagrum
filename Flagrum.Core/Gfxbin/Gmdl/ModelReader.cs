@@ -36,7 +36,16 @@ public class ModelReader
 
         if (_model.Header.Version >= 20141113)
         {
-            _model.AssetHash = (ulong)_reader.Read();
+            //_model.AssetHash = (ulong)_reader.Read();
+            var assetHash = _reader.Read();
+            if (assetHash is int i)
+            {
+                _model.AssetHash = (ulong)((uint)i);
+            }
+            else
+            {
+                _model.AssetHash = (ulong)assetHash;
+            }
         }
 
         ReadMeshData();
@@ -81,7 +90,12 @@ public class ModelReader
 
             var lodIndex = _reader.Read();
 
-            if (lodIndex is ushort u)
+            if (lodIndex is byte b)
+            {
+                // This is a fix for Platinum Demo models
+                continue;
+            }
+            else if (lodIndex is ushort u)
             {
                 boneHeader.LodIndex = u;
             }

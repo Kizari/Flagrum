@@ -1,7 +1,10 @@
 ﻿@page "/assets"
 @using Flagrum.Web.Persistence.Entities
 @using System.Timers
+@using Flagrum.Core.Ebex.Xmb2
 @using Flagrum.Web.Features.AssetExplorer.Data
+@using System.Text
+@using System.IO
 
 @inject AppStateService AppState
 @inject IWpfService WpfService
@@ -72,6 +75,7 @@
             {
                 var relativePath = Context.GetArchiveRelativeLocationByUri(SelectedItem.Uri);
                 <Hyperlink Uri="@($@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}")" Text="@relativePath"/>
+                <Button Icon="file_download" Text="Export" OnClickAsync="ExportXml"></Button>
             }
         </div>
     </div>
@@ -273,5 +277,20 @@
     public void CallStateHasChanged()
     {
         StateHasChanged();
+    }
+    
+    private async Task ExportXml()
+    {
+        var item = SelectedItem;
+        var defaultName = item.Name[..item.Name.LastIndexOf('.')] + ".xml";
+        var filter = "XML File|*.xml";
+
+        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, path =>
+        {
+            var xmb2 = item.Data();
+            var builder = new StringBuilder();
+            Xmb2Document.Dump(xmb2, builder);
+            File.WriteAllText(path, builder.ToString());
+        });
     }
 }

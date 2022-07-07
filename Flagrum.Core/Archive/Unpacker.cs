@@ -15,6 +15,8 @@ public class Unpacker : IDisposable
     private readonly Stream _stream;
     private List<ArchiveFile> _files;
 
+    public ArchiveHeader Header => _header;
+
     public Unpacker(byte[] archive)
     {
         _stream = new MemoryStream(archive);
@@ -128,7 +130,6 @@ public class Unpacker : IDisposable
 
     public Packer ToPacker()
     {
-        _files ??= ReadFileHeaders().ToList();
         ReadDataForAllFiles();
         var packer = Packer.FromUnpacker(_header, _files);
         Dispose();
@@ -137,6 +138,7 @@ public class Unpacker : IDisposable
 
     public void ReadDataForAllFiles()
     {
+        _files ??= ReadFileHeaders().ToList();
         foreach (var file in _files.Where(file => !file.HasData))
         {
             ReadFileData(file);
@@ -166,6 +168,29 @@ public class Unpacker : IDisposable
         {
             file.SetRawData(buffer);
         }
+    }
+    
+    public byte[] GetReadableDataWithoutCaching(ArchiveFile file)
+    {
+        byte[] buffer;
+
+        lock (_lock)
+        {
+            _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
+            buffer = new byte[file.ProcessedSize];
+            _stream.Read(buffer, 0, (int)file.ProcessedSize);
+        }
+        
+        if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
+        {
+            file.IsDataCompressed = true;
+        }
+        else if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
+        {
+            file.IsDataEncrypted = true;
+        }
+
+        return file.GetReadableData(buffer);
     }
 
     private IEnumerable<ArchiveFile> ReadFileHeaders()

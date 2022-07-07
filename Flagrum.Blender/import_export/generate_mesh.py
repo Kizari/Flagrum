@@ -11,6 +11,8 @@ from ..entities import MeshData, BlenderTextureData
 
 def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table,
                   use_correction_matrix: bool = True):
+    for key in bone_table:
+        print(str(key) + ": " + bone_table[key])
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
         [1, 0, 0],
@@ -121,7 +123,12 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
                     if mesh_data.WeightValues[i][j][k] == 0:
                         continue
 
-                    bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
+                    try:
+                        bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
+                    except:
+                        print("No record found for bone " + str(mesh_data.WeightIndices[i][j][k]))
+                        continue
+                        
                     vertex_group = mesh_object.vertex_groups.get(bone_name)
 
                     if not vertex_group:

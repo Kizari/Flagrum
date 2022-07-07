@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Utilities;
 using Newtonsoft.Json;
 
 namespace Flagrum.Console.Utilities;
@@ -23,10 +24,16 @@ public class FileData
 
 public class FileFinder
 {
-    private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
-    //private const string DataDirectory = @"C:\Modding\Chocomog\Final Fantasy XV - RAW PS4\datas";
+    //private const string DataDirectory =
+    //    @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV (Release)\datas";
+
+    private readonly Dictionary<string, bool> _doneFiles = new();
+    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
+    private const string DataDirectory = @"C:\Modding\Chocomog\Final Fantasy XV - RAW PS4\datas";
 
     private ConcurrentBag<FileData> _map;
+
+    private object _unpackLock = new();
 
     public void CheckFileTypes()
     {
@@ -104,6 +111,42 @@ public class FileFinder
                 }
             }
         }
+    }
+
+    public void UnpackEverything()
+    {
+        System.Console.WriteLine("Unpacking started...");
+        var watch = Stopwatch.StartNew();
+
+        var startDirectory = DataDirectory;
+        Parallel.ForEach(Directory.EnumerateDirectories(startDirectory), UnpackRecursively);
+
+        watch.Stop();
+        System.Console.WriteLine($"Unpacking finished after {watch.ElapsedMilliseconds} milliseconds.");
+    }
+
+    private void UnpackRecursively(string directory)
+    {
+        foreach (var earc in Directory.EnumerateFiles(directory, "*.earc"))
+        {
+            var unpacker = new Unpacker(earc);
+            Parallel.ForEach(unpacker.Files.Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference)), file =>
+            {
+                var outPath = @"E:\PS4_Extract\" + file.RelativePath.Replace('/', '\\');
+                try
+                {
+                    IOHelper.EnsureDirectoriesExistForFilePath(outPath);
+                    var data = unpacker.GetReadableDataWithoutCaching(file);
+                    File.WriteAllBytes(outPath, data);
+                    _doneFiles.Add(outPath, true);
+                }
+                catch { }
+            });
+
+            unpacker.Dispose();
+        }
+
+        Parallel.ForEach(Directory.EnumerateDirectories(directory), UnpackRecursively);
     }
 
     public void FindByQuery(Func<ArchiveFile, bool> condition, Action<string, ArchiveFile> onMatch,
@@ -194,6 +237,28 @@ public class FileFinder
             {
                 var reader = new MaterialReader(file.GetReadableData()).Read();
                 if (reader.Textures.Any(t => t.Path.Contains(query)))
+                {
+                    System.Console.WriteLine(file.Uri);
+                }
+            },
+            true);
+    }
+
+    public static void FindStringInAllFiles(string needle)
+    {
+        FindBytesInAllFiles(Encoding.UTF8.GetBytes(needle));
+    }
+
+    public static void FindBytesInAllFiles(byte[] needle)
+    {
+        var searcher = new BoyerMoore(needle);
+
+        new FileFinder().FindByQuery(file => !file.Uri.EndsWith(".sb")
+                                             && !file.Uri.EndsWith(".tif"),
+            (_, file) =>
+            {
+                var data = file.GetReadableData();
+                if (searcher.Search(data).Any())
                 {
                     System.Console.WriteLine(file.Uri);
                 }

@@ -22,8 +22,8 @@ public enum ArchiveFileFlag
 
 public class ArchiveFile
 {
-    private const ulong KeyMultiplier = 1103515245;
-    private const ulong KeyAdditive = 12345;
+    public const ulong KeyMultiplier = 1103515245;
+    public const ulong KeyAdditive = 12345;
 
     public const uint HeaderSize = 40;
     public const ulong HeaderHash = 14695981039346656037;
@@ -100,8 +100,11 @@ public class ArchiveFile
 
     public byte[] GetReadableData()
     {
-        var buffer = _buffer;
-
+        return GetReadableData(_buffer);
+    }
+    
+    public byte[] GetReadableData(byte[] buffer)
+    {
         if (Key > 0)
         {
             var partialKey = Key * KeyMultiplier + KeyAdditive;
@@ -129,11 +132,11 @@ public class ArchiveFile
 
         if (IsDataCompressed)
         {
-            buffer = DecompressData();
+            buffer = DecompressData(buffer);
         }
         else if (IsDataEncrypted)
         {
-            buffer = Cryptography.Decrypt(_buffer);
+            buffer = Cryptography.Decrypt(buffer);
         }
 
         if (ProcessedSize > Size)
@@ -173,8 +176,18 @@ public class ArchiveFile
         if (!IsDataCompressed && Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
             var compressedData = CompressData(_buffer);
-            ProcessedSize = (uint)compressedData.Length;
-            return compressedData;
+
+            if (compressedData.Length >= _buffer.Length)
+            {
+                Flags &= ~ArchiveFileFlag.Compressed;
+                Key = 0;
+                ProcessedSize = Size;
+            }
+            else
+            {
+                ProcessedSize = (uint)compressedData.Length;
+                return compressedData;
+            }
         }
 
         return _buffer;
@@ -307,7 +320,7 @@ public class ArchiveFile
         return memoryStream.ToArray();
     }
 
-    private byte[] DecompressData()
+    private byte[] DecompressData(byte[] data)
     {
         const int chunkSize = 128 * 1024;
         var chunks = Size / chunkSize;
@@ -318,7 +331,7 @@ public class ArchiveFile
             chunks++;
         }
 
-        using var memoryStream = new MemoryStream(_buffer);
+        using var memoryStream = new MemoryStream(data);
         using var outStream = new MemoryStream();
         using var writer = new BinaryWriter(outStream);
 
@@ -391,6 +404,14 @@ public class ArchiveFile
         else if (RelativePath.EndsWith(".htpk"))
         {
             RelativePath = RelativePath.Replace(".htpk", ".earc");
+        }
+        else if (RelativePath.EndsWith(".max"))
+        {
+            RelativePath = RelativePath.Replace(".max", ".win.mab");
+        }
+        else if (RelativePath.EndsWith(".sax"))
+        {
+            RelativePath = RelativePath.Replace(".sax", ".win.sab");
         }
     }
 }

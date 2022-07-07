@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Flagrum.Core.Gfxbin.Gmdl.Buffering;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using BinaryWriter = Flagrum.Core.Gfxbin.Serialization.BinaryWriter;
 
 namespace Flagrum.Core.Gfxbin.Gmdl;
@@ -110,6 +111,10 @@ public class ModelWriter
                 _writer.WriteVector3(mesh.Aabb.Min);
                 _writer.WriteVector3(mesh.Aabb.Max);
 
+                // Jank workaround for Platinum Demo
+                mesh.OrientedBB ??= new OrientedBB(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f),
+                    new Vector3(0f, 0f, 0f), new Vector3(0, 0, 0));
+                
                 // TODO: Add versioning (see reader)
                 _writer.Write(mesh.IsOrientedBB);
                 _writer.WriteVector3(mesh.OrientedBB.Center);
