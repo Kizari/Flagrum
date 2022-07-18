@@ -21,6 +21,16 @@ public class Ps4EarcPorter
     private readonly SettingsService _pcSettings = new();
     private readonly ConcurrentDictionary<string, string> _existingAssets = new();
     private readonly Dictionary<string, bool> _dependencies = new();
+    private readonly object _packerLock = new();
+
+    public void RunSingleEarc()
+    {
+        using var context = Ps4Utilities.NewContext();
+        var packer = new Packer();
+        packer.Header.Flags = 0;
+        CreateEarcRecursivelySingle(context.FestivalDependencies.First(d => d.Uri == "data://level/dlc_ex/mog/area_ravettrice_mog.ebex"), packer);
+        packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
+    }
     
     public void Run()
     {
@@ -186,6 +196,129 @@ public class Ps4EarcPorter
         IOHelper.EnsureDirectoriesExistForFilePath(outputPath);
         packer.WriteToFile(outputPath);
         _modifiedEarcs.Add(outputPath);
+    }
+    
+    private void CreateEarcRecursivelySingle(FestivalDependency ebex, Packer packer)
+    {
+        lock (ebex)
+        {
+            if (_dependencies.ContainsKey(ebex.Uri))
+            {
+                return;
+            }
+            
+            _dependencies.Add(ebex.Uri, true);
+        }
+        
+        using var context = Ps4Utilities.NewContext();
+        var pcContext = new FlagrumDbContext(_pcSettings);
+    
+        var isDuplicate = pcContext.AssetUris.Any(a => a.Uri == ebex.Uri);
+        if (isDuplicate)
+        {
+            return;
+        }
+    
+        var relativePath = IOHelper.UriToRelativePath(ebex.Uri).Replace(".ebex", ".earc").Replace(".prefab", ".earc");
+        var outputPath = $@"{Ps4PorterConfiguration.OutputDirectory}\{relativePath}";
+        if (File.Exists(outputPath))
+        {
+            System.Console.WriteLine($"[E] File already exists: {outputPath}");
+        }
+    
+        var exml = Ps4Utilities.GetFileByUri(context, ebex.Uri);
+        lock (_packerLock)
+        {
+            packer.AddCompressedFile(ebex.Uri, exml, true);
+        }
+    
+        var children = context.FestivalDependencyFestivalDependency
+            .Where(d => d.ParentId == ebex.Id)
+            .Select(d => d.Child)
+            .ToList();
+        
+        Parallel.ForEach(children, child =>
+        {
+            CreateEarcRecursivelySingle(child, packer);
+        });
+    
+        var referenceDependencies = new Dictionary<string, bool>();
+        var subdependencies = context.FestivalDependencyFestivalSubdependency
+            .Where(d => d.DependencyId == ebex.Id)
+            .Select(d => d.Subdependency)
+            .ToList();
+        
+        foreach (var subdependency in subdependencies)
+        {
+            _assets.TryAdd(subdependency.Uri.ToLower(), true);
+    
+            var referenceUri = GetExistingReferenceUri(pcContext, subdependency.Uri);
+
+            if (referenceUri == null && (subdependency.Uri.EndsWith(".max") || subdependency.Uri.EndsWith(".sax")))
+            {
+                var extension = subdependency.Uri.Split('.').Last().Replace('x', 'b');
+                var path = $@"{Ps4PorterConfiguration.StagingDirectory}\Audio\Output\{Cryptography.HashFileUri64(subdependency.Uri)}.orb.{extension}";
+                if (File.Exists(path))
+                {
+                    referenceUri = subdependency.Uri;
+                }
+            }
+            
+            var reference = referenceUri ?? subdependency.Uri[..subdependency.Uri.LastIndexOf('/')].ToLower() +
+                "/autoexternal.ebex@";
+            referenceDependencies.TryAdd(reference, true);
+
+            var modelDependencies = context.FestivalSubdependencyFestivalModelDependency
+                .Where(s => s.SubdependencyId == subdependency.Id)
+                .Select(s => s.ModelDependency)
+                .ToList();
+            
+            foreach (var modelDependency in modelDependencies)
+            {
+                _assets.TryAdd(modelDependency.Uri.ToLower(), true);
+                var modelReferenceUri = GetExistingReferenceUri(pcContext, modelDependency.Uri);
+                var modelReference = modelReferenceUri ??
+                                     modelDependency.Uri[..modelDependency.Uri.LastIndexOf('/')].ToLower() +
+                                     "/autoexternal.ebex@";
+                referenceDependencies.TryAdd(modelReference, true);
+
+                var materialDependencies = context.FestivalModelDependencyFestivalMaterialDependency
+                    .Where(m => m.ModelDependencyId == modelDependency.Id)
+                    .Select(m => m.MaterialDependency)
+                    .ToList();
+                
+                foreach (var materialDependency in materialDependencies)
+                {
+                    if (materialDependency.Uri.EndsWith(".htpk"))
+                    {
+                        _assets.TryAdd(materialDependency.Uri.ToLower(), true);
+                        referenceDependencies.TryAdd(materialDependency.Uri, true);
+                    }
+                    else
+                    {
+                        _assets.TryAdd(materialDependency.Uri.ToLower(), true);
+                        var materialReferenceUri = GetExistingReferenceUri(pcContext, materialDependency.Uri);
+                        var materialReference = materialReferenceUri ??
+                                                materialDependency.Uri[..materialDependency.Uri.LastIndexOf('/')]
+                                                    .ToLower() +
+                                                "/autoexternal.ebex@";
+                        referenceDependencies.TryAdd(materialReference, true);
+                    }
+                }
+            }
+        }
+    
+        var selfReference = ebex.Uri + "@";
+        foreach (var (uri, _) in referenceDependencies)
+        {
+            lock (_packerLock)
+            {
+                if (!packer.HasFile(uri) && uri != selfReference)
+                {
+                    packer.AddReference(uri, !uri.EndsWith(".htpk"));
+                }
+            }
+        }
     }
     
     private string GetExistingReferenceUri(FlagrumDbContext pcContext, string uri)

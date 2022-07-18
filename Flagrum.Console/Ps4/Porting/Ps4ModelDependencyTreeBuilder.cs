@@ -3,11 +3,13 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Flagrum.Core.Animation;
 using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Gfxbin.Serialization;
 using Flagrum.Core.Vfx;
+using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 
 namespace Flagrum.Console.Ps4.Porting;
@@ -36,6 +38,28 @@ public class Ps4ModelDependencyTreeBuilder
 
             var uri = Vlink.GetVfxUriFromData(data);
             AddSubdependency(uri, dependency);
+        }
+
+        foreach (var dependency in context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".anmgph")))
+        {
+            var data = Ps4Utilities.GetFileByUri(context, dependency.Uri);
+            if (data.Length == 0)
+            {
+                continue;
+            }
+
+            var results = new Dictionary<string, byte[]>();
+            ReadAnimationGraphRecursively(context, dependency.Uri, data, results);
+
+            foreach (var (anmgphUri, anmgphData) in results)
+            {
+                if (anmgphData.Length == 0)
+                {
+                    continue;
+                }
+                
+                AddSubdependency(anmgphUri, dependency);
+            }
         }
 
         context.FestivalDependencyFestivalSubdependency.AddRange(_vfxLinks);
@@ -133,6 +157,38 @@ public class Ps4ModelDependencyTreeBuilder
         context.SaveChanges();
     }
 
+    public void DumpDependenciesToConsole()
+    {
+        using var context = Ps4Utilities.NewContext();
+        var results = new Dictionary<string, byte[]>();
+
+        foreach (var animGraph in context.FestivalSubdependencies.Where(s => s.Uri.EndsWith(".anmgph")))
+        {
+            var data = Ps4Utilities.GetFileByUri(context, animGraph.Uri);
+            ReadAnimationGraphRecursively(context, animGraph.Uri, data, results);
+        }
+
+        foreach (var (uri, data) in results)
+        {
+            if (!uri.EndsWith(".anmgph"))
+            {
+                System.Console.WriteLine(uri);
+            }
+        }
+    }
+
+    private void ReadAnimationGraphRecursively(FlagrumDbContext ps4Context, string uri, byte[] data, Dictionary<string, byte[]> results)
+    {
+        if (results.TryAdd(uri, data))
+        {
+            foreach (var dependency in AnimationGraph.GetDependencies(data))
+            {
+                var innerData = Ps4Utilities.GetFileByUri(ps4Context, dependency);
+                ReadAnimationGraphRecursively(ps4Context, dependency, innerData, results);
+            }
+        }
+    }
+    
     private void AddSubdependency(string uri, FestivalSubdependency subdependency)
     {
         using var context = Ps4Utilities.NewContext();

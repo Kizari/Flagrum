@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Core.Animation.AnimationClip;
 using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Animation;
@@ -741,7 +742,7 @@ public class AnimationModel
         {
             writer.Write(channel.EntriesCount);
             writer.Write(channel.DataOffset);
-            writer.Write(channel.ModelTypeSpecificInfoOffset > 0 ? (ulong)modelTypeSpecificInfoOffset : 0UL);
+            writer.Write(channel.ModelTypeSpecificInfoOffset > 0 ? modelTypeSpecificInfoOffset : 0UL);
             writer.Write(channel.PartMaskStartBitIndex);
             writer.Align(8, 0xFF);
         }

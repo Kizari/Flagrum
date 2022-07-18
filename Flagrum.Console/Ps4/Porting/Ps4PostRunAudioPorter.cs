@@ -178,7 +178,7 @@ public class Ps4PostRunAudioPorter
 
         var unpacker =
             new Unpacker(
-                @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.backup");
+                @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
         var packer = unpacker.ToPacker();
 
         foreach (var uri in missingSounds)

@@ -1,22 +1,90 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+using Flagrum.Console.Ps4;
 using Flagrum.Console.Ps4.Porting;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
+using Flagrum.Core.Animation.AnimationClip;
+using Flagrum.Core.Ebex.Xmb2;
 
-//FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)671714220));
+//FileFinder.FindStringInExml("luchil");
+//return;
+
+// var results = new ConcurrentDictionary<string, string>();
+// new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex"),
+//     (earc, file) =>
+//     {
+//         var data = file.GetReadableData();
+//         var output = new StringBuilder();
+//         Xmb2Document.Dump(data, output);
+//
+//         var xml = output.ToString();
+//         var matches = Regex.Matches(xml, "type=\".+?\"");
+//         //var matches = Regex.Matches(xml, "type=\"enum\">ABILITY_.+?</");
+//         foreach (Match match in matches)
+//         {
+//             results.TryAdd(match.Value, file.Uri);
+//         }
+//     },
+//     true);
+//
+// foreach (var result in results)
+// {
+//     if (result.Key.Contains("SetGameFlagFixId", StringComparison.OrdinalIgnoreCase))
+//     {
+//         Console.WriteLine(result.Key);
+//     }
+// }
+// return;
+
+// new FileFinder().FindByQuery(file => file.Uri == "data://character/um/common/anim/graph/um_020_facial_mog.anmgph",
+//     (earc, file) =>
+//     {
+//         var path = $@"C:\Modding\Chocomog\Testing\AnimationDump\{earc.Replace(":", "").Replace('\\', '-')}";
+//         File.WriteAllBytes(path, file.GetReadableData());
+//     }, 
+//     true);
+
+// using var context = Ps4Utilities.NewContext();
+// var files = Ps4Utilities.GetFilesByUri(context, "data://character/uw/common/anim/graph/uw_011_facial_mog.anmgph");
+// foreach (var (earc, data) in files)
+// {
+//     var path = $@"C:\Modding\Chocomog\Testing\AnimationDump\{earc.Replace('\\', '-')}";
+//     File.WriteAllBytes(path, data);
+// }
+
 //return;
 
 new Ps4Porter().Run();
 return;
 
-var directory = @"C:\Users\Kieran\Downloads\mdl";
-foreach (var gmdl in Directory.GetFiles(directory, "*.gmdl.gfxbin", SearchOption.AllDirectories))
-{
-    PlatinumDemoGmdl.Convert(gmdl);
-}
+// var clip = AnimationClip.FromData(
+//     //File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\um02\um02.amdl"),
+//     //File.ReadAllBytes(@"C:\Modding\EarcMods\TalkBasicFacialTest\talk_basic_facial.ani"));
+//     File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\nh00\nh00.amdl"),
+//     //File.ReadAllBytes(@"C:\Modding\AnimationProject\nh00_basemove\0.ani"));
+//     File.ReadAllBytes(@"C:\Modding\AnimationProject\r_cc_c_lp_0000a.ani"));
+//     //File.ReadAllBytes(@"C:\Users\Kieran\Desktop\r_cc_a2_lp_0000a_facial.ani"));
+// return;
 
-return;
+//FileFinder.FindStringInExml("armiger");
+//return;
+
+//FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)16817550));
+//return;
+
+//
+// var directory = @"C:\Users\Kieran\Downloads\mdl";
+// foreach (var gmdl in Directory.GetFiles(directory, "*.gmdl.gfxbin", SearchOption.AllDirectories))
+// {
+//     PlatinumDemoGmdl.Convert(gmdl);
+// }
+//
+// return;
 
 //
 // foreach (var file in Directory.GetFiles(directory, "*.btex", SearchOption.AllDirectories))

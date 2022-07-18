@@ -23,12 +23,34 @@ public class Ps4Porter
         _settings.GamePath = Ps4PorterConfiguration.GamePath;
         _pcSettings = new SettingsService();
 
+        // using var context = Ps4Utilities.NewContext();
+        // var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
+        // var assets = JsonConvert.DeserializeObject<List<string>>(json)!;
+        //
+        // foreach (var asset in assets.Where(a => a.EndsWith(".anmgph")))
+        // {
+        //     var data = Ps4Utilities.GetFileByUri(context, asset);
+        //     if (AnimationGraph.GetDependencies(data).Any())
+        //     {
+        //         foreach (var dependency in AnimationGraph.GetDependencies(data))
+        //         {
+        //             System.Console.WriteLine(dependency);
+        //         }
+        //     }
+        // }
+        //
+        // return;
+
         //Copy4KPackFromReleaseBuild();
         //return;
 
-        //FileFinder.FindStringInAllFiles("data://sound/resources/05112SE_dungeon_crestholm/jp/dg_pr_door01_A_open.sax");
+        //FileFinder.FindStringInAllFiles("talk_basic_facial.ani");
         //return;
-        //FileFinder.FindStringInExml("ul_tb_g_basea.ebex");
+
+        //FileFinder.FindStringInExml("um20_003_hair00");
+        //return;
+
+        //OutputFileByUri("data://character/um/um20/model_003/materials/um20_003_basic_01_mat.gmtl");
         //return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();
@@ -135,8 +157,8 @@ public class Ps4Porter
         //new Ps4MaterialGenerator().FindStubbornMatches();
         //return;
 
-        OutputFileByUri("data://character/um/common/um.amdl");
-        return;
+        //OutputFileByUri("data://character/um/common/um.amdl");
+        //return;
 
         // var data = File.ReadAllBytes(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe");
         // var results = searcher.Search(data);
@@ -207,21 +229,21 @@ public class Ps4Porter
         // context.SaveChanges();
         // return;
 
-        //RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
+        RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
         RunWithTimer("asset earc cleanup", ResetAssetEarcs);
 
-        //RunWithTimer("earc porter", new Ps4EarcPorter().Run);
-        RunWithTimer("asset porter", new Ps4AssetPorter().Run);
+        RunWithTimer("earc porter", new Ps4EarcPorter().RunSingleEarc);
+        RunWithTimer("asset porter", new Ps4AssetPorter().RunSingleEarc);
 
-        RunWithTimer("weird earc fixer", FixWeirdEarcs);
-        //RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
+        //RunWithTimer("weird earc fixer", FixWeirdEarcs);
+        RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
     }
 
     private static void OutputFileByUri(string uri)
     {
         using var context = Ps4Utilities.NewContext();
         var data = Ps4Utilities.GetFileByUri(context, uri);
-        
+
         if (uri.EndsWith(".ebex") || uri.EndsWith(".prefab"))
         {
             var output = new StringBuilder();

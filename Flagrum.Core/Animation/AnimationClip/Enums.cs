@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using System;
 
-namespace Flagrum.Core.Animation;
+namespace Flagrum.Core.Animation.AnimationClip;
 
 public enum LmETriggerTrackType : ushort
 {
@@ -9,7 +9,8 @@ public enum LmETriggerTrackType : ushort
     eTriggerTrackType_ExampleType_RangeEnd = 0x14,
     eTriggerTrackType_LuminousMessageTriggerTrack_RangeBegin = 0x21,
     eTriggerTrackType_LuminousMessageTriggerTrack_RangeEnd = 0x100,
-    eTriggerTrackType_LuminousAssetTriggerTrack_RangeBegin = 0x1001,
+
+    //eTriggerTrackType_LuminousAssetTriggerTrack_RangeBegin = 0x1001,
     eTriggerTrackType_LuminousAssetTriggerTrack_Anonymous_RangeBegin = 0x1001,
     eTriggerTrackType_LuminousAssetTriggerTrack_Anonymous_RangeEnd = 0x1100,
     eTriggerTrackType_LuminousAssetTriggerTrack_InModel_RangeBegin = 0x1101,
@@ -45,12 +46,16 @@ public enum LmETriggerTrackType : ushort
 
 public enum LmEAnimCustomDataType
 {
+    // 0-3 appear to be for Animation Model
     eCustomUserDataType_SkeletalAnimInfo = 0x0,
     eCustomUserDataType_PhysicsBoneInfo = 0x1,
     eCustomUserDataType_VertexCache_Deprecated = 0x2,
-    eCustomUserDataType_BeginSubAssetItemTypes = 0x3,
+
+    //eCustomUserDataType_BeginSubAssetItemTypes = 0x3,
     eCustomUserDataType_LuminousTriggeredAssetItem_Generic = 0x3,
-    eCustomUserDataType_BeginSubAssetContainerTypes = 0x100,
+
+    // 100+ appears to be for Animation Clip
+    //eCustomUserDataType_BeginSubAssetContainerTypes = 0x100,
     eCustomUserDataType_LuminousAssetTriggerDataCollection = 0x100,
     eCustomUserDataType_EndSubAssetContainerTypes = 0x101,
     eCustomUserDataType_Obsolete_LuminousIK_ModelData = 0x102,
@@ -74,83 +79,33 @@ public enum LmEAnimCustomDataType
     eCustomUserDataType_NumCustomDataTypes = 0x20005
 }
 
-public class AnimationClip
+public enum LmEPackedKeyType
 {
-    public float DurationSeconds { get; set; }
-    public int Id { get; set; }
-    public uint Properties { get; set; }
-    public uint KeyframeFps { get; set; }
-    public float Version { get; set; }
-    public uint CacheTypesCount { get; set; }
-    public uint PartsSizeBlocksCount { get; set; }
-    public short UsersCount { get; set; }
-    public short PlayCount { get; set; }
+    ePackedKeyType_Quat_40 = 0,
+    ePackedKeyType_Quat_48 = 1,
+    ePackedKeyType_Quat_48_Deprecated = 2,
+    ePackedKeyType_Quat_128 = 3,
+    ePackedKeyType_Vector3_48 = 4,
+    ePackedKeyType_Vector3_48_NoScale = 5,
+    ePackedKeyType_Vector3_128 = 6,
+    ePackedKeyType_Vector3_128_NoScale = 7,
+    ePackedKeyType_Num_PK_Types = 8
+}
 
-    public ulong ConstantDataOffset { get; set; }
-    public ulong FrameDataChunkStartPointerArrayOffset { get; set; }
-
-    public byte[] FirstBlock { get; set; }
-
-    public ulong Unknown { get; set; }
-
-    public byte[] SecondBlock { get; set; }
-
-    public static AnimationClip FromData(byte[] data)
+public static class AnimationKeys
+{
+    public static LmEPackedKeyType GetDefaultForRawType(LmERawType type)
     {
-        using var stream = new MemoryStream(data);
-        using var reader = new BinaryReader(stream);
-
-        var clip = new AnimationClip
+        return type switch
         {
-            DurationSeconds = reader.ReadSingle(),
-            Id = reader.ReadInt32(),
-            Properties = reader.ReadUInt32(),
-            KeyframeFps = reader.ReadUInt32(),
-            Version = reader.ReadSingle(),
-            CacheTypesCount = reader.ReadUInt32(),
-            PartsSizeBlocksCount = reader.ReadUInt32(),
-            UsersCount = reader.ReadInt16(),
-            PlayCount = reader.ReadInt16(),
-            ConstantDataOffset = reader.ReadUInt64(),
-            FrameDataChunkStartPointerArrayOffset = reader.ReadUInt64()
+            LmERawType.eRawType_Quaternion => LmEPackedKeyType.ePackedKeyType_Quat_48_Deprecated,
+            LmERawType.eRawType_UncompressedVector3 => LmEPackedKeyType.ePackedKeyType_Vector3_128,
+            LmERawType.eRawType_Vector3_Range0 => LmEPackedKeyType.ePackedKeyType_Vector3_48,
+            LmERawType.eRawType_Vector3_Range1 => LmEPackedKeyType.ePackedKeyType_Vector3_48,
+            LmERawType.eRawType_Vector3_Range2 => LmEPackedKeyType.ePackedKeyType_Vector3_48,
+            LmERawType.eRawType_Vector3_NoScale => LmEPackedKeyType.ePackedKeyType_Vector3_48_NoScale,
+            LmERawType.eRawType_Num_Raw_Types => throw new ArgumentOutOfRangeException(nameof(type), type, null),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
         };
-
-        var firstBlockSize = clip.FrameDataChunkStartPointerArrayOffset - (ulong)stream.Position - 8;
-        clip.FirstBlock = new byte[firstBlockSize];
-        reader.Read(clip.FirstBlock);
-
-        stream.Seek(6, SeekOrigin.Current);
-
-        var number = reader.ReadUInt16();
-        clip.Unknown = number;
-
-        var secondBlockSize = stream.Length - stream.Position;
-        clip.SecondBlock = new byte[secondBlockSize];
-        reader.Read(clip.SecondBlock);
-
-        return clip;
-    }
-
-    public static byte[] ToData(AnimationClip clip)
-    {
-        using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
-
-        writer.Write(clip.DurationSeconds);
-        writer.Write(clip.Id);
-        writer.Write(clip.Properties);
-        writer.Write(clip.KeyframeFps);
-        writer.Write(clip.Version);
-        writer.Write(clip.CacheTypesCount);
-        writer.Write(clip.PartsSizeBlocksCount);
-        writer.Write(clip.UsersCount);
-        writer.Write(clip.PlayCount);
-        writer.Write(clip.ConstantDataOffset);
-        writer.Write(clip.FrameDataChunkStartPointerArrayOffset);
-        writer.Write(clip.FirstBlock);
-        writer.Write(clip.Unknown);
-        writer.Write(clip.SecondBlock);
-
-        return stream.ToArray();
     }
 }

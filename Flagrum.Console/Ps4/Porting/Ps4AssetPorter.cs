@@ -25,114 +25,37 @@ public class Ps4AssetPorter
 
     private readonly SettingsService _releaseSettings = new() {GamePath = Ps4PorterConfiguration.ReleaseGamePath};
 
-    private readonly string[] animations =
-    {
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c01_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c02_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c03_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c04_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c05_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c06_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c07_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c08_facial.ani",
-        // "data://character/nh/nh00/anim/clip/quest/qt_holi_1000_ev000/us/qt_holi_1000_ev000_nh00_c09_facial.ani",
-        // "data://character/ds/ds41/anm/clip/ds41_000.ani",
-        // "data://character/ds/ds43/anm/clip/ds43_000_hit.ani",
-        // "data://character/ds/ds32/anim/clip/ds32_000_hit.ani",
-        // "data://character/ds/ds41/anm/clip/ds41_000_hit.ani",
-        // "data://character/ds/ds32/anim/clip/ds32_000_dn.ani",
-        // "data://character/ds/ds35/anm/clip/ds35_000.ani",
-        // "data://character/ds/ds44/anm/clip/ds44_000_hit.ani",
-        // "data://character/ds/ds42/anm/clip/ds42_000.ani",
-        // "data://character/ds/ds42/anm/clip/ds42_000_hit.ani",
-        // "data://character/ds/ds30/anim/clip/base/ds30_000_hit01.ani",
-        // "data://character/ds/ds40/anm/clip/ds40_000_hit.ani",
-        // "data://character/ds/ds43/anm/clip/ds43_000.ani",
-        // "data://character/ds/ds33/anm/clip/ds33_000.ani",
-        // "data://character/ds/ds32/anim/clip/ds32_000_up.ani",
-        // "data://character/ds/ds44/anm/clip/ds44_000.ani",
-        // "data://character/ds/ds36/anim/clip/ds36_fall.ani",
-        // "data://character/ds/ds30/anim/clip/base/ds30_000_up01.ani",
-        // "data://character/ds/ds34/anm/clip/ds34_000.ani",
-        // "data://character/ds/ds30/anim/clip/base/ds30_000_dn01.ani",
-        // "data://character/ds/ds40/anm/clip/ds40_000.ani",
-        // "data://character/ds/ds31/anim/clip/ds31_000.ani",
-        // "data://character/uw/common/anim/clip/town/f_i_talkc_f_00a_lop.ani",
-
-        // This one works
-        // "data://character/um/common/anim/clip/town/f_i_greetc_f_00a_rtn.ani",
-
-
-        // // Not sure which of these work
-        // "data://character/um/common/anim/clip/town/alt_i_cointoss_f_00a_rtn.ani",
-        // "data://character/um/common/anim/clip/town/alt_i_shopping_oldcouplea_f_00a_lop.ani",
-        // "data://character/um/common/anim/clip/town/alt_i_cosmog1_f_00a_rtn.ani",
-        // "data://character/um/common/anim/clip/facial/talk_smile_facial.ani",
-        // "data://character/um/common/anim/clip/town/in_i_drinkjetty1_f_00a_rtn.ani",
-        // "data://character/um/common/anim/clip/town/alt_i_cosmog1_f_00a_lop.ani",
-        // "data://character/um/common/anim/clip/town/in_i_drinkjetty1_f_00a_lop.ani",
-        // "data://character/um/common/anim/clip/town/alt_i_cointoss_f_00a_sta.ani",
-        // "data://character/um/common/anim/clip/town/hh_i_takkawipecounter_f_01a_rtn.ani",
-        // "data://character/um/common/anim/clip/town/alt_i_cosmogdance0_f_00a_rtn.ani",
-        // "data://character/um/common/anim/clip/quest/newyear_alt/alt_i_search_f_00a_lop.ani",
-        // "data://character/um/common/anim/clip/town/alt_i_cosmog0_f_00a_rtn.ani",
-        // "data://character/um/common/anim/clip/town/f_i_idlec_f_01a_sta.ani",
-        // "data://character/um/common/anim/clip/town/in_i_coschocobopose_f_00a_rtn.ani",
-        //
-        // // This one does NOT work
-        //"data://character/um/common/anim/clip/facial/talk_basic_facial.ani"
-
-
-        // "data://character/uc/common/anim/clip/quest/newyear_alt/alt_i_idleballoon_f_00a_lop.ani",
-        // "data://character/uw/common/anim/clip/town/a_w_dodgereaction_f_00a_rtn.ani",
-        // "data://character/uw/common/anim/clip/town/alt_chr_lobby_ladies_f_00c_lop.ani",
-        // "data://character/nh/nh00/anim/clip/quest/world_qt_holi_1000/alt_chr_actfes_f_00a_rtn.ani",
-        // "data://character/sm/sm05/anim/clip/platinum/vsi_sit_lp.ani",
-        "data://character/uw/common/anim/clip/facial/talk_basic_facial.ani"
-        // "data://character/nh/nh00/anim/clip/town/alt_i_cointoss_f_00a_lop.ani",
-        // "data://character/nh/nh00/anim/clip/quest/world_qt_holi_1000/alt_chr_idlefes_f_00a_lop.ani",
-        // "data://character/uw/common/anim/clip/town/f_i_greetb_f_00a_rtn.ani",
-        // "data://character/nh/nh00/anim/clip/quest/newyear_alt/alt_i_catch_f_00a_end.ani",
-        // "data://character/sm/sm05/anim/clip/retarget_cat/vsi_sit_ed.ani",
-        // "data://character/uw/common/anim/clip/town/f_i_familya_f_00a_lop.ani",
-        // "data://character/nh/nh00/anim/clip/quest/newyear_alt/alt_i_catch_f_00a_sta.ani",
-        // "data://character/sm/sm05/anim/clip/quest/common/qt_holi_1000_ev900_sm05_01_lp.ani",
-        // "data://character/nh/nh00/anim/clip/quest/world_qt_holi_1000/alt_chr_actfes_f_01a_rtn.ani",
-        // "data://character/uc/common/anim/clip/quest/newyear_alt/alt_i_cry_f_00a_lop.ani",
-        // "data://character/uw/common/anim/clip/town/alt_chr_lobby_ladies_f_00b_lop.ani",
-        // "data://character/nh/nh00/anim/clip/town/alt_i_cointosssuccess_f_00a_rtn.ani",
-        // "data://character/sm/sm05/anim/clip/quest/common/qt_holi_1000_ev900_sm05_01_lp_a.ani",
-        // "data://character/sm/sm05/anim/clip/retarget_cat/vsi_sit_st.ani",
-        // "data://character/uw/common/anim/clip/town/alt_chr_lobby_ladies_f_00a_lop.ani",
-        // "data://character/sm/sm05/anim/clip/quest/common/qt_holi_1000_ev900_sm05_01_ac.ani",
-        // "data://character/nh/nh00/anim/clip/town/alt_i_cointossthrow_f_00a_rtn.ani",
-        // "data://character/uw/common/anim/clip/town/alt_i_photograph_couple_f_00a_lop.ani",
-        // "data://character/uw/common/anim/clip/town/alt_i_cointoss_f_00a_rtn.ani",
-        // "data://character/nh/nh00/anim/clip/quest/newyear_alt/alt_i_catch_f_00a_lop.ani",
-        // "data://character/nh/nh00/anim/clip/town/alt_i_cointossmiss_f_01a_rtn.ani",
-        // "data://character/uw/common/anim/clip/town/f_i_talkpaird_f_00b_lop.ani",
-        // "data://character/nh/nh00/anim/clip/town/in_i_drinkjetty1_f_00a_rtn.ani",
-        // "data://character/uw/common/anim/clip/facial/talk_smile_facial.ani",
-        // "data://character/uw/common/anim/clip/town/alt_i_cointoss_f_00a_sta.ani",
-        // "data://character/uc/common/anim/clip/town/f_i_familya_f_00a_lop.ani",
-        // "data://character/nh/nh00/anim/clip/town/in_i_coschocobopose_f_00a_rtn.ani",
-        // "data://character/nh/nh00/anim/clip/quest/newyear_alt/alt_i_talkchild_f_00a_rtn.ani",
-        // "data://character/uw/common/anim/clip/town/f_i_talkpaird_f_00a_sta.ani",
-        // "data://character/nh/nh00/anim/clip/town/alt_i_cointoss_f_00a_sta.ani",
-        // "data://character/ux/common/anim/clip/town/alt_i_shopping_oldcouplea_f_00a_lop.ani",
-        // "data://character/uy/common/anim/clip/town/alt_i_shopping_oldcouplea_f_00a_lop.ani",
-        // "data://character/nh/nh09/anim/clip/basic_move/f_i_idle_f_0000a.ani",
-        // "data://character/nh/nh10/anim/clip/basic_move/f_i_idle_f_0000a.ani",
-        // "data://character/ma/ma05/anim/clip/base/idl_base_lp.ani",
-        // "data://environment/altissia/town_temporary/anim/fishtest.ani"
-    };
-
     //private readonly ConcurrentDictionary<VertexLayoutType, byte[]> _materialTemplates = new();
     //private readonly ConcurrentDictionary<string, VertexLayoutType> _materialMap = new();
     private ConcurrentDictionary<string, string> _materialMap;
     private byte[] _materialTemplate;
+    private readonly object _packerLock = new();
 
-    public void Run()
+    private List<string> animationGraphs = new List<string>()
+    {
+        // These work
+        "data://character/uw/common/anim/graph/uw_facial_mog_ref.anmgph",
+        "data://character/uw/common/anim/graph/uw_facial_base_mog.anmgph",
+        "data://character/um/common/anim/graph/um_04_401_facial_mog.anmgph",
+        "data://character/ux/common/anim/graph/ux_facial_mog_ref.anmgph",
+        "data://character/uw/common/anim/graph/uw_011_facial_mog.anmgph",
+        "data://character/um/common/anim/graph/um_05_101_facial_mog.anmgph",
+        "data://character/uc/common/anim/graph/uc_010_facial_mog.anmgph",
+        "data://character/um/common/anim/graph/um_100_facial_mog.anmgph",
+        "data://character/ux/common/anim/graph/ux_05_110_facial_mog.anmgph",
+        "data://character/ux/common/anim/graph/ux_010_facial_mog.anmgph",
+        "data://character/uy/common/anim/graph/uy_facial_mog.anmgph",
+        "data://character/uw/common/anim/graph/uw_facial_mog.anmgph",
+        
+        // Does not work
+        //"data://character/um/common/anim/graph/um_020_facial_mog.anmgph",
+        //"data://character/uw/common/anim/graph/uw_020_facial_mog.anmgph",
+        //"data://character/uw/common/anim/graph/uw_010_facial_mog.anmgph",
+        //"data://character/uy/common/anim/graph/uy_facial_mog_ref.anmgph"
+        
+    };
+    
+    public void RunSingleEarc()
     {
         using var context = Ps4Utilities.NewContext();
         var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
@@ -148,8 +71,139 @@ public class Ps4AssetPorter
             _materialMap.TryAdd(uri1, uri2);
         }
 
+        var usAnis = assets
+            .Where(a => a.EndsWith(".ani") && a.Contains("/jp/"))
+            .Select(a => a.Replace("/jp/", "/us/"))
+            .ToList();
+
+        assets.AddRange(usAnis);
+
+        var earcs = new Dictionary<string, List<string>>();
+        foreach (var uri in assets)
+        {
+            var fixedUri = uri.Replace('\\', '/');
+            var folder = fixedUri[..fixedUri.LastIndexOf('/')];
+            earcs.TryGetValue(folder, out var list);
+            if (list == null)
+            {
+                list = new List<string>();
+                earcs.Add(folder, list);
+            }
+
+            list.Add(fixedUri);
+        }
+
+        var unpacker =
+            new Unpacker(
+                @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
+        var packer = unpacker.ToPacker();
+
+        Parallel.ForEach(earcs, kvp =>
+        {
+            var (folder, uris) = kvp;
+            var earcPath =
+                $@"{Ps4PorterConfiguration.OutputDirectory}\{IOHelper.UriToRelativePath(folder)}\autoexternal.earc";
+
+            foreach (var uri in uris)
+            {
+                if (uri.EndsWith(".htpk"))
+                {
+                    var htpkPacker = new Packer();
+                    htpkPacker.Header.Flags = 0;
+
+                    var htpkFolder = uri[..uri.LastIndexOf('/')];
+                    var sourceimagesFolder = htpkFolder[..htpkFolder.LastIndexOf('/')] + "/sourceimages";
+
+                    if (earcs.ContainsKey(sourceimagesFolder))
+                    {
+                        var htpk = Encoding.UTF8.GetBytes(string.Join(' ', earcs[sourceimagesFolder]));
+
+                        htpkPacker.AddReference($"{sourceimagesFolder}/autoexternal.ebex@", true);
+                        htpkPacker.AddAutoloadFile(uri.Replace(".htpk", ".autoext"), htpk);
+
+                        var htpkPath =
+                            $@"{Ps4PorterConfiguration.OutputDirectory}\{IOHelper.UriToRelativePath(uri).Replace(".htpk", ".earc")}";
+                        IOHelper.EnsureDirectoriesExistForFilePath(htpkPath);
+                        htpkPacker.WriteToFile(htpkPath);
+                        _modifiedEarcs2.Add(htpkPath);
+                    }
+                }
+                else
+                {
+                    foreach (var (finalUri, data, isReference) in GetConvertedAssets(uri))
+                    {
+                        lock (_packerLock)
+                        {
+                            if (!packer.HasFile(finalUri))
+                            {
+                                if (isReference)
+                                {
+                                    if (data == null)
+                                    {
+                                        packer.AddReference(finalUri, true);
+                                    }
+                                    else
+                                    {
+                                        var directPath = uri.Replace("data://", "").Replace('/', '\\');
+                                        if (!uri.EndsWith(".bk2"))
+                                        {
+                                            directPath = directPath.Insert(directPath.LastIndexOf('.'), ".win");
+                                            directPath = directPath[..^1] + 'b'; // Change sax/max to sab/mab
+                                        }
+
+                                        directPath = Ps4PorterConfiguration.OutputDirectory + '\\' + directPath;
+                                        IOHelper.EnsureDirectoriesExistForFilePath(directPath);
+                                        File.WriteAllBytes(directPath, data);
+                                    }
+                                }
+                                else
+                                {
+                                    packer.AddCompressedFile(finalUri, data, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
+    }
+    
+    public void Run()
+    {
+        using var context = Ps4Utilities.NewContext();
+        var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
+        var assets = JsonConvert.DeserializeObject<List<string>>(json)!;
+
+        json = File.ReadAllText($@"{Ps4PorterConfiguration.StagingDirectory}\material_map.json");
+        _materialMap = JsonConvert.DeserializeObject<ConcurrentDictionary<string, string>>(json)!;
+
+        json = File.ReadAllText($@"{Ps4PorterConfiguration.StagingDirectory}\material_map2.json");
+        var materialMap2 = JsonConvert.DeserializeObject<ConcurrentDictionary<string, string>>(json)!;
+        foreach (var (uri1, uri2) in materialMap2)
+        {
+            _materialMap[uri1] = uri2;
+        }
+        
+        var unpacker =
+            new Unpacker(
+                @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
+        var packer = unpacker.ToPacker();
+
+        foreach (var asset in assets.Where(a => a.EndsWith(".anmgph")))
+        {
+            if (!packer.HasFile(asset))
+            {
+                var data = Ps4Utilities.GetFileByUri(context, asset);
+                packer.AddCompressedFile(asset, data, true);
+            }
+        }
+        
+        packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
+
         //var allAnis = JsonConvert.DeserializeObject<List<string>>(json)!.Where(a => a.EndsWith(".ani")).ToList();
-        assets = assets //.Where(a => !a.EndsWith(".anmgph"))// && (!a.EndsWith(".ani") || animations.Contains(a)))
+        assets = assets.Where(a => !a.EndsWith(".anmgph"))// || animationGraphs.Contains(a)) // && (!a.EndsWith(".ani") || animations.Contains(a)))
             .ToList();
 
         var usAnis = assets
@@ -503,6 +557,11 @@ public class Ps4AssetPorter
             //     }
             //
             //     data = pcContext.GetFileByUri(sample);
+            // }
+            // else if (uri.EndsWith(".ani"))
+            // {
+            //     data = File.ReadAllBytes(@"C:\Modding\EarcMods\TalkBasicFacialTest\talk_basic_facial_modified.ani");
+            //     //data = File.ReadAllBytes(@"C:\Users\Kieran\Desktop\r_cc_c_lp_um02_410_0200a_facial.ani");
             // }
 
             if (uri.EndsWith(".swf"))
