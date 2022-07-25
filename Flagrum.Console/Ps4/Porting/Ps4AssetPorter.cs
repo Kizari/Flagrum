@@ -100,9 +100,7 @@ public class Ps4AssetPorter
 
         Parallel.ForEach(earcs, kvp =>
         {
-            var (folder, uris) = kvp;
-            var earcPath =
-                $@"{Ps4PorterConfiguration.OutputDirectory}\{IOHelper.UriToRelativePath(folder)}\autoexternal.earc";
+            var (_, uris) = kvp;
 
             foreach (var uri in uris)
             {
@@ -117,15 +115,7 @@ public class Ps4AssetPorter
                     if (earcs.ContainsKey(sourceimagesFolder))
                     {
                         var htpk = Encoding.UTF8.GetBytes(string.Join(' ', earcs[sourceimagesFolder]));
-
-                        htpkPacker.AddReference($"{sourceimagesFolder}/autoexternal.ebex@", true);
-                        htpkPacker.AddAutoloadFile(uri.Replace(".htpk", ".autoext"), htpk);
-
-                        var htpkPath =
-                            $@"{Ps4PorterConfiguration.OutputDirectory}\{IOHelper.UriToRelativePath(uri).Replace(".htpk", ".earc")}";
-                        IOHelper.EnsureDirectoriesExistForFilePath(htpkPath);
-                        htpkPacker.WriteToFile(htpkPath);
-                        _modifiedEarcs2.Add(htpkPath);
+                        packer.AddAutoloadFile(uri.Replace(".htpk", ".autoext"), htpk);
                     }
                 }
                 else
@@ -190,6 +180,13 @@ public class Ps4AssetPorter
             new Unpacker(
                 @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
         var packer = unpacker.ToPacker();
+        
+        var usAnis = assets
+            .Where(a => a.EndsWith(".ani") && a.Contains("/jp/"))
+            .Select(a => a.Replace("/jp/", "/us/"))
+            .ToList();
+
+        assets.AddRange(usAnis);
 
         foreach (var asset in assets.Where(a => a.EndsWith(".anmgph")))
         {
@@ -205,13 +202,6 @@ public class Ps4AssetPorter
         //var allAnis = JsonConvert.DeserializeObject<List<string>>(json)!.Where(a => a.EndsWith(".ani")).ToList();
         assets = assets.Where(a => !a.EndsWith(".anmgph"))// || animationGraphs.Contains(a)) // && (!a.EndsWith(".ani") || animations.Contains(a)))
             .ToList();
-
-        var usAnis = assets
-            .Where(a => a.EndsWith(".ani") && a.Contains("/jp/"))
-            .Select(a => a.Replace("/jp/", "/us/"))
-            .ToList();
-
-        assets.AddRange(usAnis);
 
         // var armatures = assets.Where(a => a.EndsWith(".amdl")).Select(a => a[..a.LastIndexOf('/')]).ToList();
         // foreach (var armature in armatures)
@@ -538,7 +528,7 @@ public class Ps4AssetPorter
                 data = AnimationModel.ToPC(data);
             }
 
-            // if (uri.EndsWith(".ani") && !animations.Contains(uri))
+            // if (uri.EndsWith(".ani") && uri.Contains("/nh00/"))
             // {
             //     //var relativePath = uri.Replace("data://", "").Replace('/', '\\');
             //     //var relativeEarcPath = relativePath[..relativePath.LastIndexOf('/')] + "\\autoexternal.earc";

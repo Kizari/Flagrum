@@ -26,7 +26,7 @@ public static class Ps4Utilities
         }
     }
 
-    public static byte[] GetFileByUri(FlagrumDbContext context, string uri)
+    public static byte[] GetFileByUri(FlagrumDbContext context, string uri, bool patch2Only = false)
     {
         uri = uri.ToLower();
 
@@ -40,6 +40,8 @@ public static class Ps4Utilities
             .Select(a => a.Ps4ArchiveLocation.Path)
             .ToList();
 
+        var hasNonPatch2Data = false;
+        
         foreach (var earcRelativePath in earcRelativePaths)
         {
             Unpacker unpacker;
@@ -55,13 +57,21 @@ public static class Ps4Utilities
             }
 
             var data = unpacker.UnpackReadableByUri(uri);
+            
             if (data.Length > 0 && !(data[0] == 100 && data[1] == 101))
             {
-                return data;
+                if (patch2Only && !earcRelativePath.Contains(@"CUSA01633-patch_115\CUSA01633-patch\patch\patch2"))
+                {
+                    hasNonPatch2Data = true;
+                }
+                else
+                {
+                    return data;
+                }
             }
         }
-        
-        return Array.Empty<byte>();
+
+        return hasNonPatch2Data ? new byte[] {0x00} : Array.Empty<byte>();
     }
     
     public static IEnumerable<(string Earc, byte[] Data)> GetFilesByUri(FlagrumDbContext context, string uri)

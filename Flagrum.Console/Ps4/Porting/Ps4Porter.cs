@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Utilities;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
@@ -22,6 +25,9 @@ public class Ps4Porter
     {
         _settings.GamePath = Ps4PorterConfiguration.GamePath;
         _pcSettings = new SettingsService();
+        
+        //DumpNoctisAnimations();
+        //return;
 
         // using var context = Ps4Utilities.NewContext();
         // var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
@@ -47,10 +53,10 @@ public class Ps4Porter
         //FileFinder.FindStringInAllFiles("talk_basic_facial.ani");
         //return;
 
-        //FileFinder.FindStringInExml("um20_003_hair00");
+        //FileFinder.FindStringInExml("whistle");
         //return;
 
-        //OutputFileByUri("data://character/um/um20/model_003/materials/um20_003_basic_01_mat.gmtl");
+        //OutputFileByUri("data://character/um/common/um.amdl");
         //return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();
@@ -229,14 +235,81 @@ public class Ps4Porter
         // context.SaveChanges();
         // return;
 
-        RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
+        //RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
         RunWithTimer("asset earc cleanup", ResetAssetEarcs);
 
-        RunWithTimer("earc porter", new Ps4EarcPorter().RunSingleEarc);
-        RunWithTimer("asset porter", new Ps4AssetPorter().RunSingleEarc);
+        //RunWithTimer("earc porter", new Ps4EarcPorter().Run);
+        RunWithTimer("asset porter", new Ps4AssetPorter().Run);
 
-        //RunWithTimer("weird earc fixer", FixWeirdEarcs);
-        RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
+        RunWithTimer("weird earc fixer", FixWeirdEarcs);
+        //RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
+    }
+
+    private void BuildModFromFolder()
+    {
+        using var context = new FlagrumDbContext(_pcSettings);
+        var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\AnimationDump\hashTable.json");
+        var hashTable = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json)!;
+
+        var mod = new EarcMod
+        {
+            Name = "Noctis PS4 Animations",
+            Author = "Kizari",
+            Description = "Replaces Noctis' animations with the PS4 equivalents.",
+            IsActive = false
+        };
+
+        foreach (var (hash, uri) in hashTable)
+        {
+            var earcPath = context.AssetUris
+                .Where(a => a.Uri == uri)
+                .Select(a => a.ArchiveLocation.Path)
+                .FirstOrDefault();
+
+            if (earcPath == null)
+            {
+                continue;
+            }
+
+            var earc = mod.Earcs.FirstOrDefault(e => e.EarcRelativePath == earcPath);
+            if (earc == null)
+            {
+                earc = new EarcModEarc
+                {
+                    EarcRelativePath = earcPath
+                };
+                
+                mod.Earcs.Add(earc);
+            }
+            
+            earc.Replacements.Add(new EarcModReplacement
+            {
+                Uri = uri,
+                ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\AnimationDump\{hash}",
+                Type = EarcChangeType.Replace
+            });
+        }
+
+        context.Add(mod);
+        context.SaveChanges();
+    }
+
+    private static void DumpNoctisAnimations()
+    {
+        var hashTable = new Dictionary<ulong, string>();
+
+        using var context = Ps4Utilities.NewContext();
+        foreach (var asset in context.Ps4AssetUris.Where(a =>
+                     a.Uri.Contains("/nh00/") && (/*a.Uri.EndsWith(".ani") || a.Uri.EndsWith(".pka") ||*/ a.Uri.EndsWith(".amdl"))))
+        {
+            var hash = Cryptography.HashFileUri64(asset.Uri);
+            hashTable.Add(hash, asset.Uri);
+
+            var data = Ps4Utilities.GetFileByUri(context, asset.Uri);
+            File.WriteAllBytes(@$"C:\Modding\Chocomog\Testing\AnimationDump\{hash}", AnimationModel.ToPC(data));
+        }
+        
+        //File.WriteAllText(@"C:\Modding\Chocomog\Testing\AnimationDump\hashTable.json", JsonConvert.SerializeObject(hashTable));
     }
 
     private static void OutputFileByUri(string uri)

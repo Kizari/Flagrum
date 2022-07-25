@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Flagrum.Console.Ps4;
@@ -10,36 +11,62 @@ using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Animation.AnimationClip;
 using Flagrum.Core.Ebex.Xmb2;
+using Newtonsoft.Json;
+
+//FileFinder.FindStringInAllFiles("ALTI_MOG_FES_INTER_MOOGLE");
+//FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17083250));
+//return;
+
+// using var context = Ps4Utilities.NewContext();
+// var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
+// var assets = JsonConvert.DeserializeObject<List<string>>(json)!;
+//
+// foreach (var asset in assets.Where(a => a.EndsWith(".ani")))
+// {
+//     var animation = Ps4Utilities.GetFileByUri(context, asset);
+//     if (animation.Length > 0)
+//     {
+//         File.WriteAllBytes($@"C:\Modding\Chocomog\Testing\AnimationDump\{asset.Split('/').Last()}", animation);
+//     }
+// }
+//
+// return;
 
 //FileFinder.FindStringInExml("luchil");
 //return;
 
-// var results = new ConcurrentDictionary<string, string>();
-// new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex"),
-//     (earc, file) =>
-//     {
-//         var data = file.GetReadableData();
-//         var output = new StringBuilder();
-//         Xmb2Document.Dump(data, output);
-//
-//         var xml = output.ToString();
-//         var matches = Regex.Matches(xml, "type=\".+?\"");
-//         //var matches = Regex.Matches(xml, "type=\"enum\">ABILITY_.+?</");
-//         foreach (Match match in matches)
-//         {
-//             results.TryAdd(match.Value, file.Uri);
-//         }
-//     },
-//     true);
-//
-// foreach (var result in results)
-// {
-//     if (result.Key.Contains("SetGameFlagFixId", StringComparison.OrdinalIgnoreCase))
-//     {
-//         Console.WriteLine(result.Key);
-//     }
-// }
-// return;
+var results = new ConcurrentDictionary<string, List<string>>();
+new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+    (earc, file) =>
+    {
+        var data = file.GetReadableData();
+        var output = new StringBuilder();
+        Xmb2Document.Dump(data, output);
+
+        var xml = output.ToString();
+        var matches = Regex.Matches(xml, "^.+?um20_002.+?$", RegexOptions.Multiline);
+
+        if (matches.Any())
+        {
+            var list = new List<string>();
+            results.TryAdd(file.Uri, list);
+            foreach (Match match in matches)
+            {
+                list.Add(match.Value);
+            }
+        }
+    },
+    true);
+
+foreach (var (uri, list) in results)
+{
+    Console.WriteLine("\n" + uri);
+    foreach (var match in list)
+    {
+        Console.WriteLine(match);
+    }
+}
+return;
 
 // new FileFinder().FindByQuery(file => file.Uri == "data://character/um/common/anim/graph/um_020_facial_mog.anmgph",
 //     (earc, file) =>
@@ -48,6 +75,14 @@ using Flagrum.Core.Ebex.Xmb2;
 //         File.WriteAllBytes(path, file.GetReadableData());
 //     }, 
 //     true);
+
+// new FileFinder().FindByQuery(file => file.Uri.Contains("altc_mog_kenny", StringComparison.OrdinalIgnoreCase),
+//     (earc, file) =>
+//     {
+//         Console.WriteLine($"{file.Uri} - {earc}");
+//     }, 
+//     false);
+// return;
 
 // using var context = Ps4Utilities.NewContext();
 // var files = Ps4Utilities.GetFilesByUri(context, "data://character/uw/common/anim/graph/uw_011_facial_mog.anmgph");

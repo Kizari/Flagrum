@@ -214,24 +214,26 @@ public class Ps4EarcPorter
         var pcContext = new FlagrumDbContext(_pcSettings);
     
         var isDuplicate = pcContext.AssetUris.Any(a => a.Uri == ebex.Uri);
+
         if (isDuplicate)
         {
+            if (ebex.Uri != "data://level/dlc_ex/mog/area_ravettrice_mog.ebex")
+            {
+                lock (_packerLock)
+                {
+                    packer.AddReference(ebex.Uri + "@", true);
+                }
+            }
+
             return;
         }
-    
-        var relativePath = IOHelper.UriToRelativePath(ebex.Uri).Replace(".ebex", ".earc").Replace(".prefab", ".earc");
-        var outputPath = $@"{Ps4PorterConfiguration.OutputDirectory}\{relativePath}";
-        if (File.Exists(outputPath))
-        {
-            System.Console.WriteLine($"[E] File already exists: {outputPath}");
-        }
-    
+        
         var exml = Ps4Utilities.GetFileByUri(context, ebex.Uri);
         lock (_packerLock)
         {
             packer.AddCompressedFile(ebex.Uri, exml, true);
         }
-    
+        
         var children = context.FestivalDependencyFestivalDependency
             .Where(d => d.ParentId == ebex.Id)
             .Select(d => d.Child)
@@ -263,10 +265,11 @@ public class Ps4EarcPorter
                     referenceUri = subdependency.Uri;
                 }
             }
-            
-            var reference = referenceUri ?? subdependency.Uri[..subdependency.Uri.LastIndexOf('/')].ToLower() +
-                "/autoexternal.ebex@";
-            referenceDependencies.TryAdd(reference, true);
+
+            if (referenceUri != null)
+            {
+                referenceDependencies.TryAdd(referenceUri, true);
+            }
 
             var modelDependencies = context.FestivalSubdependencyFestivalModelDependency
                 .Where(s => s.SubdependencyId == subdependency.Id)
@@ -277,10 +280,10 @@ public class Ps4EarcPorter
             {
                 _assets.TryAdd(modelDependency.Uri.ToLower(), true);
                 var modelReferenceUri = GetExistingReferenceUri(pcContext, modelDependency.Uri);
-                var modelReference = modelReferenceUri ??
-                                     modelDependency.Uri[..modelDependency.Uri.LastIndexOf('/')].ToLower() +
-                                     "/autoexternal.ebex@";
-                referenceDependencies.TryAdd(modelReference, true);
+                if (modelReferenceUri != null)
+                {
+                    referenceDependencies.TryAdd(modelReferenceUri, true);
+                }
 
                 var materialDependencies = context.FestivalModelDependencyFestivalMaterialDependency
                     .Where(m => m.ModelDependencyId == modelDependency.Id)
@@ -291,18 +294,17 @@ public class Ps4EarcPorter
                 {
                     if (materialDependency.Uri.EndsWith(".htpk"))
                     {
-                        _assets.TryAdd(materialDependency.Uri.ToLower(), true);
-                        referenceDependencies.TryAdd(materialDependency.Uri, true);
+                        //_assets.TryAdd(materialDependency.Uri.ToLower(), true);
+                        //referenceDependencies.TryAdd(materialDependency.Uri, true);
                     }
                     else
                     {
                         _assets.TryAdd(materialDependency.Uri.ToLower(), true);
                         var materialReferenceUri = GetExistingReferenceUri(pcContext, materialDependency.Uri);
-                        var materialReference = materialReferenceUri ??
-                                                materialDependency.Uri[..materialDependency.Uri.LastIndexOf('/')]
-                                                    .ToLower() +
-                                                "/autoexternal.ebex@";
-                        referenceDependencies.TryAdd(materialReference, true);
+                        if (materialReferenceUri != null)
+                        {
+                            referenceDependencies.TryAdd(materialReferenceUri, true);
+                        }
                     }
                 }
             }
