@@ -3,14 +3,15 @@
 @using Flagrum.Web.Features.AssetExplorer.Data
 @using System.IO
 @using System.Text
-@using Flagrum.Core.Ebex.Xmb2
 @using Flagrum.Core.Animation
+@using Flagrum.Core.Ebex.Xmb2
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
 @inject EnvironmentPacker EnvironmentPacker
 @inject TerrainPacker TerrainPacker
+@inject IStringLocalizer<ExportContextMenu> L
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
@@ -22,7 +23,7 @@
               OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
             <div class="row">
                 <span class="material-icons mr-3" style="font-size: 0.9rem">drive_file_move</span>
-                <span>Export Folder</span>
+                <span>@L["ExportFolder"]</span>
             </div>
         </Item>
     }
@@ -32,7 +33,7 @@
               OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
             <div class="row">
                 <span class="material-icons mr-3" style="font-size: 0.9rem">open_in_new</span>
-                <span>Export File</span>
+                <span>@L["ExportFile"]</span>
             </div>
         </Item>
 
@@ -42,7 +43,7 @@
                   OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                 <div class="row">
                     <span class="material-icons mr-3" style="font-size: 0.9rem">share</span>
-                    <span>Export With Dependencies</span>
+                    <span>@L["ExportWithDependencies"]</span>
                 </div>
             </Item>
         }
@@ -52,21 +53,21 @@
                   OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                 <div class="row">
                     <span class="material-icons mr-3" style="font-size: 0.9rem">code</span>
-                    <span>Export as XML</span>
+                    <span>@L["ExportAsXml"]</span>
                 </div>
             </Item>
             <Item OnClick="ExportEnvironment"
                   OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                 <div class="row">
                     <span class="material-icons mr-3" style="font-size: 0.9rem">public</span>
-                    <span>Export as Environment</span>
+                    <span>@L["ExportAsEnvironment"]</span>
                 </div>
             </Item>
             <Item OnClick="ExportTerrain"
                   OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                 <div class="row">
                     <span class="material-icons mr-3" style="font-size: 0.9rem">grass</span>
-                    <span>Export as Terrain</span>
+                    <span>@L["ExportAsTerrain"]</span>
                 </div>
             </Item>
         }
@@ -76,7 +77,7 @@
                   OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                 <div class="row">
                     <span class="material-icons mr-3" style="font-size: 0.9rem">widgets</span>
-                    <span>Export Animation Clips</span>
+                    <span>@L["ExportAnimationClips"]</span>
                 </div>
             </Item>
         }

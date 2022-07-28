@@ -1,16 +1,15 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Windows;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Squirrel;
 
 namespace Flagrum.Desktop;
 
-/// <summary>
-///     Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application
+public partial class App
 {
     public App()
     {
@@ -22,6 +21,16 @@ public partial class App : Application
         SquirrelAwareApp.HandleEvents(
             OnInstall,
             onAppUninstall: OnUninstall);
+
+        using var context = new FlagrumDbContext();
+        var cultureName = context.GetString(StateKey.Language);
+
+        if (cultureName != null)
+        {
+            var culture = CultureInfo.GetCultureInfo(cultureName);
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+        }
     }
 
     [DllImport("shell32.dll", SetLastError = true)]

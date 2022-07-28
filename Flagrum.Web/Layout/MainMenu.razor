@@ -1,25 +1,30 @@
-﻿@using System.Diagnostics
+﻿@using Flagrum.Web.Persistence.Entities
 @using System.IO
 @using Flagrum.Core.Utilities
+@using System.Diagnostics
 @inject IWpfService WpfService
 @inject SettingsService Settings
+@inject IStringLocalizer<MainMenu> L
+@inject FlagrumDbContext Context
 
 <CascadingValue Value="this">
     <Bootstrapper/>
     <div class="h-full bg-dark flex flex-col border-dark-550 border-r" style="flex: 0 0 195px">
-        <MenuItem Icon="dashboard" Text="Mod Manager" DefaultActive="true" Uri="/"/>
-        <MenuItem Icon="videogame_asset" Text="Asset Explorer" Uri="/assets"/>
-        <MenuItem Icon="apps" Text="Workshop Mods" Uri="/mod"/>
+        <MenuItem Icon="dashboard" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
+        <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
+        <MenuItem Icon="apps" Text="@L["WorkshopMods"]" Uri="/mod"/>
         @* <MenuItem Icon="share" Text="Sequence Editor" Uri="/sequenceeditor"></MenuItem> *@
         <div class="flex-grow"></div>
 
-        <MenuItem Icon="menu_book" Text="Wiki" Uri="https://github.com/Kizari/Flagrum/wiki"/>
-        <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/>
-        <MenuItem Icon="info_outline" Text="About" Uri="/about"/>
-        <MenuItem Icon="settings" Text="Settings" Uri="/settings"/>
-        <img @onclick="OpenDiscordLink" src="discord-button.png" class="p-2 rounded-md bg-grey-800 shadow-md mt-4 mx-4 cursor-pointer" style="max-width: 165px"/>
+        <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri="https://github.com/Kizari/Flagrum/wiki"/>
+        @* <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/> *@
+        <MenuItem Icon="info_outline" Text="@L["About"]" Uri="/about"/>
+        <MenuItem Icon="settings" Text="@L["Settings"]" Uri="/settings"/>
+
+        <img alt="Discord" @onclick="OpenDiscordLink" src="discord-button.png" class="p-2 rounded-md bg-grey-800 shadow-md mt-4 mx-4 cursor-pointer" style="max-width: 165px"/>
+
         <div class="p-4">
-            <small class="text-grey-500">Flagrum v@(Version)</small>
+            <small class="text-grey-500">@L["Version"]@(Version)</small>
         </div>
     </div>
 </CascadingValue>
@@ -76,7 +81,7 @@
                 }
                 catch
                 {
-                    // Ignore
+    // Ignore
                 }
 
                 VersionNotesModal.Open();

@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="AllFlagrumMods" xml:space="preserve">
+        <value>すべてのフラーグルムMOD</value>
+    </data>
+    <data name="AllMods" xml:space="preserve">
+        <value>全MOD</value>
+    </data>
+    <data name="Browse" xml:space="preserve">
+        <value>Steam MODを閲覧する</value>
+    </data>
+    <data name="BrowseDescription" xml:space="preserve">
+        <value>古いツールではタグが適用されないため、フラーグルムMODのみが検索結果に表示されます。</value>
+    </data>
+    <data name="ComradesStyles" xml:space="preserve">
+        <value>マルチプレイ用衣装</value>
+    </data>
+    <data name="ComradesWeapons" xml:space="preserve">
+        <value>マルチプレイ用武器</value>
+    </data>
+    <data name="LocalMods" xml:space="preserve">
+        <value>ローカルMOD</value>
+    </data>
+    <data name="ModelReplacements" xml:space="preserve">
+        <value>モデルチェンジ</value>
+    </data>
+    <data name="NewMod" xml:space="preserve">
+        <value>新MOD</value>
+    </data>
+    <data name="OutfitMods" xml:space="preserve">
+        <value>アウトフィットMOD</value>
+    </data>
+    <data name="Outfits" xml:space="preserve">
+        <value>アウトフィット</value>
+    </data>
+    <data name="Replacements" xml:space="preserve">
+        <value>リプレースメント</value>
+    </data>
+    <data name="WeaponMods" xml:space="preserve">
+        <value>武器MOD</value>
+    </data>
+    <data name="Weapons" xml:space="preserve">
+        <value>兵器</value>
+    </data>
+    <data name="WorkshopMods" xml:space="preserve">
+        <value>Steam MOD</value>
+    </data>
+    <data name="Noctis" xml:space="preserve">
+        <value>ノクティス</value>
+    </data>
+    <data name="Gladiolus" xml:space="preserve">
+        <value>グラディオラス</value>
+    </data>
+    <data name="Ignis" xml:space="preserve">
+        <value>イグニス</value>
+    </data>
+    <data name="Prompto" xml:space="preserve">
+        <value>プロンプト</value>
+    </data>
+    <data name="Accessory" xml:space="preserve">
+        <value>付属品</value>
+    </data>
+    <data name="Bottoms" xml:space="preserve">
+        <value>ボトムス</value>
+    </data>
+    <data name="Crossbow" xml:space="preserve">
+        <value>クロスボー</value>
+    </data>
+    <data name="Dagger" xml:space="preserve">
+        <value>ダガー</value>
+    </data>
+    <data name="Face" xml:space="preserve">
+        <value>顔</value>
+    </data>
+    <data name="Gloves" xml:space="preserve">
+        <value>グローブ</value>
+    </data>
+    <data name="Gun" xml:space="preserve">
+        <value>銃</value>
+    </data>
+    <data name="Hair" xml:space="preserve">
+        <value>毛髪</value>
+    </data>
+    <data name="Katana" xml:space="preserve">
+        <value>刀</value>
+    </data>
+    <data name="Large_Sword" xml:space="preserve">
+        <value>グレートソード</value>
+    </data>
+    <data name="Mace" xml:space="preserve">
+        <value>メイス</value>
+    </data>
+    <data name="Shield" xml:space="preserve">
+        <value>シールド</value>
+    </data>
+    <data name="Shoes" xml:space="preserve">
+        <value>シューズ</value>
+    </data>
+    <data name="Shuriken" xml:space="preserve">
+        <value>手裏剣</value>
+    </data>
+    <data name="Spear" xml:space="preserve">
+        <value>スピア</value>
+    </data>
+    <data name="Sword" xml:space="preserve">
+        <value>ソード</value>
+    </data>
+    <data name="Tops" xml:space="preserve">
+        <value>トップス</value>
+    </data>
+    <data name="Wear" xml:space="preserve">
+        <value>ウェア</value>
+    </data>
+    <data name="Cor" xml:space="preserve">
+        <value>コル</value>
+    </data>
+    <data name="Iris" xml:space="preserve">
+        <value>イリス</value>
+    </data>
+    <data name="Aranea" xml:space="preserve">
+        <value>アラネア</value>
+    </data>
+    <data name="Ardyn" xml:space="preserve">
+        <value>アーデン</value>
+    </data>
+    <data name="Cid" xml:space="preserve">
+        <value>シド</value>
+    </data>
+    <data name="Cidney" xml:space="preserve">
+        <value>シドニー</value>
+    </data>
+    <data name="Gentiana" xml:space="preserve">
+        <value>ゲンティアナ</value>
+    </data>
+    <data name="LargeSword" xml:space="preserve">
+        <value>グレートソード</value>
+    </data>
+    <data name="Lunafrena" xml:space="preserve">
+        <value>ルナフレーナ</value>
+    </data>
+    <data name="Magitek_Gladiolus" xml:space="preserve">
+        <value>魔導スーツ(グラディオラス)</value>
+    </data>
+    <data name="Magitek_Ignis" xml:space="preserve">
+        <value>魔導スーツ(イグニス)</value>
+    </data>
+    <data name="Magitek_Noctis" xml:space="preserve">
+        <value>魔導スーツ(ノクティス)</value>
+    </data>
+    <data name="Magitek_Prompto" xml:space="preserve">
+        <value>魔導スーツ(プロンプト)</value>
+    </data>
+    <data name="NPC_FEMALE" xml:space="preserve">
+        <value>女性アダルトNPC</value>
+    </data>
+    <data name="NPC_FEMALE_CHILD" xml:space="preserve">
+        <value>女性子供NPC</value>
+    </data>
+    <data name="NPC_MALE" xml:space="preserve">
+        <value>男性用アダルトNPC</value>
+    </data>
+    <data name="NPC_MALE_CHILD" xml:space="preserve">
+        <value>男児NPC</value>
+    </data>
+    <data name="Ravus" xml:space="preserve">
+        <value>レイヴス</value>
+    </data>
+    <data name="Other" xml:space="preserve">
+        <value>その他</value>
+    </data>
+</root>

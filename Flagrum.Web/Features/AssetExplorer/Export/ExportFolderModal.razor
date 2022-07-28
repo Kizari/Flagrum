@@ -6,16 +6,17 @@
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
+@inject IStringLocalizer<ExportFolderModal> L
 
 <Modal @ref="Modal">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Export Folder</span>
+        <span class="text-grey-300 flex-grow">@L["ExportFolder"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
             <div class="row">
-                <label style="width: 240px">Texture Output Format</label>
+                <label style="width: 240px">@L["TextureFormat"]</label>
                 <select @bind="Extension" class="input bg-dark-550 w-full">
                     <option>PNG</option>
                     <option>TGA</option>
@@ -25,9 +26,9 @@
             </div>
             <div class="row mt-6 mb-10">
                 <Checkbox IsChecked="@IsRecursive" OnChange="v => { IsRecursive = v; StateHasChanged(); }"/>
-                <span class="inline-block ml-2">Also export from subdirectories recursively</span>
+                <span class="inline-block ml-2">@L["Recursion"]</span>
             </div>
-            <Button Text="Export" Icon="file_download" OnClickAsync="Export"/>
+            <Button Text="@L["Export"]" Icon="file_download" OnClickAsync="Export"/>
         </div>
     </BodyView>
 </Modal>

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Linq;
+using Flagrum.Console.Utilities;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
+
+FileFinder.FindStringInExml("bgm_bat_kyoteki.max");
+return;
 
 // var types = typeof(JsonSerializer).Assembly.GetTypes();
 // var type = types.FirstOrDefault(p => p.Name.Contains("JsonConstants"));

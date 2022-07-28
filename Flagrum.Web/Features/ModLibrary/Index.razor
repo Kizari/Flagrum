@@ -1,13 +1,10 @@
 ﻿@page "/mod"
 @using Flagrum.Core.Archive
 
-@inject NavigationManager Navigation
-@inject SettingsService Settings
 @inject AppStateService AppState
-@inject ILogger<Index> Logger
 @inject BinmodTypeHelper BinmodTypeHelper
-@inject JSInterop Interop
 @inject ModelReplacementPresets ModelReplacementPresets
+@inject IStringLocalizer<Index> L
 
 <LoadingView Text="Loading Mods"
              IsLoading="IsLoading">
@@ -15,19 +12,19 @@
         <div class="flex flex-row flex-wrap flex-grow">
             <div class="bg-dark-600 shadow-md rounded row mt-5 mr-10">
                 <ModTypeButtonGroup Target="AppState.ActiveCategoryFilter" OnItemSelected="FilterCategory">
-                    <ModTypeButton Text="Local Mods" Value="0"/>
-                    <ModTypeButton Text="Workshop Mods" Value="1"/>
-                    <ModTypeButton Text="All Mods" Value="-1"/>
+                    <ModTypeButton Text="@L["LocalMods"]" Value="0"/>
+                    <ModTypeButton Text="@L["WorkshopMods"]" Value="1"/>
+                    <ModTypeButton Text="@L["AllMods"]" Value="-1"/>
                 </ModTypeButtonGroup>
             </div>
             <div class="bg-dark-600 shadow-md rounded row mt-5 mr-6">
                 <ModTypeButtonGroup Target="AppState.ActiveModTypeFilter" OnItemSelected="FilterType">
-                    <ModTypeButton Text="All Mods" Value="-1"/>
-                    <ModTypeButton Text="Outfits" Value="(int)BinmodType.Cloth"/>
-                    <ModTypeButton Text="Weapons" Value="(int)BinmodType.Weapon"/>
-                    <ModTypeButton Text="Replacements" Value="(int)BinmodType.Character"/>
-                    <ModTypeButton Text="Comrades Styles" Value="(int)BinmodType.StyleEdit"/>
-                    <ModTypeButton Text="Comrades Weapons" Value="(int)BinmodType.Multi_Weapon"/>
+                    <ModTypeButton Text="@L["AllMods"]" Value="-1"/>
+                    <ModTypeButton Text="@L["Outfits"]" Value="(int)BinmodType.Cloth"/>
+                    <ModTypeButton Text="@L["Weapons"]" Value="(int)BinmodType.Weapon"/>
+                    <ModTypeButton Text="@L["Replacements"]" Value="(int)BinmodType.Character"/>
+                    <ModTypeButton Text="@L["ComradesStyles"]" Value="(int)BinmodType.StyleEdit"/>
+                    <ModTypeButton Text="@L["ComradesWeapons"]" Value="(int)BinmodType.Multi_Weapon"/>
                 </ModTypeButtonGroup>
             </div>
             <div class="flex-grow"></div>
@@ -63,43 +60,42 @@
                     }
                 }
             }
-            <strong class="font-display block ml-2 text-grey-300 mb-3 text-lg">Browse Workshop Mods</strong>
+            <strong class="font-display block ml-2 text-grey-300 mb-3 text-lg">@L["Browse"]</strong>
             <small class="block text-grey-500 ml-2">
-                Only Flagrum mods will appear in results
-                due to older modding tools not applying tags to listings
+                @L["BrowseDescription"]
             </small>
             <div class="pl-2 mt-6">
-                <SteamWorkshopLink Text="All Flagrum Mods" Tags="@(new[] {"Flagrum"})"/>
+                <SteamWorkshopLink Text="@L["AllFlagrumMods"]" Tags="@(new[] {"Flagrum"})"/>
             </div>
-            <SteamWorkshopLinkGroup Title="Outfit Mods" DefaultExpanded="true">
+            <SteamWorkshopLinkGroup Title="@L["OutfitMods"]" DefaultExpanded="true">
                 @foreach (var outfit in Enum.GetValues<OutfitSoloTarget>())
                 {
-                    <SteamWorkshopLink Text="@outfit.ToString()" Tags="@(new[] {"Outfit", outfit.ToString()})"/>
+                    <SteamWorkshopLink Text=@L[outfit.ToString()] Tags="@(new[] {"Outfit", outfit.ToString()})"/>
                 }
             </SteamWorkshopLinkGroup>
-            <SteamWorkshopLinkGroup Title="Weapon Mods" DefaultExpanded="true">
+            <SteamWorkshopLinkGroup Title="@L["WeaponMods"]" DefaultExpanded="true">
                 @foreach (var weapon in Enum.GetValues<WeaponSoloTarget>())
                 {
-                    <SteamWorkshopLink Text="@weapon.ToString()" Tags="@(new[] {"Weapon", weapon.ToString()})"/>
+                    <SteamWorkshopLink Text=@L[weapon.ToString()] Tags="@(new[] {"Weapon", weapon.ToString()})"/>
                 }
             </SteamWorkshopLinkGroup>
-            <SteamWorkshopLinkGroup Title="Model Replacements">
+            <SteamWorkshopLinkGroup Title="@L["ModelReplacements"]">
                 @foreach (var replacement in DefaultReplacements)
                 {
-                    <SteamWorkshopLink Text="@replacement.Name" Tags="@(new[] {"Model Replacement", replacement.Name})"/>
+                    <SteamWorkshopLink Text=@L[replacement.ModmetaName] Tags="@(new[] {"Model Replacement", replacement.Name})"/>
                 }
-                <SteamWorkshopLink Text="Other" Tags="@(new[] {"Model Replacement", "Other"})"/>
+                <SteamWorkshopLink Text=@L["Other"] Tags="@(new[] {"Model Replacement", "Other"})"/>
             </SteamWorkshopLinkGroup>
-            <SteamWorkshopLinkGroup Title="Comrades Styles">
+            <SteamWorkshopLinkGroup Title="@L["ComradesStyles"]">
                 @foreach (var style in Enum.GetValues<OutfitMultiTarget>())
                 {
-                    <SteamWorkshopLink Text="@style.ToString()" Tags="@(new[] {"Comrades Style", style.ToString()})"/>
+                    <SteamWorkshopLink Text=@L[style.ToString()] Tags="@(new[] {"Comrades Style", style.ToString()})"/>
                 }
             </SteamWorkshopLinkGroup>
-            <SteamWorkshopLinkGroup Title="Comrades Weapons">
+            <SteamWorkshopLinkGroup Title="@L["ComradesWeapons"]">
                 @foreach (var weapon in Enum.GetValues<WeaponMultiTarget>())
                 {
-                    <SteamWorkshopLink Text="@weapon.ToString()" Tags="@(new[] {"Comrades Weapon", weapon.ToString()})"/>
+                    <SteamWorkshopLink Text=@L[weapon.ToString()] Tags="@(new[] {"Comrades Weapon", weapon.ToString()})"/>
                 }
             </SteamWorkshopLinkGroup>
         </div>

@@ -2,18 +2,20 @@
 @inject FlagrumDbContext Context
 @inject ModelReplacementPresets ModelReplacementPresets
 @inject NavigationManager Navigation
+@inject IStringLocalizer<ModelReplacements> L
+@inject IStringLocalizer<ModLibrary.Index> ParentLocalizer
 
 <CascadingValue Value="this">
     @if (Presets.Any(p => p.IsFavourite))
     {
-        <h5 class="text-grey-300 mt-6 mb-4 ml-1">Favourite Presets</h5>
+        <h5 class="text-grey-300 mt-6 mb-4 ml-1">@L["FavouritePresets"]</h5>
         foreach (var preset in Presets.Where(p => p.IsFavourite))
         {
             <ModelReplacementRow Preset="preset"/>
         }
     }
 
-    <h5 class="text-grey-300 mt-6 mb-4 ml-1">Flagrum Presets</h5>
+    <h5 class="text-grey-300 mt-6 mb-4 ml-1">@L["FlagrumPresets"]</h5>
 
     @foreach (var preset in Presets.Where(p => !p.IsFavourite && p.IsDefault))
     {
@@ -22,14 +24,14 @@
 
     @if (Presets.Any(p => !p.IsDefault && !p.IsFavourite))
     {
-        <h5 class="text-grey-300 mt-6 mb-4 ml-1">Custom Presets</h5>
+        <h5 class="text-grey-300 mt-6 mb-4 ml-1">@L["CustomPresets"]</h5>
 
         @foreach (var preset in Presets.Where(p => !p.IsDefault && !p.IsFavourite))
         {
             <ModelReplacementRow Preset="preset"/>
         }
     }
-    
+
     <div class="mb-2"></div>
 </CascadingValue>
 
@@ -48,7 +50,7 @@
                 Id = r.Index,
                 IsDefault = true,
                 IsFavourite = favourites.Any(f => f.Id == r.Index && f.IsDefault),
-                Name = r.Name,
+                Name = ParentLocalizer[r.ModmetaName],
                 Paths = r.Models
             })
             .ToList();

@@ -72,14 +72,14 @@ public partial class Index
 
         // Jank delay to stop this showing on every launch
         await Task.Delay(500);
-        DisplayText = "Mod Manager Unavailable While Indexing Files";
-        SubText = "Please wait until file indexing has completed";
+        DisplayText = L["DisplayText"];
+        SubText = L["SubText"];
     }
 
     public void SetLoading(bool isLoading, string message = null)
     {
         IsLoading = isLoading;
-        LoadingText = message;
+        LoadingText = L[message ?? ""];
         StateHasChanged();
     }
 
@@ -94,7 +94,7 @@ public partial class Index
     {
         await WpfService.OpenFileDialogAsync("ZIP Archive|*.zip", async path =>
         {
-            await InvokeAsync(() => SetLoading(true, "Installing Mod"));
+            await InvokeAsync(() => SetLoading(true, L["InstallingMod"]));
 
             await Task.Run(async () =>
             {
@@ -121,34 +121,25 @@ public partial class Index
                         switch (result.Status)
                         {
                             case EarcLegacyConversionStatus.NoEarcs:
-                                await InvokeAsync(() => Alert.Open("Error", "Invalid Mod Pack",
-                                    "Could not find compatible mod data in this ZIP. Please refer to the mod " +
-                                    "author's original installation instructions.",
+                                await InvokeAsync(() => Alert.Open(L["Error"], L["InvalidModPack"],
+                                    L["InvalidModPackDescription"],
                                     null));
                                 return;
                             case EarcLegacyConversionStatus.NewFiles:
-                                await InvokeAsync(() => Alert.Open("Error", "Incompatible Mod Pack",
-                                    "One or more of the mods in this ZIP add new files to the game. Flagrum " +
-                                    "does not currently support adding new files, but will do so in a future update. " +
-                                    "In the meantime, please refer to the mod author's original installation instructions.",
+                                await InvokeAsync(() => Alert.Open(L["Error"], L["IncompatibleModPack"],
+                                    L["IncompatibleNewFilesDescription"],
                                     null, 500, 400));
                                 return;
                             case EarcLegacyConversionStatus.EarcNotFound:
-                                await InvokeAsync(() => Alert.Open("Error", "Incompatible Mod Pack",
-                                    "An EARC was found in this mod pack that does not appear in your game files " +
-                                    "to modify. Flagrum does not currently support adding new EARCs to the game, " +
-                                    "but will do so in a future update. In the meantime, please refer to the mod " +
-                                    "author's original installation instructions.",
+                                await InvokeAsync(() => Alert.Open(L["Error"], L["IncompatibleModPack"],
+                                    L["IncompatibleNewEarcDescription"],
                                     null, 500, 400));
                                 return;
                             case EarcLegacyConversionStatus.NeedsDisabling:
                                 var modsToDisable = result.ModsToDisable
                                     .Aggregate("", (previous, kvp) => $"{previous}<strong>{kvp.Value}</strong>");
-                                await InvokeAsync(() => Alert.Open("Error", "Unable to Compare Data",
-                                    "As this mod was not created with Flagrum, and the mod contains changes " +
-                                    "for files that are currently modified by an active mod on your system, " +
-                                    "the mods must be temporarily disabled to complete the installation.<br/><br/>" +
-                                    "Please disable the following mod(s) and then try again:<br/><br/>" +
+                                await InvokeAsync(() => Alert.Open(L["Error"], L["ErrorDataCompare"],
+                                    L["ErrorDataCompareDescription"] +
                                     modsToDisable,
                                     null, 500, 400));
                                 return;
@@ -284,11 +275,11 @@ public partial class Index
 
         if (conflicts.Any())
         {
-            var message = conflicts.Aggregate("The following mod(s) conflict with this one:<br/><br/>",
+            var message = conflicts.Aggregate(L["Conflicts"] + "<br/><br/>",
                 (previous, mod) => previous + $"<strong>{mod.Name}</strong><br/>");
-            Prompt.Title = "Warning";
-            Prompt.Heading = "Conflicts Detected";
-            Prompt.Subtext = message + "<br/>Would you like to disable the above mod(s) now?";
+            Prompt.Title = L["Warning"];
+            Prompt.Heading = L["ConflictsDetected"];
+            Prompt.Subtext = message + "<br/>" + L["DisableNow"];
             Prompt.OnYes = async () =>
             {
                 foreach (var mod in conflicts)

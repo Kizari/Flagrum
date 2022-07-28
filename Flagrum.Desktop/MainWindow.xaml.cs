@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -24,27 +23,15 @@ using Squirrel;
 namespace Flagrum.Desktop;
 
 /// <summary>
-///     Interaction logic for MainWindow.xaml
+/// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, INotifyPropertyChanged
+public partial class MainWindow : INotifyPropertyChanged
 {
     private readonly string flagrumDirectory;
     private readonly string logFile;
-    
-    public string HostPageUri { get; } = "wwwroot/index.html";
 
     private bool _hasWebView2Runtime;
 
-    public bool HasWebView2Runtime
-    {
-        get => _hasWebView2Runtime;
-        set
-        {
-            _hasWebView2Runtime = value;
-            OnPropertyChanged(nameof(HasWebView2Runtime));
-        }
-    }
-    
     public MainWindow()
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
@@ -52,7 +39,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var width = 1680;
         var height = 1024;
 
-        if (width > (bounds.Width * 0.95) || height > (bounds.Height * 0.9))
+        if (width > bounds.Width * 0.95 || height > bounds.Height * 0.9)
         {
             width = (int)(bounds.Width * 0.95);
             height = (int)(bounds.Height * 0.9);
@@ -98,7 +85,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             InstallWebView2Runtime();
         }
-        
+
         // Migrate the database
         using var context = new FlagrumDbContext();
         context.Database.MigrateAsync().Wait();
@@ -117,12 +104,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         services.AddScoped<IWpfService, WpfService>(services => new WpfService(this));
         services.AddBlazorWebView();
-        
+
         services.AddFlagrum();
         Resources.Add("services", services.BuildServiceProvider());
 
         InitializeComponent();
     }
+
+    public string HostPageUri { get; } = "wwwroot/index.html";
+
+    public bool HasWebView2Runtime
+    {
+        get => _hasWebView2Runtime;
+        set
+        {
+            _hasWebView2Runtime = value;
+            OnPropertyChanged(nameof(HasWebView2Runtime));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private async void InstallWebView2Runtime()
     {
@@ -154,7 +155,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         Close();
     }
 
-    private void MainBlazorWebView_OnInitialized(object? sender, EventArgs e)
+    private async void MainBlazorWebView_OnInitialized(object? sender, EventArgs e)
     {
         if (sender == null)
         {
@@ -164,8 +165,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var webView = (BlazorWebView)sender;
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
     }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(string propertyName)
     {
@@ -185,10 +184,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                     await manager.UpdateApp();
                 }
             }
-            catch
-            {
-                
-            }
+            catch { }
         });
     }
 }

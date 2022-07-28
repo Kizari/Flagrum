@@ -1,7 +1,11 @@
 ﻿@page "/settings"
+@using Flagrum.Web.Persistence.Entities
 
 @inject SettingsService Settings
 @inject IWpfService WpfService
+@inject IStringLocalizer<SettingsPage> Localizer
+@inject FlagrumDbContext Context
+@inject IJSRuntime JSRuntime
 
 <div class="p-6">
 
@@ -9,42 +13,65 @@
     {
         <div class="bg-error mb-6 p-4">
             <span class="text-white">
-                Flagrum was unable to automatically detect the location of your game files.
-                Please ensure Final Fantasy XV is installed on your computer then set the paths below.
+                @Localizer["PathAutodetectFailed"]
             </span>
         </div>
     }
 
     <EditForm Model="Data">
-        <div class="box p-4 mb-6">
-            <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
-            </div>
-            <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe</small>
+
+        <div class="box p-4 mb-6 row">
+            <span class="mr-3" style="flex: 0 0 200px">@Localizer["Language"]</span>
+            <select class="input bg-dark-550 flex-grow" style="max-width: 500px;" @onchange="OnLanguageChanged">
+                @if (CultureInfo.CurrentCulture.Name == "ja-JP")
+                {
+                    <option value="en-GB">English / イングリッシュ</option>
+                    <option value="ja-JP" selected>Japanese / 日本語</option>
+                }
+                else
+                {
+                    <option value="en-GB" selected>English / イングリッシュ</option>
+                    <option value="ja-JP">Japanese / 日本語</option>
+                }
+            </select>
         </div>
 
         <div class="box p-4 mb-6">
             <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">Binmod List Path</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
+                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["GamePath"]</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
             </div>
-            <small class="text-grey-600">Default C:\Users\[USERNAME]\Documents\My Games\FINAL FANTASY XV\Steam\[STEAM_USER_ID]\mod\binmod.list</small>
+            <small class="text-grey-600">@Localizer["DefaultGamePath"]</small>
+        </div>
+
+        <div class="box p-4 mb-6">
+            <div class="row mb-3">
+                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["BinmodPath"]</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
+            </div>
+            <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
         </div>
 
         <div class="box p-4 mb-2">
             <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">Workshop ACF Path</span>
+                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["WorkshopPath"]</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.WorkshopPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="WorkshopPathClicked"/>
+                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="WorkshopPathClicked"/>
             </div>
-            <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</small>
+            <small class="text-grey-600">@Localizer["DefaultWorkshopPath"]</small>
         </div>
+
     </EditForm>
 
 </div>
+
+<PromptModal @ref="RestartPrompt"
+             Title=@Localizer["RestartRequired"]
+             Heading=@Localizer["RestartRequired"]
+             Subtext=@Localizer["RestartPrompt"]
+             OnYes="RestartApplication"/>
 
 @code
 {
@@ -55,12 +82,24 @@
     public bool Warn { get; set; }
 
     private SettingsData Data { get; } = new();
+    private PromptModal RestartPrompt { get; set; }
 
     protected override void OnInitialized()
     {
         Data.GamePath = Settings.GamePath;
         Data.WorkshopPath = Settings.WorkshopPath;
         Data.BinmodListPath = Settings.BinmodListPath;
+    }
+
+    private void OnLanguageChanged(ChangeEventArgs e)
+    {
+        Context.SetString(StateKey.Language, (string)e.Value ?? "en-GB");
+        RestartPrompt.Open();
+    }
+
+    private void RestartApplication()
+    {
+        WpfService.Restart();
     }
 
     private async Task GamePathClicked()

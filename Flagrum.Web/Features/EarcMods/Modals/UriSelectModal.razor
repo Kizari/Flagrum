@@ -3,10 +3,11 @@
 @inject AppStateService AppState
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
+@inject IStringLocalizer<UriSelectModal> L
 
 <Modal @ref="Modal" Padding="0" Width="9999" Height="9999">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Browse Game Assets</span>
+        <span class="text-grey-300 flex-grow">@L["BrowseGameAssets"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
@@ -30,7 +31,7 @@
                         </div>
                     </div>
                     <div class="flex-grow bg-grey-900 border-t border-b border-dark-550 row py-2 px-3">
-                        <strong class="flex-grow font-display">No File Selected</strong>
+                        <strong class="flex-grow font-display">@L["NoFileSelected"]</strong>
                     </div>
                 </div>
 

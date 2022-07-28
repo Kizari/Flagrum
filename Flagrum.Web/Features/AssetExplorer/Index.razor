@@ -4,9 +4,9 @@
 @using Flagrum.Web.Features.AssetExplorer.Data
 
 @inject AppStateService AppState
-@inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
+@inject IStringLocalizer<Index> L
 
 <CascadingValue Value="this">
     <ExportContextMenu/>
@@ -27,8 +27,8 @@
         </div>
         <div class="flex flex-row">
             <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
-                <ModTypeButton Text="Game View" Value="1"/>
-                <ModTypeButton Text="File System" Value="2"/>
+                <ModTypeButton Text="@L["GameView"]" Value="1"/>
+                <ModTypeButton Text="@L["FileSystem"]" Value="2"/>
             </ModTypeButtonGroup>
         </div>
     </div>
@@ -53,20 +53,20 @@
             }
             else
             {
-                <strong class="font-display flex-grow">File System</strong>
+                <strong class="font-display flex-grow">@L["FileSystem"]</strong>
             }
         </div>
         @if (View == 2)
         {
             <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
                 <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong>
-                <Button Icon="file_download" Text="Batch Export" OnClick="() => BatchExportModal?.Open()"/>
+                <Button Icon="file_download" Text="@L["BatchExport"]" OnClick="() => BatchExportModal?.Open()"/>
             </div>
         }
         <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
             @if (SelectedItem == null)
             {
-                <strong class="flex-grow font-display">No File Selected</strong>
+                <strong class="flex-grow font-display">@L["NoFileSelected"]</strong>
             }
             else
             {
@@ -89,10 +89,8 @@
                     else
                     {
                         <span class="block py-1 px-3">
-                            Game View will become available once Flagrum has finished indexing the game files
-                            to allow for an improved browsing experience, searching, and filtering of all
-                            game files (even those in archives).<br/><br/>
-                            <em>This process may take several minutes depending on your system hardware.</em>
+                            @L["WaitFileIndexing"]<br/><br/>
+                            <em>@L["PleaseWait"]</em>
                         </span>
                     }
                 }
@@ -265,7 +263,7 @@
 
     public void SetLoading(bool state, string message = null)
     {
-        LoadingMessage = message;
+        LoadingMessage = L[message ?? "Exporting"];
         IsLoading = state;
         StateHasChanged();
     }

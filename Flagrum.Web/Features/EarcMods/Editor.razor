@@ -10,6 +10,7 @@
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject ILogger<Editor> Logger
+@inject IStringLocalizer<Editor> L
 
 <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
     <EditForm Model="Mod" OnValidSubmit="OnSubmit" class="h-full w-full">
@@ -20,30 +21,30 @@
                 <div class="bg-grey-800 rounded shadow-md h-full flex flex-col">
                     <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div>
                     <div class="p-4 flex-grow flex flex-col">
-                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="Mod Name"/>
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="@L["ModName"]"/>
                         <ValidationMessage For="() => Mod.Name"/>
-                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="Author" Class="mt-3"/>
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="@L["Author"]" Class="mt-3"/>
                         <ValidationMessage For="() => Mod.Author"/>
-                        <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="Description" Class="mt-3 flex-grow"/>
+                        <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="@L["Description"]" Class="mt-3 flex-grow"/>
                         <ValidationMessage For="() => Mod.Description"/>
                     </div>
                     <div class="px-4 pb-4 flex flex-row">
-                        <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
-                        <Button Icon="delete_forever" Text="Delete" CssClass="mr-3" OnClickAsync="Delete"/>
+                        <Button Icon="image" Text="@L["ChangeImage"]" CssClass="mr-3" OnClickAsync="SelectImage"/>
+                        <Button Icon="delete_forever" Text="@L["Delete"]" CssClass="mr-3" OnClickAsync="Delete"/>
                     </div>
                 </div>
             </div>
 
             <div class="flex-grow h-full flex flex-col">
                 <div class="box p-6 mb-6 flex flex-row items-center">
-                    <h4 class="text-grey-200 flex-grow">@(ModId == null ? "New" : "Edit") EARC Mod</h4>
-                    <Button Icon="save" Text="Save" Type="submit" CssClass="mr-3"/>
-                    <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/"))"/>
+                    <h4 class="text-grey-200 flex-grow">@(ModId == null ? L["NewEarcMod"] : L["EditEarcMod"])</h4>
+                    <Button Icon="save" Text="@L["Save"]" Type="submit" CssClass="mr-3"/>
+                    <Button Icon="cancel" Text="@L["Cancel"]" OnClick="@(() => Navigation.NavigateTo("/"))"/>
                 </div>
                 <div class="box flex flex-row items-center p-6 border-b border-dark-600">
-                    <h5 class="text-grey-200 flex-grow">Files to Change</h5>
-                    <Button Icon="folder" Text="Replace Asset" CssClass="mr-3" OnClick="OpenReplaceModal"/>
-                    <Button Icon="block" Text="Remove Asset" OnClick="OpenRemoveModal"/>
+                    <h5 class="text-grey-200 flex-grow">@L["FilesToChange"]</h5>
+                    <Button Icon="folder" Text="@L["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
+                    <Button Icon="block" Text="@L["RemoveAsset"]" OnClick="OpenRemoveModal"/>
                 </div>
                 <div class="flex-grow box px-6 pt-2 pb-6 overflow-auto">
                     @if (Mod.Earcs.Any())
@@ -57,12 +58,13 @@
                                     <div class="text-right mx-4" style="flex: 0 0 80px;">
                                         @if (replacement.Type == EarcChangeType.Replace)
                                         {
-                                            <strong>Replace:</strong><br/>
-                                            <strong>With:</strong>
+                                            <strong>@L["Replace"]:</strong>
+                                            <br/>
+                                            <strong>@L["With"]:</strong>
                                         }
                                         else
                                         {
-                                            <strong>Remove:</strong>
+                                            <strong>@L["Remove"]:</strong>
                                         }
                                     </div>
                                     <div style="flex: 1 1 auto;">
@@ -71,7 +73,8 @@
                                             <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
                                                 <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
                                                 <div>/@replacement.Uri.Split('/').Last()</div>
-                                            </div><br/>
+                                            </div>
+                                            <br/>
                                             <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
                                                 <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
                                                 <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
@@ -95,7 +98,7 @@
                     else
                     {
                         <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
-                            No file changes set
+                            @L["NoFileChangesSet"]
                         </div>
                     }
                 </div>

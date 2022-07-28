@@ -10,6 +10,7 @@ using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Features.AssetExplorer.Data;
+using Flagrum.Web.Resources;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -50,9 +51,28 @@ public class EarcModEarc
 public class EarcMod
 {
     public int Id { get; set; }
-    [Required] [StringLength(37)] public string Name { get; set; }
-    [Required] [StringLength(32)] public string Author { get; set; }
-    [Required] [StringLength(1000)] public string Description { get; set; }
+
+    [Display(Name = nameof(DisplayNameResource.ModName), ResourceType = typeof(DisplayNameResource))]
+    [Required(ErrorMessageResourceName = nameof(ErrorMessageResource.RequiredError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    [StringLength(37, ErrorMessageResourceName = nameof(ErrorMessageResource.MaxLengthError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    public string Name { get; set; }
+
+    [Display(Name = nameof(DisplayNameResource.Author), ResourceType = typeof(DisplayNameResource))]
+    [Required(ErrorMessageResourceName = nameof(ErrorMessageResource.RequiredError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    [StringLength(32, ErrorMessageResourceName = nameof(ErrorMessageResource.MaxLengthError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    public string Author { get; set; }
+
+    [Display(Name = nameof(DisplayNameResource.Description), ResourceType = typeof(DisplayNameResource))]
+    [Required(ErrorMessageResourceName = nameof(ErrorMessageResource.RequiredError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    [StringLength(1000, ErrorMessageResourceName = nameof(ErrorMessageResource.MaxLengthError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    public string Description { get; set; }
+
     public bool IsActive { get; set; }
 
     public ICollection<EarcModEarc> Earcs { get; set; } = new List<EarcModEarc>();
@@ -411,7 +431,8 @@ public class EarcMod
             var earc = entry.ToArray();
             using var unpacker = new Unpacker(earc);
             string originalEarcPath = null;
-            foreach (var sample in unpacker.Files.Select(_ => unpacker.Files.FirstOrDefault(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))!))
+            foreach (var sample in unpacker.Files.Select(_ =>
+                         unpacker.Files.FirstOrDefault(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))!))
             {
                 originalEarcPath = context.GetArchiveRelativeLocationByUri(sample.Uri);
                 if (originalEarcPath != "UNKNOWN")
@@ -424,7 +445,7 @@ public class EarcMod
             {
                 return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.EarcNotFound};
             }
-            
+
             using var originalUnpacker = new Unpacker($@"{context.Settings.GameDataDirectory}\{originalEarcPath}");
 
             if (!CompareArchives(context, originalEarcPath, originalUnpacker, unpacker, out var result))
@@ -551,12 +572,14 @@ public class EarcMod
         return true;
     }
 
-    private static bool CompareArchives(FlagrumDbContext context, string originalEarcPath, Unpacker original, Unpacker unpacker, out EarcLegacyConversionResult result)
+    private static bool CompareArchives(FlagrumDbContext context, string originalEarcPath, Unpacker original,
+        Unpacker unpacker, out EarcLegacyConversionResult result)
     {
         result = null;
-        
+
         var modsThatRemoveFilesFromThisEarc = context.EarcModEarcs
-            .Where(e => e.EarcMod.IsActive && e.EarcRelativePath == originalEarcPath && e.Replacements.Any(r => r.Type == EarcChangeType.Remove))
+            .Where(e => e.EarcMod.IsActive && e.EarcRelativePath == originalEarcPath &&
+                        e.Replacements.Any(r => r.Type == EarcChangeType.Remove))
             .Select(e => new
             {
                 ModId = e.EarcMod.Id,

@@ -7,6 +7,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddFlagrum(this IServiceCollection services)
     {
+        services.AddLocalization();
+
         services.AddDbContext<FlagrumDbContext>();
         services.AddSingleton<SettingsService>();
         services.AddSingleton<UriMapper>();

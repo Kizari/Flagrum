@@ -1,6 +1,6 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
-@using Flagrum.Web.Persistence.Entities
 @inject FlagrumDbContext Context
+@inject IStringLocalizer<Preview> L
 
 @if (Item?.Type == ExplorerItemType.Texture)
 {
@@ -27,7 +27,7 @@ else
     <div class="flex-grow flex flex-row items-center">
         <div class="mx-auto">
             <strong class="text-grey-500">
-                No preview available
+                @L["NoPreview"]
             </strong>
         </div>
     </div>
