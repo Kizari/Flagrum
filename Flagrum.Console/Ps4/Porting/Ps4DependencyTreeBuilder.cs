@@ -148,6 +148,8 @@ public class Ps4DependencyTreeBuilder
         var path = element.GetElementByName(pathElementName)?.GetTextValue();
         if (path != null && (path.EndsWith(".ebex") || path.EndsWith(".prefab")))
         {
+            path = path.Replace('\\', '/').ToLower();
+            
             string combinedUriString;
             if (path.StartsWith('.'))
             {

@@ -10,7 +10,12 @@ using Flagrum.Console.Ps4.Porting;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Animation.AnimationClip;
+using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
+using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
 //FileFinder.FindStringInAllFiles("ALTI_MOG_FES_INTER_MOOGLE");
@@ -35,46 +40,69 @@ using Newtonsoft.Json;
 //FileFinder.FindStringInExml("luchil");
 //return;
 
-var results = new ConcurrentDictionary<string, List<string>>();
-new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
-    (earc, file) =>
-    {
-        var data = file.GetReadableData();
-        var output = new StringBuilder();
-        Xmb2Document.Dump(data, output);
-
-        var xml = output.ToString();
-        var matches = Regex.Matches(xml, "^.+?um20_002.+?$", RegexOptions.Multiline);
-
-        if (matches.Any())
-        {
-            var list = new List<string>();
-            results.TryAdd(file.Uri, list);
-            foreach (Match match in matches)
-            {
-                list.Add(match.Value);
-            }
-        }
-    },
-    true);
-
-foreach (var (uri, list) in results)
-{
-    Console.WriteLine("\n" + uri);
-    foreach (var match in list)
-    {
-        Console.WriteLine(match);
-    }
-}
-return;
-
-// new FileFinder().FindByQuery(file => file.Uri == "data://character/um/common/anim/graph/um_020_facial_mog.anmgph",
+// var results = new ConcurrentDictionary<string, List<string>>();
+// new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
 //     (earc, file) =>
 //     {
-//         var path = $@"C:\Modding\Chocomog\Testing\AnimationDump\{earc.Replace(":", "").Replace('\\', '-')}";
-//         File.WriteAllBytes(path, file.GetReadableData());
-//     }, 
+//         var data = file.GetReadableData();
+//         var output = new StringBuilder();
+//         Xmb2Document.Dump(data, output);
+//
+//         var xml = output.ToString();
+//         var matches = Regex.Matches(xml, "^.+?um20_002.+?$", RegexOptions.Multiline);
+//
+//         if (matches.Any())
+//         {
+//             var list = new List<string>();
+//             results.TryAdd(file.Uri, list);
+//             foreach (Match match in matches)
+//             {
+//                 list.Add(match.Value);
+//             }
+//         }
+//     },
 //     true);
+//
+// foreach (var (uri, list) in results)
+// {
+//     Console.WriteLine("\n" + uri);
+//     foreach (var match in list)
+//     {
+//         Console.WriteLine(match);
+//     }
+// }
+// return;
+
+var results = new Dictionary<string, bool>();
+new FileFinder().FindByQuery(file => file.Uri.Contains("/nh00/") && file.Uri.EndsWith(".gmdl"),
+    (earc, file) =>
+    {
+        Console.WriteLine($"Reading {file.Uri}");
+        try
+        {
+            using var context = new FlagrumDbContext(new SettingsService());
+            var gmdl = file.GetReadableData();
+            var gpubin = context.GetFileByUri(file.Uri.Replace(".gmdl", ".gpubin"));
+            var model = new ModelReader(gmdl, gpubin).Read();
+            foreach (var part in model.Parts)
+            {
+                results.TryAdd(part.Name, true);
+            }
+        }
+        catch
+        {
+            Console.WriteLine("Model read failed");
+        }
+        
+    }, 
+    true);
+
+Console.WriteLine("");
+foreach (var (name, _) in results)
+{
+    Console.WriteLine(name);
+}
+return;
 
 // new FileFinder().FindByQuery(file => file.Uri.Contains("altc_mog_kenny", StringComparison.OrdinalIgnoreCase),
 //     (earc, file) =>

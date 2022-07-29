@@ -56,8 +56,8 @@ public class Ps4Porter
         //FileFinder.FindStringInExml("whistle");
         //return;
 
-        //OutputFileByUri("data://character/um/common/um.amdl");
-        //return;
+        OutputFileByUri("data://character/um/um20/entry/um20_160_hair00.ebex");
+        return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();
         //return;
@@ -184,7 +184,7 @@ public class Ps4Porter
         //     false);
         // return;
 
-        // RunWithTimer("dependency tree build", new Ps4DependencyTreeBuilder().Run);
+        //RunWithTimer("dependency tree build", new Ps4DependencyTreeBuilder().Run);
         //RunWithTimer("subdependency tree build", new Ps4SubdependencyTreeBuilder().Run);
         //RunWithTimer("model dependency tree build", new Ps4ModelDependencyTreeBuilder().Run);
         //RunWithTimer("material dependency tree build", new Ps4MaterialDependencyTreeBuilder().Run);
@@ -235,14 +235,14 @@ public class Ps4Porter
         // context.SaveChanges();
         // return;
 
-        //RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
+        RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
         RunWithTimer("asset earc cleanup", ResetAssetEarcs);
 
-        //RunWithTimer("earc porter", new Ps4EarcPorter().Run);
+        RunWithTimer("earc porter", new Ps4EarcPorter().Run);
         RunWithTimer("asset porter", new Ps4AssetPorter().Run);
 
         RunWithTimer("weird earc fixer", FixWeirdEarcs);
-        //RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
+        RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
     }
 
     private void BuildModFromFolder()
@@ -377,6 +377,16 @@ public class Ps4Porter
             }
 
             packer.WriteToFile(path);
+        }
+        
+        unpacker =
+            new Unpacker(
+                @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
+        if (!unpacker.HasFile("data://character/um/um20/entry/um20_160_hair00.ebex@"))
+        {
+            var packer = unpacker.ToPacker();
+            packer.AddReference("data://character/um/um20/entry/um20_160_hair00.ebex@", true);
+            packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
         }
     }
 

@@ -103,11 +103,14 @@ public class Ps4EarcPorter
             .Select(d => d.Child)
             .ToList();
         
+        var selfReference = ebex.Uri + "@";
+        
         Parallel.ForEach(children, child =>
         {
             lock (locker)
             {
-                if (!packer.HasFile(child.Uri + "@"))
+                var childUri = child.Uri + "@";
+                if (!packer.HasFile(childUri) && childUri != selfReference)
                 {
                     packer.AddReference(child.Uri + "@", true);
                 }
@@ -181,8 +184,7 @@ public class Ps4EarcPorter
                 }
             }
         }
-    
-        var selfReference = ebex.Uri + "@";
+        
         foreach (var (uri, _) in referenceDependencies)
         {
             if (!packer.HasFile(uri) && uri != selfReference)
