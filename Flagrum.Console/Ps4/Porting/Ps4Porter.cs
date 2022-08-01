@@ -56,7 +56,7 @@ public class Ps4Porter
         //FileFinder.FindStringInExml("whistle");
         //return;
 
-        OutputFileByUri("data://character/um/um20/entry/um20_160_hair00.ebex");
+        OutputFileByUri("data://data/ai/interactions/town/alt_mog/system/alt_mog_minigame1_receptionist.aiia.xml");
         return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();

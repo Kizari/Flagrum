@@ -95,9 +95,5 @@ window.interop = {
 
     scrollToElement: function (id) {
         document.getElementById(id).scrollIntoView({behavior: 'smooth'});
-    },
-
-    setFocusToElement: function (id) {
-        document.getElementById(id).focus();
     }
 }

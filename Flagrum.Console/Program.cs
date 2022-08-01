@@ -18,9 +18,14 @@ using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
-//FileFinder.FindStringInAllFiles("ALTI_MOG_FES_INTER_MOOGLE");
-//FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17083250));
-//return;
+// new FileFinder().FindByQuery(file => file.Uri == "data://data/ai/interactions/town/alt_mog/system/autoexternal.ebex@",
+//     (earc, file) => System.Console.WriteLine(earc + " - " + file.Uri),
+//     false);
+// return;
+
+//FileFinder.FindStringInAllFiles("alt_mog_minigame1_receptionist.aiia");
+FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17111186));
+return;
 
 // using var context = Ps4Utilities.NewContext();
 // var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
@@ -73,36 +78,36 @@ using Newtonsoft.Json;
 // }
 // return;
 
-var results = new Dictionary<string, bool>();
-new FileFinder().FindByQuery(file => file.Uri.Contains("/nh00/") && file.Uri.EndsWith(".gmdl"),
-    (earc, file) =>
-    {
-        Console.WriteLine($"Reading {file.Uri}");
-        try
-        {
-            using var context = new FlagrumDbContext(new SettingsService());
-            var gmdl = file.GetReadableData();
-            var gpubin = context.GetFileByUri(file.Uri.Replace(".gmdl", ".gpubin"));
-            var model = new ModelReader(gmdl, gpubin).Read();
-            foreach (var part in model.Parts)
-            {
-                results.TryAdd(part.Name, true);
-            }
-        }
-        catch
-        {
-            Console.WriteLine("Model read failed");
-        }
-        
-    }, 
-    true);
-
-Console.WriteLine("");
-foreach (var (name, _) in results)
-{
-    Console.WriteLine(name);
-}
-return;
+// var results = new Dictionary<string, bool>();
+// new FileFinder().FindByQuery(file => file.Uri.Contains("/nh00/") && file.Uri.EndsWith(".gmdl"),
+//     (earc, file) =>
+//     {
+//         Console.WriteLine($"Reading {file.Uri}");
+//         try
+//         {
+//             using var context = new FlagrumDbContext(new SettingsService());
+//             var gmdl = file.GetReadableData();
+//             var gpubin = context.GetFileByUri(file.Uri.Replace(".gmdl", ".gpubin"));
+//             var model = new ModelReader(gmdl, gpubin).Read();
+//             foreach (var part in model.Parts)
+//             {
+//                 results.TryAdd(part.Name, true);
+//             }
+//         }
+//         catch
+//         {
+//             Console.WriteLine("Model read failed");
+//         }
+//         
+//     }, 
+//     true);
+//
+// Console.WriteLine("");
+// foreach (var (name, _) in results)
+// {
+//     Console.WriteLine(name);
+// }
+// return;
 
 // new FileFinder().FindByQuery(file => file.Uri.Contains("altc_mog_kenny", StringComparison.OrdinalIgnoreCase),
 //     (earc, file) =>
