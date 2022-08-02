@@ -65,6 +65,7 @@ public static class Program
         var meshData = new Gpubin
         {
             BoneTable = boneTable,
+            Parts = model.Parts.ToDictionary(p => p.Id, p => p.Name),
             Meshes = model.MeshObjects.SelectMany(o => o.Meshes
                 .Where(m => m.LodNear == 0)
                 .Select(m =>
@@ -100,7 +101,8 @@ public static class Program
                         WeightIndices = m.WeightIndices,
                         WeightValues = m.WeightValues
                             .Select(n => n.Select(o => o.Select(p => (int)p).ToArray()).ToList())
-                            .ToList()
+                            .ToList(),
+                        MeshParts = m.MeshParts.ToList()
                     };
 
                     if (material != null)
@@ -142,7 +144,7 @@ public static class Program
                                         ? Directory.EnumerateFiles(sourceImagesDirectory)
                                             .Where(f => !f.EndsWith(".btex"))
                                         : new List<string>();
-                                    
+
                                     var finalPath = highImagesFiles.FirstOrDefault(f =>
                                                         f.Contains(fileNameWithoutExtension,
                                                             StringComparison.OrdinalIgnoreCase)) ??

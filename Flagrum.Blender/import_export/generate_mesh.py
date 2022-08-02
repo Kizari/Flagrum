@@ -1,14 +1,14 @@
 from array import array
 
 import bpy
-from bpy.types import Collection
+from bpy.types import Collection, IntAttribute
 from mathutils import Matrix, Vector
 
 from .import_context import ImportContext
 from ..entities import MeshData, BlenderTextureData
 
 
-def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table,
+def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table, parts,
                   use_correction_matrix: bool = True):
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
@@ -88,6 +88,31 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
 
     mesh_object = bpy.data.objects.new(mesh_data.Name, mesh)
     collection.objects.link(mesh_object)
+
+    # Add the parts system
+    if len(parts) > 0:
+        for parts_group in mesh_data.MeshParts:
+            parts_layer: IntAttribute = mesh.attributes.new(name=parts[str(parts_group.PartsId)], type='BOOLEAN',
+                                                            domain='FACE')
+
+            sequence = []
+            start_index = int(parts_group.StartIndex / 3)
+            index_count = int(parts_group.IndexCount / 3)
+            end_index = start_index + index_count
+            for i in range(len(mesh.polygons)):
+                sequence.append(start_index <= i < end_index)
+
+            parts_layer.data.foreach_set("value", sequence)
+
+            # new_group = mesh_object.flagrum_parts.parts_groups.add()
+            # new_group.name = parts[str(parts_group.PartsId)]
+            # for i in range(parts_group.StartIndex, parts_group.StartIndex + parts_group.IndexCount, 3):
+            #     matching_face = mesh.polygons[int(i / 3)]
+            #     for vertex_index in matching_face.vertices:
+            #         vertex = mesh.vertices[vertex_index]
+            #         new_group.vertices.append(vertex)
+            # new_vertex = new_group.vertices.add()
+            # new_vertex.vertex = vertex
 
     # Import custom normals
     mesh.update(calc_edges=True)

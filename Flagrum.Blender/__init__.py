@@ -13,11 +13,14 @@ from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, Flag
 from .panel.material_panel import MaterialEditorPanel, MaterialResetOperator, TextureSlotOperator, \
     ClearTextureOperator, MaterialImportOperator, MaterialCopyOperator, MaterialPasteOperator
 from .panel.normals_panel import UseCustomNormalsOperator, NormalsPanel, SplitEdgesOperator
-from .panel.rendering_panel import ToggleEmissionOperator, RenderingPanel
+from .panel.parts_panel import PartsSettings, PartsSystemPanel, PartsVertex, PartsGroup, AddPartsGroupOperator, \
+    PartsGroupsList, RemovePartsGroupOperator, SelectPartsGroupOperator, DeselectPartsGroupOperator, \
+    AssignPartsGroupOperator, UnassignPartsGroupOperator
+from .panel.rendering_panel import ToggleEmissionOperator, RenderingPanel, SetEmissionOperator
 
 bl_info = {
     "name": "Flagrum",
-    "version": (1, 2, 2),
+    "version": (1, 2, 3),
     "blender": (3, 0, 0),
     "location": "File > Import-Export",
     "description": "Blender add-on for Flagrum",
@@ -94,8 +97,20 @@ classes = (
     CleanupPanel,
     NormalsPanel,
     ToggleEmissionOperator,
+    SetEmissionOperator,
     RenderingPanel,
-    FlagrumGlobals
+    FlagrumGlobals,
+    PartsVertex,
+    PartsGroup,
+    PartsSettings,
+    AddPartsGroupOperator,
+    RemovePartsGroupOperator,
+    PartsGroupsList,
+    AssignPartsGroupOperator,
+    UnassignPartsGroupOperator,
+    SelectPartsGroupOperator,
+    DeselectPartsGroupOperator,
+    PartsSystemPanel
 )
 
 
@@ -115,6 +130,7 @@ def register():
     bpy.types.TOPBAR_MT_file_import.append(import_menu_item)
     bpy.types.TOPBAR_MT_file_export.append(export_menu_item)
     bpy.types.Object.flagrum_material = PointerProperty(type=MaterialSettings)
+    bpy.types.Object.flagrum_parts = PointerProperty(type=PartsSettings)
     bpy.types.WindowManager.flagrum_material_clipboard = PointerProperty(type=FlagrumMaterialPropertyCollection)
     bpy.types.WindowManager.flagrum_globals = PointerProperty(type=FlagrumGlobals)
 

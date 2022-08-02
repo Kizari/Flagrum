@@ -37,6 +37,20 @@ class ToggleEmissionOperator(Operator):
         return {'FINISHED'}
 
 
+class SetEmissionOperator(Operator):
+    bl_idname = "flagrum.rendering_set_emission"
+    bl_label = "Set Emission"
+    bl_description = "Sets the emission strength of all materials in the scene"
+
+    def execute(self, context):
+        for material in bpy.data.materials:
+            if material.node_tree is not None:
+                bsdf = material.node_tree.nodes["Principled BSDF"]
+                bsdf.inputs[20].default_value = context.window_manager.flagrum_globals.emission_strength
+
+        return {'FINISHED'}
+
+
 class RenderingPanel(Panel):
     bl_idname = "VIEW_3D_PT_flagrum_rendering"
     bl_label = "Rendering"
@@ -47,3 +61,6 @@ class RenderingPanel(Panel):
     def draw(self, context):
         layout = self.layout
         layout.operator(ToggleEmissionOperator.bl_idname)
+        box = layout.box()
+        box.prop(context.window_manager.flagrum_globals, "emission_strength")
+        box.operator(SetEmissionOperator.bl_idname)
