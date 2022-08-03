@@ -1,9 +1,11 @@
 <p align="center">
-    <img alt="Flagrum" src="Images/Readme/logo.png" />
+    <img alt="Flagrum" src="Images/Readme/logo.png" /><br/>
+    &nbsp;
 </p>
 
 ---
-<h3 align="center">An all-in-one solution for modders, artists, and players of Final Fantasy XV.</h3>
+<h3 align="center">An all-in-one solution for modders, artists, and players of Final Fantasy XV</h3>
+<p align="center">Join us over at the <a href="https://discord.gg/7cNNwwJKsJ">EXINERIS Discord</a> for discussion and collaboration!</p>
 
 ---
 &nbsp;
@@ -59,7 +61,7 @@
 <br/>
 <p align="center">
 These tools take a monumental amount of time and effort to develop.<br/>
-If you want to support the ongoing development of Flagrum and my other projects, please consider donating.<br/><br/><br/>
+If you want to support the ongoing development of Flagrum and my other XV projects, please consider donating.<br/><br/><br/>
 <a href="https://buymeacoffee.com/Exineris"><img width="200" src="https://i.imgur.com/cCLsrEb.png" alt="Buy us a coffee" /></a>
 </p>
 <p><br/></p>
@@ -73,11 +75,11 @@ If you want to support the ongoing development of Flagrum and my other projects,
 <br/>
 <h3 align="center">Contributors</h3>
 <p align="center">
-AsteriskAmpersand<br/>
 ImpatientTraveler<br/>
+Sai<br/>
+AsteriskAmpersand<br/>
 Katelynn Kittaly<br/>
-Rinual<br/>
-Sai
+Rinual
 </p>
 <br/>
 <h3 align="center">Special Thanks</h3>
