@@ -60,7 +60,8 @@ public static class OutfitTemplate
                     Meshes = gpubin.Meshes.Select(m => BuildMesh(m.Name,
                             Cryptography.HashFileUri64(
                                 $"data://mod/{modDirectoryName}/materials/{modelNamePrefix}{m.Name.ToSafeString()}_mat.gmtl"),
-                            m.Material.WeightLimit))
+                            m.Material.WeightLimit,
+                            m.MeshParts))
                         .ToList()
                 }
             },
@@ -140,7 +141,7 @@ public static class OutfitTemplate
         };
     }
 
-    private static Mesh BuildMesh(string meshName, ulong materialHash, int weightLimit)
+    private static Mesh BuildMesh(string meshName, ulong materialHash, int weightLimit, IEnumerable<MeshPart> meshParts)
     {
         return new Mesh
         {
@@ -150,14 +151,14 @@ public static class OutfitTemplate
             // These defaults work fine for all outfit meshes for now
             Flag = 262272,
             // NOTE: This is 262276 on nh00_010, this may be relevant in some capacity
-            Flags = 262272,
+            Flags = 262276,
 
             InstanceNumber = 0, // Seems to always be 0
-            LodNear = 0, // Not currently dealing with LODs
-            LodFar = 0, // Not currently dealing with LODs
-            LodFade = 0, // Not currently dealing with LODs
-            PartsId = 0, // Not currently supporting parts system
-            MeshParts = new List<MeshPart>(), // Leave empty, not currently supporting parts system
+            LodNear = 0,        // Not currently dealing with LODs
+            LodFar = 0,         // Not currently dealing with LODs
+            LodFade = 0,        // Not currently dealing with LODs
+            PartsId = PartsId.Dictionary["Parts_Base"],
+            MeshParts = meshParts,
             BreakableBoneIndex = 4294967295, // This appears to always be the same, equivalent to ushort.MaxValue
 
             DefaultMaterialHash = materialHash,

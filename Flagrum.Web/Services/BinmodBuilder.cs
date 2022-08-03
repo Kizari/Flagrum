@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmdl;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
@@ -103,6 +105,7 @@ public class BinmodBuilder
 
         foreach (var mesh in fmd.Gpubin.Meshes)
         {
+            mesh.UpdateForPartsSystem();
             var replacements = new Dictionary<string, string>();
             foreach (var (textureId, filePath) in mesh.Material.Textures)
             {
@@ -197,6 +200,20 @@ public class BinmodBuilder
         var replacer = new ModelReplacer(model, fmd.Gpubin);
         model = replacer.Replace(_mod.Type == (int)BinmodType.Character);
 
+        var parts = model.MeshObjects.SelectMany(mo => mo.Meshes
+                .SelectMany(m => m.MeshParts
+                    .Select(p => p.PartsId)))
+            .Distinct()
+            .OrderBy(p => p);
+
+        model.Parts = parts.Select(p => new ModelPart
+        {
+            Name = PartsId.Dictionary.FirstOrDefault(kvp => kvp.Value == p).Key,
+            Id = p,
+            Flags = false,
+            Unknown = string.Empty
+        });
+
         if (_mod.Type is (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon)
         {
             foreach (var bone in model.BoneHeaders)
@@ -241,6 +258,9 @@ public class BinmodBuilder
 
         var writer = new ModelWriter(model);
         var (gfxData, gpuData) = writer.Write();
+
+        File.WriteAllBytes(@"C:\Users\Kieran\Desktop\parts.gmdl.gfxbin", gfxData);
+        File.WriteAllBytes(@"C:\Users\Kieran\Desktop\parts.gpubin", gpuData);
 
         AddFile(GetDataPath($"{modelName}.gmdl"), gfxData);
         AddFile(GetDataPath($"{modelName}.gpubin"), gpuData);

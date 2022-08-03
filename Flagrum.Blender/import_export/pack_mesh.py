@@ -3,7 +3,7 @@ import bpy
 from bpy.types import Object, Mesh
 from mathutils import Matrix, Vector
 
-from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData
+from ..entities import Gpubin, UV, Vector3, MeshData, UVMap, ColorMap, Color4, Normal, MaterialData, PartsLayer
 from ..panel.material_data import material_weight_limit
 
 # Matrix that converts the axes back to FBX coordinate system
@@ -93,6 +93,7 @@ def pack_mesh(preserve_normals: bool):
             mesh.FaceIndices = _pack_faces(mesh_copy)
             mesh.UVMaps = _pack_uv_maps(mesh_copy)
             mesh.ColorMaps = _pack_color_maps(mesh_copy)
+            mesh.PartsLayers = _pack_parts_layers(mesh_copy)
             weight_indices, weight_values = _pack_weight_maps(mesh_copy, reverse_bone_table)
             mesh.WeightIndices = weight_indices
             mesh.WeightValues = weight_values
@@ -105,6 +106,27 @@ def pack_mesh(preserve_normals: bool):
             bpy.data.objects.remove(mesh_copy, do_unlink=True)
 
     return mesh_data
+
+
+def _pack_parts_layers(mesh: Object):
+    mesh_data: Mesh = mesh.data
+    parts_layers: list[PartsLayer] = []
+
+    for layer in mesh_data.attributes:
+        if layer.domain == 'FACE' and layer.data_type == 'BOOLEAN':
+            parts_layer = PartsLayer()
+            parts_layer.Name = layer.name
+            parts_layer.Faces = []
+            faces = [False] * len(mesh_data.polygons)
+            layer.data.foreach_get("value", faces)
+
+            for i in range(len(faces)):
+                if faces[i]:
+                    parts_layer.Faces.append(i)
+
+            parts_layers.append(parts_layer)
+
+    return parts_layers
 
 
 def _pack_normals_and_tangents(mesh: Object):
