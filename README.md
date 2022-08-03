@@ -13,7 +13,7 @@
 ![Asset Management](Images/Readme/asset.jpg)
 
 <pre align="center">
-<h3>● Browse and preview game files without extracting anything<br/>
+<h3>    ● Browse and preview game files without extracting anything<br/>
     ● The largest range of asset conversions available of any FFXV tools<br/>
     ● Export environments and terrain effortlessly</h3>
 </pre>
@@ -25,7 +25,7 @@
 ![Gameplay Mods](Images/Readme/gameplay.jpg)
 
 <pre align="center">
-<h3>● Install, manage, create, edit, and toggle mods at will<br/>
+<h3>    ● Install, manage, create, edit, and toggle mods at will<br/>
     ● Built-in tooling to make gameplay modding more manageable<br/>
     ● Easily export your mods for distribution</h3>
 </pre>
@@ -37,7 +37,7 @@
 ![Steam Workshop Mods](Images/Readme/workshop.jpg)
 
 <pre align="center">
-<h3>● View and manage your Steam Workshop mods and limits<br/>
+<h3>    ● View and manage your Steam Workshop mods and limits<br/>
     ● Alter stats of any outfits you have downloaded from Steam Workshop<br/>
     ● Fast and easy creation of your own Steam Workshop mods</h3>
 </pre>
@@ -50,7 +50,8 @@
 <p align="center">Download the latest version and follow the instructions on the <a href="https://github.com/Kizari/Flagrum/releases/latest">Releases Page</a>.</p>
 <br/>
 <h3 align="center">Tutorials and Documentation</h3>
-<p align="center">All of Flagrum's incredible documentation can be found on the <a href="https://github.com/Kizari/Flagrum/wiki">EXINERIS Wiki</a>.</p>
+<p align="center">All of Flagrum's incredible documentation can be found on the <a href="https://github.com/Kizari/Flagrum/wiki">EXINERIS Wiki</a>.<br/><br/></p>
+<p><br/></p>
 &nbsp;
 <p><br/></p>
 
@@ -58,9 +59,10 @@
 <br/>
 <p align="center">
 These tools take a monumental amount of time and effort to develop.<br/>
-If you want to support the ongoing development of Flagrum and my other modding projects, please consider donating.<br/><br/><br/>
+If you want to support the ongoing development of Flagrum and my other projects, please consider donating.<br/><br/><br/>
 <a href="https://buymeacoffee.com/Exineris"><img width="200" src="https://i.imgur.com/cCLsrEb.png" alt="Buy us a coffee" /></a>
 </p>
+<p><br/></p>
 &nbsp;
 <p><br/></p>
 
