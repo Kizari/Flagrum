@@ -22,27 +22,37 @@ public class Ps4DependencyTreeBuilder
         const string uri = "data://level/dlc_ex/mog/area_ravettrice_mog.ebex";
         var data = Ps4Utilities.GetFileByUri(context, uri);
         
-        var root = TraverseEbexTree(uri, data, null);
+        _ = TraverseEbexTree(uri, data, null);
 
-        var edgeCases = context.Ps4AssetUris.Where(a =>
-                a.Uri.StartsWith("data://character/") && a.Uri.Contains("/entry/") && a.Uri.EndsWith("_mog.ebex"))
-            .Select(a => a.Uri)
-            .ToList();
-        
-        edgeCases.Add("data://character/um/um20/entry/um20_001_hair00.ebex");
-        
-        foreach (var ebexUri in edgeCases.Where(ebexUri => !_dependencyLinks.Any(l => l.Child.Uri == ebexUri)))
-        {
-            _dependencyLinks.Add(new FestivalDependencyFestivalDependency
-            {
-                Parent = root,
-                Child = new FestivalDependency {Uri = ebexUri}
-            });
-        }
+        // var edgeCases = context.Ps4AssetUris.Where(a =>
+        //         a.Uri.StartsWith("data://character/") && a.Uri.Contains("/entry/") && a.Uri.EndsWith("_mog.ebex"))
+        //     .Select(a => a.Uri)
+        //     .ToList();
+        //
+        // edgeCases.Add("data://character/um/um20/entry/um20_001_hair00.ebex");
+        //
+        // foreach (var ebexUri in edgeCases.Where(ebexUri => !_dependencyLinks.Any(l => l.Child.Uri == ebexUri)))
+        // {
+        //     _dependencyLinks.Add(new FestivalDependencyFestivalDependency
+        //     {
+        //         Parent = root,
+        //         Child = new FestivalDependency {Uri = ebexUri}
+        //     });
+        // }
         
         context.FestivalDependencyFestivalDependency.AddRange(_dependencyLinks);
         context.SaveChanges();
         context.ChangeTracker.Clear();
+    }
+
+    public void Test()
+    {
+        using var context = Ps4Utilities.NewContext();
+        var uri = "data://character/uw/uw05/entry/uw05_100_hair01_mog.ebex";
+        var data = Ps4Utilities.GetFileByUri(context, uri);
+        
+        var root = TraverseEbexTree("data://character/uw/uw05/entry/uw05_100_hair01_mog.ebex", data, null);
+        bool x = true;
     }
     
     private FestivalDependency TraverseEbexTree(string uri, byte[] xmb2, FestivalDependency parent)
@@ -90,6 +100,31 @@ public class Ps4DependencyTreeBuilder
         var root = Xmb2Document.GetRootElement(xmb2);
         var objects = root.GetElementByName("objects");
         var elements = objects.GetElements();
+
+        if (uri == "data://level/dlc_ex/mog/area_ravettrice_mog.ebex")
+        {
+            var context = Ps4Utilities.NewContext();
+            var edgeCases = context.Ps4AssetUris.Where(a =>
+                    a.Uri.StartsWith("data://character/") && a.Uri.Contains("/entry/") && a.Uri.EndsWith("_mog.ebex"))
+                .Select(a => a.Uri)
+                .ToList();
+            
+            edgeCases.Add("data://character/um/um20/entry/um20_001_hair00.ebex");
+            
+            foreach (var ebexUri in edgeCases)
+            {
+                byte[] innerXmb2;
+                using (var innerContext = Ps4Utilities.NewContext())
+                {
+                    innerXmb2 = Ps4Utilities.GetFileByUri(innerContext, ebexUri);
+                }
+
+                if (innerXmb2.Length > 0)
+                {
+                    _ = TraverseEbexTree(ebexUri, innerXmb2, current);
+                }
+            }
+        }
 
         Parallel.ForEach(elements, element =>
         {

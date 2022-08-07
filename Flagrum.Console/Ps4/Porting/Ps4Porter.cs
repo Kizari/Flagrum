@@ -25,56 +25,33 @@ public class Ps4Porter
     {
         _settings.GamePath = Ps4PorterConfiguration.GamePath;
         _pcSettings = new SettingsService();
-        
-        //DumpNoctisAnimations();
+
+        //FileFinder.FindStringInAllFiles("alt_com_cajon.aiia");
         //return;
 
-        // using var context = Ps4Utilities.NewContext();
-        // var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
-        // var assets = JsonConvert.DeserializeObject<List<string>>(json)!;
-        //
-        // foreach (var asset in assets.Where(a => a.EndsWith(".anmgph")))
-        // {
-        //     var data = Ps4Utilities.GetFileByUri(context, asset);
-        //     if (AnimationGraph.GetDependencies(data).Any())
-        //     {
-        //         foreach (var dependency in AnimationGraph.GetDependencies(data))
-        //         {
-        //             System.Console.WriteLine(dependency);
-        //         }
-        //     }
-        // }
-        //
-        // return;
-
-        //Copy4KPackFromReleaseBuild();
+        //FileFinder.FindStringInExml("uc/common/anim/pack/altissia_newyear2017.pka");
         //return;
 
-        //FileFinder.FindStringInAllFiles("talk_basic_facial.ani");
+        //OutputFileByUri("data://event/quest_rte/scenario_ch02/qt_ch02_0032_00_ev030/qt_ch02_0032_00_ev030.ebex");
         //return;
-
-        //FileFinder.FindStringInExml("whistle");
-        //return;
-
-        OutputFileByUri("data://data/ai/interactions/town/alt_mog/system/alt_mog_minigame1_receptionist.aiia.xml");
-        return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();
         //return;
 
-        // var material = new MaterialReader(File.ReadAllBytes(@"C:\Modding\Chocomog\Testing\ex_pr_illumi_mt.gmtl.gfxbin")).Read();
-        // foreach (var shaderUri in material.Header.Dependencies.Where(d => d.Path.EndsWith(".sb")))
-        // {
-        //     System.Console.WriteLine(shaderUri.Path);
-        // }
-        //
-        // return;
+        //RunWithTimer("dependency tree build", new Ps4DependencyTreeBuilder().Run);
+        //RunWithTimer("subdependency tree build", new Ps4SubdependencyTreeBuilder().Run);
+        //RunWithTimer("model dependency tree build", new Ps4ModelDependencyTreeBuilder().Run);
+        //RunWithTimer("material dependency tree build", new Ps4MaterialDependencyTreeBuilder().Run);
 
-        // using var context = Ps4Utilities.NewContext();
-        // var data = Ps4Utilities.GetFileByUri(context,
-        //     "data://character/pr/pr56/model_002/materials/al_pr_mog01_flag_b.gmtl");
-        // var material = new MaterialReader(data).Read();
-        // return;
+        //RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
+        //RunWithTimer("asset earc cleanup", ResetAssetEarcs);
+
+        //RunWithTimer("earc porter", new Ps4EarcPorter().RunSingleEarc);
+        //RunWithTimer("asset porter", new Ps4AssetPorter().Run);
+
+        //RunWithTimer("weird earc fixer", FixWeirdEarcsSingle);
+        //RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
+        //AddNaviStuffToMainEarc();
 
         // var names = new ConcurrentDictionary<string, bool>();
         // using var context = Ps4Utilities.NewContext();
@@ -184,12 +161,6 @@ public class Ps4Porter
         //     false);
         // return;
 
-        //RunWithTimer("dependency tree build", new Ps4DependencyTreeBuilder().Run);
-        //RunWithTimer("subdependency tree build", new Ps4SubdependencyTreeBuilder().Run);
-        //RunWithTimer("model dependency tree build", new Ps4ModelDependencyTreeBuilder().Run);
-        //RunWithTimer("material dependency tree build", new Ps4MaterialDependencyTreeBuilder().Run);
-        // return;
-
         // var context = Ps4Utilities.NewContext();
         // var recursiveDependencies = context.FestivalDependencyFestivalDependency
         //     .Where(l => l.ChildId == l.ParentId)
@@ -234,28 +205,19 @@ public class Ps4Porter
         // context.FestivalSubdependencies.AddRange(usAnis);
         // context.SaveChanges();
         // return;
-
-        RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
-        RunWithTimer("asset earc cleanup", ResetAssetEarcs);
-
-        RunWithTimer("earc porter", new Ps4EarcPorter().Run);
-        RunWithTimer("asset porter", new Ps4AssetPorter().Run);
-
-        RunWithTimer("weird earc fixer", FixWeirdEarcs);
-        RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
     }
 
     private void BuildModFromFolder()
     {
         using var context = new FlagrumDbContext(_pcSettings);
-        var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\AnimationDump\hashTable.json");
+        var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json");
         var hashTable = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json)!;
 
         var mod = new EarcMod
         {
-            Name = "Noctis PS4 Animations",
+            Name = "PS4 Event Bins",
             Author = "Kizari",
-            Description = "Replaces Noctis' animations with the PS4 equivalents.",
+            Description = "Test",
             IsActive = false
         };
 
@@ -285,13 +247,30 @@ public class Ps4Porter
             earc.Replacements.Add(new EarcModReplacement
             {
                 Uri = uri,
-                ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\AnimationDump\{hash}",
+                ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\BinsDump\{hash}",
                 Type = EarcChangeType.Replace
             });
         }
 
         context.Add(mod);
         context.SaveChanges();
+    }
+
+    private static void DumpBins()
+    {
+        var hashTable = new Dictionary<ulong, string>();
+
+        using var context = Ps4Utilities.NewContext();
+        foreach (var asset in context.Ps4AssetUris.Where(a => a.Uri.EndsWith(".bins")))
+        {
+            var hash = Cryptography.HashFileUri64(asset.Uri);
+            hashTable.Add(hash, asset.Uri);
+
+            var data = Ps4Utilities.GetFileByUri(context, asset.Uri);
+            File.WriteAllBytes(@$"C:\Modding\Chocomog\Testing\BinsDump\{hash}", data);
+        }
+        
+        File.WriteAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json", JsonConvert.SerializeObject(hashTable));
     }
 
     private static void DumpNoctisAnimations()
@@ -362,32 +341,78 @@ public class Ps4Porter
                     a.Uri.StartsWith("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/"))
                 .Select(a => a.Uri)
                 .ToList();
-
-            data = Ps4Utilities.GetFileByUri(context,
-                "data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world");
+            
             path = $@"{_pcSettings.GameDataDirectory}\level\dlc_ex\mog\worldshare\worldshare_mog.earc";
             unpacker = new Unpacker(path);
             packer = unpacker.ToPacker();
-            packer.AddCompressedFile("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world", data);
+
+            if (!packer.HasFile("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world"))
+            {
+                data = Ps4Utilities.GetFileByUri(context,
+                    "data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world");
+                packer.AddCompressedFile("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world",
+                    data);
+            }
 
             foreach (var cell in cells)
             {
-                var cellData = Ps4Utilities.GetFileByUri(context, cell);
-                packer.AddCompressedFile(cell, cellData);
+                if (!packer.HasFile(cell))
+                {
+                    var cellData = Ps4Utilities.GetFileByUri(context, cell);
+                    packer.AddCompressedFile(cell, cellData);
+                }
             }
 
             packer.WriteToFile(path);
         }
         
-        unpacker =
-            new Unpacker(
-                @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
-        if (!unpacker.HasFile("data://character/um/um20/entry/um20_160_hair00.ebex@"))
+        // unpacker =
+        //     new Unpacker(
+        //         @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
+        // if (!unpacker.HasFile("data://character/um/um20/entry/um20_160_hair00.ebex@"))
+        // {
+        //     var packer = unpacker.ToPacker();
+        //     packer.AddReference("data://character/um/um20/entry/um20_160_hair00.ebex@", true);
+        //     packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
+        // }
+    }
+
+    private void FixWeirdEarcsSingle()
+    {
+        var context = Ps4Utilities.NewContext();
+        var data = Ps4Utilities.GetFileByUri(context, "data://celltool_dlc_mog.mid");
+        var path = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc";
+        var unpacker = new Unpacker(path);
+        var packer = unpacker.ToPacker();
+
+        if (!unpacker.HasFile("data://celltool_dlc_mog.mid"))
         {
-            var packer = unpacker.ToPacker();
-            packer.AddReference("data://character/um/um20/entry/um20_160_hair00.ebex@", true);
-            packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
+            packer.AddCompressedFile("data://celltool_dlc_mog.mid", data);
         }
+
+        var cells = context.Ps4AssetUris.Where(a =>
+                a.Uri.StartsWith("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/"))
+            .Select(a => a.Uri)
+            .ToList();
+
+        if (!packer.HasFile("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world"))
+        {
+            data = Ps4Utilities.GetFileByUri(context,
+                "data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world");
+            packer.AddCompressedFile("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/data.nav_world",
+                data);
+        }
+
+        foreach (var cell in cells)
+        {
+            if (!packer.HasFile(cell))
+            {
+                var cellData = Ps4Utilities.GetFileByUri(context, cell);
+                packer.AddCompressedFile(cell, cellData);
+            }
+        }
+
+        packer.WriteToFile(path);
     }
 
     private void ResetEbexEarcs()
@@ -469,5 +494,28 @@ public class Ps4Porter
                 }
             }
         }
+    }
+
+    private void AddNaviStuffToMainEarc()
+    {
+        var context = Ps4Utilities.NewContext();
+        var path = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc";
+        var unpacker = new Unpacker(path);
+        var packer = unpacker.ToPacker();
+
+        var diff = @"C:\Users\Kieran\Desktop\diff.json";
+        var diffJson = File.ReadAllText(diff);
+        var differences = JsonConvert.DeserializeObject<List<string>>(diffJson)!;
+
+        foreach (var item in differences.Where(d => d.StartsWith("data://navimesh")))
+        {
+            if (!packer.HasFile(item))
+            {
+                var data = Ps4Utilities.GetFileByUri(context, item);
+                packer.AddCompressedFile(item, data, true);
+            }
+        }
+        
+        packer.WriteToFile(path);
     }
 }

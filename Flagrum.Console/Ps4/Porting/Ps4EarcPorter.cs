@@ -199,10 +199,51 @@ public class Ps4EarcPorter
         packer.WriteToFile(outputPath);
         _modifiedEarcs.Add(outputPath);
     }
+
+    private object _ebexLock = new();
+
+    public void ReferenceTest()
+    {
+        using var context = Ps4Utilities.NewContext();
+        ReferenceTestRecursive(context.FestivalDependencies.First(d => d.Uri == "data://level/dlc_ex/mog/area_ravettrice_mog.ebex"));
+    }
+
+    private void ReferenceTestRecursive(FestivalDependency ebex)
+    {
+        using var context = Ps4Utilities.NewContext();
+        var pcContext = new FlagrumDbContext(_pcSettings);
+        var match = pcContext.AssetUris
+            .Where(a => a.Uri == ebex.Uri)
+            .Select(a => new
+            {
+                a.Uri,
+                a.ArchiveLocation.Path
+            })
+            .FirstOrDefault();
+
+        if (match != null)
+        {
+            var archivePathAsUri = "data://" + match.Path.Replace('\\', '/');
+            archivePathAsUri = archivePathAsUri[..archivePathAsUri.LastIndexOf('.')];
+            var matchUri = match.Uri[..match.Uri.LastIndexOf('.')];
+            
+            if (archivePathAsUri != matchUri)
+            {
+                System.Console.WriteLine($"{matchUri} is in {archivePathAsUri}");
+            }
+        }
+        
+        var children = context.FestivalDependencyFestivalDependency
+            .Where(d => d.ParentId == ebex.Id)
+            .Select(d => d.Child)
+            .ToList();
+        
+        Parallel.ForEach(children, ReferenceTestRecursive);
+    }
     
     private void CreateEarcRecursivelySingle(FestivalDependency ebex, Packer packer)
     {
-        lock (ebex)
+        lock (_ebexLock)    //(ebex)
         {
             if (_dependencies.ContainsKey(ebex.Uri))
             {
@@ -267,11 +308,10 @@ public class Ps4EarcPorter
                     referenceUri = subdependency.Uri;
                 }
             }
-
-            if (referenceUri != null)
-            {
-                referenceDependencies.TryAdd(referenceUri, true);
-            }
+            
+            var reference = referenceUri ?? subdependency.Uri[..subdependency.Uri.LastIndexOf('/')].ToLower() +
+                "/autoexternal.ebex@";
+            referenceDependencies.TryAdd(reference, true);
 
             var modelDependencies = context.FestivalSubdependencyFestivalModelDependency
                 .Where(s => s.SubdependencyId == subdependency.Id)
@@ -282,10 +322,10 @@ public class Ps4EarcPorter
             {
                 _assets.TryAdd(modelDependency.Uri.ToLower(), true);
                 var modelReferenceUri = GetExistingReferenceUri(pcContext, modelDependency.Uri);
-                if (modelReferenceUri != null)
-                {
-                    referenceDependencies.TryAdd(modelReferenceUri, true);
-                }
+                var modelReference = modelReferenceUri ??
+                                     modelDependency.Uri[..modelDependency.Uri.LastIndexOf('/')].ToLower() +
+                                     "/autoexternal.ebex@";
+                referenceDependencies.TryAdd(modelReference, true);
 
                 var materialDependencies = context.FestivalModelDependencyFestivalMaterialDependency
                     .Where(m => m.ModelDependencyId == modelDependency.Id)
@@ -296,17 +336,18 @@ public class Ps4EarcPorter
                 {
                     if (materialDependency.Uri.EndsWith(".htpk"))
                     {
-                        //_assets.TryAdd(materialDependency.Uri.ToLower(), true);
-                        //referenceDependencies.TryAdd(materialDependency.Uri, true);
+                        _assets.TryAdd(materialDependency.Uri.ToLower(), true);
+                        referenceDependencies.TryAdd(materialDependency.Uri, true);
                     }
                     else
                     {
                         _assets.TryAdd(materialDependency.Uri.ToLower(), true);
                         var materialReferenceUri = GetExistingReferenceUri(pcContext, materialDependency.Uri);
-                        if (materialReferenceUri != null)
-                        {
-                            referenceDependencies.TryAdd(materialReferenceUri, true);
-                        }
+                        var materialReference = materialReferenceUri ??
+                                                materialDependency.Uri[..materialDependency.Uri.LastIndexOf('/')]
+                                                    .ToLower() +
+                                                "/autoexternal.ebex@";
+                        referenceDependencies.TryAdd(materialReference, true);
                     }
                 }
             }

@@ -18,13 +18,33 @@ using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
+// Asset references are not being added to the single earc correctly so the test can't be validated
+// Need to get that working to see if the missing NPCs issue is being caused by
+// improper script referencing
+// using var unpacker =
+//     new Unpacker(
+//         @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
+// var matches = unpacker.Files.Where(f => f.Uri.Contains("uw20"));
+// foreach (var match in matches)
+// {
+//     Console.WriteLine(match.Uri);
+// }
+//
+// return;
+
+//new Ps4EarcPorter().ReferenceTest();
+//return;
+//new Ps4Porter().Run();
+//return;
+
 // new FileFinder().FindByQuery(file => file.Uri == "data://data/ai/interactions/town/alt_mog/system/autoexternal.ebex@",
 //     (earc, file) => System.Console.WriteLine(earc + " - " + file.Uri),
 //     false);
 // return;
 
-//FileFinder.FindStringInAllFiles("alt_mog_minigame1_receptionist.aiia");
-FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17111186));
+//FileFinder.FindStringInAllFiles("uw05_100_hair01_mog.ebex");
+//FileFinder.FindStringInExml("Black.AI.Ambient.AmbientSpawnPointEntity");
+FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17108094));
 return;
 
 // using var context = Ps4Utilities.NewContext();
@@ -44,39 +64,6 @@ return;
 
 //FileFinder.FindStringInExml("luchil");
 //return;
-
-// var results = new ConcurrentDictionary<string, List<string>>();
-// new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
-//     (earc, file) =>
-//     {
-//         var data = file.GetReadableData();
-//         var output = new StringBuilder();
-//         Xmb2Document.Dump(data, output);
-//
-//         var xml = output.ToString();
-//         var matches = Regex.Matches(xml, "^.+?um20_002.+?$", RegexOptions.Multiline);
-//
-//         if (matches.Any())
-//         {
-//             var list = new List<string>();
-//             results.TryAdd(file.Uri, list);
-//             foreach (Match match in matches)
-//             {
-//                 list.Add(match.Value);
-//             }
-//         }
-//     },
-//     true);
-//
-// foreach (var (uri, list) in results)
-// {
-//     Console.WriteLine("\n" + uri);
-//     foreach (var match in list)
-//     {
-//         Console.WriteLine(match);
-//     }
-// }
-// return;
 
 // var results = new Dictionary<string, bool>();
 // new FileFinder().FindByQuery(file => file.Uri.Contains("/nh00/") && file.Uri.EndsWith(".gmdl"),
@@ -126,9 +113,6 @@ return;
 // }
 
 //return;
-
-new Ps4Porter().Run();
-return;
 
 // var clip = AnimationClip.FromData(
 //     //File.ReadAllBytes(@"C:\Users\Kieran\Desktop\Models2\um02\um02.amdl"),
@@ -241,165 +225,6 @@ return;
 // }
 // Console.WriteLine(builder.ToString());
 // return;
-
-var boneMap = new Dictionary<string, string>
-{
-    {"L_gloveAll", "L_Index1"},
-    {"L_gloveB", "L_SleeveA1"},
-    {"L_gloveC", "L_Index1"},
-    {"L_gloveD", "L_Index1"},
-    {"L_gloveE", "L_Index1"},
-    {"L_gloveA", "L_Index1"},
-    {"L_VRSSleeveRoot", "R_FemorisBKdi"},
-    {"L_VRSSleeveH1", "L_PantscordA1"},
-    {"L_VRSSleeveE1", "L_Index1"},
-    {"L_VRSSleeveD1", "L_Index1"},
-    {"L_VRSSleeveC1", "L_Index1"},
-    {"L_VRSSleeveB1", "L_Index1"},
-    {"L_VRSSleeveA1", "L_Index1"},
-    {"L_VRSSleeveF1", "R_CollarRoot"},
-    {"L_VRSSleeveG1", "R_SleeveAll"},
-    {"R_gloveAll", "L_Middle1"},
-    {"R_gloveB", "L_CollarRoot"},
-    {"R_gloveC", "L_Middle1"},
-    {"R_gloveD", "L_Middle1"},
-    {"R_gloveE", "L_Middle1"},
-    {"R_gloveA", "L_Middle1"},
-    {"R_VRSSleeveRoot", "L_KneeKdi"},
-    {"R_VRSSleeveH1", "R_SleeveH1"},
-    {"R_VRSSleeveE1", "L_Middle1"},
-    {"R_VRSSleeveD1", "L_Middle1"},
-    {"R_VRSSleeveC1", "L_Middle1"},
-    {"R_VRSSleeveB1", "L_Middle1"},
-    {"R_VRSSleeveA1", "L_Middle1"},
-    {"R_VRSSleeveF1", "R_CollarRoot"},
-    {"R_VRSSleeveG1", "R_SleeveAll"},
-    {"C_VRSbelt1", "L_ZipperD"},
-    {"C_VRSbelt2", "R_JacketF4"},
-    {"C_VRSbelt3", "L_Middle1"},
-    {"C_VRSbelt4", "L_Pinky2"},
-    {"C_VRSbelt5", "R_JacketA6"},
-    {"C_VRSbelt6", "R_Thumb2"},
-    {"C_VRSbelt7", "C_JacketR3"},
-    {"L_VRSPouchAKdi", "R_ZipperB"},
-    {"L_VRSPouchBKdi", "L_ZipperDKdi"},
-    {"L_VRSPouchCKdi", "R_CollarRoot"},
-    {"b_VRSbelt1", "L_Middle1"},
-    {"b_VRSbelt2", "L_JacketE5"},
-    {"b_VRSbelt3", "L_Middle1"},
-    {"b_VRSbelt4", "L_JacketC2"},
-    {"L_VRSBootsRoll", "L_BootsRoll"},
-    {"L_VRSShoelaceB", "R_ShoelaceA"},
-    {"L_VRSShoelaceA", "R_JacketE1"},
-    {"L_PantsSubA", "L_ZipperB"},
-    {"L_PantsSubB", "L_ZipperB"},
-    {"L_PantsSubC", "L_ZipperB"},
-    {"L_PantsSubD", "L_ZipperB"},
-    {"L_PantsSubE", "L_ZipperB"},
-    {"L_PantsSubF", "L_ZipperBKdi"},
-    {"L_PantsSubG", "L_ZipperB"},
-    {"L_PantsSubI", "R_SleeveAll"},
-    {"R_VRSBootsRoll", "R_BootsRoll"},
-    {"R_VRSShoelaceA", "R_ShoelaceA"},
-    {"R_VRSShoelaceB", "L_JacketE1"},
-    {"R_PantsSubG", "L_ZipperB"},
-    {"R_PantsSubF", "L_ZipperBKdi"},
-    {"R_PantsSubD", "L_ZipperBKdi"},
-    {"R_PantsSubC", "L_ZipperB"},
-    {"R_PantsSubB", "L_ZipperB"},
-    {"R_PantsSubA", "L_ZipperBKdi"},
-    {"R_PantsSubI", "L_ZipperD"},
-    {"C_VRSJacketA1", "L_BootsB"},
-    {"L_VRSJacketA", "L_JacketC4"},
-    {"L_VRSJacketA1", "L_Middle1"},
-    {"L_VRSJacketA2", "C_JacketL3"},
-    {"L_VRSJacketA3", "L_JacketA6"},
-    {"L_VRSJacketA4", "L_Middle2"},
-    {"R_VRSJacketA", "L_PantscordB3"},
-    {"R_VRSJacketA1", "L_Middle1"},
-    {"R_VRSJacketA2", "L_JacketF8"},
-    {"R_VRSJacketA3", "L_PantscordB2"},
-    {"R_VRSJacketA4", "C_Spine3"},
-    {"C_VRSZipper", "R_ZipperBKdi"},
-    {"L_VRSJacketD", "L_Index1"},
-    {"L_VRSJacketD1", "R_JacketC3"},
-    {"L_VRSJacketD2", "L_Index1"},
-    {"L_VRSJacketD3", "R_JacketB2"},
-    {"L_VRSJacketD4", "C_Neck1"},
-    {"L_VRSJacketD5", "L_PantscordB3"},
-    {"L_VRSJacketE", "L_BootsB"},
-    {"L_VRSJacketE1", "R_Ring2"},
-    {"L_VRSJacketE2", "R_JacketC3"},
-    {"L_VRSJacketE3", "L_Index1"},
-    {"L_VRSJacketE4", "R_JacketD3"},
-    {"L_VRSJacketE5", "R_JacketC3"},
-    {"L_VRSJacketF", "L_BootsB"},
-    {"L_VRSJacketF1", "L_Toe"},
-    {"L_VRSJacketF2", "L_Index1"},
-    {"L_VRSJacketF3", "R_PantscordA4"},
-    {"L_VRSJacketF4", "L_Middle2"},
-    {"L_VRSJacketF5", "R_JacketF9"},
-    {"L_VRSJacketG", "R_ShoelaceA"},
-    {"L_VRSJacketG1", "R_JacketE2"},
-    {"L_VRSJacketG2", "L_Index1"},
-    {"L_VRSJacketG3", "L_PantscordB3"},
-    {"L_VRSJacketG4", "L_JacketA6"},
-    {"L_VRSJacketG5", "L_PantscordB2"},
-    {"C_VRSJacketE1", "R_ShoelaceA"},
-    {"C_VRSJacketE2", "R_JacketF9"},
-    {"C_VRSJacketE3", "L_Middle1"},
-    {"C_VRSJacketE4", "R_JacketE8"},
-    {"C_VRSJacketE5", "L_UpperArm"},
-    {"C_VRSJacketE6", "C_Jacket3"},
-    {"R_VRSJacketD", "R_SleeveH1"},
-    {"R_VRSJacketD1", "R_JacketD5"},
-    {"R_VRSJacketD2", "L_Middle1"},
-    {"R_VRSJacketD3", "R_JacketC7"},
-    {"R_VRSJacketD4", "R_JacketC6"},
-    {"R_VRSJacketD5", "R_JacketC6"},
-    {"R_VRSJacketG", "R_ShoelaceA"},
-    {"R_VRSJacketG1", "R_JacketE7"},
-    {"R_VRSJacketG2", "L_Middle1"},
-    {"R_VRSJacketG3", "L_JacketA7"},
-    {"R_VRSJacketG4", "R_JacketF9"},
-    {"R_VRSJacketG5", "R_JacketF9"},
-    {"R_VRSJacketF", "R_SleeveH1"},
-    {"R_VRSJacketF1", "R_Middle2"},
-    {"R_VRSJacketF2", "L_Middle1"},
-    {"R_VRSJacketF3", "L_PantscordB3"},
-    {"R_VRSJacketF4", "L_JacketD4"},
-    {"R_VRSJacketF5", "L_JacketF3"},
-    {"R_VRSJacketE", "R_SleeveH1"},
-    {"R_VRSJacketE1", "R_JacketD6"},
-    {"R_VRSJacketE2", "L_Middle1"},
-    {"R_VRSJacketE3", "R_JacketB2"},
-    {"R_VRSJacketE4", "R_JacketF9"},
-    {"R_VRSJacketE5", "L_JacketC3"},
-    {"R_VRSJacketC1", "L_ZipperBKdi"},
-    {"R_VRSJacketC2", "L_JacketB3"},
-    {"R_VRSJacketC3", "L_Middle1"},
-    {"R_VRSJacketC4", "L_JacketC7"},
-    {"R_VRSJacketC5", "R_JacketE8"},
-    {"R_VRSJacketC6", "R_Ring1"},
-    {"L_VRSJacketC1", "L_ZipperDKdi"},
-    {"L_VRSJacketC2", "L_JacketB5"},
-    {"L_VRSJacketC3", "R_Ring1"},
-    {"L_VRSJacketC4", "L_Index1"},
-    {"L_VRSJacketC5", "R_Ring3"},
-    {"L_VRSJacketC6", "L_JacketC6"},
-    {"L_VRSJacketB1", "L_ZipperBKdi"},
-    {"L_VRSJacketB2", "L_JacketA2"},
-    {"L_VRSJacketB3", "L_JacketA6"},
-    {"L_VRSJacketB4", "L_Index1"},
-    {"L_VRSJacketB5", "L_JacketF9"},
-    {"L_VRSJacketB6", "L_JacketF6"},
-    {"R_VRSJacketB1", "L_ZipperB"},
-    {"R_VRSJacketB2", "L_JacketC4"},
-    {"R_VRSJacketB3", "L_Middle1"},
-    {"R_VRSJacketB4", "C_Spine3"},
-    {"R_VRSJacketB5", "L_JacketF9"},
-    {"R_VRSJacketB6", "R_JacketF9"}
-};
 
 // var gmdl = @"C:\Mega\Modding\CutContent\nh00_retailps4\model_050\nh00_050.gmdl.gfxbin";
 // var gpubin = @"C:\Mega\Modding\CutContent\nh00_retailps4\model_050\nh00_050.gpubin";
@@ -546,3 +371,102 @@ var animationModel = AnimationModel.FromData(amdl, false);
 //     stream.ToArray());
 //
 // var x = true;
+
+void GenerateDiff()
+{
+    using var ps4Context = Ps4Utilities.NewContext();
+    using var pcContext = new FlagrumDbContext(new SettingsService());
+    
+    var diff = new List<string>();
+    foreach (var uri in ps4Context.Ps4AssetUris.Where(a => !a.Uri.EndsWith("@") && !a.Uri.EndsWith(".htpk") && !a.Uri.EndsWith(".tif") && !a.Uri.EndsWith(".sb")).Select(a => a.Uri))
+    //foreach (var uri in ps4Context.Ps4AssetUris.Where(a => a.Uri.EndsWith(".ebex")).Select(a => a.Uri))
+    {
+        if (!pcContext.AssetUris.Any(a => a.Uri == uri))
+        {
+            diff.Add(uri);
+        }
+    }
+    
+    File.WriteAllText(@"C:\Users\Kieran\Desktop\diff.json", JsonConvert.SerializeObject(diff.Distinct().OrderBy(d => d), Formatting.Indented));
+}
+
+void GenerateFixidCsv()
+{
+    var lockObject = new object();
+    var results = new Dictionary<uint, List<string>>();
+    new FileFinder().FindByQuery(file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+        (earc, file) =>
+        {
+            var data = file.GetReadableData();
+            var output = new StringBuilder();
+            Xmb2Document.Dump(data, output);
+
+            var xml = output.ToString();
+            var matches = Regex.Matches(xml, "type=\"Fixid\" fixid=\"(\\d+?)\">(.+?)<", RegexOptions.Multiline);
+
+            if (matches.Any())
+            {
+                foreach (Match match in matches)
+                {
+                    var fixid = uint.Parse(match.Groups[1].Value);
+
+                    if (fixid == 0)
+                    {
+                        continue;
+                    }
+                    
+                    var name = match.Groups[2].Value.ToUpper().Trim(' ', '\r', '\n');
+
+                    lock (lockObject)
+                    {
+                        if (results.TryGetValue(fixid, out var list))
+                        {
+                            if (!list.Contains(name))
+                            {
+                                list.Add(name);
+                            }
+                        }
+                        else
+                        {
+                            list = new List<string> {name};
+                            results.Add(fixid, list);
+                        }
+                    }
+                }
+            }
+        },
+        true);
+
+    var builder = new StringBuilder();
+    var extraColumns = results.Max(r => r.Value.Count);
+    builder.Append("FixID");
+
+    for (var i = 0; i < extraColumns; i++)
+    {
+        builder.Append($",Usage {i + 1}");
+    }
+
+    foreach (var (fixid, names) in results.OrderBy(r => r.Key))
+    {
+        if (names.Count > 2)
+        {
+            Console.WriteLine($"{fixid}");
+        }
+        builder.Append("\r\n" + fixid);
+        var orderedNames = names.OrderBy(n => n.Length).ToList();
+        
+        for (var i = 0; i < extraColumns; i++)
+        {
+            if (i < orderedNames.Count)
+            {
+                builder.Append("," + orderedNames.ElementAt(i));
+            }
+            else
+            {
+                builder.Append(',');
+            }
+        }
+    }
+
+    File.WriteAllText(@"C:\Users\Kieran\Desktop\fixids.csv", builder.ToString());
+}

@@ -188,7 +188,15 @@ public class Ps4AssetPorter
 
         assets.AddRange(usAnis);
 
-        foreach (var asset in assets.Where(a => a.EndsWith(".anmgph")))
+        var extensions = new[]
+        {
+            ".anmgph"
+            // ".aiia", ".aiia.dbg", ".aiia.xml", ".ani", ".anmgph", ".bnm", ".ccf", ".clsn", ".cmdl",
+            // ".elx", ".irr", ".kdi", ".lnkani", ".nav_waypoint", ".pka",
+            // ".prt", ".prtd", ".tcd", ".tcm", ".vfx", ".vlink"
+        };
+        
+        foreach (var asset in assets.Where(a => extensions.Any(a.EndsWith)))
         {
             if (!packer.HasFile(asset))
             {
@@ -200,7 +208,7 @@ public class Ps4AssetPorter
         packer.WriteToFile(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc");
 
         //var allAnis = JsonConvert.DeserializeObject<List<string>>(json)!.Where(a => a.EndsWith(".ani")).ToList();
-        assets = assets.Where(a => !a.EndsWith(".anmgph"))// || animationGraphs.Contains(a)) // && (!a.EndsWith(".ani") || animations.Contains(a)))
+        assets = assets.Where(a => !extensions.Any(a.EndsWith))// || animationGraphs.Contains(a)) // && (!a.EndsWith(".ani") || animations.Contains(a)))
             .ToList();
 
         // var armatures = assets.Where(a => a.EndsWith(".amdl")).Select(a => a[..a.LastIndexOf('/')]).ToList();
@@ -283,13 +291,7 @@ public class Ps4AssetPorter
             Packer packer;
             if (File.Exists(earcPath))
             {
-                var backupPath = earcPath.Replace(".earc", ".backup");
-                if (!File.Exists(backupPath))
-                {
-                    File.Copy(earcPath, backupPath);
-                }
-
-                using var unpacker = new Unpacker(backupPath);
+                using var unpacker = new Unpacker(earcPath);
                 packer = unpacker.ToPacker();
             }
             else
