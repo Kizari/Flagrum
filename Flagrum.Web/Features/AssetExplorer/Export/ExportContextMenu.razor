@@ -25,6 +25,13 @@
                 <span>Export Folder</span>
             </div>
         </Item>
+        <Item OnClick="ExportFolderScripts"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">code</span>
+                <span>Export Scripts as XML</span>
+            </div>
+        </Item>
     }
     else
     {
@@ -85,6 +92,7 @@
 
 <ExportWithDependenciesModal @ref="ExportWithDependenciesModal"/>
 <ExportFolderModal @ref="ExportFolderModal"/>
+<ExportFolderScriptsModal @ref="ExportFolderScriptsModal"/>
 
 @code
 {
@@ -93,11 +101,18 @@
 
     private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
     private ExportFolderModal ExportFolderModal { get; set; }
+    private ExportFolderScriptsModal ExportFolderScriptsModal { get; set; }
 
     private void ExportFolder()
     {
         ExportFolderModal.SetContextNode(Parent.ContextNode);
         ExportFolderModal.Open();
+    }
+
+    private void ExportFolderScripts()
+    {
+        ExportFolderScriptsModal.SetContextNode(Parent.ContextNode);
+        ExportFolderScriptsModal.Open();
     }
 
     private async Task ExportSingle()

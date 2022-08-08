@@ -10,6 +10,7 @@ using Flagrum.Core.Utilities;
 using Flagrum.Web.Components.Modals;
 using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -107,7 +108,7 @@ public partial class Index
                     if (jsonEntry == null)
                     {
                         zip.Dispose();
-                        var result = await EarcMod.ConvertLegacyZip(path, Context, conflicts =>
+                        var result = await EarcMod.ConvertLegacyZip(path, Context, Logger, conflicts =>
                         {
                             LegacyConflicts = conflicts;
                             SelectedLegacyConflicts = new string[conflicts.Count(c => c.Value.Count > 1)]
@@ -183,8 +184,10 @@ public partial class Index
                         await using var thumbnailStream = thumbnailEntry.Open();
                         await using var thumbnailMemoryStream = new MemoryStream();
                         await thumbnailStream.CopyToAsync(thumbnailMemoryStream);
+                        var converter = new TextureConverter();
+                        var newThumbnail = converter.ProcessEarcModThumbnail(thumbnailMemoryStream.ToArray());
                         await File.WriteAllBytesAsync($@"{IOHelper.GetWebRoot()}\EarcMods\{earcMod.Id}.png",
-                            thumbnailMemoryStream.ToArray());
+                            newThumbnail);
 
                         var directory = $@"{Settings.EarcModsDirectory}\{earcMod.Id}";
                         if (!Directory.Exists(directory))

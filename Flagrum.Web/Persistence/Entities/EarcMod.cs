@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Services.Logging;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Features.AssetExplorer.Data;
 using Flagrum.Web.Services;
@@ -102,6 +105,19 @@ public class EarcMod
         });
     }
 
+    public async Task SaveNoBuild(FlagrumDbContext context)
+    {
+        if (Id > 0 && IsActive)
+        {
+            // Need to revert first in-case the replacement list changed
+            Revert(context);
+        }
+
+        IsActive = false;
+        await SaveToDatabase(context);
+        UpdateThumbnail();
+    }
+
     public async Task Save(FlagrumDbContext context, ILogger logger)
     {
         if (Id > 0 && IsActive)
@@ -110,10 +126,26 @@ public class EarcMod
             Revert(context);
         }
 
-        IsActive = true;
+        var canBeApplied = CanBeApplied(context);
+        IsActive = canBeApplied;
         await SaveToDatabase(context);
         UpdateThumbnail();
-        BuildAndApplyMod(context, logger);
+
+        if (canBeApplied)
+        {
+            BuildAndApplyMod(context, logger);
+        }
+        else
+        {
+            throw new FileNotFoundException("At least one EARC containing files to modify was not found on disk");
+        }
+    }
+
+    private bool CanBeApplied(FlagrumDbContext context)
+    {
+        return !Earcs.Select(earc => $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}")
+            .Where(path => !File.Exists(path))
+            .Any(path => !path.Contains(@"\highimages\"));
     }
 
     private void BuildAndApplyMod(FlagrumDbContext context, ILogger logger)
@@ -129,7 +161,7 @@ public class EarcMod
             }
 
             // Backup each file that is going to be replaced
-            using var unpacker = new Unpacker(path);
+            var unpacker = new Unpacker(path);
             foreach (var replacement in earc.Replacements)
             {
                 var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
@@ -153,6 +185,12 @@ public class EarcMod
                     context.SaveChanges();
                 }
             }
+            
+            // Get data for each replacement
+            var replacements = earc.Replacements.Where(replacement => replacement.Type == EarcChangeType.Replace)
+                .ToDictionary(replacement => replacement, 
+                    replacement => ConvertAsset(replacement, logger, 
+                        uri => unpacker.UnpackFileByQuery(uri, out _)));
 
             // Apply each replacement
             var packer = unpacker.ToPacker();
@@ -160,8 +198,7 @@ public class EarcMod
             {
                 if (replacement.Type == EarcChangeType.Replace)
                 {
-                    var data = ConvertAsset(replacement, logger, uri => unpacker.UnpackFileByQuery(uri, out _));
-                    packer.UpdateFile(replacement.Uri, data);
+                    packer.UpdateFile(replacement.Uri, replacements[replacement]);
                 }
                 else
                 {
@@ -265,14 +302,9 @@ public class EarcMod
                 var withoutSedb = new byte[btex.Length - 128];
                 Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
                 var btexHeader = BtexConverter.ReadBtexHeader(withoutSedb);
-                if (btexHeader.Format == BtexFormat.B8G8R8A8_UNORM)
-                {
-                    originalType = TextureType.MenuSprites;
-                }
-                else
-                {
-                    originalType = TextureType.BaseColor;
-                }
+                originalType = btexHeader.Format is BtexFormat.B8G8R8A8_UNORM or BtexFormat.BC7_UNORM 
+                    ? TextureType.MenuSprites 
+                    : TextureType.BaseColor;
             }
 
             var converter = new TextureConverter();
@@ -391,7 +423,7 @@ public class EarcMod
         }
     }
 
-    public static async Task<EarcLegacyConversionResult> ConvertLegacyZip(string path, FlagrumDbContext context,
+    public static async Task<EarcLegacyConversionResult> ConvertLegacyZip(string path, FlagrumDbContext context, ILogger logger,
         Func<Dictionary<string, List<string>>, Task> handleConflicts)
     {
         // Get EARC files from the ZIP
@@ -411,7 +443,8 @@ public class EarcMod
             var earc = entry.ToArray();
             using var unpacker = new Unpacker(earc);
             string originalEarcPath = null;
-            foreach (var sample in unpacker.Files.Select(_ => unpacker.Files.FirstOrDefault(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))!))
+            foreach (var sample in unpacker.Files.Select(_ =>
+                         unpacker.Files.FirstOrDefault(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))!))
             {
                 originalEarcPath = context.GetArchiveRelativeLocationByUri(sample.Uri);
                 if (originalEarcPath != "UNKNOWN")
@@ -422,12 +455,22 @@ public class EarcMod
 
             if (originalEarcPath == "UNKNOWN")
             {
+                var is4KRelated = unpacker.Files
+                    .Select(_ => unpacker.Files.FirstOrDefault(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))!)
+                    .Any(sample => sample.Uri.Contains("_$h2") || sample.Uri.Contains("/highimages/"));
+
+                if (is4KRelated)
+                {
+                    // Skip comparison since there's no 4K pack to compare to
+                    continue;
+                }
+                
                 return new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.EarcNotFound};
             }
-            
+
             using var originalUnpacker = new Unpacker($@"{context.Settings.GameDataDirectory}\{originalEarcPath}");
 
-            if (!CompareArchives(context, originalEarcPath, originalUnpacker, unpacker, out var result))
+            if (!CompareArchives(context, originalEarcPath, originalUnpacker, unpacker, logger, out var result))
             {
                 return result;
             }
@@ -551,12 +594,14 @@ public class EarcMod
         return true;
     }
 
-    private static bool CompareArchives(FlagrumDbContext context, string originalEarcPath, Unpacker original, Unpacker unpacker, out EarcLegacyConversionResult result)
+    private static bool CompareArchives(FlagrumDbContext context, string originalEarcPath, Unpacker original,
+        Unpacker unpacker, ILogger logger, out EarcLegacyConversionResult result)
     {
         result = null;
-        
+
         var modsThatRemoveFilesFromThisEarc = context.EarcModEarcs
-            .Where(e => e.EarcMod.IsActive && e.EarcRelativePath == originalEarcPath && e.Replacements.Any(r => r.Type == EarcChangeType.Remove))
+            .Where(e => e.EarcMod.IsActive && e.EarcRelativePath == originalEarcPath &&
+                        e.Replacements.Any(r => r.Type == EarcChangeType.Remove))
             .Select(e => new
             {
                 ModId = e.EarcMod.Id,
@@ -581,8 +626,11 @@ public class EarcMod
                 .Select(f => f.Uri)
                 .ToList();
 
-            if (unpacker.Files.Any(f => !originalFileList.Contains(f.Uri)))
+            if (unpacker.Files.Any(f => !originalFileList.Contains(f.Uri)
+                && !f.Uri.Contains("/highimages/", StringComparison.OrdinalIgnoreCase)
+                && !f.Uri.Contains("_$h2", StringComparison.OrdinalIgnoreCase)))
             {
+                
                 result = new EarcLegacyConversionResult {Status = EarcLegacyConversionStatus.NewFiles};
             }
         }
@@ -605,10 +653,4 @@ public enum EarcLegacyConversionStatus
     EarcNotFound,
     NewFiles,
     NeedsDisabling
-}
-
-public class EarcLegacyConflict
-{
-    public string EarcName { get; set; }
-    public List<string> Options { get; set; }
 }

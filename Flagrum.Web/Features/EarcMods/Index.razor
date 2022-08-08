@@ -23,18 +23,21 @@
 }
 else
 {
-    <div class="flex flex-row items-center p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark @(IsLoading ? "none" : "")">
-        <div class="flex flex-row items-center">
-            <ModTypeButtonGroup Target="@Category" OnItemSelected="SetCategory">
-                <ModTypeButton Text="Active Mods" Value="0"/>
-                <ModTypeButton Text="Disabled Mods" Value="1"/>
-            </ModTypeButtonGroup>
+    if (!IsLoading)
+    {
+        <div class="flex flex-row items-center p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+            <div class="flex flex-row items-center">
+                <ModTypeButtonGroup Target="@Category" OnItemSelected="SetCategory">
+                    <ModTypeButton Text="Active Mods" Value="0"/>
+                    <ModTypeButton Text="Disabled Mods" Value="1"/>
+                </ModTypeButtonGroup>
+            </div>
+            <div class="flex-grow"></div>
+            <Button Icon="add" Text="Create Mod" CssClass="mr-4" OnClick="@(() => Navigation.NavigateTo("/earc/editor"))"/>
+            <Button Icon="folder_zip" Text="Install from ZIP" OnClickAsync="InstallFromZip"/>
         </div>
-        <div class="flex-grow"></div>
-        <Button Icon="add" Text="Create Mod" CssClass="mr-4" OnClick="@(() => Navigation.NavigateTo("/earc/editor"))"/>
-        <Button Icon="folder_zip" Text="Install from ZIP" OnClickAsync="InstallFromZip"/>
-    </div>
-
+    }
+    
     <CascadingValue Value="this">
         <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
             @{
@@ -100,6 +103,7 @@ else
                             {
                                 var index = i++;
                                 var (original, options) = legacyConflicts[index];
+                                conflict.Value = options.First();
                                 <h6 class="text-grey-300 mt-4 mb-2">@original</h6>
                                 <EditForm Model="new object()">
                                     <InputRadioGroup @bind-Value="conflict.Value">
@@ -112,8 +116,9 @@ else
                                         }
                                     </InputRadioGroup>
                                 </EditForm>
-                                <Button Icon="check" Text="Confirm" CssClass="mt-6" OnClick="ConfirmLegacyConflicts"/>
                             }
+                            
+                            <Button Icon="check" Text="Confirm" CssClass="mt-6" OnClick="ConfirmLegacyConflicts"/>
                         }
                     }
                 }

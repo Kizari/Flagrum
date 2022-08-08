@@ -1,0 +1,149 @@
+﻿@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Core.Archive
+@using Flagrum.Core.Ebex.Xmb2
+@using System.Text
+@using System.IO
+@inject IWpfService WpfService
+@inject FlagrumDbContext Context
+@inject SettingsService Settings
+
+<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Export Scripts as XML</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <div class="row">
+                <label style="width: 240px">Script Output Format</label>
+                <select @bind="Extension" class="input bg-dark-550 w-full">
+                    <option>XML</option>
+                    <option>XMB2</option>
+                </select>
+            </div>
+            <div class="row mt-6 mb-10">
+                <Checkbox IsChecked="@IsRecursive" OnChange="v => { IsRecursive = v; StateHasChanged(); }"/>
+                <span class="inline-block ml-2">Also export from subdirectories recursively</span>
+            </div>
+            <Button Text="Export" Icon="file_download" OnClickAsync="Export"/>
+        </div>
+    </BodyView>
+</Modal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private Modal Modal { get; set; }
+    private bool IsRecursive { get; set; }
+    private string Extension { get; set; } = "XML";
+    private AssetExplorerNode ContextNode { get; set; }
+
+    public void SetContextNode(AssetExplorerNode node)
+    {
+        ContextNode = node;
+    }
+
+    public void Open()
+    {
+        Modal.Open();
+    }
+
+    private async Task Export()
+    {
+        await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder =>
+        {
+            InvokeAsync(() =>
+            {
+                Modal.Close();
+                Parent.SetLoading(true, "Exporting");
+
+                var files = new Dictionary<string, List<string>>();
+
+                if (IsRecursive)
+                {
+                    ContextNode.Traverse(Context, node =>
+                    {
+                        if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
+                        {
+                            var location = node.GetLocation(Context, Settings);
+                            if (!files.TryGetValue(location, out var uris))
+                            {
+                                uris = new List<string> {node.GetUri(Context)};
+                                files.Add(location, uris);
+                            }
+                            else
+                            {
+                                uris.Add(node.GetUri(Context));
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    foreach (var node in Context.AssetExplorerNodes.Where(n => n.ParentId == ContextNode.Id))
+                    {
+                        if (!Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
+                        {
+                            var location = node.GetLocation(Context, Settings);
+                            if (!files.TryGetValue(location, out var uris))
+                            {
+                                uris = new List<string> {node.GetUri(Context)};
+                                files.Add(location, uris);
+                            }
+                            else
+                            {
+                                uris.Add(node.GetUri(Context));
+                            }
+                        }
+                    }
+                }
+
+                var baseUri = ContextNode.GetUri(Context);
+
+                foreach (var (archiveLocation, uris) in files)
+                {
+                    using var unpacker = new Unpacker(archiveLocation);
+                    foreach (var uri in uris.Where(u => u.EndsWith(".ebex") || u.EndsWith(".prefab")))
+                    {
+                        var data = unpacker.UnpackFileByQuery(uri, out _);
+
+                        if (Extension == "XML")
+                        {
+                            var output = new StringBuilder();
+                            Xmb2Document.Dump(data, output);
+                            data = Encoding.UTF8.GetBytes(output.ToString());
+                        }
+
+                        var relativePath = ContextNode.Name + "\\" + uri
+                            .Replace(baseUri, "")
+                            .Replace('/', '\\');
+
+                        var currentDirectory = folder;
+                        var split = relativePath.Split('\\');
+                        for (var index = 0; index < split.Length - 1; index++)
+                        {
+                            var token = split[index];
+                            currentDirectory += "\\" + token;
+                            if (!Directory.Exists(currentDirectory))
+                            {
+                                Directory.CreateDirectory(currentDirectory);
+                            }
+                        }
+
+                        var newExtension = "." + Extension.ToLower();
+                        var absolutePath = currentDirectory + "\\" + split.Last()
+                            .Replace(".ebex", newExtension)
+                            .Replace(".prefab", newExtension);
+
+                        File.WriteAllBytes(absolutePath, data);
+                    }
+                }
+
+                Parent.SetLoading(false);
+            });
+        });
+    }
+}

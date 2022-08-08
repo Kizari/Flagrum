@@ -2,9 +2,15 @@
 using System.Linq;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
+
+var hash = Cryptography.HashFileUri64(
+    "data://environment/duscae/props/du_ar_lhotel02/sourceimages/du_ar_lhotel02_part04_concrete_b.tif");
+Console.WriteLine(hash);
+return;
 
 // var types = typeof(JsonSerializer).Assembly.GetTypes();
 // var type = types.FirstOrDefault(p => p.Name.Contains("JsonConstants"));

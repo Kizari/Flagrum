@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,10 +27,31 @@ public class Bootstrapper : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        await ScaleEarcModThumbnails();
         await LoadBinmods();
         LoadNodes();
         Parent.IsReady = true;
         Parent.CallStateHasChanged();
+    }
+
+    private async Task ScaleEarcModThumbnails()
+    {
+        if (!Context.GetBool(StateKey.HaveThumbnailsBeenResized))
+        {
+            var earcModDirectory = $@"{IOHelper.GetWebRoot()}\EarcMods";
+            if (Directory.Exists(earcModDirectory))
+            {
+                foreach (var imagePath in Directory.GetFiles(earcModDirectory, "*.png"))
+                {
+                    var imageData = await File.ReadAllBytesAsync(imagePath);
+                    var converter = new TextureConverter();
+                    var image = converter.ProcessEarcModThumbnail(imageData);
+                    await File.WriteAllBytesAsync(imagePath, image);
+                }
+            }
+            
+            Context.SetBool(StateKey.HaveThumbnailsBeenResized, true);
+        }
     }
 
     private void LoadNodes()
@@ -120,7 +142,8 @@ public class Bootstrapper : ComponentBase
                     var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper, Logger);
                     var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
 
-                    var binmodListing = binmodList.FirstOrDefault(e => file.Contains(e.Path.Replace('/', '\\')));
+                    var binmodListing = binmodList.FirstOrDefault(e =>
+                        file.Contains(e.Path.Replace('/', '\\'), StringComparison.OrdinalIgnoreCase));
 
                     if (mod == null)
                     {

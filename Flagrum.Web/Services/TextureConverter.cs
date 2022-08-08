@@ -8,6 +8,79 @@ namespace Flagrum.Web.Services;
 
 public class TextureConverter
 {
+    public byte[] ProcessEarcModThumbnail(byte[] data)
+    {
+        try
+        {
+            var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var pointer = pinnedData.AddrOfPinnedObject();
+
+            var image = TexHelper.Instance.LoadFromWICMemory(pointer, data.Length, WIC_FLAGS.NONE);
+            var metadata = image.GetMetadata();
+
+            if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
+            {
+                var filter = TexHelper.Instance.IsSRGB(metadata.Format)
+                    ? TEX_FILTER_FLAGS.SRGB
+                    : TEX_FILTER_FLAGS.DEFAULT;
+                image = image.Convert(DXGI_FORMAT.R8G8B8A8_UNORM, filter, 0.5f);
+            }
+
+            // Resize to 326x170 without stretching
+            const int desiredWidth = 326;
+            const int desiredHeight = 170;
+
+            if (metadata.Width != desiredWidth || metadata.Height != desiredHeight)
+            {
+                var aspectRatioHeight = metadata.Height / (double)metadata.Width;
+                var aspectRatioWidth = metadata.Width / (double)metadata.Height;
+
+                var ratioedWidth = (int)(desiredHeight * aspectRatioWidth);
+                var ratioedHeight = (int)(desiredWidth * aspectRatioHeight);
+
+                var differenceWidth = Math.Abs(metadata.Width - ratioedWidth);
+                var differenceHeight = Math.Abs(metadata.Height - ratioedHeight);
+
+                int newWidth;
+                int newHeight;
+
+                if (differenceWidth < differenceHeight && ratioedWidth >= desiredWidth)
+                {
+                    newWidth = ratioedWidth;
+                    newHeight = desiredHeight;
+                }
+                else
+                {
+                    newHeight = ratioedHeight;
+                    newWidth = desiredWidth;
+                }
+
+                // Resize the image to the new size
+                image = image.Resize(newWidth, newHeight, TEX_FILTER_FLAGS.CUBIC);
+
+                // Truncate the resized image to the desired frame
+                metadata = image.GetMetadata();
+                var destinationImage =
+                    TexHelper.Instance.Initialize2D(DXGI_FORMAT.R8G8B8A8_UNORM, desiredWidth, desiredHeight, 1, 1,
+                        CP_FLAGS.NONE);
+                var xOffset = Math.Abs((desiredWidth - metadata.Width) / 2);
+                var yOffset = Math.Abs((desiredHeight - metadata.Height) / 2);
+                TexHelper.Instance.CopyRectangle(image.GetImage(0), xOffset, yOffset, desiredWidth, desiredHeight,
+                    destinationImage.GetImage(0), TEX_FILTER_FLAGS.DEFAULT, 0, 0);
+                image = destinationImage;
+            }
+
+            using var jpgStream = image.SaveToJPGMemory(0, 1.0f);
+            using var stream = new MemoryStream();
+            jpgStream.CopyTo(stream);
+            return stream.ToArray();
+        }
+        catch
+        {
+            return data;
+        }
+    }
+    
     public byte[] ConvertPreview(string name, byte[] data, out byte[] jpeg)
     {
         var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);

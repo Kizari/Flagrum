@@ -1,79 +1,87 @@
-﻿<h3 class="text-grey-300 mb-6">Flagrum has been updated to @Version!</h3>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4">
-    <h5 class="text-grey-300 mb-4">Flagrum 1.2.3</h5>
-    <ul class="list-disc ml-6 mb-2">
-        <li>Added more information to legacy mod installation to diagnose why certain mods won't install</li>
-        <li>Updated XML preview/export to encode dangerous symbols automatically</li>
-        <li>Fixed bug where EARC mods with &quot;Remove&quot; changes wouldn't save</li>
-        <li>Fixed bug where files would get into a bad state after re-enabling a mod with &quot;Remove&quot; changes</li>
-        <li>Fixed bug where legacy mods would be installed incorrectly if an existing mod removes its files</li>
-        <li>Fixed bug where EARC mods with &quot;Remove&quot; changes could not be exported</li>
-        <li>Fixed a crash when installing legacy mods with multiple conflicts</li>
-        <li>Fixed bug where text was truncated on Rebuild File Index dialog</li>
-    </ul>
+﻿<div style="max-width: 600px;">
+    <h3 class="text-grey-300 mb-6 text-center">Flagrum has been updated to Version @Version!</h3>
+    <div class="text-center">
+        This update brings bulk script exporting, support for 4K mods when the 4K pack is not installed,
+        and a range of fixes and quality of life updates.<br/><br/>
+        <Hyperlink Text="View Full Changelog" Uri="https://github.com/Kizari/Flagrum/wiki/Flagrum-Changelog"></Hyperlink><br/>
+        <Hyperlink Text="フルチェンジログを見る" Uri="https://github.com/Kizari/Flagrum/wiki/%E3%83%95%E3%83%A9%E3%83%BC%E3%82%B0%E3%83%AB%E3%83%A0%E3%83%81%E3%82%A7%E3%83%B3%E3%82%B8%E3%83%AD%E3%82%B0"></Hyperlink>
+    </div>
 </div>
 
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h5 class="text-grey-300 mb-4">Flagrum 1.2.2</h5>
-    <ul class="list-disc ml-6 mb-2">
-        <li>Fixed an issue affecting certain users on certain EARC mods where the asset explorer would target a
-            clone of a file instead of the original.</li>
-    </ul>
-    <span class="block ml-6 mb-4" style="color: #ff0000">
-        <strong>Recommended Action:</strong>
-        Disable all your active EARC mods and then regenerate the file index from the cog icon in the
-        Asset Explorer tab.
-    </span>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where Terrain Exporter would crash for some users</li>
-        <li>Fixed bug where EARC mod thumbnails were not persisting between updates</li>
-        <li>Minor UI fixes</li>
-    </ul>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h5 class="text-grey-300 mb-4">Flagrum 1.2.1</h5>
-    <ul class="list-disc ml-6 mb-2">
-        <li>Fixed a bug where sRGB textures were causing fault normal maps</li>
-    </ul>
-</div>
-
-<h3 class="text-grey-300 mb-6 mt-6">Flagrum 1.2 has arrived!</h3>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4">
-    <h4 class="text-grey-300 mb-4">Introducing the Mod Manager</h4>
-    <span>
-        Install and uninstall mods with a single click, create EARC mods with ease, import legacy mods,
-        and share your mods with the community!<br/>
-        <Hyperlink Text="Learn More" Uri="https://github.com/Kizari/Flagrum/wiki/Mod-Manager"/>
-    </span>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Introducing the Terrain Exporter</h4>
-    <span>
-        For the first time ever, we can now export terrain from FFXV!<br/>
-        <Hyperlink Text="Learn More" Uri="https://github.com/Kizari/Flagrum/wiki/Terrain-Exporter"/>
-    </span>
-</div>
-
-<div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6">
-    <h4 class="text-grey-300 mb-4">Patch Notes</h4>
-    <h5 class="text-grey-300 mb-4">New Features</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>BTEX support has been extended to cover textures that were previously unreadable</li>
-        <li>Transformations are now automatically applied when exporting to FMD</li>
-        <li>Seam normals are now automatically corrected when exporting to FMD</li>
-        <li>Tutorials tab has been replaced with Wiki tab to keep the information up-to-date</li>
-    </ul>
-    <h5 class="text-grey-300 mb-4">Bug Fixes</h5>
-    <ul class="list-disc ml-6 mb-6">
-        <li>Fixed bug where creating a new Model Replacement Preset would return a 404 error</li>
-        <li>Fixed bug where Flagrum would crash when subscribing to your own Workshop Mods</li>
-        <li>Workshop Mods will no longer deep fry sRGB thumbnails</li>
-    </ul>
-</div>
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4"> *@
+@*     <h5 class="text-grey-300 mb-4">Flagrum 1.2.3</h5> *@
+@*     <ul class="list-disc ml-6 mb-2"> *@
+@*         <li>Added more information to legacy mod installation to diagnose why certain mods won't install</li> *@
+@*         <li>Updated XML preview/export to encode dangerous symbols automatically</li> *@
+@*         <li>Fixed bug where EARC mods with &quot;Remove&quot; changes wouldn't save</li> *@
+@*         <li>Fixed bug where files would get into a bad state after re-enabling a mod with &quot;Remove&quot; changes</li> *@
+@*         <li>Fixed bug where legacy mods would be installed incorrectly if an existing mod removes its files</li> *@
+@*         <li>Fixed bug where EARC mods with &quot;Remove&quot; changes could not be exported</li> *@
+@*         <li>Fixed a crash when installing legacy mods with multiple conflicts</li> *@
+@*         <li>Fixed bug where text was truncated on Rebuild File Index dialog</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h5 class="text-grey-300 mb-4">Flagrum 1.2.2</h5> *@
+@*     <ul class="list-disc ml-6 mb-2"> *@
+@*         <li>Fixed an issue affecting certain users on certain EARC mods where the asset explorer would target a *@
+@*             clone of a file instead of the original.</li> *@
+@*     </ul> *@
+@*     <span class="block ml-6 mb-4" style="color: #ff0000"> *@
+@*         <strong>Recommended Action:</strong> *@
+@*         Disable all your active EARC mods and then regenerate the file index from the cog icon in the *@
+@*         Asset Explorer tab. *@
+@*     </span> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where Terrain Exporter would crash for some users</li> *@
+@*         <li>Fixed bug where EARC mod thumbnails were not persisting between updates</li> *@
+@*         <li>Minor UI fixes</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h5 class="text-grey-300 mb-4">Flagrum 1.2.1</h5> *@
+@*     <ul class="list-disc ml-6 mb-2"> *@
+@*         <li>Fixed a bug where sRGB textures were causing fault normal maps</li> *@
+@*     </ul> *@
+@* </div> *@
+@* *@
+@* <h3 class="text-grey-300 mb-6 mt-6">Flagrum 1.2 has arrived!</h3> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4"> *@
+@*     <h4 class="text-grey-300 mb-4">Introducing the Mod Manager</h4> *@
+@*     <span> *@
+@*         Install and uninstall mods with a single click, create EARC mods with ease, import legacy mods, *@
+@*         and share your mods with the community!<br/> *@
+@*         <Hyperlink Text="Learn More" Uri="https://github.com/Kizari/Flagrum/wiki/Mod-Manager"/> *@
+@*     </span> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Introducing the Terrain Exporter</h4> *@
+@*     <span> *@
+@*         For the first time ever, we can now export terrain from FFXV!<br/> *@
+@*         <Hyperlink Text="Learn More" Uri="https://github.com/Kizari/Flagrum/wiki/Terrain-Exporter"/> *@
+@*     </span> *@
+@* </div> *@
+@* *@
+@* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
+@*     <h4 class="text-grey-300 mb-4">Patch Notes</h4> *@
+@*     <h5 class="text-grey-300 mb-4">New Features</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>BTEX support has been extended to cover textures that were previously unreadable</li> *@
+@*         <li>Transformations are now automatically applied when exporting to FMD</li> *@
+@*         <li>Seam normals are now automatically corrected when exporting to FMD</li> *@
+@*         <li>Tutorials tab has been replaced with Wiki tab to keep the information up-to-date</li> *@
+@*     </ul> *@
+@*     <h5 class="text-grey-300 mb-4">Bug Fixes</h5> *@
+@*     <ul class="list-disc ml-6 mb-6"> *@
+@*         <li>Fixed bug where creating a new Model Replacement Preset would return a 404 error</li> *@
+@*         <li>Fixed bug where Flagrum would crash when subscribing to your own Workshop Mods</li> *@
+@*         <li>Workshop Mods will no longer deep fry sRGB thumbnails</li> *@
+@*     </ul> *@
+@* </div> *@
 
 @* <div class="bg-grey-900 rounded-md border border-grey-700 p-4 mt-6"> *@
 @*     <h4 class="text-grey-300 mb-4">Flagrum 1.1.13</h4> *@

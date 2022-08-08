@@ -18,7 +18,8 @@
 
             <div class="mr-6 h-full" style="flex: 0 0 330px;">
                 <div class="bg-grey-800 rounded shadow-md h-full flex flex-col">
-                    <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div>
+                    <img class="relative rounded-t" style="display: block; width: 330px; height: 180px;" src="images/@(ImageName).png"/>
+                    @* <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div> *@
                     <div class="p-4 flex-grow flex flex-col">
                         <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="Mod Name"/>
                         <ValidationMessage For="() => Mod.Name"/>
@@ -29,7 +30,10 @@
                     </div>
                     <div class="px-4 pb-4 flex flex-row">
                         <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
-                        <Button Icon="delete_forever" Text="Delete" CssClass="mr-3" OnClickAsync="Delete"/>
+                        @if (ModId != null)
+                        {
+                            <Button Icon="delete_forever" Text="Delete" CssClass="mr-3" OnClickAsync="Delete"/>
+                        }
                     </div>
                 </div>
             </div>
@@ -57,7 +61,8 @@
                                     <div class="text-right mx-4" style="flex: 0 0 80px;">
                                         @if (replacement.Type == EarcChangeType.Replace)
                                         {
-                                            <strong>Replace:</strong><br/>
+                                            <strong>Replace:</strong>
+                                            <br/>
                                             <strong>With:</strong>
                                         }
                                         else
@@ -71,7 +76,8 @@
                                             <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
                                                 <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
                                                 <div>/@replacement.Uri.Split('/').Last()</div>
-                                            </div><br/>
+                                            </div>
+                                            <br/>
                                             <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
                                                 <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
                                                 <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
@@ -127,7 +133,7 @@
     private string ImageName { get; set; } = "current_earc_preview";
     private EarcChangeType ModalType { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var currentPreviewPath = $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png";
 
@@ -150,7 +156,9 @@
             var file = $@"{IOHelper.GetWebRoot()}\EarcMods\{Mod.Id}.png";
             if (File.Exists(file))
             {
-                File.Copy(file, currentPreviewPath, true);
+    //File.Copy(file, currentPreviewPath, true);
+                var image = File.ReadAllBytes(file);
+                File.WriteAllBytes(currentPreviewPath, image);
             }
             else
             {
@@ -158,6 +166,9 @@
                 File.Copy(defaultPreviewPath, currentPreviewPath, true);
             }
         }
+
+        await Task.Delay(500);
+        StateHasChanged();
     }
 
     private void OpenReplaceModal()
@@ -214,7 +225,9 @@
             "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
             async path =>
             {
-                File.Copy(path, $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png", true);
+                var converter = new TextureConverter();
+                var processedImage = converter.ProcessEarcModThumbnail(await File.ReadAllBytesAsync(path));
+                await File.WriteAllBytesAsync($@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png", processedImage);
     // This jank is required or the UI won't update the image if the value hasn't changed
                 ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
                 await InvokeAsync(StateHasChanged);
@@ -245,6 +258,11 @@
             {
                 await Mod.Save(Context, Logger);
                 Navigation.NavigateTo("/");
+            },
+            async () =>
+            {
+                await Mod.SaveNoBuild(Context);
+                Navigation.NavigateTo("/");
             }));
     }
 
@@ -258,7 +276,7 @@
         Navigation.NavigateTo("/");
     }
 
-    private async Task CheckConflicts(Func<Task> onContinue)
+    private async Task CheckConflicts(Func<Task> onYes, Func<Task> onNo)
     {
         var uris = Mod.Earcs
             .SelectMany(e => e.Replacements.Select(r => r.Uri))
@@ -294,14 +312,16 @@
                     await match.Disable(Context);
                 }
 
-                await onContinue();
+                await onYes();
             };
+
+            Prompt.OnNo = async () => { await onNo(); };
 
             await InvokeAsync(Prompt.Open);
         }
         else
         {
-            await onContinue();
+            await onYes();
         }
     }
 }

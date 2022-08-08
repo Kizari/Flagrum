@@ -33,6 +33,6 @@
 
     public void Close(bool isYes)
     {
-        Modal.Close(isYes ? OnYes : OnNo);
+        InvokeAsync(() => Modal.Close(isYes ? OnYes : OnNo));
     }
 }

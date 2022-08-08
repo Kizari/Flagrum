@@ -14,7 +14,7 @@
 <div class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform"
      style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
      @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Id}"))">
-    <div class="relative rounded-t" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png')">
+    <div class="relative rounded-t" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png?@DateTime.UtcNow.Ticks')">
         <Checkbox CssStyle="position:absolute;top:5px;right:5px;"
                   IsChecked="@Mod.IsActive"
                   OnChange="ToggleMod"/>
@@ -44,7 +44,7 @@
 @code
 {
     private TaskCompletionSource<bool> _taskCompletionSource;
-    
+
     [CascadingParameter]
     public Index Parent { get; set; }
 
@@ -76,7 +76,7 @@
             Parent.Prompt.Title = "Warning";
             Parent.Prompt.Heading = "Conflicts Detected";
             Parent.Prompt.Subtext = message + "<br/>Would you like to disable the above mod(s) now?";
-            Parent.Prompt.OnYes = async () =>
+            Parent.Prompt.OnYes = () => Task.Run(async () =>
             {
                 foreach (var mod in conflicts)
                 {
@@ -93,11 +93,9 @@
 
                 await onContinue();
                 _taskCompletionSource.SetResult(true);
-            };
-            Parent.Prompt.OnNo = () =>
-            {
-                _taskCompletionSource.SetResult(false);
-            };
+            });
+
+            Parent.Prompt.OnNo = () => { _taskCompletionSource.SetResult(false); };
 
             await InvokeAsync(Parent.Prompt.Open);
         }
@@ -122,23 +120,22 @@
 
     private async Task Enable()
     {
+        await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
+
         await Task.Run(async () =>
         {
             _taskCompletionSource = new TaskCompletionSource<bool>();
-            await CheckConflicts(async () =>
-            {
-                await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
-                await Mod.Enable(Context, Logger);
-                await InvokeAsync(() => Parent.SetLoading(false));
-            });
+            await CheckConflicts(async () => await Mod.Enable(Context, Logger));
 
             var success = await _taskCompletionSource.Task;
             if (!success)
             {
-                Mod.IsActive = false;   // Ensures the checkbox doesn't stay checked
+                Mod.IsActive = false; // Ensures the checkbox doesn't stay checked
                 await InvokeAsync(StateHasChanged);
             }
         });
+
+        await InvokeAsync(() => Parent.SetLoading(false));
     }
 
     private async Task Disable()
