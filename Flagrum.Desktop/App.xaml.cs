@@ -16,7 +16,15 @@ public partial class App : Application
     {
         SetCurrentProcessExplicitAppUserModelID("Flagrum");
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => DumpCrash((Exception)e.ExceptionObject);
-        Current.DispatcherUnhandledException += (sender, e) => DumpCrash(e.Exception);
+        Current.DispatcherUnhandledException += (sender, e) =>
+        {
+            DumpCrash(e.Exception);
+
+            if (e.Exception.InnerException != null && e.Exception.InnerException.Message.Contains("0x800704EC"))
+            {
+                MessageBox.Show("WebView2 is blocked by group policy. This may be because Microsoft Edge has been disabled through an external program. Make sure that a working version of Microsoft Edge is available on this computer.", "Warning", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        };
         TaskScheduler.UnobservedTaskException += (sender, e) => DumpCrash(e.Exception);
 
         SquirrelAwareApp.HandleEvents(
