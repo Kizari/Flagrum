@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="Author" xml:space="preserve">
+        <value>著者名</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>キャンセル</value>
+    </data>
+    <data name="ChangeImage" xml:space="preserve">
+        <value>画像を変更する</value>
+    </data>
+    <data name="Delete" xml:space="preserve">
+        <value>削除</value>
+    </data>
+    <data name="Description" xml:space="preserve">
+        <value>商品説明</value>
+    </data>
+    <data name="ModName" xml:space="preserve">
+        <value>MOD名</value>
+    </data>
+    <data name="NewEarcMod" xml:space="preserve">
+        <value>新型EARC MOD</value>
+    </data>
+    <data name="NoFileChangesSet" xml:space="preserve">
+        <value>ファイルの変更が設定されていない</value>
+    </data>
+    <data name="RemoveAsset" xml:space="preserve">
+        <value>アセット削除</value>
+    </data>
+    <data name="ReplaceAsset" xml:space="preserve">
+        <value>資産入替</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>変更を保存する</value>
+    </data>
+    <data name="EditEarcMod" xml:space="preserve">
+        <value>EARC MODを編集する</value>
+    </data>
+    <data name="FilesToChange" xml:space="preserve">
+        <value>変更するファイル</value>
+    </data>
+    <data name="Remove" xml:space="preserve">
+        <value>削除</value>
+    </data>
+    <data name="Replace" xml:space="preserve">
+        <value>換える</value>
+    </data>
+    <data name="With" xml:space="preserve">
+        <value>を</value>
+    </data>
+    <data name="AuthorRequired" xml:space="preserve">
+        <value>著者欄は空であってはならない</value>
+    </data>
+    <data name="DescriptionRequired" xml:space="preserve">
+        <value>説明欄は空であってはならない</value>
+    </data>
+    <data name="NameRequired" xml:space="preserve">
+        <value>名前欄は空であってはならない</value>
+    </data>
+</root>

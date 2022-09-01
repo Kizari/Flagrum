@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="ActiveMods" xml:space="preserve">
+        <value>Active Mods</value>
+    </data>
+    <data name="DisabledMods" xml:space="preserve">
+        <value>Disabled Mods</value>
+    </data>
+    <data name="CreateMod" xml:space="preserve">
+        <value>Create Mod</value>
+    </data>
+    <data name="InstallFromZip" xml:space="preserve">
+        <value>Install from ZIP</value>
+    </data>
+    <data name="NoActiveMods" xml:space="preserve">
+        <value>No active EARC mods to show</value>
+    </data>
+    <data name="NoDisabledMods" xml:space="preserve">
+        <value>No disabled EARC mods to show</value>
+    </data>
+    <data name="NoMods" xml:space="preserve">
+        <value>No EARC mods to show</value>
+    </data>
+    <data name="ConflictsDetected" xml:space="preserve">
+        <value>Conflicts Detected</value>
+    </data>
+    <data name="DuplicateEarcsDetected" xml:space="preserve">
+        <value>One or more of the same EARC was detected</value>
+    </data>
+    <data name="ChooseConflict" xml:space="preserve">
+        <value>Please select which you'd like to keep below:</value>
+    </data>
+    <data name="DisplayText" xml:space="preserve">
+        <value>Mod Manager Unavailable While Indexing Files</value>
+    </data>
+    <data name="SubText" xml:space="preserve">
+        <value>Please wait until file indexing has completed</value>
+    </data>
+    <data name="InstallingMod" xml:space="preserve">
+        <value>Installing Mod</value>
+    </data>
+    <data name="Error" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="InvalidModPack" xml:space="preserve">
+        <value>Invalid Mod Pack</value>
+    </data>
+    <data name="InvalidModPackDescription" xml:space="preserve">
+        <value>Could not find compatible mod data in this ZIP. Please defer to the mod author's original installation instructions.</value>
+    </data>
+    <data name="IncompatibleModPack" xml:space="preserve">
+        <value>Incompatible Mod Pack</value>
+    </data>
+    <data name="IncompatibleNewFilesDescription" xml:space="preserve">
+        <value>One or more of the mods in this ZIP add new files to the game. Flagrum does not currently support adding new files, but will do so in a future update. In the meantime, please refer to the mod author's original installation instructions.</value>
+    </data>
+    <data name="IncompatibleNewEarcDescription" xml:space="preserve">
+        <value>An EARC was found in this mod pack that does not appear in your game files to modify. Flagrum does not currently support adding new EARCs to the game, but will do so in a future update. In the meantime, please refer to the mod author's original installation instructions.</value>
+    </data>
+    <data name="ErrorDataCompare" xml:space="preserve">
+        <value>Unable to Compare Data</value>
+    </data>
+    <data name="ErrorDataCompareDescription" xml:space="preserve">
+        <value>As this mod was not created with Flagrum, and the mod contains changes for files that are currently modified by an active mod on your system, the mods must be temporarily disabled to complete the installation.&lt;br/&gt;&lt;br/&gt;Please disable the following mod(s) and then try again:&lt;br/&gt;&lt;br/&gt;</value>
+    </data>
+    <data name="Conflicts" xml:space="preserve">
+        <value>The following mod(s) conflict with this one:</value>
+    </data>
+    <data name="Warning" xml:space="preserve">
+        <value>Warning</value>
+    </data>
+    <data name="DisableNow" xml:space="preserve">
+        <value>Would you like to disable the above mod(s) now?</value>
+    </data>
+    <data name="Confirm" xml:space="preserve">
+        <value>Confirm</value>
+    </data>
+    <data name="EnablingMod" xml:space="preserve">
+        <value>Enabling Mod</value>
+    </data>
+    <data name="DisablingMod" xml:space="preserve">
+        <value>Disabling Mod</value>
+    </data>
+    <data name="ExportingModPack" xml:space="preserve">
+        <value>Exporting Mod Pack</value>
+    </data>
+</root>

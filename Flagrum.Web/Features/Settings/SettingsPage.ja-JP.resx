@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="DefaultBinmodPath" xml:space="preserve">
+        <value>デフォルト C:\Users\[USERNAME]\Documents\My Games\FINAL FANTASY XV\Steam\[STEAM_USER_ID]\mod\binmod.list</value>
+    </data>
+    <data name="DefaultGamePath" xml:space="preserve">
+        <value>デフォルト C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe</value>
+    </data>
+    <data name="DefaultWorkshopPath" xml:space="preserve">
+        <value>デフォルト C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</value>
+    </data>
+    <data name="BinmodPath" xml:space="preserve">
+        <value>binmodリストパス</value>
+    </data>
+    <data name="GamePath" xml:space="preserve">
+        <value>ゲームexeのパス</value>
+    </data>
+    <data name="WorkshopPath" xml:space="preserve">
+        <value>ワークショップのacfパス</value>
+    </data>
+    <data name="Browse" xml:space="preserve">
+        <value>ブラウズ</value>
+    </data>
+    <data name="PathAutodetectFailed" xml:space="preserve">
+        <value>フラーグルムは、ゲームファイルの場所を自動的に検出することができませんでした。ファイナルファンタジーXVがインストールされていることを確認し、以下のパスを設定してください。</value>
+    </data>
+    <data name="Language" xml:space="preserve">
+        <value>言語</value>
+    </data>
+    <data name="RestartRequired" xml:space="preserve">
+        <value>再起動が必要</value>
+    </data>
+    <data name="RestartPrompt" xml:space="preserve">
+        <value>言語の変更を適用するには、フラーグルムを再起動する必要があります。今すぐフラーグルムを再起動しますか？</value>
+    </data>
+</root>

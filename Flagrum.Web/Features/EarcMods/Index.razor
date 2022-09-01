@@ -7,6 +7,7 @@
 @inject ILogger<Index> Logger
 @inject SettingsService Settings
 @inject AppStateService AppState
+@inject IStringLocalizer<Index> L
 
 @if (AppState.Node == null)
 {
@@ -28,13 +29,13 @@ else
         <div class="flex flex-row items-center p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
             <div class="flex flex-row items-center">
                 <ModTypeButtonGroup Target="@Category" OnItemSelected="SetCategory">
-                    <ModTypeButton Text="Active Mods" Value="0"/>
-                    <ModTypeButton Text="Disabled Mods" Value="1"/>
+                    <ModTypeButton Text=@L["Active Mods"] Value="0"/>
+                    <ModTypeButton Text=@L["DisabledMods"] Value="1"/>
                 </ModTypeButtonGroup>
             </div>
             <div class="flex-grow"></div>
-            <Button Icon="add" Text="Create Mod" CssClass="mr-4" OnClick="@(() => Navigation.NavigateTo("/earc/editor"))"/>
-            <Button Icon="folder_zip" Text="Install from ZIP" OnClickAsync="InstallFromZip"/>
+            <Button Icon="add" Text=@L["CreateMod"] CssClass="mr-4" OnClick="@(() => Navigation.NavigateTo("/earc/editor"))"/>
+            <Button Icon="folder_zip" Text=@L["InstallFromZip"] OnClickAsync="InstallFromZip"/>
         </div>
     }
     
@@ -58,20 +59,17 @@ else
                 }
                 else
                 {
-                    var type = !Context.EarcMods.Any() ? "" : ShowActive ? "active " : "disabled ";
                     <div class="p-8 flex flex-row h-full">
                         <div class="self-center mx-auto text-center">
                             <span class="text-grey-600 material-icons block mb-4" style="font-size: 120px;">inbox</span>
                             <span class="text-grey-600 text-lg font-display">
-                                No @(type)EARC mods to show
+                                @(!Context.EarcMods.Any() ? L["NoMods"] : ShowActive ? L["NoActiveMods"] : L["NoDisabledMods"])
                             </span>
                         </div>
                     </div>
                 }
             }
         </LoadingView>
-
-        <EarcContextMenu/>
     </CascadingValue>
 
     <PromptModal @ref="Prompt"/>
@@ -79,15 +77,15 @@ else
 
     <AutosizeModal @ref="ConflictsModal">
         <HeaderView>
-            <span class="text-grey-300 flex-grow">Conflicts Detected</span>
+            <span class="text-grey-300 flex-grow">@L["ConflictsDetected"]</span>
             <span class="material-icons cursor-pointer" @onclick="CancelLegacyConflicts">cancel</span>
         </HeaderView>
         <BodyView>
             <div>
                 <h4 class="text-grey-300">
-                    One or more of the same EARC was detected
+                    @L["DuplicateEarcsDetected"]
                 </h4>
-                <span class="block">Please select which you'd like to keep below:</span>
+                <span class="block">@L["ChooseConflict"]</span>
                 @{
                     if (LegacyConflicts != null)
                     {
@@ -118,7 +116,7 @@ else
                                 </EditForm>
                             }
                             
-                            <Button Icon="check" Text="Confirm" CssClass="mt-6" OnClick="ConfirmLegacyConflicts"/>
+                            <Button Icon="check" Text=@L["Confirm"] CssClass="mt-6" OnClick="ConfirmLegacyConflicts"/>
                         }
                     }
                 }

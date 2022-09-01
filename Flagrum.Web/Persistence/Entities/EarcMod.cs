@@ -13,6 +13,7 @@ using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Services.Logging;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Features.AssetExplorer.Data;
+using Flagrum.Web.Resources;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -53,9 +54,28 @@ public class EarcModEarc
 public class EarcMod
 {
     public int Id { get; set; }
-    [Required] [StringLength(37)] public string Name { get; set; }
-    [Required] [StringLength(32)] public string Author { get; set; }
-    [Required] [StringLength(1000)] public string Description { get; set; }
+
+    [Display(Name = nameof(DisplayNameResource.ModName), ResourceType = typeof(DisplayNameResource))]
+    [Required(ErrorMessageResourceName = nameof(ErrorMessageResource.RequiredError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    [StringLength(37, ErrorMessageResourceName = nameof(ErrorMessageResource.MaxLengthError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    public string Name { get; set; }
+
+    [Display(Name = nameof(DisplayNameResource.Author), ResourceType = typeof(DisplayNameResource))]
+    [Required(ErrorMessageResourceName = nameof(ErrorMessageResource.RequiredError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    [StringLength(32, ErrorMessageResourceName = nameof(ErrorMessageResource.MaxLengthError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    public string Author { get; set; }
+
+    [Display(Name = nameof(DisplayNameResource.Description), ResourceType = typeof(DisplayNameResource))]
+    [Required(ErrorMessageResourceName = nameof(ErrorMessageResource.RequiredError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    [StringLength(1000, ErrorMessageResourceName = nameof(ErrorMessageResource.MaxLengthError),
+        ErrorMessageResourceType = typeof(ErrorMessageResource))]
+    public string Description { get; set; }
+
     public bool IsActive { get; set; }
 
     public ICollection<EarcModEarc> Earcs { get; set; } = new List<EarcModEarc>();

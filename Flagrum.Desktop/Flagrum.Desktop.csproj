@@ -85,6 +85,30 @@
         </Resource>
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Update="Resources\Localisation.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>Localisation.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Localisation.ja-JP.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>Localisation.ja-JP.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Resources\Localisation.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Localisation.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Localisation.ja-JP.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Localisation.ja-JP.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
     <PropertyGroup>
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
         <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -6,6 +6,7 @@
         xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
         xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
         xmlns:fa5="http://schemas.fontawesome.com/icons/"
+        xmlns:resources="clr-namespace:Flagrum.Desktop.Resources"
         mc:Ignorable="d"
         Title="Flagrum"
         WindowStartupLocation="CenterScreen"
@@ -47,7 +48,8 @@
                             <ColumnDefinition Width="50" />
                         </Grid.ColumnDefinitions>
                         <Image Source="/flagrum-titlebar.png" Grid.Column="0" Margin="15, 0, 0, 0" />
-                        <Label Grid.Column="1" Content="Flagrum" Foreground="#E7E5E4" FontSize="14"
+                        <Label Grid.Column="1" Content="{x:Static resources:Localisation.WindowTitle}"
+                               Foreground="#E7E5E4" FontSize="14"
                                VerticalAlignment="Center"
                                Padding="10, 5, 15, 8" />
                         <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"
@@ -149,10 +151,9 @@
                                 <StackPanel VerticalAlignment="Center">
                                     <fa5:SvgAwesome Icon="Solid_SyncAlt" Spin="True" SpinDuration="2"
                                                     Foreground="LightGray" Width="80" Height="80" />
-                                    <Label Foreground="LightGray" HorizontalAlignment="Center" FontSize="18pt"
-                                           Margin="0, 20, 0, 100">
-                                        Installing Additional Dependencies
-                                    </Label>
+                                    <TextBlock Foreground="LightGray" HorizontalAlignment="Center" FontSize="18pt"
+                                               Margin="0, 20, 0, 100"
+                                               Text="{x:Static resources:Localisation.AdditionalDependencies}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ContentPresenter.Resources>

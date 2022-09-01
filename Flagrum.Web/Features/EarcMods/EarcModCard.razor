@@ -18,16 +18,12 @@
         <Checkbox CssStyle="position:absolute;top:5px;right:5px;"
                   IsChecked="@Mod.IsActive"
                   OnChange="ToggleMod"/>
-        @* <ContextMenuTrigger MenuId="earcContextMenu" *@
-        @*                     Data="Mod" *@
-        @*                     MouseButtonTrigger="MouseButtonTrigger.Left"> *@
         <div class="absolute bottom-2 left-2 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
              @onclick="Export"
              @onclick:stopPropagation="true"
              style="width: 38px; height: 38px; padding: 5px;">
             <span class="material-icons select-none">file_download</span>
         </div>
-        @* </ContextMenuTrigger> *@
     </div>
     <div class="p-4">
         <strong class="block text-grey-200 flex-grow font-display mb-2">@Mod.Name</strong>
@@ -140,7 +136,7 @@
 
     private async Task Disable()
     {
-        await InvokeAsync(() => Parent.SetLoading(true, "Disabling Mod"));
+        await InvokeAsync(() => Parent.SetLoading(true, "DisablingMod"));
         await Task.Run(async () => await Mod.Disable(Context));
         await InvokeAsync(() => Parent.SetLoading(false));
     }
@@ -151,7 +147,7 @@
         const string filter = "ZIP Archive|*.zip";
         await WpfService.OpenSaveFileDialogAsync(defaultName, filter, async savePath =>
         {
-            await InvokeAsync(() => Parent.SetLoading(true, "Exporting Mod Pack"));
+            await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
 
             await Task.Run(() =>
             {

@@ -1,11 +1,13 @@
 ﻿@using Index = Flagrum.Web.Features.ModLibrary.Editor.Index
+@inject IStringLocalizer<Index> Localizer
+
 <div class="box mt-6">
     <EditForm Model="Parent">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
                 <tr>
                     <td>
-                        <label>MOD TITLE</label>
+                        <label>@Localizer["ModTitle"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.WorkshopTitle"/>
@@ -13,7 +15,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>MOD DESCRIPTION</label>
+                        <label>@Localizer["ModDescription"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Rows="5" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
@@ -21,7 +23,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>GEAR MENU TITLE</label>
+                        <label>@Localizer["GearMenuTitle"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuTitle"/>

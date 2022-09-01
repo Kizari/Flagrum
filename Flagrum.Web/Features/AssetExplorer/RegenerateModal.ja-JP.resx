@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="Description" xml:space="preserve">
+        <value>ゲームファイルがフラーグルムのファイルインデックスと同期しなくなった場合（ゲームに追加コンテンツを入れたり、他のソースからMODをインストールした場合など）、ファイルインデックスを再生成して、アセットブラウザのゲームビューを修復することができます。この作業には、数分かかる場合があります。</value>
+    </data>
+    <data name="RegenerateIndex" xml:space="preserve">
+        <value>リビルドインデックス</value>
+    </data>
+    <data name="Title" xml:space="preserve">
+        <value>ファイルインデックスの再構築</value>
+    </data>
+    <data name="ActiveModsWarning" xml:space="preserve">
+        <value>EARCのMODがアクティブな状態では、ファイルインデックスを再生成することはできません。MODマネージャーですべてのアクティブなMODを無効にしてから、もう一度試してみてください。</value>
+    </data>
+</root>

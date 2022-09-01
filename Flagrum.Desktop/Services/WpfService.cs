@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Flagrum.Web.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
-using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace Flagrum.Desktop.Services;
 
@@ -73,5 +75,10 @@ public class WpfService : IWpfService
         new ToastContentBuilder()
             .AddText(message)
             .Show();
+    }
+
+    public void Restart()
+    {
+        Application.Restart();
     }
 }

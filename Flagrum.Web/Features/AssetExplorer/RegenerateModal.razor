@@ -1,31 +1,28 @@
-﻿@using Microsoft.EntityFrameworkCore
-@using Microsoft.EntityFrameworkCore.Internal
+﻿@using Microsoft.EntityFrameworkCore.Internal
 @inject AppStateService AppState
 @inject UriMapper Mapper
 @inject FlagrumDbContext Context
+@inject IStringLocalizer<RegenerateModal> L
 
 <AutosizeModal @ref="Modal" MaxWidth="420px">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Rebuild File Index</span>
+        <span class="text-grey-300 flex-grow">@L["Title"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
             <span class="block mb-6">
-                If your game files have lost sync with Flagrum's file index (such as if you have added extra
-                content to the game or installed mods from other sources), you can regenerate the file index
-                to repair the Asset Explorer's Game View. This may take several minutes to complete.
+                @L["Description"]
             </span>
             @if (Context.EarcMods.Any(m => m.IsActive))
             {
                 <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
-                    You cannot regenerate the file index while you have active EARC mods. Please disable all active
-                    mods in the Mod Manager and try again.
+                    @L["ActiveModsWarning"]
                 </div>
             }
             else
             {
-                <Button Icon="refresh" Text="Regenerate Index" OnClickAsync="OnClick" />
+                <Button Icon="refresh" Text="@L["RegenerateIndex"]" OnClickAsync="OnClick"/>
             }
         </div>
     </BodyView>
@@ -35,13 +32,16 @@
 {
     [CascadingParameter]
     public MainLayout MainLayout { get; set; }
-    
+
     [CascadingParameter]
     public Index Parent { get; set; }
-    
+
     private AutosizeModal Modal { get; set; }
 
-    public void Open() => Modal.Open();
+    public void Open()
+    {
+        Modal.Open();
+    }
 
     private async Task OnClick()
     {
@@ -49,12 +49,12 @@
         Parent.ClearSelectedItem();
         MainLayout.CallStateHasChanged();
         Modal.Close();
-        
+
         await Task.Run(() =>
         {
             Mapper.RegenerateMap();
             Context.GetDependencies().StateManager.ResetState();
-            
+
             AppState.Node = Context.AssetExplorerNodes
                 .FirstOrDefault(n => n.Id == 1);
 

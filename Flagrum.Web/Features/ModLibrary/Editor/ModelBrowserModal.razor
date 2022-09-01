@@ -2,10 +2,11 @@
 @using Flagrum.Web.Persistence.Entities
 @inject AppStateService AppState
 @inject FlagrumDbContext Context
+@inject IStringLocalizer<ModelBrowserModal> Localizer
 
 <Modal @ref="Modal" Padding="0" Width="800" Height="600">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Browse Game Models</span>
+        <span class="text-grey-300 flex-grow">@Localizer["BrowseGameModels"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
@@ -29,7 +30,7 @@
                         </div>
                     </div>
                     <div class="flex-grow bg-grey-900 border-t border-b border-dark-550 row py-2 px-3">
-                        <strong class="flex-grow font-display">No File Selected</strong>
+                        <strong class="flex-grow font-display">@Localizer["NoFileSelected"]</strong>
                     </div>
                 </div>
 

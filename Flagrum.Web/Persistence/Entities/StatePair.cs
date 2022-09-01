@@ -9,7 +9,8 @@ public enum StateKey
     CurrentAssetNode,
     CurrentEarcCategory,
     Placeholder,
-    HaveThumbnailsBeenResized
+    HaveThumbnailsBeenResized,
+    Language
 }
 
 public class StatePair

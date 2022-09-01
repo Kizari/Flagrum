@@ -1,12 +1,3 @@
-@using Microsoft.EntityFrameworkCore
-@inject JSInterop Interop
-@inject FlagrumDbContext Context
-@inject UriMapper UriMapper
-@inject AppStateService AppState
-@inject SettingsService Settings
-@inject ILogger<App> Logger
-@inject BinmodTypeHelper BinmodTypeHelper
-
 <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
