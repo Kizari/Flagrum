@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
@@ -25,6 +24,9 @@ public class Ps4Porter
     {
         _settings.GamePath = Ps4PorterConfiguration.GamePath;
         _pcSettings = new SettingsService();
+
+        new Ps4AssetAggregator().Run();
+        return;
 
         //FileFinder.FindStringInAllFiles("alt_com_cajon.aiia");
         //return;
@@ -240,10 +242,10 @@ public class Ps4Porter
                 {
                     EarcRelativePath = earcPath
                 };
-                
+
                 mod.Earcs.Add(earc);
             }
-            
+
             earc.Replacements.Add(new EarcModReplacement
             {
                 Uri = uri,
@@ -269,8 +271,9 @@ public class Ps4Porter
             var data = Ps4Utilities.GetFileByUri(context, asset.Uri);
             File.WriteAllBytes(@$"C:\Modding\Chocomog\Testing\BinsDump\{hash}", data);
         }
-        
-        File.WriteAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json", JsonConvert.SerializeObject(hashTable));
+
+        File.WriteAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json",
+            JsonConvert.SerializeObject(hashTable));
     }
 
     private static void DumpNoctisAnimations()
@@ -279,7 +282,7 @@ public class Ps4Porter
 
         using var context = Ps4Utilities.NewContext();
         foreach (var asset in context.Ps4AssetUris.Where(a =>
-                     a.Uri.Contains("/nh00/") && (/*a.Uri.EndsWith(".ani") || a.Uri.EndsWith(".pka") ||*/ a.Uri.EndsWith(".amdl"))))
+                     a.Uri.Contains("/nh00/") && a.Uri.EndsWith(".amdl")))
         {
             var hash = Cryptography.HashFileUri64(asset.Uri);
             hashTable.Add(hash, asset.Uri);
@@ -287,7 +290,7 @@ public class Ps4Porter
             var data = Ps4Utilities.GetFileByUri(context, asset.Uri);
             File.WriteAllBytes(@$"C:\Modding\Chocomog\Testing\AnimationDump\{hash}", AnimationModel.ToPC(data));
         }
-        
+
         //File.WriteAllText(@"C:\Modding\Chocomog\Testing\AnimationDump\hashTable.json", JsonConvert.SerializeObject(hashTable));
     }
 
@@ -341,7 +344,7 @@ public class Ps4Porter
                     a.Uri.StartsWith("data://navimesh/level/dlc_ex/mog/worldshare/worldshare_mog/"))
                 .Select(a => a.Uri)
                 .ToList();
-            
+
             path = $@"{_pcSettings.GameDataDirectory}\level\dlc_ex\mog\worldshare\worldshare_mog.earc";
             unpacker = new Unpacker(path);
             packer = unpacker.ToPacker();
@@ -365,7 +368,7 @@ public class Ps4Porter
 
             packer.WriteToFile(path);
         }
-        
+
         // unpacker =
         //     new Unpacker(
         //         @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog\map_altissia_mog\minigame\map_ra_al_minigame.earc");
@@ -381,7 +384,8 @@ public class Ps4Porter
     {
         var context = Ps4Utilities.NewContext();
         var data = Ps4Utilities.GetFileByUri(context, "data://celltool_dlc_mog.mid");
-        var path = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc";
+        var path =
+            @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc";
         var unpacker = new Unpacker(path);
         var packer = unpacker.ToPacker();
 
@@ -499,7 +503,8 @@ public class Ps4Porter
     private void AddNaviStuffToMainEarc()
     {
         var context = Ps4Utilities.NewContext();
-        var path = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc";
+        var path =
+            @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\level\dlc_ex\mog\area_ravettrice_mog.earc";
         var unpacker = new Unpacker(path);
         var packer = unpacker.ToPacker();
 
@@ -515,7 +520,7 @@ public class Ps4Porter
                 packer.AddCompressedFile(item, data, true);
             }
         }
-        
+
         packer.WriteToFile(path);
     }
 }

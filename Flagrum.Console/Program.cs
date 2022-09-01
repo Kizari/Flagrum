@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,12 +8,8 @@ using Flagrum.Console.Ps4;
 using Flagrum.Console.Ps4.Porting;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
-using Flagrum.Core.Animation.AnimationClip;
-using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
-using Flagrum.Core.Gfxbin.Gmdl;
 using Flagrum.Web.Persistence;
-using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
@@ -43,8 +38,8 @@ using Newtonsoft.Json;
 // return;
 
 //FileFinder.FindStringInAllFiles("uw05_100_hair01_mog.ebex");
-//FileFinder.FindStringInExml("Black.AI.Ambient.AmbientSpawnPointEntity");
-FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17108094));
+FileFinder.FindStringInExml("SequenceActionCheckPhotoCount");
+//FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17109819));
 return;
 
 // using var context = Ps4Utilities.NewContext();
@@ -376,18 +371,22 @@ void GenerateDiff()
 {
     using var ps4Context = Ps4Utilities.NewContext();
     using var pcContext = new FlagrumDbContext(new SettingsService());
-    
+
     var diff = new List<string>();
-    foreach (var uri in ps4Context.Ps4AssetUris.Where(a => !a.Uri.EndsWith("@") && !a.Uri.EndsWith(".htpk") && !a.Uri.EndsWith(".tif") && !a.Uri.EndsWith(".sb")).Select(a => a.Uri))
-    //foreach (var uri in ps4Context.Ps4AssetUris.Where(a => a.Uri.EndsWith(".ebex")).Select(a => a.Uri))
+    foreach (var uri in ps4Context.Ps4AssetUris.Where(a =>
+                     !a.Uri.EndsWith("@") && !a.Uri.EndsWith(".htpk") && !a.Uri.EndsWith(".tif") &&
+                     !a.Uri.EndsWith(".sb"))
+                 .Select(a => a.Uri))
+        //foreach (var uri in ps4Context.Ps4AssetUris.Where(a => a.Uri.EndsWith(".ebex")).Select(a => a.Uri))
     {
         if (!pcContext.AssetUris.Any(a => a.Uri == uri))
         {
             diff.Add(uri);
         }
     }
-    
-    File.WriteAllText(@"C:\Users\Kieran\Desktop\diff.json", JsonConvert.SerializeObject(diff.Distinct().OrderBy(d => d), Formatting.Indented));
+
+    File.WriteAllText(@"C:\Users\Kieran\Desktop\diff.json",
+        JsonConvert.SerializeObject(diff.Distinct().OrderBy(d => d), Formatting.Indented));
 }
 
 void GenerateFixidCsv()
@@ -414,7 +413,7 @@ void GenerateFixidCsv()
                     {
                         continue;
                     }
-                    
+
                     var name = match.Groups[2].Value.ToUpper().Trim(' ', '\r', '\n');
 
                     lock (lockObject)
@@ -452,9 +451,10 @@ void GenerateFixidCsv()
         {
             Console.WriteLine($"{fixid}");
         }
+
         builder.Append("\r\n" + fixid);
         var orderedNames = names.OrderBy(n => n.Length).ToList();
-        
+
         for (var i = 0; i < extraColumns; i++)
         {
             if (i < orderedNames.Count)

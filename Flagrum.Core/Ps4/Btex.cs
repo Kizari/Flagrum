@@ -299,7 +299,7 @@ public class Btex
 
         // Read all the pixel data
         btex.DdsData = new byte[btex.GnfHeader.DataSize];
-        reader.Read(btex.DdsData);
+        _ = reader.Read(btex.DdsData);
 
         var imageBinary = new ImageBinary
         {
@@ -365,12 +365,95 @@ public class Btex
             //case GnfDataFormat.Format8: imageBinary.InputPixelFormat = PixelDataFormat.FormatLuminance8; break;
             //case GnfDataFormat.Format8_8: imageBinary.InputPixelFormat = PixelDataFormat.FormatLuminance8; break;
 
-            default: throw new Exception($"Unimplemented GNF data format {btex.GnfHeader.DataFormat}");
+            default:
+                throw new Exception($"Unhandled pixel format {btex.GnfHeader.DataFormat}");
         }
 
         imageBinary.InputPixelFormat |= PixelDataFormat.PixelOrderingTiled3DS;
         imageBinary.AddInputPixels(btex.DdsData);
         btex.Bitmap = imageBinary.GetBitmap();
+
+        return btex;
+    }
+    
+    public static Btex FromDataHeaderOnly(byte[] data)
+    {
+        var btex = new Btex();
+        using var stream = new MemoryStream(data);
+        using var reader = new BinaryReader(stream);
+
+        // Read the SEDB header
+        btex.SedbHeader.Magic = reader.ReadChars(8);
+        btex.SedbHeader.Version = reader.ReadInt64();
+        btex.SedbHeader.FileSize = reader.ReadInt64();
+        stream.Align(256);
+
+        // Read the Btex header
+        btex.BtexHeader.Magic = reader.ReadChars(4);
+        btex.BtexHeader.HeaderSize = reader.ReadUInt32();
+        btex.BtexHeader.ImageDataSize = reader.ReadUInt32();
+        btex.BtexHeader.Version = reader.ReadUInt16();
+        btex.BtexHeader.Platform = (BtexPlatform)reader.ReadByte();
+        btex.BtexHeader.Flags = (BtexFlags)reader.ReadByte();
+        btex.BtexHeader.ImageCount = reader.ReadUInt16();
+        btex.BtexHeader.ImageHeaderStride = reader.ReadUInt16();
+        btex.BtexHeader.ImageHeaderOffset = reader.ReadUInt32();
+        reader.ReadUInt64(); // Padding
+
+        // Read the image data
+        btex.ImageData.Width = reader.ReadUInt16();
+        btex.ImageData.Height = reader.ReadUInt16();
+        btex.ImageData.Pitch = reader.ReadUInt16();
+        btex.ImageData.Format = (BtexFormat)reader.ReadUInt16();
+        btex.ImageData.MipCount = reader.ReadByte();
+        btex.ImageData.Depth = reader.ReadByte();
+        btex.ImageData.DimensionsCount = reader.ReadByte();
+        btex.ImageData.ImageFlags = reader.ReadByte();
+        btex.ImageData.SurfaceCount = reader.ReadUInt16();
+        btex.ImageData.SurfaceHeaderStride = reader.ReadUInt16();
+        btex.ImageData.PlatformDataOffset = reader.ReadInt32();
+        btex.ImageData.SurfaceHeaderOffset = reader.ReadInt32();
+        btex.ImageData.NameOffset = reader.ReadInt32();
+        btex.ImageData.PlatformDataSize = reader.ReadInt32();
+        btex.ImageData.HighMipCount = reader.ReadUInt32();
+        btex.ImageData.HighBtexSize = reader.ReadUInt32();
+        reader.ReadUInt64(); // Padding
+        btex.ImageData.TileMode = reader.ReadUInt32();
+        btex.ImageData.ArrayCount = reader.ReadUInt32();
+        btex.ImageData.Name = reader.ReadString();
+        stream.Align(256);
+
+        if (data.Length <= 512)
+        {
+            return btex;
+        }
+        
+        // Read the GNF header
+        btex.GnfHeader.Magic = Encoding.UTF8.GetString(reader.ReadBytes(4));
+        btex.GnfHeader.Unknown0x04 = reader.ReadUInt32();
+        btex.GnfHeader.Unknown0x08 = reader.ReadUInt32();
+        btex.GnfHeader.FileSize = reader.ReadUInt32();
+        btex.GnfHeader.Unknown0x10 = reader.ReadUInt32();
+        btex.GnfHeader.ImageInformation1 = reader.ReadUInt32();
+        btex.GnfHeader.ImageInformation2 = reader.ReadUInt32();
+        btex.GnfHeader.ImageInformation3 = reader.ReadUInt32();
+        btex.GnfHeader.ImageInformation4 = reader.ReadUInt32();
+        btex.GnfHeader.Unknown0x24 = reader.ReadUInt32();
+        btex.GnfHeader.Unknown0x28 = reader.ReadUInt32();
+        btex.GnfHeader.DataSize = reader.ReadUInt32();
+        stream.Align(256);
+
+        // Extract the data from the GNF header
+        btex.GnfHeader.DataFormat = (GnfDataFormat)ExtractData(btex.GnfHeader.ImageInformation1, 20, 25);
+        btex.GnfHeader.NumFormat = (GnfNumFormat)ExtractData(btex.GnfHeader.ImageInformation1, 26, 29);
+        btex.GnfHeader.Width = ExtractData(btex.GnfHeader.ImageInformation2, 0, 13) + 1;
+        btex.GnfHeader.Height = ExtractData(btex.GnfHeader.ImageInformation2, 14, 27) + 1;
+        btex.GnfHeader.Depth = ExtractData(btex.GnfHeader.ImageInformation4, 0, 12);
+        btex.GnfHeader.Pitch = ExtractData(btex.GnfHeader.ImageInformation4, 13, 26) + 1;
+        btex.GnfHeader.DestinationX = (GnfSqSel)ExtractData(btex.GnfHeader.ImageInformation3, 0, 2);
+        btex.GnfHeader.DestinationY = (GnfSqSel)ExtractData(btex.GnfHeader.ImageInformation3, 3, 5);
+        btex.GnfHeader.DestinationZ = (GnfSqSel)ExtractData(btex.GnfHeader.ImageInformation3, 6, 8);
+        btex.GnfHeader.DestinationW = (GnfSqSel)ExtractData(btex.GnfHeader.ImageInformation3, 9, 11);
 
         return btex;
     }

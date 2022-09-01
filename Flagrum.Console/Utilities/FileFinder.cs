@@ -24,12 +24,12 @@ public class FileData
 
 public class FileFinder
 {
+    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV (Release)\datas";
+    private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
     //private const string DataDirectory =
     //    @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV (Release)\datas";
 
     private readonly Dictionary<string, bool> _doneFiles = new();
-    private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV (Release)\datas";
-    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
     //private const string DataDirectory = @"C:\Modding\Chocomog\Final Fantasy XV - RAW PS4\datas";
 
     private ConcurrentBag<FileData> _map;
