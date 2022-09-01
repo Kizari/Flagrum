@@ -31,7 +31,7 @@
         <value>全MOD</value>
     </data>
     <data name="Browse" xml:space="preserve">
-        <value>Steam MODを閲覧する</value>
+        <value>ワークショップMODを閲覧する</value>
     </data>
     <data name="BrowseDescription" xml:space="preserve">
         <value>古いツールではタグが適用されないため、フラーグルムMODのみが検索結果に表示されます。</value>
@@ -67,7 +67,7 @@
         <value>兵器</value>
     </data>
     <data name="WorkshopMods" xml:space="preserve">
-        <value>Steam MOD</value>
+        <value>ワークショップMOD</value>
     </data>
     <data name="Noctis" xml:space="preserve">
         <value>ノクティス</value>

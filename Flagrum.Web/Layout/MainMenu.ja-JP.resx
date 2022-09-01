@@ -31,7 +31,7 @@
         <value>アセットブラウザ</value>
     </data>
     <data name="WorkshopMods" xml:space="preserve">
-        <value>Steam MOD</value>
+        <value>ワークショップMOD</value>
     </data>
     <data name="Wiki" xml:space="preserve">
         <value>ウィキ</value>
@@ -44,5 +44,8 @@
     </data>
     <data name="Version" xml:space="preserve">
         <value>フラーグルム</value>
+    </data>
+    <data name="WikiUrl" xml:space="preserve">
+        <value>https://github.com/Kizari/Flagrum/wiki/%E3%82%B5%E3%82%A4%E3%83%89%E3%83%90%E3%83%BC</value>
     </data>
 </root>

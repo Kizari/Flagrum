@@ -1,5 +1,4 @@
-﻿@using Flagrum.Web.Persistence.Entities
-@using System.IO
+﻿@using System.IO
 @using Flagrum.Core.Utilities
 @using System.Diagnostics
 @inject IWpfService WpfService
@@ -12,11 +11,11 @@
     <div class="h-full bg-dark flex flex-col border-dark-550 border-r" style="flex: 0 0 195px">
         <MenuItem Icon="dashboard" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
         <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
-        <MenuItem Icon="apps" Text="@L["WorkshopMods"]" Uri="/mod"/>
+        <MenuItem Icon="apps" Text=@L["WorkshopMods"] Uri="/mod"/>
         @* <MenuItem Icon="share" Text="Sequence Editor" Uri="/sequenceeditor"></MenuItem> *@
         <div class="flex-grow"></div>
 
-        <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri="https://github.com/Kizari/Flagrum/wiki"/>
+        <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri=@L["WikiUrl"]/>
         @* <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/> *@
         <MenuItem Icon="info_outline" Text="@L["About"]" Uri="/about"/>
         <MenuItem Icon="settings" Text="@L["Settings"]" Uri="/settings"/>

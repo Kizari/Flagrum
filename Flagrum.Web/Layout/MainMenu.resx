@@ -45,4 +45,7 @@
     <data name="Version" xml:space="preserve">
         <value>Flagrum v</value>
     </data>
+    <data name="WikiUrl" xml:space="preserve">
+        <value>https://github.com/Kizari/Flagrum/wiki</value>
+    </data>
 </root>

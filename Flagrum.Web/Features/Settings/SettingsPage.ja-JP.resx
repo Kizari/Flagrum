@@ -40,7 +40,7 @@
         <value>ゲームexeのパス</value>
     </data>
     <data name="WorkshopPath" xml:space="preserve">
-        <value>Steam Workshopのacfパス</value>
+        <value>ワークショップのacfパス</value>
     </data>
     <data name="Browse" xml:space="preserve">
         <value>ブラウズ</value>
