@@ -57,4 +57,10 @@
     <data name="RestartPrompt" xml:space="preserve">
         <value>言語の変更を適用するには、フラーグルムを再起動する必要があります。今すぐフラーグルムを再起動しますか？</value>
     </data>
+    <data name="English" xml:space="preserve">
+        <value>英語 (English)</value>
+    </data>
+    <data name="Japanese" xml:space="preserve">
+        <value>日本語 (Japanese)</value>
+    </data>
 </root>

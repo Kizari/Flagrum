@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
                 xmlns="">
         <xsd:element name="root" msdata:IsDataSet="true">
-            
+
         </xsd:element>
     </xsd:schema>
     <resheader name="resmimetype">
@@ -28,5 +29,11 @@
     </data>
     <data name="AdditionalDependencies" xml:space="preserve">
         <value>Installing Additional Dependencies</value>
+    </data>
+    <data name="WebView2Error" xml:space="preserve">
+        <value>Flagrum depends on WebView2 to run, which appears to be blocked on your device. This may be because WebView2 or Microsoft Edge has been disabled through an external program. Please ensure that a working version of Microsoft Edge is available on this device.</value>
+    </data>
+    <data name="Error" xml:space="preserve">
+        <value>Error</value>
     </data>
 </root>

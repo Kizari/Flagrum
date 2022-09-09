@@ -1,6 +1,5 @@
 ﻿@using Flagrum.Web.Persistence.Entities
 @using Flagrum.Web.Features.AssetExplorer.Data
-@inject FlagrumDbContext Context
 @inject SettingsService Settings
 
 <div class="row py-1 pr-2 pl-4 transition-colors hover:bg-grey-700 select-none cursor-pointer"
@@ -23,7 +22,8 @@
         set 
         { 
             _node = value;
-            Icon = AssetExplorerItem.GetIcon(_node.GetUri(Context));
+            using var context = new FlagrumDbContext(Settings);
+            Icon = AssetExplorerItem.GetIcon(_node.GetUri(context));
         }
     }
 

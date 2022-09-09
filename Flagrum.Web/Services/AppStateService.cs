@@ -15,9 +15,8 @@ public class AppStateData
 
 public class AppStateService
 {
-    private readonly FlagrumDbContext _context;
-    private readonly AppStateData _data;
     private readonly SettingsService _settings;
+    private readonly FlagrumDbContext _context;
 
     public AppStateService(
         SettingsService settings,
@@ -26,16 +25,12 @@ public class AppStateService
         _settings = settings;
         _context = context;
 
+        // Assimilate old state file into local DB
         if (File.Exists(_settings.StatePath))
         {
-            _data = JsonConvert.DeserializeObject<AppStateData>(File.ReadAllText(_settings.StatePath));
-        }
-        else
-        {
-            _data = new AppStateData
-            {
-                CurrentAssetExplorerPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
-            };
+            var data = JsonConvert.DeserializeObject<AppStateData>(File.ReadAllText(_settings.StatePath))!;
+            _context.SetString(StateKey.CurrentAssetExplorerPath, data.CurrentAssetExplorerPath);
+            File.Delete(_settings.StatePath);
         }
     }
 
@@ -50,20 +45,20 @@ public class AppStateService
     public int ActiveCategoryFilter { get; set; } = 0;
     public int ActiveModTypeFilter { get; set; } = -1;
 
-    private void SaveData()
-    {
-        File.WriteAllText(_settings.StatePath, JsonConvert.SerializeObject(_data));
-    }
-
     public string GetCurrentAssetExplorerPath()
     {
-        return _data.CurrentAssetExplorerPath;
+        var path = _context.GetString(StateKey.CurrentAssetExplorerPath);
+        if (path == null || !File.Exists(path))
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        }
+
+        return path;
     }
 
     public void SetCurrentAssetExplorerPath(string path)
     {
-        _data.CurrentAssetExplorerPath = path;
-        SaveData();
+        _context.SetString(StateKey.CurrentAssetExplorerPath, path);
     }
 
     public void UpdateBinmodList()

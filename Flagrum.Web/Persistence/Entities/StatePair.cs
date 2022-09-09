@@ -8,9 +8,12 @@ public enum StateKey
 {
     CurrentAssetNode,
     CurrentEarcCategory,
-    Placeholder,
+    Language,
     HaveThumbnailsBeenResized,
-    Language
+    GamePath,
+    BinmodListPath,
+    LastSeenVersionNotes,
+    CurrentAssetExplorerPath
 }
 
 public class StatePair

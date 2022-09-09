@@ -1,10 +1,10 @@
-﻿<div style="max-width: 600px;">
-    <h3 class="text-grey-300 mb-6 text-center">Flagrum has been updated to Version @Version!</h3>
+﻿@inject IStringLocalizer<PatchNotes> Localizer
+
+<div style="max-width: 600px;">
+    <h4 class="text-grey-300 mb-6 text-center">@Localizer["HasBeenUpdated", Version]</h4>
     <div class="text-center">
-        This update brings bulk script exporting, support for 4K mods when the 4K pack is not installed,
-        and a range of fixes and quality of life updates.<br/><br/>
-        <Hyperlink Text="View Full Changelog" Uri="https://github.com/Kizari/Flagrum/wiki/Flagrum-Changelog"></Hyperlink><br/>
-        <Hyperlink Text="フルチェンジログを見る" Uri="https://github.com/Kizari/Flagrum/wiki/%E3%83%95%E3%83%A9%E3%83%BC%E3%82%B0%E3%83%AB%E3%83%A0%E3%83%81%E3%82%A7%E3%83%B3%E3%82%B8%E3%83%AD%E3%82%B0"></Hyperlink>
+        @Localizer["UpdateNotes"]<br/><br/>
+        <Hyperlink Text=@Localizer["ViewFullChangelog"] Uri=@Localizer["ChangelogUrl"]></Hyperlink>
     </div>
 </div>
 

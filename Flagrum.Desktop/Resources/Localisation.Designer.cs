@@ -70,6 +70,24 @@ namespace Flagrum.Desktop.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Flagrum depends on WebView2 to run, which appears to be blocked on your device. This may be because WebView2 or Microsoft Edge has been disabled through an external program. Please ensure that a working version of Microsoft Edge is available on this device..
+        /// </summary>
+        public static string WebView2Error {
+            get {
+                return ResourceManager.GetString("WebView2Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Flagrum.
         /// </summary>
         public static string WindowTitle {

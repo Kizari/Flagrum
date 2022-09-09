@@ -37,7 +37,7 @@
         <value>ウィキ</value>
     </data>
     <data name="About" xml:space="preserve">
-        <value>について</value>
+        <value>サポートミー</value>
     </data>
     <data name="Settings" xml:space="preserve">
         <value>設定</value>
@@ -47,5 +47,8 @@
     </data>
     <data name="WikiUrl" xml:space="preserve">
         <value>https://github.com/Kizari/Flagrum/wiki/%E3%82%B5%E3%82%A4%E3%83%89%E3%83%90%E3%83%BC</value>
+    </data>
+    <data name="SoftwareUpdate" xml:space="preserve">
+        <value>ソフトウェアアップデート</value>
     </data>
 </root>

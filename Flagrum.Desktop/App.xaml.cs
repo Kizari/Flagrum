@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Squirrel;
@@ -14,22 +17,30 @@ public partial class App
     public App()
     {
         SetCurrentProcessExplicitAppUserModelID("Flagrum");
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) => DumpCrash((Exception)e.ExceptionObject);
-        Current.DispatcherUnhandledException += (sender, e) =>
+        var resources = new ResourceManager("Flagrum.Desktop.Resources.Localisation", Assembly.GetExecutingAssembly());
+
+        // Catch and log any exceptions that occur during runtime
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => DumpCrash((Exception)e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (_, e) => DumpCrash(e.Exception);
+        Current.DispatcherUnhandledException += (_, e) =>
         {
             DumpCrash(e.Exception);
 
             if (e.Exception.InnerException != null && e.Exception.InnerException.Message.Contains("0x800704EC"))
             {
-                MessageBox.Show("WebView2 is blocked by group policy. This may be because Microsoft Edge has been disabled through an external program. Make sure that a working version of Microsoft Edge is available on this computer.", "Warning", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(resources.GetString("WebView2Error"),
+                    resources.GetString("Error"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         };
-        TaskScheduler.UnobservedTaskException += (sender, e) => DumpCrash(e.Exception);
 
+        // Declare events for Squirrel installer/updater software
         SquirrelAwareApp.HandleEvents(
             OnInstall,
             onAppUninstall: OnUninstall);
 
+        // Set culture based on stored language settings if any
         using var context = new FlagrumDbContext();
         var cultureName = context.GetString(StateKey.Language);
 

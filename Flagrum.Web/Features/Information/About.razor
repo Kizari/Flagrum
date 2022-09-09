@@ -6,8 +6,8 @@
     <div class="py-8 px-10 flex-grow flex flex-col h-full" style="max-width: 800px">
         <h2 class="text-grey-300 mb-4">@Localizer["About"]</h2>
         <span>
-            @Localizer["AboutSubtext"]<br /><br />
-            
+            @Localizer["AboutSubtext"]<br/><br/>
+
             @Localizer["Goals"]
             <ul class="list-disc">
                 <li class="ml-8">@Localizer["Streamline"]</li>
@@ -17,12 +17,12 @@
                 <li class="ml-8">@Localizer["Continue"]</li>
             </ul>
         </span>
-        
+
         <h4 class="text-grey-300 mt-10 mb-2">@Localizer["Join"]</h4>
         <span>
-            @Localizer["JoinSubtext1"] <Hyperlink Text=@Localizer["ExinerisDiscord"] Uri="https://discord.gg/7cNNwwJKsJ" /> @Localizer["JoinSubtext2"]
+            @Localizer["JoinSubtext1"] <Hyperlink Text=@Localizer["ExinerisDiscord"] Uri="https://discord.gg/7cNNwwJKsJ"/> @Localizer["JoinSubtext2"]
         </span>
-        
+
         <h4 class="text-grey-300 mt-10 mb-2">@Localizer["Roadmap"]</h4>
         <span>
             @Localizer["RoadmapSubtext"]
@@ -33,14 +33,26 @@
                 <li class="ml-8">@Localizer["Further"]</li>
             </ul>
         </span>
-        
+
         <div class="flex-grow"></div>
 
         <h4 class="text-grey-300 mt-10 mb-2">@Localizer["Support"]</h4>
         <span>
             @Localizer["SupportSubtext"]
-        </span> 
-        <BmcButton CssClass="mt-6 mb-4" />
+        </span>
+        
+        <div class="row mt-6 mb-2">
+            <div class="mr-4">
+                <DonateButton Alt="Ko-Fi" Text=@Localizer["Ko-Fi"] Url="https://ko-fi.com/kizari" ImageUrl="images/kofi-logo.png" />
+            </div>
+            <div class="mr-4">
+                <DonateButton Alt="PayPal" Text=@Localizer["PayPal"] Url="https://ko-fi.com/kizari" ImageUrl="images/paypal-logo.png" PayPal="true" />
+            </div>
+            <div>
+                <DonateButton Alt="Buy Me a Coffee" Text=@Localizer["BMC"] Url="https://buymeacoffee.com/Exineris" ImageUrl="images/bmc-logo.png" />
+            </div>
+        </div>
+
     </div>
     <div class="text-center py-10 px-10 flex-grow">
         <h2 class="text-grey-300 mb-10">@Localizer["Credits"]</h2>

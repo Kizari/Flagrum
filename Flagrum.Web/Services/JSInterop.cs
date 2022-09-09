@@ -47,11 +47,6 @@ public class JSInterop
         await _jsRuntime.InvokeVoidAsync("interop.setBackgroundImage", uuid);
     }
 
-    public async Task InitialiseBmcButton(string id)
-    {
-        await _jsRuntime.InvokeVoidAsync("interop.initialiseBmcButton", id);
-    }
-
     public async Task ApplyHtmlToElement(string id, string html, object reference)
     {
         await _jsRuntime.InvokeVoidAsync("interop.applyHtmlToElement", id, html, reference);

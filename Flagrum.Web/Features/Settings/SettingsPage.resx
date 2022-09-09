@@ -57,4 +57,10 @@
     <data name="RestartPrompt" xml:space="preserve">
         <value>Flagrum must be restarted to apply language changes. Would you like to restart Flagrum now?</value>
     </data>
+    <data name="English" xml:space="preserve">
+        <value>English (英語)</value>
+    </data>
+    <data name="Japanese" xml:space="preserve">
+        <value>Japanese (日本語)</value>
+    </data>
 </root>

@@ -37,7 +37,7 @@
         <value>Wiki</value>
     </data>
     <data name="About" xml:space="preserve">
-        <value>About</value>
+        <value>Support Me</value>
     </data>
     <data name="Settings" xml:space="preserve">
         <value>Settings</value>
@@ -47,5 +47,8 @@
     </data>
     <data name="WikiUrl" xml:space="preserve">
         <value>https://github.com/Kizari/Flagrum/wiki</value>
+    </data>
+    <data name="SoftwareUpdate" xml:space="preserve">
+        <value>Software Update</value>
     </data>
 </root>

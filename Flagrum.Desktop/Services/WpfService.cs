@@ -79,6 +79,7 @@ public class WpfService : IWpfService
 
     public void Restart()
     {
+        App.Current.Shutdown(0);
         Application.Restart();
     }
 }

@@ -17,7 +17,7 @@
 
         <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri=@L["WikiUrl"]/>
         @* <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/> *@
-        <MenuItem Icon="info_outline" Text="@L["About"]" Uri="/about"/>
+        <MenuItem Icon="favorite" Text="@L["About"]" Uri="/about"/>
         <MenuItem Icon="settings" Text="@L["Settings"]" Uri="/settings"/>
 
         <img alt="Discord" @onclick="OpenDiscordLink" src="discord-button.png" class="p-2 rounded-md bg-grey-800 shadow-md mt-4 mx-4 cursor-pointer" style="max-width: 165px"/>
@@ -30,7 +30,7 @@
 
 <AutosizeModal @ref="VersionNotesModal" Padding="0">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Software Update</span>
+        <span class="text-grey-300 flex-grow">@L["SoftwareUpdate"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => VersionNotesModal.Close()">cancel</span>
     </HeaderView>
     <BodyView>

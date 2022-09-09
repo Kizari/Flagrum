@@ -7,6 +7,10 @@ using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 
+var path = @"C:\Program Files (x86)\Steam\steamapps\workshop\content\637650\1438266368\nh02_casgrey.ffxvbinmod";
+using var unpacker = new Unpacker(path);
+return;
+
 var hash = Cryptography.HashFileUri64(
     "data://environment/duscae/props/du_ar_lhotel02/sourceimages/du_ar_lhotel02_part04_concrete_b.tif");
 Console.WriteLine(hash);

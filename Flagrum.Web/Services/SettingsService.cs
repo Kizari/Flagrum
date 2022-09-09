@@ -2,6 +2,8 @@
 using System.IO;
 using System.Linq;
 using Flagrum.Core.Utilities;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 
@@ -49,16 +51,25 @@ public class SettingsService
         }
 
         SettingsPath = $"{FlagrumDirectory}\\settings.json";
+        using var context = new FlagrumDbContext();
 
+        // Migrate old settings file into local DB
         if (File.Exists(SettingsPath))
         {
             var json = File.ReadAllText(SettingsPath);
-            var settingsData = JsonConvert.DeserializeObject<SettingsData>(json);
-            GamePath = settingsData.GamePath;
-            BinmodListPath = settingsData.BinmodListPath;
-            WorkshopPath = settingsData.WorkshopPath;
-            LastVersionNotes = settingsData.LastVersionNotes;
+            var settingsData = JsonConvert.DeserializeObject<SettingsData>(json)!;
+            
+            context.SetString(StateKey.GamePath, settingsData.GamePath);
+            context.SetString(StateKey.BinmodListPath, settingsData.BinmodListPath);
+            context.SetString(StateKey.LastSeenVersionNotes, settingsData.LastVersionNotes);
+            
+            File.Delete(SettingsPath);
         }
+        
+        // Read persisted settings
+        GamePath = context.GetString(StateKey.GamePath);
+        BinmodListPath = context.GetString(StateKey.BinmodListPath);
+        LastVersionNotes = context.GetString(StateKey.LastSeenVersionNotes);
 
         TempDirectory = $"{FlagrumDirectory}\\tmp";
         if (!Directory.Exists(TempDirectory))
@@ -89,17 +100,6 @@ public class SettingsService
                         }
                     }
                 }
-            }
-        }
-
-        if (WorkshopPath == null)
-        {
-            var workshopPath =
-                $"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\\Steam\\steamapps\\workshop\\appworkshop_637650.acf";
-
-            if (File.Exists(workshopPath))
-            {
-                WorkshopPath = workshopPath;
             }
         }
 
@@ -139,7 +139,6 @@ public class SettingsService
         }
 
         CheckIsReady();
-        Save();
     }
 
     public string SteamExePath { get; set; }
@@ -152,40 +151,51 @@ public class SettingsService
 
     public string GamePath { get; private set; }
     public string BinmodListPath { get; private set; }
-    public string WorkshopPath { get; private set; }
+
+    public string WorkshopPath
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(GamePath))
+            {
+                return null;
+            }
+
+            var ffxvDirectory = Path.GetDirectoryName(GamePath);
+            var commonFolder = Path.GetDirectoryName(ffxvDirectory);
+            var steamAppsFolder = Path.GetDirectoryName(commonFolder);
+
+            return $@"{steamAppsFolder}\workshop\appworkshop_637650.acf";
+        }
+    }
     public string LastVersionNotes { get; private set; }
 
     public string ModDirectory => $"{Path.GetDirectoryName(BinmodListPath)}";
     public string WorkshopDirectory => $"{Path.GetDirectoryName(WorkshopPath)}\\content\\637650";
     public string GameDataDirectory => $"{Path.GetDirectoryName(GamePath)}\\datas";
-    public string ReplacementsFilePath => $"{FlagrumDirectory}\\replacements.json";
     public string StatePath => $"{FlagrumDirectory}\\state.json";
 
     public void SetGamePath(string path)
     {
         GamePath = path;
-        Save();
+        using var context = new FlagrumDbContext();
+        context.SetString(StateKey.GamePath, path);
         CheckIsReady();
     }
 
     public void SetBinmodListPath(string path)
     {
         BinmodListPath = path;
-        Save();
-        CheckIsReady();
-    }
-
-    public void SetWorkshopPath(string path)
-    {
-        WorkshopPath = path;
-        Save();
+        using var context = new FlagrumDbContext();
+        context.SetString(StateKey.BinmodListPath, path);
         CheckIsReady();
     }
 
     public void SetLastVersionNotes(string version)
     {
         LastVersionNotes = version;
-        Save();
+        using var context = new FlagrumDbContext();
+        context.SetString(StateKey.LastSeenVersionNotes, version);
     }
 
     private void CheckIsReady()
@@ -194,23 +204,5 @@ public class SettingsService
         {
             IsReady = GamePath != null && BinmodListPath != null && WorkshopPath != null;
         }
-    }
-
-    public void Save()
-    {
-        var settingsData = new SettingsData
-        {
-            GamePath = GamePath,
-            WorkshopPath = WorkshopPath,
-            BinmodListPath = BinmodListPath,
-            LastVersionNotes = LastVersionNotes
-        };
-
-        File.WriteAllText(SettingsPath, JsonConvert.SerializeObject(settingsData));
-    }
-
-    public string GetTempFile()
-    {
-        return $"{TempDirectory}\\{Guid.NewGuid().ToString()}.tmp";
     }
 }

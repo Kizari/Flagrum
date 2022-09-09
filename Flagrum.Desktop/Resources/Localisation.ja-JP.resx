@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
                 xmlns="">
         <xsd:element name="root" msdata:IsDataSet="true">
-            
+
         </xsd:element>
     </xsd:schema>
     <resheader name="resmimetype">
@@ -28,5 +29,11 @@
     </data>
     <data name="AdditionalDependencies" xml:space="preserve">
         <value>追加の依存関係のインストール</value>
+    </data>
+    <data name="Error" xml:space="preserve">
+        <value>エラー</value>
+    </data>
+    <data name="WebView2Error" xml:space="preserve">
+        <value>フラーグルムの実行にはWebView2が必要ですが、お使いの端末ではブロックされているようです。これは、WebView2またはMicrosoft Edgeが外部プログラムによって無効化されていることが原因である可能性があります。このデバイスでMicrosoft Edgeが使用可能なバージョンであることを確認してください。</value>
     </data>
 </root>

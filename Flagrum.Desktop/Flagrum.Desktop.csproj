@@ -8,8 +8,8 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <AssemblyName>Flagrum</AssemblyName>
-        <AssemblyVersion>1.2.4</AssemblyVersion>
-        <FileVersion>1.2.4</FileVersion>
+        <AssemblyVersion>1.2.5</AssemblyVersion>
+        <FileVersion>1.2.5</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>

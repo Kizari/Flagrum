@@ -263,6 +263,14 @@
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>About.ja-JP.Designer.cs</LastGenOutput>
         </EmbeddedResource>
+        <EmbeddedResource Update="Layout\PatchNotes.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>PatchNotes.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Layout\PatchNotes.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>PatchNotes.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
 
