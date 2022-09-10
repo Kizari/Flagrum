@@ -62,7 +62,9 @@
 <p align="center">
 These tools take a monumental amount of time and effort to develop.<br/>
 If you want to support the ongoing development of Flagrum and my other XV projects, please consider donating.<br/><br/><br/>
-<a href="https://buymeacoffee.com/Exineris"><img width="200" src="https://i.imgur.com/cCLsrEb.png" alt="Buy us a coffee" /></a>
+<a href="https://ko-fi.com/Kizari"><img height="40" src="Images/Readme/kofi-button.png" alt="Ko-Fi" /></a>&nbsp;&nbsp;
+<a href="https://www.paypal.com/donate/?business=GMWBY6FGMMCCA&no_recurring=0&item_name=Creating+next+generation+modding+tools+for+Final+Fantasy+XV+and+providing+comprehensive+guides+for+users+of+all+skill+levels.&currency_code=NZD"><img height="40" src="Images/Readme/paypal-button.png" alt="PayPal" /></a>&nbsp;&nbsp;
+<a href="https://buymeacoffee.com/Exineris"><img height="40" src="Images/Readme/bmc-button.png" alt="Buy Me a Coffee" /></a>
 </p>
 <p><br/></p>
 &nbsp;
