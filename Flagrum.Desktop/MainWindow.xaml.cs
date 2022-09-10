@@ -86,10 +86,6 @@ public partial class MainWindow : INotifyPropertyChanged
             InstallWebView2Runtime();
         }
 
-        // Migrate the database
-        using var context = new FlagrumDbContext();
-        context.Database.MigrateAsync().Wait();
-
         var services = new ServiceCollection();
 
         services.AddLogging(builder =>

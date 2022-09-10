@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
+using Microsoft.EntityFrameworkCore;
 using Squirrel;
 
 namespace Flagrum.Desktop;
@@ -39,9 +40,12 @@ public partial class App
         SquirrelAwareApp.HandleEvents(
             OnInstall,
             onAppUninstall: OnUninstall);
+        
+        // Migrate the database if required
+        using var context = new FlagrumDbContext();
+        context.Database.MigrateAsync().Wait();
 
         // Set culture based on stored language settings if any
-        using var context = new FlagrumDbContext();
         var cultureName = context.GetString(StateKey.Language);
 
         if (cultureName != null)
