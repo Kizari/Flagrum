@@ -225,38 +225,45 @@ public class Ps4AssetAggregator
 
     private void DumpFile(string uri, Func<FlagrumDbContext, string, (byte[], ArchiveFile)> getDataOverride)
     {
-        var uriHash = Cryptography.HashFileUri64(uri);
-
-        if (!_existingFiles.Contains(uriHash))
+        try
         {
-            using var context = Ps4Utilities.NewContext();
-            byte[] data;
-            ArchiveFile file;
+            var uriHash = Cryptography.HashFileUri64(uri);
 
-            if (getDataOverride == null)
+            if (!_existingFiles.Contains(uriHash))
             {
-                data = Ps4Utilities.GetFileByUriRaw(context, uri, out file);
-            }
-            else
-            {
-                (data, file) = getDataOverride(context, uri);
-            }
+                using var context = Ps4Utilities.NewContext();
+                byte[] data;
+                ArchiveFile file;
 
-            if (file == null)
-            {
-                return;
+                if (getDataOverride == null)
+                {
+                    data = Ps4Utilities.GetFileByUriRaw(context, uri, out file);
+                }
+                else
+                {
+                    (data, file) = getDataOverride(context, uri);
+                }
+
+                if (file == null)
+                {
+                    return;
+                }
+
+                var relativePathBase64 = file.RelativePath.ToBase64();
+                var originalSize = file.Size;
+                var flags = (int)file.Flags;
+                var localisationType = file.LocalizationType;
+                var locale = file.Locale;
+                var key = file.Key;
+
+                var fileName =
+                    $"{uriHash}_{relativePathBase64}_{originalSize}_{flags}_{localisationType}_{locale}_{key}{file.RelativePath[file.RelativePath.LastIndexOf('.')..]}";
+                File.WriteAllBytes($@"{OutputDirectory}\{fileName}", data);
             }
-
-            var relativePathBase64 = file.RelativePath.ToBase64();
-            var originalSize = file.Size;
-            var flags = (int)file.Flags;
-            var localisationType = file.LocalizationType;
-            var locale = file.Locale;
-            var key = file.Key;
-
-            var fileName =
-                $"{uriHash}_{relativePathBase64}_{originalSize}_{flags}_{localisationType}_{locale}_{key}{file.RelativePath[file.RelativePath.LastIndexOf('.')..]}";
-            File.WriteAllBytes($@"{OutputDirectory}\{fileName}", data);
+        }
+        catch
+        {
+            System.Console.WriteLine($"Failed to dump {uri}");
         }
     }
 }

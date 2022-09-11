@@ -67,6 +67,12 @@ public static class Serialization
         return Convert.ToBase64String(bytes);
     }
 
+    public static string FromBase64(this string input)
+    {
+        var bytes = Convert.FromBase64String(input);
+        return Encoding.UTF8.GetString(bytes);
+    }
+
     public static void Align(this Stream stream, int blockSize)
     {
         var size = Align((uint)stream.Position, (uint)blockSize);

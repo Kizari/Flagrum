@@ -9,9 +9,22 @@ using Flagrum.Console.Ps4.Porting;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Ebex.Xmb2;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
+
+//Console.WriteLine(Cryptography.HashFileUri64("data://environment/dungeon/d04/sourceimages/d04_ar_factoryfencea_net_n.tif"));
+//return;
+
+//new Ps4AssetAggregator().Run();
+new Ps4MonolithBuilder().Run();
+//return;
+
+// var builder = new StringBuilder();
+// Xmb2Document.Dump(File.ReadAllBytes(@"C:\Users\Kieran\Desktop\level\dlc_ex\mog\area_ravettrice_mog\map_ravettrice_altisia_npc_mog_i.exml"), builder);
+// File.WriteAllText(@"C:\Users\Kieran\Desktop\level\dlc_ex\mog\area_ravettrice_mog\map_ravettrice_altisia_npc_mog_i.xml", builder.ToString());
+// return;
 
 // Asset references are not being added to the single earc correctly so the test can't be validated
 // Need to get that working to see if the missing NPCs issue is being caused by
@@ -38,7 +51,7 @@ using Newtonsoft.Json;
 // return;
 
 //FileFinder.FindStringInAllFiles("uw05_100_hair01_mog.ebex");
-FileFinder.FindStringInExml("SequenceActionCheckPhotoCount");
+//FileFinder.FindStringInExml("SequenceActionCheckPhotoCount");
 //FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17109819));
 return;
 
