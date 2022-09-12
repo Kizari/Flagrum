@@ -9,10 +9,9 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using Flagrum.Desktop.Services;
-using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
+using HelixToolkit.Wpf.SharpDX;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -27,11 +26,6 @@ namespace Flagrum.Desktop;
 /// </summary>
 public partial class MainWindow : INotifyPropertyChanged
 {
-    private readonly string flagrumDirectory;
-    private readonly string logFile;
-
-    private bool _hasWebView2Runtime;
-
     public MainWindow()
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
@@ -61,13 +55,13 @@ public partial class MainWindow : INotifyPropertyChanged
             Height = height;
         }
 
-        flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
+        var flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
         if (!Directory.Exists(flagrumDirectory))
         {
             Directory.CreateDirectory(flagrumDirectory);
         }
 
-        logFile = $"{flagrumDirectory}\\Log.txt";
+        var logFile = $"{flagrumDirectory}\\Log.txt";
 
         if (File.Exists(logFile))
         {
@@ -76,10 +70,16 @@ public partial class MainWindow : INotifyPropertyChanged
 
         File.Create(logFile);
 
+        InitializeComponent();
+        Closed += (_, _) =>
+        {
+            (DataContext as IDisposable)?.Dispose();
+        };
+
         try
         {
             CoreWebView2Environment.GetAvailableBrowserVersionString();
-            HasWebView2Runtime = true;
+            ((MainViewModel)DataContext).HasWebView2Runtime = true;
         }
         catch (WebView2RuntimeNotFoundException e)
         {
@@ -103,20 +103,6 @@ public partial class MainWindow : INotifyPropertyChanged
 
         services.AddFlagrum();
         Resources.Add("services", services.BuildServiceProvider());
-
-        InitializeComponent();
-    }
-
-    public string HostPageUri { get; } = "wwwroot/index.html";
-
-    public bool HasWebView2Runtime
-    {
-        get => _hasWebView2Runtime;
-        set
-        {
-            _hasWebView2Runtime = value;
-            OnPropertyChanged(nameof(HasWebView2Runtime));
-        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -133,7 +119,7 @@ public partial class MainWindow : INotifyPropertyChanged
         var process = new Process {StartInfo = start};
         process.Start();
         await process.WaitForExitAsync();
-        await Dispatcher.InvokeAsync(() => HasWebView2Runtime = true);
+        await Dispatcher.InvokeAsync(() => ((MainViewModel)DataContext).HasWebView2Runtime = true);
     }
 
     private void Minimize_Click(object sender, RoutedEventArgs e)
@@ -151,7 +137,7 @@ public partial class MainWindow : INotifyPropertyChanged
         Close();
     }
 
-    private async void MainBlazorWebView_OnInitialized(object? sender, EventArgs e)
+    private void MainBlazorWebView_OnInitialized(object? sender, EventArgs e)
     {
         if (sender == null)
         {
@@ -160,11 +146,6 @@ public partial class MainWindow : INotifyPropertyChanged
 
         var webView = (BlazorWebView)sender;
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
-    }
-
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     protected override void OnInitialized(EventArgs e)
@@ -182,5 +163,10 @@ public partial class MainWindow : INotifyPropertyChanged
             }
             catch { }
         });
+    }
+
+    private void Viewer_OnInitialized(object? sender, EventArgs e)
+    {
+        ((MainViewModel)DataContext).Viewer = (Viewport3DX)sender;
     }
 }

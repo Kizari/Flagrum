@@ -1,0 +1,83 @@
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@implements IDisposable
+
+@inject IWpfService WpfService
+@inject JSInterop Interop
+@inject AppStateService AppState
+
+<div id="viewportContainer" class="h-full bg-grey-700 row">
+    @if (IsLoading)
+    {
+        <div class="flex flex-col items-center w-full">
+            <div class="continuous-3"></div>
+            <span class="block text-accent1-200 font-display font-bold mt-4 mr-2">Loading Model</span>
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public AssetExplorerItem Item { get; set; }
+
+    private AssetExplorerItem _lastItem;
+    private bool _isRendered;
+    
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsLoading = true;
+            StateHasChanged();
+            
+            await Interop.ObserveElementResize(DotNetObjectReference.Create(this), "viewportContainer");
+
+            var left = await Interop.GetElementLeftOffset("viewportContainer");
+            var top = await Interop.GetElementTopOffset("viewportContainer");
+            var width = await Interop.GetElementWidth("viewportContainer");
+            var height = await Interop.GetElementHeight("viewportContainer");
+
+            WpfService.Resize3DViewport((int)left, (int)top, (int)width, (int)height);
+            WpfService.Set3DViewportVisibility(true);
+            await WpfService.ChangeModel(Item.Uri);
+
+            _lastItem = Item;
+            _isRendered = true;
+            AppState.Is3DViewerOpen = true;
+
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_isRendered && Item.Uri != _lastItem.Uri)
+        {
+            IsLoading = true;
+            StateHasChanged();
+            
+            WpfService.Set3DViewportVisibility(false);
+            await WpfService.ChangeModel(Item.Uri);
+            WpfService.Set3DViewportVisibility(true);
+            _lastItem = Item;
+
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnResize(double left, double top, double width, double height)
+    {
+        WpfService.Resize3DViewport((int)left, (int)top, (int)width, (int)height);
+    }
+
+    public void Dispose()
+    {
+        WpfService.Set3DViewportVisibility(false);
+        AppState.Is3DViewerOpen = false;
+    }
+}

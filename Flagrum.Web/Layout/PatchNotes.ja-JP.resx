@@ -28,6 +28,6 @@
         <value>https://github.com/Kizari/Flagrum/wiki/%E3%83%95%E3%83%A9%E3%83%BC%E3%82%B0%E3%83%AB%E3%83%A0%E3%83%81%E3%82%A7%E3%83%B3%E3%82%B8%E3%83%AD%E3%82%B0</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>このアップデートにより、日本語のローカライズに対応し、いくつかの細かいバグが修正されます。</value>
+        <value>アセットエクスプローラーで3Dモデルをプレビューできるようになりました！</value>
     </data>
 </root>

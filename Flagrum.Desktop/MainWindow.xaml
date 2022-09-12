@@ -3,16 +3,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
-        xmlns:blazor="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
-        xmlns:fa5="http://schemas.fontawesome.com/icons/"
         xmlns:resources="clr-namespace:Flagrum.Desktop.Resources"
+        xmlns:helix="http://helix-toolkit.org/wpf/SharpDX"
+        xmlns:desktop="clr-namespace:Flagrum.Desktop"
+        xmlns:wpf="clr-namespace:Microsoft.AspNetCore.Components.WebView.Wpf;assembly=Microsoft.AspNetCore.Components.WebView.Wpf"
+        xmlns:flagrum="clr-namespace:Flagrum.Web;assembly=Flagrum.Web"
+        xmlns:fa5="http://schemas.fontawesome.com/icons/"
+        xmlns:architecture="clr-namespace:Flagrum.Desktop.Architecture"
         mc:Ignorable="d"
         Title="Flagrum"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        Background="#181512"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        Background="#181512">
+    <Window.DataContext>
+        <desktop:MainViewModel />
+    </Window.DataContext>
+    <!--DataContext="{Binding RelativeSource={RelativeSource Self}}">-->
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="64"
                       GlassFrameThickness="0"
@@ -136,16 +142,16 @@
                             </Button.Style>
                         </Button>
                     </Grid>
-                    <ContentPresenter Grid.Row="1" Content="{Binding}">
+                    <ContentPresenter Grid.Row="1" x:Name="MainContentPresenter" Content="{Binding}">
                         <ContentPresenter.Resources>
                             <DataTemplate x:Key="BlazorWebViewTemplate">
-                                <blazor:BlazorWebView x:Name="MainBlazorWebView" HostPage="{Binding HostPageUri}"
-                                                      Services="{StaticResource services}" Background="#181512"
-                                                      Loaded="MainBlazorWebView_OnInitialized">
-                                    <blazor:BlazorWebView.RootComponents>
-                                        <blazor:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />
-                                    </blazor:BlazorWebView.RootComponents>
-                                </blazor:BlazorWebView>
+                                <wpf:BlazorWebView x:Name="MainBlazorWebView" HostPage="wwwroot/index.html"
+                                                   Services="{StaticResource services}" Background="#181512"
+                                                   Loaded="MainBlazorWebView_OnInitialized">
+                                    <wpf:BlazorWebView.RootComponents>
+                                        <wpf:RootComponent Selector="#app" ComponentType="{x:Type flagrum:App}" />
+                                    </wpf:BlazorWebView.RootComponents>
+                                </wpf:BlazorWebView>
                             </DataTemplate>
                             <DataTemplate x:Key="LoadingTemplate">
                                 <StackPanel VerticalAlignment="Center">
@@ -171,6 +177,47 @@
                             </Style>
                         </ContentPresenter.Style>
                     </ContentPresenter>
+                    <architecture:AirspacePopup Grid.Row="1"
+                                                PlacementTarget="{Binding ElementName=MainContentPresenter}"
+                                                FollowPlacementTarget="True"
+                                                AllowOutsideScreenPlacement="False"
+                                                ParentWindow="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                IsOpen="{Binding IsViewportVisible}"
+                                                AllowsTransparency="True"
+                                                Placement="Relative"
+                                                HorizontalOffset="{Binding ViewportLeft}"
+                                                VerticalOffset="{Binding ViewportTop}"
+                                                Width="{Binding ViewportWidth}"
+                                                Height="{Binding ViewportHeight}">
+                        <helix:Viewport3DX x:Name="Viewer"
+                                           BackgroundColor="#44403C"
+                                           Camera="{Binding Camera}"
+                                           CoordinateSystemLabelForeground="White"
+                                           EffectsManager="{Binding EffectsManager}"
+                                           EnableDesignModeRendering="False"
+                                           EnableSwapChainRendering="False"
+                                           FXAALevel="Medium"
+                                           ShowCoordinateSystem="True"
+                                           ShowFrameRate="False"
+                                           TextBrush="White"
+                                           UseDefaultGestures="False"
+                                           IsInertiaEnabled="False"
+                                           DefaultCamera="{Binding Camera}"
+                                           Initialized="Viewer_OnInitialized">
+                            <helix:Viewport3DX.InputBindings>
+                                <MouseBinding Command="helix:ViewportCommands.Rotate" Gesture="MiddleClick" />
+                                <MouseBinding Command="helix:ViewportCommands.Pan" Gesture="Shift+MiddleClick" />
+                            </helix:Viewport3DX.InputBindings>
+                            <helix:DirectionalLight3D Direction="0, -1, -1" Color="White" />
+                            <helix:DirectionalLight3D Direction="0, -1, 1" Color="#AAAAAA" />
+                            <helix:Element3DPresenter Content="{Binding ModelGroup}" />
+                            <!-- <helix:AxisPlaneGridModel3D -->
+                            <!--     x:Name="plane" -->
+                            <!--     AutoSpacing="False" -->
+                            <!--     RenderShadowMap="True" -->
+                            <!--     Offset="-0.2" /> -->
+                        </helix:Viewport3DX>
+                    </architecture:AirspacePopup>
                 </Grid>
             </Border>
         </ControlTemplate>

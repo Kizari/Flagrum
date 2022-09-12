@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows;
 using Flagrum.Web.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
+using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
-using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace Flagrum.Desktop.Services;
 
 public class WpfService : IWpfService
 {
+    private readonly MainViewModel _mainViewModel;
     private readonly MainWindow _window;
 
     public WpfService(MainWindow window)
     {
         _window = window;
+        _mainViewModel = (MainViewModel)window.DataContext;
     }
 
     public async Task OpenFileDialogAsync(string filter, Action<string> onFileSelected)
@@ -79,7 +80,25 @@ public class WpfService : IWpfService
 
     public void Restart()
     {
-        App.Current.Shutdown(0);
-        Application.Restart();
+        Application.Current.Shutdown(0);
+        System.Windows.Forms.Application.Restart();
+    }
+
+    public void Resize3DViewport(int left, int top, int width, int height)
+    {
+        _mainViewModel.ViewportLeft = left;
+        _mainViewModel.ViewportTop = top;
+        _mainViewModel.ViewportWidth = width;
+        _mainViewModel.ViewportHeight = height;
+    }
+
+    public void Set3DViewportVisibility(bool isVisible)
+    {
+        _mainViewModel.IsViewportVisible = isVisible;
+    }
+
+    public async Task ChangeModel(string gmdlUri)
+    {
+        await _mainViewModel.ViewportHelper.ChangeModel(gmdlUri);
     }
 }

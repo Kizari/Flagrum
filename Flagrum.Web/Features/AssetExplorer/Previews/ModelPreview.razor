@@ -1,10 +1,9 @@
-﻿@using Flagrum.Web.Features.AssetExplorer.Data
-@using Flagrum.Core.Gfxbin.Gmdl
+﻿@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Core.Gfxbin.Gmdl.Components
 @using Flagrum.Core.Gfxbin.Serialization
 @using Flagrum.Core.Gfxbin.Data
-@using Flagrum.Core.Gfxbin.Gmdl.Components
-@using Flagrum.Web.Persistence.Entities
-
+@using Flagrum.Core.Gfxbin.Gmdl
 @inject FlagrumDbContext Context
 
 <div class="p-6">
@@ -30,7 +29,7 @@
 
     [Parameter]
     public AssetExplorerItem Item { get; set; }
-    
+
     private Model Model { get; set; }
 
     protected override void OnParametersSet()
@@ -49,72 +48,7 @@
         var gpubin = Context.GetFileByUri(gpubinUri);
 
         Model = new ModelReader(gfxbin, gpubin).Read();
-        
+
         StateHasChanged();
     }
 }
-
-@* @using Blazor.Extensions *@
-@* @using Flagrum.Web.Features.AssetExplorer.Data *@
-@* @using Blazor.Extensions.Canvas.WebGL *@
-@* @using Flagrum.Core.Gfxbin.Gmdl.Components *@
-@* @implements IDisposable *@
-@* *@
-@* <BECanvas Width="400" Height="400" @ref="Canvas"></BECanvas> *@
-@* *@
-@* @code *@
-@* { *@
-@*     [Parameter] *@
-@*     public AssetExplorerItem Item { get; set; } *@
-@* *@
-@*     private WebGLContext Context { get; set; } *@
-@*     private BECanvasComponent Canvas { get; set; } *@
-@*     private WebGLBuffer Buffer { get; set; } *@
-@*     private Model Model { get; set; } *@
-@* *@
-@*     protected override void OnInitialized() *@
-@*     { *@
-@*     //var gpu = Path.Replace(".gmdl.gfxbin", ".gpubin"); *@
-@*     //var reader = new ModelReader(File.ReadAllBytes(Path), File.ReadAllBytes(gpu)); *@
-@*     //Model = reader.Read(); *@
-@*     } *@
-@* *@
-@*     protected override async Task OnAfterRenderAsync(bool firstRender) *@
-@*     { *@
-@*         if (firstRender) *@
-@*         { *@
-@*             Context = await Canvas.CreateWebGLAsync(); *@
-@*             await Context.ClearColorAsync(0, 0, 0, 1); *@
-@* *@
-@*             await Context.BeginBatchAsync(); *@
-@* *@
-@*             await Context.ClearAsync(BufferBits.COLOR_BUFFER_BIT); *@
-@* *@
-@* *@
-@*             Buffer = await Context.CreateBufferAsync(); *@
-@*             await Context.BindBufferAsync(BufferType.ARRAY_BUFFER, Buffer); *@
-@* *@
-@*             foreach (var mesh in Model.MeshObjects[0].Meshes.Where(m => m.LodNear == 0)) *@
-@*             { *@
-@*                 await Context.BufferDataAsync( *@
-@*                     BufferType.ARRAY_BUFFER, *@
-@*                     mesh.VertexPositions.SelectMany(v => new[] {v.X, v.Y, v.Z}).ToArray(), *@
-@*                     BufferUsageHint.STATIC_DRAW); *@
-@*             } *@
-@* *@
-@*             await Context.DrawArraysAsync(Primitive.TRIANGLES, 0, 3); *@
-@*             await Context.EndBatchAsync(); *@
-@*         } *@
-@*     } *@
-@* *@
-@*     private void CreateVertexBuffer(Mesh mesh) *@
-@*     { *@
-@*         var vertexPositions = new float[mesh.VertexCount]; *@
-@*         foreach (var face in mesh.FaceIndices) { } *@
-@*     } *@
-@* *@
-@*     public async void Dispose() *@
-@*     { *@
-@*         await Context.DeleteBufferAsync(Buffer); *@
-@*     } *@
-@* } *@

@@ -11,4 +11,7 @@ public interface IWpfService
     Version GetVersion();
     void ShowWindowsNotification(string message);
     void Restart();
+    void Resize3DViewport(int left, int top, int width, int height);
+    void Set3DViewportVisibility(bool isVisible);
+    Task ChangeModel(string gmdlUri);
 }

@@ -7,6 +7,7 @@
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
 @inject IStringLocalizer<Index> L
+@inject IWpfService WpfService
 
 <CascadingValue Value="this">
     <ExportContextMenu/>
@@ -244,6 +245,13 @@
 
     private void OnViewChanged(int view)
     {
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(false);
+        }
+        
+        ClearSelectedItem();
+        
         View = view;
         UpdateCurrentPath();
         StateHasChanged();

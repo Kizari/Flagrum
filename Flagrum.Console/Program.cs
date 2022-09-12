@@ -1,20 +1,22 @@
-﻿using System;
-using System.Linq;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Gfxbin.Btex;
-using Flagrum.Core.Utilities;
-using Flagrum.Web.Persistence;
-using Flagrum.Web.Persistence.Entities;
-using Flagrum.Web.Services;
+﻿using System.IO;
+using System.Text;
+using Flagrum.Core.Ebex.Xmb2;
 
-var path = @"C:\Program Files (x86)\Steam\steamapps\workshop\content\637650\1438266368\nh02_casgrey.ffxvbinmod";
-using var unpacker = new Unpacker(path);
-return;
+foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
+{
+    var builder = new StringBuilder();
+    Xmb2Document.Dump(File.ReadAllBytes(file), builder);
+    File.WriteAllText(file.Replace(".exml", ".xml"), builder.ToString());
+}
 
-var hash = Cryptography.HashFileUri64(
-    "data://environment/duscae/props/du_ar_lhotel02/sourceimages/du_ar_lhotel02_part04_concrete_b.tif");
-Console.WriteLine(hash);
-return;
+// var path = @"C:\Program Files (x86)\Steam\steamapps\workshop\content\637650\1438266368\nh02_casgrey.ffxvbinmod";
+// using var unpacker = new Unpacker(path);
+// return;
+
+// var hash = Cryptography.HashFileUri64(
+//     "data://environment/duscae/props/du_ar_lhotel02/sourceimages/du_ar_lhotel02_part04_concrete_b.tif");
+// Console.WriteLine(hash);
+// return;
 
 // var types = typeof(JsonSerializer).Assembly.GetTypes();
 // var type = types.FirstOrDefault(p => p.Name.Contains("JsonConstants"));
@@ -23,26 +25,26 @@ return;
 //     Console.WriteLine($"{property.Name}");
 // }
 
-var flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Compressed;
-Console.WriteLine((int)flags);
-return;
+// var flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Compressed;
+// Console.WriteLine((int)flags);
+// return;
 
-using var context = new FlagrumDbContext(new SettingsService());
-var data = context.GetFileByUri("data://environment/world/heightmaps/material/terrainmaterial.tpd");
-var tpd = TerrainPaletteData.Read(data);
-
-var toleranceRange = 1.0 / tpd.Count / 2.0;
-
-Console.WriteLine("Texture\t\tValue\t\tEpsilon");
-Console.WriteLine("-----------------------------------------");
-
-foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
-{
-    //Console.WriteLine($"{item.TextureIndex}\t\t{item.Value:0.00000}\t\t{item.Epsilon:0.00000}");
-    Console.WriteLine($"({item.TextureIndex}, {item.Value}, {item.Epsilon}),");
-}
-
-Console.WriteLine(tpd.Items.Sum(i => i.Epsilon));
+// using var context = new FlagrumDbContext(new SettingsService());
+// var data = context.GetFileByUri("data://environment/world/heightmaps/material/terrainmaterial.tpd");
+// var tpd = TerrainPaletteData.Read(data);
+//
+// var toleranceRange = 1.0 / tpd.Count / 2.0;
+//
+// Console.WriteLine("Texture\t\tValue\t\tEpsilon");
+// Console.WriteLine("-----------------------------------------");
+//
+// foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
+// {
+//     //Console.WriteLine($"{item.TextureIndex}\t\t{item.Value:0.00000}\t\t{item.Epsilon:0.00000}");
+//     Console.WriteLine($"({item.TextureIndex}, {item.Value}, {item.Epsilon}),");
+// }
+//
+// Console.WriteLine(tpd.Items.Sum(i => i.Epsilon));
 
 // foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
 // {

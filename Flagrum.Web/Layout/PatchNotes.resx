@@ -22,7 +22,7 @@
         <value>Flagrum has been updated to Version {0}!</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>This update brings support for Japanese localisation and some minor bug fixes.</value>
+        <value>3D models can now be previewed in the Asset Explorer!</value>
     </data>
     <data name="ViewFullChangelog" xml:space="preserve">
         <value>View Full Changelog</value>

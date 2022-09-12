@@ -61,4 +61,29 @@ public class JSInterop
     {
         return _jsRuntime.InvokeVoidAsync("interop.setFocusToElement", id);
     }
+
+    public ValueTask<double> GetElementLeftOffset(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementLeftOffset", id);
+    }
+
+    public ValueTask<double> GetElementTopOffset(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementTopOffset", id);
+    }
+
+    public ValueTask<double> GetElementWidth(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementWidth", id);
+    }
+
+    public ValueTask<double> GetElementHeight(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementHeight", id);
+    }
+
+    public async Task ObserveElementResize(object reference, string elementId)
+    {
+        await _jsRuntime.InvokeVoidAsync("interop.observeElementResize", reference, elementId);
+    }
 }

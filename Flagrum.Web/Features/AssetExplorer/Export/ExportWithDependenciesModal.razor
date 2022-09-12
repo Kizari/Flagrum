@@ -11,11 +11,12 @@
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
 @inject IStringLocalizer<ExportWithDependenciesModal> L
+@inject AppStateService AppState
 
 <Modal @ref="Modal">
     <HeaderView>
         <span class="text-grey-300 flex-grow">@L["ExportWithDependencies"]</span>
-        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+        <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
@@ -53,7 +54,20 @@
 
     public void Open()
     {
+        AppState.IsModalOpen = true;
+        WpfService.Set3DViewportVisibility(false);
         Modal.Open();
+    }
+
+    private void Close()
+    {
+        Modal.Close();
+        AppState.IsModalOpen = false;
+        
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 
     private async Task Export()
@@ -67,7 +81,7 @@
             InvokeAsync(() =>
             {
                 Parent.SetLoading(true, "Exporting");
-                Modal.Close();
+                Close();
             });
 
     // For some reason this ends up with multiple copies of the extension for some people

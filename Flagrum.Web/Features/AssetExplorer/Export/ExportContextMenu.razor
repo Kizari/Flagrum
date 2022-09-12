@@ -12,11 +12,14 @@
 @inject EnvironmentPacker EnvironmentPacker
 @inject TerrainPacker TerrainPacker
 @inject IStringLocalizer<ExportContextMenu> L
+@inject AppStateService AppState
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
              OverrideDefaultListCssClass="p-0"
-             OnHiding="() => {Parent.ContextNode = null; Parent.CallStateHasChanged();}">
+             OnAppearing="OnAppearing"
+             OnHiding="OnHiding"
+             @ref="ContextMenu">
     @if (Parent.ContextItem.Type == ExplorerItemType.Directory)
     {
         <Item OnClick="ExportFolder"
@@ -100,6 +103,7 @@
     [CascadingParameter]
     public Index Parent { get; set; }
 
+    private ContextMenu ContextMenu { get; set; }
     private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
     private ExportFolderModal ExportFolderModal { get; set; }
     private ExportFolderScriptsModal ExportFolderScriptsModal { get; set; }
@@ -223,5 +227,24 @@
                 }
                 await InvokeAsync(() => Parent.SetLoading(false));
             });
+    }
+
+    private void OnAppearing()
+    {
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(false);
+        }
+    }
+
+    private void OnHiding()
+    {
+        Parent.ContextNode = null; 
+        Parent.CallStateHasChanged();
+
+        if (AppState.Is3DViewerOpen && !AppState.IsModalOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 }

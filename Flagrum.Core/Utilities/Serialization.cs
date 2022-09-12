@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -6,6 +7,11 @@ namespace Flagrum.Core.Utilities;
 
 public static class Serialization
 {
+    public static uint Align(uint offset, uint blockSize)
+    {
+        return blockSize + blockSize * (offset / blockSize) - offset;
+    }
+    
     /// <summary>
     /// Aligns current offset to the given block size
     /// </summary>
@@ -59,5 +65,19 @@ public static class Serialization
     {
         var bytes = Encoding.UTF8.GetBytes(input);
         return Convert.ToBase64String(bytes);
+    }
+    
+    public static void Align(this BinaryWriter writer, int blockSize, byte paddingByte)
+    {
+        var size = Align((uint)writer.BaseStream.Position, (uint)blockSize);
+        if (size == blockSize)
+        {
+            return;
+        }
+        
+        for (var i = 0; i < size; i++)
+        {
+            writer.Write(paddingByte);
+        }
     }
 }

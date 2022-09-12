@@ -3,11 +3,12 @@
 @inject UriMapper Mapper
 @inject FlagrumDbContext Context
 @inject IStringLocalizer<RegenerateModal> L
+@inject IWpfService WpfService
 
 <AutosizeModal @ref="Modal" MaxWidth="420px">
     <HeaderView>
         <span class="text-grey-300 flex-grow">@L["Title"]</span>
-        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+        <span class="material-icons cursor-pointer" @onclick="CloseModal">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
@@ -40,6 +41,11 @@
 
     public void Open()
     {
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(false);
+        }
+        
         Modal.Open();
     }
 
@@ -48,7 +54,7 @@
         AppState.Node = null;
         Parent.ClearSelectedItem();
         MainLayout.CallStateHasChanged();
-        Modal.Close();
+        CloseModal();        
 
         await Task.Run(() =>
         {
@@ -60,5 +66,15 @@
 
             InvokeAsync(() => MainLayout.CallStateHasChanged());
         });
+    }
+
+    private void CloseModal()
+    {
+        Modal.Close();
+        
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 }

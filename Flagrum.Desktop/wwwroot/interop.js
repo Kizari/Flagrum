@@ -78,5 +78,28 @@ window.interop = {
 
     setFocusToElement: function (id) {
         document.getElementById(id).focus();
+    },
+
+    getElementLeftOffset: function (id) {
+        return document.getElementById(id).offsetLeft;
+    },
+
+    getElementTopOffset: function (id) {
+        return document.getElementById(id).offsetTop;
+    },
+
+    getElementWidth: function (id) {
+        return document.getElementById(id).clientWidth;
+    },
+
+    getElementHeight: function (id) {
+        return document.getElementById(id).clientHeight;
+    },
+
+    observeElementResize: function (component, elementId) {
+        let element = document.getElementById(elementId);
+        new ResizeObserver(function () {
+            component.invokeMethodAsync("OnResize", element.offsetLeft, element.offsetTop, element.clientWidth, element.clientHeight);
+        }).observe(element);
     }
 }

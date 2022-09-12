@@ -8,8 +8,8 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <AssemblyName>Flagrum</AssemblyName>
-        <AssemblyVersion>1.2.5</AssemblyVersion>
-        <FileVersion>1.2.5</FileVersion>
+        <AssemblyVersion>1.2.6</AssemblyVersion>
+        <FileVersion>1.2.6</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,6 +19,8 @@
     <ItemGroup>
         <PackageReference Include="Clowd.Squirrel" Version="2.6.34-pre" />
         <PackageReference Include="FontAwesome5" Version="2.1.6" />
+        <PackageReference Include="HelixToolkit.SharpDX.Assimp" Version="2.22.0" />
+        <PackageReference Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.22.0" />
         <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
@@ -59,9 +61,6 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Update="wwwroot\app.css">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\bmc.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Update="wwwroot\discord-button.png">

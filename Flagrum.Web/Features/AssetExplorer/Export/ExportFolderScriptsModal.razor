@@ -7,11 +7,12 @@
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
+@inject AppStateService AppState
 
 <Modal @ref="Modal">
     <HeaderView>
         <span class="text-grey-300 flex-grow">Export Scripts as XML</span>
-        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+        <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
@@ -48,7 +49,20 @@
 
     public void Open()
     {
+        AppState.IsModalOpen = true;
+        WpfService.Set3DViewportVisibility(false);
         Modal.Open();
+    }
+
+    private void Close()
+    {
+        Modal.Close();
+        AppState.IsModalOpen = false;
+        
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 
     private async Task Export()
@@ -57,7 +71,7 @@
         {
             InvokeAsync(() =>
             {
-                Modal.Close();
+                Close();
                 Parent.SetLoading(true, "Exporting");
 
                 var files = new Dictionary<string, List<string>>();
