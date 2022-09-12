@@ -207,6 +207,8 @@
                             <helix:Viewport3DX.InputBindings>
                                 <MouseBinding Command="helix:ViewportCommands.Rotate" Gesture="MiddleClick" />
                                 <MouseBinding Command="helix:ViewportCommands.Pan" Gesture="Shift+MiddleClick" />
+                                <MouseBinding Command="helix:ViewportCommands.Rotate" Gesture="LeftClick" />
+                                <MouseBinding Command="helix:ViewportCommands.Pan" Gesture="RightClick" />
                             </helix:Viewport3DX.InputBindings>
                             <helix:DirectionalLight3D Direction="0, -1, -1" Color="White" />
                             <helix:DirectionalLight3D Direction="0, -1, 1" Color="#AAAAAA" />
