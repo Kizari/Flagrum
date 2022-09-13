@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Flagrum.Desktop.Architecture;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Animations;
+using HelixToolkit.SharpDX.Core.Assimp;
 using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using HelixToolkit.Wpf.SharpDX.Controls;
@@ -47,6 +49,31 @@ public class MainViewModel : ObservableObject, IDisposable
             NearPlaneDistance = 0,
             FarPlaneDistance = 10000
         };
+
+        ViewportLeft = 0;
+        ViewportTop = 0;
+        ViewportWidth = 1920;
+        ViewportHeight = 1080;
+        IsViewportVisible = true;
+
+        var importer = new Importer();
+        importer.Configuration.CreateSkeletonForBoneSkinningMesh = true;
+        importer.Configuration.SkeletonSizeScale = 0.04f;
+        importer.Configuration.GlobalScale = 0.1f;
+        var scene = importer.Load(@"C:\Users\Kieran\Desktop\nh00_010_animated.fbx");
+        ModelGroup = new SceneNodeGroupModel3D();
+        ModelGroup.AddNode(scene.Root);
+
+        var temp = scene.Animations[0].NodeAnimationCollection.First();
+        temp.Node = new BillboardNode();
+        
+        foreach (var node in scene.Root.Items.FirstOrDefault().Traverse())
+        {
+            //if (node is BoneSkinMeshNode {IsSkeletonNode: true} n)
+            //{
+                node.Visible = false;
+            //}
+        }
 
         // var builder2 = new MeshBuilder();
         // builder2.AddSphere(new Vector3(), 2);
