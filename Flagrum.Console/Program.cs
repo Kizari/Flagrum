@@ -5,6 +5,9 @@ using ProtoBuf;
 using var file = File.OpenRead(@"C:\Users\Kieran\Desktop\Models2\nh00\nh00.lik");
 var rig = Serializer.Deserialize<IKRig>(file);
 
+using var file2 = File.OpenWrite(@"C:\Users\Kieran\Desktop\Models2\nh00\nh00_2.lik");
+Serializer.Serialize(file2, rig);
+
 // foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
 // {
 //     var builder = new StringBuilder();
