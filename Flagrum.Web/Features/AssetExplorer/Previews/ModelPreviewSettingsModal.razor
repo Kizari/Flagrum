@@ -1,0 +1,55 @@
+﻿@using Flagrum.Web.Persistence.Entities
+@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Core.Gfxbin.Gmtl.Data
+@using Flagrum.Core.Gfxbin.Data
+@using Flagrum.Core.Gfxbin.Gmtl
+@using System.IO
+@using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
+@using Flagrum.Core.Archive
+@using System.Text
+@inject IWpfService WpfService
+@inject SettingsService Settings
+@inject FlagrumDbContext Context
+@*
+TODO vertaling files nog implementeren
+*@
+@inject IStringLocalizer<ModelPreviewSettingsModal> L
+@inject AppStateService AppState
+
+<Modal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">The header</span>
+        <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
+    </HeaderView>
+    <BodyView>
+
+    </BodyView>
+</Modal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private Modal Modal { get; set; }
+    private bool IncludeHighTextures { get; set; } = true;
+    private bool IncludeCommonTextures { get; set; }
+
+    public void Open()
+    {
+        AppState.IsModalOpen = true;
+        WpfService.Set3DViewportVisibility(false);
+        Modal.Open();
+    }
+
+    private void Close()
+    {
+        Modal.Close();
+        AppState.IsModalOpen = false;
+        
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
+    }
+}
