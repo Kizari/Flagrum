@@ -506,29 +506,42 @@ public class Ps4EnvironmentPacker
 
     private byte[] GetFileByUri(FlagrumDbContext context, string uri)
     {
-        var uriPattern = $"%{uri}";
-        var earcRelativePath = context.AssetUris
-            .Where(a => EF.Functions.Like(a.Uri, uriPattern))
-            .Select(a => a.ArchiveLocation.Path)
-            .FirstOrDefault();
+        uri = uri.ToLower();
 
-        if (earcRelativePath == null)
-        {
-            return Array.Empty<byte>();
-        }
+        var earcRelativePaths = context.Ps4AssetUris
+            .Where(a => a.Uri == uri)
+            .SelectMany(a => a.ArchiveAssets)
+            .OrderByDescending(a =>
+                a.Ps4ArchiveLocation.Path.Contains(@"CUSA01633-patch_115\CUSA01633-patch\patch\patch2"))
+            .ThenByDescending(a =>
+                a.Ps4ArchiveLocation.Path.Contains(@"CUSA01633-patch_115\CUSA01633-patch\patch\patch1"))
+            .ThenByDescending(a => a.Ps4ArchiveLocation.Path.Contains(@"FFXV_Patch\patch2"))
+            .ThenByDescending(a => a.Ps4ArchiveLocation.Path.Contains(@"FFXV_Patch\patch1"))
+            .Select(a => a.Ps4ArchiveLocation.Path)
+            .ToList();
 
-        Unpacker unpacker;
-        var location = DatasDirectory + "\\" + earcRelativePath;
-        lock (_lock)
+        foreach (var earcRelativePath in earcRelativePaths)
         {
-            if (!_unpackers.TryGetValue(location, out unpacker))
+            Unpacker unpacker;
+            var location = @"C:\Modding\Chocomog\Final Fantasy XV - RAW PS4\datas\" + earcRelativePath;
+            lock (_lock)
             {
-                unpacker = new Unpacker(location);
-                _ = unpacker.Files; // Forces file headers to read
-                _unpackers[location] = unpacker;
+                if (!_unpackers.TryGetValue(location, out unpacker))
+                {
+                    unpacker = new Unpacker(location);
+                    _ = unpacker.Files; // Forces file headers to read
+                    _unpackers[location] = unpacker;
+                }
+            }
+
+            var data = unpacker.UnpackReadableByUri(uri);
+
+            if (data.Length > 0 && !(data[0] == 100 && data[1] == 101))
+            {
+                return data;
             }
         }
 
-        return unpacker.UnpackReadableByUri(uri);
+        return Array.Empty<byte>();
     }
 }

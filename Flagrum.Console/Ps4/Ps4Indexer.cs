@@ -17,8 +17,11 @@ public class Ps4Indexer
     public void RegenerateMap()
     {
         using var context = Ps4Utilities.NewContext();
+        context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(context.Ps4ArchiveAssets)};");
         context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(context.Ps4AssetUris)};");
         context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(context.Ps4ArchiveLocations)};");
+        context.Database.ExecuteSqlRaw(
+            $"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(context.Ps4ArchiveAssets)}';");
         context.Database.ExecuteSqlRaw(
             $"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(context.Ps4AssetUris)}';");
         context.Database.ExecuteSqlRaw(
@@ -31,6 +34,7 @@ public class Ps4Indexer
         var orderedAssets = _assets
             .OrderByDescending(a => a.Key.Path.Contains(@"CUSA01633-patch_115\CUSA01633-patch\patch\patch2_initial"))
             .ThenByDescending(a => a.Key.Path.Contains(@"CUSA01633-patch_115\CUSA01633-patch\patch\patch1_initial"))
+            .ThenByDescending(a => a.Key.Path.Contains(@"ACFestPackage\"))
             .ThenByDescending(a => a.Key.Path.Contains(@"FFXV_Patch\patch2_initial"))
             .ThenByDescending(a => a.Key.Path.Contains(@"FFXV_Patch\patch1_initial"))
             .ToList();
@@ -77,7 +81,7 @@ public class Ps4Indexer
             };
 
             _assets.TryAdd(archive, unpacker.Files
-                .Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))
+                .Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference) && !f.Uri.EndsWith("@"))
                 .Select(f => f.Uri));
         }
     }

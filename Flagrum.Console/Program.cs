@@ -10,15 +10,50 @@ using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Utilities;
+using Flagrum.Desktop.Services;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
+
+// var uri = "data://level/dlc_ex/feather/feather/duscae_lestallum_i_feather/map_du_le_i_env_feather.ebex";
+// using var context = Ps4Utilities.NewContext();
+// var data = Ps4Utilities.GetFileByUri(context, uri);
+//
+// if (uri.EndsWith(".ebex") || uri.EndsWith(".prefab"))
+// {
+//     var output = new StringBuilder();
+//     Xmb2Document.Dump(data, output);
+//     data = Encoding.UTF8.GetBytes(output.ToString());
+// }
+// else if (uri.EndsWith(".amdl"))
+// {
+//     data = AnimationModel.ToPC(data);
+// }
+//
+// File.WriteAllBytes($@"C:\Modding\Chocomog\Testing\XML\{uri.Split('/').Last()}", data);
+// return;
+
+
+// foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
+// {
+//     var builder = new StringBuilder();
+//     Xmb2Document.Dump(File.ReadAllBytes(file), builder);
+//     File.WriteAllText(file.Replace(".exml", ".xml"), builder.ToString());
+// }
+// return;
+
+// new Ps4Indexer().RegenerateMap();
+// return;
+
+var packer = new Ps4EnvironmentPacker(new ConsoleLogger<Program>("Logger", () => new ConsoleLoggerConfiguration()), new SettingsService());
+packer.Pack("data://level/dlc_ex/feather/area_duscae_feather.ebex", @"C:\Users\Kieran\Desktop\ACFest\area_duscae_feather.fed");
+return;
 
 //Console.WriteLine(Cryptography.HashFileUri64("data://environment/dungeon/d04/sourceimages/d04_ar_factoryfencea_net_n.tif"));
 //return;
 
 //new Ps4AssetAggregator().Run();
-new Ps4MonolithBuilder().Run();
+//new Ps4MonolithBuilder().Run();
 //return;
 
 // var builder = new StringBuilder();
@@ -42,8 +77,8 @@ new Ps4MonolithBuilder().Run();
 
 //new Ps4EarcPorter().ReferenceTest();
 //return;
-//new Ps4Porter().Run();
-//return;
+new Ps4Porter().Run();
+return;
 
 // new FileFinder().FindByQuery(file => file.Uri == "data://data/ai/interactions/town/alt_mog/system/autoexternal.ebex@",
 //     (earc, file) => System.Console.WriteLine(earc + " - " + file.Uri),

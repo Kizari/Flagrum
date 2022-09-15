@@ -25,8 +25,8 @@ public class Ps4Porter
         _settings.GamePath = Ps4PorterConfiguration.GamePath;
         _pcSettings = new SettingsService();
 
-        new Ps4AssetAggregator().Run();
-        return;
+        //new Ps4AssetAggregator().Run();
+        //return;
 
         //FileFinder.FindStringInAllFiles("alt_com_cajon.aiia");
         //return;
@@ -34,8 +34,8 @@ public class Ps4Porter
         //FileFinder.FindStringInExml("uc/common/anim/pack/altissia_newyear2017.pka");
         //return;
 
-        //OutputFileByUri("data://event/quest_rte/scenario_ch02/qt_ch02_0032_00_ev030/qt_ch02_0032_00_ev030.ebex");
-        //return;
+        OutputFileByUri("data://level/dlc_ex/feather/area_duscae/group_lestallum_feather.ebex");
+        return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();
         //return;
