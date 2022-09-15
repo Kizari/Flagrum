@@ -1,13 +1,16 @@
 ﻿using System.IO;
-using System.Text;
-using Flagrum.Core.Ebex.Xmb2;
+using Flagrum.Core.Animation.InverseKinematics;
+using ProtoBuf;
 
-foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
-{
-    var builder = new StringBuilder();
-    Xmb2Document.Dump(File.ReadAllBytes(file), builder);
-    File.WriteAllText(file.Replace(".exml", ".xml"), builder.ToString());
-}
+using var file = File.OpenRead(@"C:\Users\Kieran\Desktop\Models2\nh00\nh00.lik");
+var rig = Serializer.Deserialize<IKRig>(file);
+
+// foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
+// {
+//     var builder = new StringBuilder();
+//     Xmb2Document.Dump(File.ReadAllBytes(file), builder);
+//     File.WriteAllText(file.Replace(".exml", ".xml"), builder.ToString());
+// }
 
 // var path = @"C:\Program Files (x86)\Steam\steamapps\workshop\content\637650\1438266368\nh02_casgrey.ffxvbinmod";
 // using var unpacker = new Unpacker(path);
