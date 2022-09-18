@@ -7,7 +7,10 @@
 
 <div class="flex flex-row items-center p-5 sticky top-0 z-40 bg-grey-700">
 	<div class="flex-grow"></div>
-	<Button Icon="settings" Text="Settings" CssClass="mr-4" OnClick="OpenModal"></Button>
+	@if (!IsLoading)
+	{
+		<Button Icon="settings" Text="Settings" CssClass="mr-4" OnClick="OpenSettingsModal"></Button>
+	}
 </div>
 <div id="viewportContainer" class="h-full bg-grey-700 row">
 	@if (IsLoading)
@@ -30,14 +33,6 @@
 	private bool _isRendered;
 	private bool IsLoading { get; set; }
 	private ModelPreviewSettingsModal _modelPreviewSettingsModal;
-
-	private void OpenModal()
-	{
-		if (!IsLoading)
-		{
-			_modelPreviewSettingsModal.Open();
-		}
-	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
@@ -93,5 +88,13 @@
 	{
 		WpfService.Set3DViewportVisibility(false);
 		AppState.Is3DViewerOpen = false;
+	}
+
+	private void OpenSettingsModal()
+	{
+		if (!IsLoading)
+		{
+			_modelPreviewSettingsModal.Open();
+		}
 	}
 }

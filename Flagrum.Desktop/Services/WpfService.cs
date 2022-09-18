@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Windows;
-using Flagrum.Web.Services;
+﻿using Flagrum.Web.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace Flagrum.Desktop.Services;
 
@@ -90,6 +90,12 @@ public class WpfService : IWpfService
         _mainViewModel.ViewportTop = top;
         _mainViewModel.ViewportWidth = width;
         _mainViewModel.ViewportHeight = height;
+    }
+
+    public void Update3DViewportBindings(string viewportRotateGesture, string viewportPanGesture)
+    {
+        _mainViewModel.ViewportRotateGesture = viewportRotateGesture;
+        _mainViewModel.ViewportPanGesture = viewportPanGesture;
     }
 
     public void Set3DViewportVisibility(bool isVisible)

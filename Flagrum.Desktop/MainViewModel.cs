@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
-using Flagrum.Desktop.Architecture;
+﻿using Flagrum.Desktop.Architecture;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Animations;
 using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using HelixToolkit.Wpf.SharpDX.Controls;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using Camera = HelixToolkit.Wpf.SharpDX.Camera;
 using Geometry3D = HelixToolkit.SharpDX.Core.Geometry3D;
 using Material = HelixToolkit.Wpf.SharpDX.Material;
@@ -34,6 +37,8 @@ public class MainViewModel : ObservableObject, IDisposable
     private int _viewportLeft = 514;
     private int _viewportTop;
     private int _viewportWidth;
+    private string _viewportRotateGesture;
+    private string _viewportPanGesture;
 
     public MainViewModel()
     {
@@ -47,6 +52,26 @@ public class MainViewModel : ObservableObject, IDisposable
             NearPlaneDistance = 0,
             FarPlaneDistance = 10000
         };
+
+        //TODO zet default values in de database
+        //TODO lees uit de database de gestures en zet ze in de constructor...
+
+        using var context = new FlagrumDbContext(new SettingsService());
+
+        _viewportRotateGesture = context.GetString(StateKey.ViewportRotateGesture);
+        _viewportPanGesture = context.GetString(StateKey.ViewportPanGesture);
+
+        if (_viewportRotateGesture == null)
+        {
+            _viewportRotateGesture = "MiddleClick";
+            context.SetString(StateKey.ViewportRotateGesture, _viewportRotateGesture);
+        }
+
+        if (_viewportPanGesture == null)
+        {
+            _viewportPanGesture = "Shift+MiddleClick";
+            context.SetString(StateKey.ViewportPanGesture, _viewportPanGesture);
+        }
 
         // var builder2 = new MeshBuilder();
         // builder2.AddSphere(new Vector3(), 2);
@@ -137,6 +162,18 @@ public class MainViewModel : ObservableObject, IDisposable
     {
         get => _viewportHeight;
         set => SetValue(ref _viewportHeight, value);
+    }
+
+    public string ViewportRotateGesture
+    {
+        get => _viewportRotateGesture;
+        set => SetValue(ref _viewportRotateGesture, value);
+    }
+
+    public string ViewportPanGesture
+    {
+        get => _viewportPanGesture;
+        set => SetValue(ref _viewportPanGesture, value);
     }
 
     public bool IsViewportVisible

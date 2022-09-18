@@ -18,22 +18,105 @@ TODO vertaling files nog implementeren
 
 <Modal @ref="Modal">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">The header</span>
+        <span class="text-grey-300 flex-grow">Model viewer settings</span>
         <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
     </HeaderView>
     <BodyView>
-
+	    <div class="h-full">
+		    <div class="row">
+			    <label style="width: 250px">Rotate model</label>
+			    <select @bind="PreRotateGesture" class="input bg-dark-550 w-full">
+				    <option>None</option>
+				    <option>Ctrl</option>
+				    <option>Shift</option>
+				    <option>Alt</option>
+			    </select>
+			    <b> + </b>
+			    @*
+				TODO De gestured omzetten naar een static array of zoiets!
+				*@
+			    <select @bind="RotateGesture" class="input bg-dark-550 w-full">
+				    <option>None</option>
+				    <option>LeftClick</option>
+				    <option>RightClick</option>
+				    <option>MiddleClick</option>
+				    <option>WheelClick</option>
+				    <option>LeftDoubleClick</option>
+				    <option>RightDoubleClick</option>
+				    <option>MiddleDoubleClick</option>
+			    </select>
+		    </div>
+		    <div class="row">
+			    <label style="width: 250px">Pan model</label>
+			    <select @bind="PrePanGesture" class="input bg-dark-550 w-full">
+				    <option>None</option>
+				    <option>Ctrl</option>
+				    <option>Shift</option>
+				    <option>Alt</option>
+			    </select>
+			    <b> + </b>
+			    <select @bind="PanGesture" class="input bg-dark-550 w-full">
+				    <option>None</option>
+				    <option>LeftClick</option>
+				    <option>RightClick</option>
+				    <option>MiddleClick</option>
+				    <option>WheelClick</option>
+				    <option>LeftDoubleClick</option>
+				    <option>RightDoubleClick</option>
+				    <option>MiddleDoubleClick</option>
+			    </select>
+		    </div>
+	    </div>
+	    <Button Text="Save changes" Icon="save" OnClick="SaveChanges"></Button>
     </BodyView>
 </Modal>
 
 @code
 {
-    [CascadingParameter]
-    public Index Parent { get; set; }
+	private Modal Modal { get; set; }
 
-    private Modal Modal { get; set; }
-    private bool IncludeHighTextures { get; set; } = true;
-    private bool IncludeCommonTextures { get; set; }
+	//TODO lees de gestures uit de DB
+	private string PreRotateGesture { get; set; }
+	private string RotateGesture { get; set; }
+	private string PrePanGesture { get; set; }
+	private string PanGesture { get; set; }
+
+	protected override void OnInitialized()
+	{
+		var fullRotateGesture = Context.GetString(StateKey.ViewportRotateGesture);
+		var stringParts = fullRotateGesture.Split('+');
+		if (stringParts.Length == 2)
+		{
+			PreRotateGesture = stringParts[0];
+			RotateGesture = stringParts[1];
+		}
+		else if (stringParts.Length == 1)
+		{
+			PreRotateGesture = "None";
+			RotateGesture = stringParts[0];
+		}
+		else
+		{
+			throw new Exception("Oops");
+		}
+
+		var fullPanGesture = Context.GetString(StateKey.ViewportPanGesture);
+		stringParts = fullPanGesture.Split('+');
+		if (stringParts.Length == 2)
+		{
+			PrePanGesture = stringParts[0];
+			PanGesture = stringParts[1];
+		}
+		else if (stringParts.Length == 1)
+		{
+			PrePanGesture = "None";
+			PanGesture = stringParts[0];
+		}
+		else
+		{
+			throw new Exception("Oops");
+		}
+	}
 
     public void Open()
     {
@@ -52,4 +135,18 @@ TODO vertaling files nog implementeren
             WpfService.Set3DViewportVisibility(true);
         }
     }
+
+	private void SaveChanges()
+	{
+		var newViewportRotateGesture = PreRotateGesture != "None" ? PreRotateGesture + "+" + RotateGesture : RotateGesture;
+		var newViewportPanGesture = PrePanGesture != "None" ? PrePanGesture + "+" + PanGesture : PanGesture;
+
+		Context.SetString(StateKey.ViewportRotateGesture, newViewportRotateGesture);
+		Context.SetString(StateKey.ViewportPanGesture, newViewportPanGesture);
+		//TODO save gestures to Context
+
+		WpfService.Update3DViewportBindings(newViewportRotateGesture, newViewportPanGesture);
+
+		Close();
+	}
 }

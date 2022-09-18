@@ -13,7 +13,9 @@ public enum StateKey
     GamePath,
     BinmodListPath,
     LastSeenVersionNotes,
-    CurrentAssetExplorerPath
+    CurrentAssetExplorerPath,
+    ViewportRotateGesture,
+    ViewportPanGesture
 }
 
 public class StatePair
