@@ -10,6 +10,7 @@ using HelixToolkit.Wpf.SharpDX.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Camera = HelixToolkit.Wpf.SharpDX.Camera;
@@ -37,8 +38,8 @@ public class MainViewModel : ObservableObject, IDisposable
     private int _viewportLeft = 514;
     private int _viewportTop;
     private int _viewportWidth;
-    private string _viewportRotateGesture;
-    private string _viewportPanGesture;
+    private InputGesture _viewportRotateGesture;
+    private InputGesture _viewportPanGesture;
 
     public MainViewModel()
     {
@@ -53,24 +54,69 @@ public class MainViewModel : ObservableObject, IDisposable
             FarPlaneDistance = 10000
         };
 
-        //TODO zet default values in de database
-        //TODO lees uit de database de gestures en zet ze in de constructor...
-
         using var context = new FlagrumDbContext(new SettingsService());
 
-        _viewportRotateGesture = context.GetString(StateKey.ViewportRotateGesture);
-        _viewportPanGesture = context.GetString(StateKey.ViewportPanGesture);
+        var fullRotateGesture = context.GetString(StateKey.ViewportRotateGesture);
+        var fullPanGesture = context.GetString(StateKey.ViewportPanGesture);
 
-        if (_viewportRotateGesture == null)
+        //TODO this probably isnt the right place to set a default value for the gestures.
+        if (fullRotateGesture == null)
         {
-            _viewportRotateGesture = "MiddleClick";
-            context.SetString(StateKey.ViewportRotateGesture, _viewportRotateGesture);
+            _viewportRotateGesture = new MouseGesture(MouseAction.MiddleClick);
+            context.SetString(StateKey.ViewportRotateGesture, "MiddleClick");
+        }
+        if (fullPanGesture == null)
+        {
+            _viewportPanGesture = new MouseGesture(MouseAction.MiddleClick, ModifierKeys.Shift);
+            context.SetString(StateKey.ViewportPanGesture, "Shift+MiddleClick");
         }
 
-        if (_viewportPanGesture == null)
+        // TODO improve code quality
+
+        if (fullRotateGesture != null)
         {
-            _viewportPanGesture = "Shift+MiddleClick";
-            context.SetString(StateKey.ViewportPanGesture, _viewportPanGesture);
+            var stringParts = fullRotateGesture.Split('+');
+
+            if (stringParts.Length == 2)
+            {
+                Enum.TryParse(stringParts[1], out MouseAction rotateModifierKeyEnum);
+                Enum.TryParse(stringParts[0], out ModifierKeys rotateMouseActionEnum);
+
+                _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum, rotateMouseActionEnum);
+            }
+            else if (stringParts.Length == 1)
+            {
+                Enum.TryParse(stringParts[0], out MouseAction rotateModifierKeyEnum);
+
+                _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum);
+            }
+            else
+            {
+                throw new Exception("Oops");
+            }
+        }
+
+        if (fullPanGesture != null)
+        {
+            var stringParts = fullPanGesture.Split('+');
+            if (stringParts.Length == 2)
+            {
+                Enum.TryParse(stringParts[1], out MouseAction panMouseActionEnum);
+                Enum.TryParse(stringParts[0], out ModifierKeys panModifierKeyEnum);
+
+                _viewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
+            }
+            else if (stringParts.Length == 1)
+            {
+                Enum.TryParse(stringParts[0], out MouseAction panMouseActionEnum);
+
+                _viewportPanGesture = new MouseGesture(panMouseActionEnum);
+
+            }
+            else
+            {
+                throw new Exception("Oops");
+            }
         }
 
         // var builder2 = new MeshBuilder();
@@ -164,13 +210,13 @@ public class MainViewModel : ObservableObject, IDisposable
         set => SetValue(ref _viewportHeight, value);
     }
 
-    public string ViewportRotateGesture
+    public InputGesture ViewportRotateGesture
     {
         get => _viewportRotateGesture;
         set => SetValue(ref _viewportRotateGesture, value);
     }
 
-    public string ViewportPanGesture
+    public InputGesture ViewportPanGesture
     {
         get => _viewportPanGesture;
         set => SetValue(ref _viewportPanGesture, value);

@@ -5,6 +5,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Flagrum.Desktop.Services;
 
@@ -92,10 +93,15 @@ public class WpfService : IWpfService
         _mainViewModel.ViewportHeight = height;
     }
 
-    public void Update3DViewportBindings(string viewportRotateGesture, string viewportPanGesture)
+    public void Update3DViewportBindings(string rotateModifierKey, string rotateMouseAction, string panModifierKey, string panMouseAction)
     {
-        _mainViewModel.ViewportRotateGesture = viewportRotateGesture;
-        _mainViewModel.ViewportPanGesture = viewportPanGesture;
+        Enum.TryParse(rotateModifierKey, out ModifierKeys rotateModifierKeyEnum);
+        Enum.TryParse(rotateMouseAction, out MouseAction rotateMouseActionEnum);
+        Enum.TryParse(panModifierKey, out ModifierKeys panModifierKeyEnum);
+        Enum.TryParse(panMouseAction, out MouseAction panMouseActionEnum);
+
+        _mainViewModel.ViewportRotateGesture = new MouseGesture(rotateMouseActionEnum, rotateModifierKeyEnum);
+        _mainViewModel.ViewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
     }
 
     public void Set3DViewportVisibility(bool isVisible)

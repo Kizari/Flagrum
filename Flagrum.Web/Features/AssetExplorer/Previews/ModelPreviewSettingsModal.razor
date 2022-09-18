@@ -25,7 +25,7 @@ TODO vertaling files nog implementeren
 	    <div class="h-full">
 		    <div class="row">
 			    <label style="width: 250px">Rotate model</label>
-			    <select @bind="PreRotateGesture" class="input bg-dark-550 w-full">
+			    <select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
 				    <option>None</option>
 				    <option>Ctrl</option>
 				    <option>Shift</option>
@@ -33,9 +33,9 @@ TODO vertaling files nog implementeren
 			    </select>
 			    <b> + </b>
 			    @*
-				TODO De gestured omzetten naar een static array of zoiets!
+				TODO read from enum!
 				*@
-			    <select @bind="RotateGesture" class="input bg-dark-550 w-full">
+			    <select @bind="RotateMouseAction" class="input bg-dark-550 w-full">
 				    <option>None</option>
 				    <option>LeftClick</option>
 				    <option>RightClick</option>
@@ -48,14 +48,14 @@ TODO vertaling files nog implementeren
 		    </div>
 		    <div class="row">
 			    <label style="width: 250px">Pan model</label>
-			    <select @bind="PrePanGesture" class="input bg-dark-550 w-full">
+			    <select @bind="PanModifierKey" class="input bg-dark-550 w-full">
 				    <option>None</option>
 				    <option>Ctrl</option>
 				    <option>Shift</option>
 				    <option>Alt</option>
 			    </select>
 			    <b> + </b>
-			    <select @bind="PanGesture" class="input bg-dark-550 w-full">
+			    <select @bind="PanMouseAction" class="input bg-dark-550 w-full">
 				    <option>None</option>
 				    <option>LeftClick</option>
 				    <option>RightClick</option>
@@ -75,25 +75,26 @@ TODO vertaling files nog implementeren
 {
 	private Modal Modal { get; set; }
 
-	//TODO lees de gestures uit de DB
-	private string PreRotateGesture { get; set; }
-	private string RotateGesture { get; set; }
-	private string PrePanGesture { get; set; }
-	private string PanGesture { get; set; }
+	private string RotateModifierKey { get; set; }
+	private string RotateMouseAction { get; set; }
+	private string PanModifierKey { get; set; }
+	private string PanMouseAction { get; set; }
 
 	protected override void OnInitialized()
 	{
+		// TODO improve code quality
+
 		var fullRotateGesture = Context.GetString(StateKey.ViewportRotateGesture);
 		var stringParts = fullRotateGesture.Split('+');
 		if (stringParts.Length == 2)
 		{
-			PreRotateGesture = stringParts[0];
-			RotateGesture = stringParts[1];
+			RotateModifierKey = stringParts[0];
+			RotateMouseAction = stringParts[1];
 		}
 		else if (stringParts.Length == 1)
 		{
-			PreRotateGesture = "None";
-			RotateGesture = stringParts[0];
+			RotateModifierKey = "None";
+			RotateMouseAction = stringParts[0];
 		}
 		else
 		{
@@ -104,13 +105,13 @@ TODO vertaling files nog implementeren
 		stringParts = fullPanGesture.Split('+');
 		if (stringParts.Length == 2)
 		{
-			PrePanGesture = stringParts[0];
-			PanGesture = stringParts[1];
+			PanModifierKey = stringParts[0];
+			PanMouseAction = stringParts[1];
 		}
 		else if (stringParts.Length == 1)
 		{
-			PrePanGesture = "None";
-			PanGesture = stringParts[0];
+			PanModifierKey = "None";
+			PanMouseAction = stringParts[0];
 		}
 		else
 		{
@@ -138,14 +139,13 @@ TODO vertaling files nog implementeren
 
 	private void SaveChanges()
 	{
-		var newViewportRotateGesture = PreRotateGesture != "None" ? PreRotateGesture + "+" + RotateGesture : RotateGesture;
-		var newViewportPanGesture = PrePanGesture != "None" ? PrePanGesture + "+" + PanGesture : PanGesture;
+		var newViewportRotateGesture = RotateModifierKey != "None" ? RotateModifierKey + "+" + RotateMouseAction : RotateMouseAction;
+		var newViewportPanGesture = PanModifierKey != "None" ? PanModifierKey + "+" + PanMouseAction : PanMouseAction;
 
 		Context.SetString(StateKey.ViewportRotateGesture, newViewportRotateGesture);
 		Context.SetString(StateKey.ViewportPanGesture, newViewportPanGesture);
-		//TODO save gestures to Context
 
-		WpfService.Update3DViewportBindings(newViewportRotateGesture, newViewportPanGesture);
+		WpfService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
 
 		Close();
 	}
