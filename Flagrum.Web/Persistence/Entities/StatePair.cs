@@ -6,16 +6,16 @@ namespace Flagrum.Web.Persistence.Entities;
 
 public enum StateKey
 {
-    CurrentAssetNode,
-    CurrentEarcCategory,
-    Language,
-    HaveThumbnailsBeenResized,
-    GamePath,
-    BinmodListPath,
-    LastSeenVersionNotes,
-    CurrentAssetExplorerPath,
-    ViewportRotateGesture,
-    ViewportPanGesture
+    CurrentAssetNode = 0,
+    CurrentEarcCategory = 1,
+    Language = 2,
+    HaveThumbnailsBeenResized = 3,
+    GamePath = 4,
+    BinmodListPath = 5,
+    LastSeenVersionNotes = 6,
+    CurrentAssetExplorerPath = 7,
+    ViewportRotateGesture = 8,
+    ViewportPanGesture = 9
 }
 
 public class StatePair
@@ -49,7 +49,7 @@ public static class StatePairExtensions
         var pair = context.StatePairs.FirstOrDefault(p => p.Key == key);
         if (pair == null)
         {
-            pair = new StatePair {Key = key, Value = value};
+            pair = new StatePair { Key = key, Value = value };
             context.Add(pair);
         }
         else

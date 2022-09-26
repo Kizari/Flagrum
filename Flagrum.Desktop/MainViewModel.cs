@@ -59,122 +59,49 @@ public class MainViewModel : ObservableObject, IDisposable
         var fullRotateGesture = context.GetString(StateKey.ViewportRotateGesture);
         var fullPanGesture = context.GetString(StateKey.ViewportPanGesture);
 
-        //TODO this probably isnt the right place to set a default value for the gestures.
-        if (fullRotateGesture == null)
-        {
-            _viewportRotateGesture = new MouseGesture(MouseAction.MiddleClick);
-            context.SetString(StateKey.ViewportRotateGesture, "MiddleClick");
-        }
-        if (fullPanGesture == null)
-        {
-            _viewportPanGesture = new MouseGesture(MouseAction.MiddleClick, ModifierKeys.Shift);
-            context.SetString(StateKey.ViewportPanGesture, "Shift+MiddleClick");
-        }
-
         // TODO improve code quality
 
-        if (fullRotateGesture != null)
+
+        var stringParts = fullRotateGesture.Split('+');
+
+        if (stringParts.Length == 2)
         {
-            var stringParts = fullRotateGesture.Split('+');
+            Enum.TryParse(stringParts[1], out MouseAction rotateModifierKeyEnum);
+            Enum.TryParse(stringParts[0], out ModifierKeys rotateMouseActionEnum);
 
-            if (stringParts.Length == 2)
-            {
-                Enum.TryParse(stringParts[1], out MouseAction rotateModifierKeyEnum);
-                Enum.TryParse(stringParts[0], out ModifierKeys rotateMouseActionEnum);
+            _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum, rotateMouseActionEnum);
+        }
+        else if (stringParts.Length == 1)
+        {
+            Enum.TryParse(stringParts[0], out MouseAction rotateModifierKeyEnum);
 
-                _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum, rotateMouseActionEnum);
-            }
-            else if (stringParts.Length == 1)
-            {
-                Enum.TryParse(stringParts[0], out MouseAction rotateModifierKeyEnum);
-
-                _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum);
-            }
-            else
-            {
-                throw new Exception("Oops");
-            }
+            _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum);
+        }
+        else
+        {
+            throw new Exception("Oops");
         }
 
-        if (fullPanGesture != null)
+        stringParts = fullPanGesture.Split('+');
+        if (stringParts.Length == 2)
         {
-            var stringParts = fullPanGesture.Split('+');
-            if (stringParts.Length == 2)
-            {
-                Enum.TryParse(stringParts[1], out MouseAction panMouseActionEnum);
-                Enum.TryParse(stringParts[0], out ModifierKeys panModifierKeyEnum);
+            Enum.TryParse(stringParts[1], out MouseAction panMouseActionEnum);
+            Enum.TryParse(stringParts[0], out ModifierKeys panModifierKeyEnum);
 
-                _viewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
-            }
-            else if (stringParts.Length == 1)
-            {
-                Enum.TryParse(stringParts[0], out MouseAction panMouseActionEnum);
+            _viewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
+        }
+        else if (stringParts.Length == 1)
+        {
+            Enum.TryParse(stringParts[0], out MouseAction panMouseActionEnum);
 
-                _viewportPanGesture = new MouseGesture(panMouseActionEnum);
-
-            }
-            else
-            {
-                throw new Exception("Oops");
-            }
+            _viewportPanGesture = new MouseGesture(panMouseActionEnum);
+        }
+        else
+        {
+            throw new Exception("Oops");
         }
 
-        // var builder2 = new MeshBuilder();
-        // builder2.AddSphere(new Vector3(), 2);
-        // Mesh = builder2.ToMesh();
-        // return;
 
-        // var importer = new Importer();
-        // importer.Configuration.CreateSkeletonForBoneSkinningMesh = true;
-        // importer.Configuration.SkeletonSizeScale = 0.04f;
-        // importer.Configuration.GlobalScale = 0.1f;
-        //
-        // var scene = importer.Load(@"C:\Users\Kieran\Desktop\nh00_010_animated.fbx");
-        // //ModelGroup.AddNode(scene.Root);
-        // BoneSkinMeshNode temp = null;
-        // foreach (var node in scene.Root.Items.Traverse())
-        // {
-        //     if (node is BoneSkinMeshNode {IsSkeletonNode: true} n)
-        //     {
-        //         _armatureNodes.Add(n);
-        //         n.Visible = false;
-        //     }
-        //
-        //     if (node is BoneSkinMeshNode {IsSkeletonNode: false} m)
-        //     {
-        //         if (m.Name == "ShirtShape")
-        //         {
-        //             m.Material = new PBRMaterial
-        //             {
-        //                 AlbedoMap = TextureModel.Create(
-        //                     @"C:\Users\Kieran\Desktop\Models2\nh00\model_010\sourceimages\nh00_010_cloth_00_b_$h.png"),
-        //                 NormalMap = TextureModel.Create(
-        //                     @"C:\Users\Kieran\Desktop\Models2\nh00\model_010\sourceimages\nh00_010_cloth_00_n_$h.png")
-        //             };
-        //
-        //             temp = m;
-        //         }
-        //         else if (m.Name == "bodyShape")
-        //         {
-        //             m.Material = new PBRMaterial
-        //             {
-        //                 // AlbedoMap = TextureModel.Create(
-        //                 //     @"C:\Users\Kieran\Desktop\Models2\nh00\model_010\sourceimages\nh00_010_skin_01_b_$h.png"),
-        //                 // NormalMap = TextureModel.Create(
-        //                 //     @"C:\Users\Kieran\Desktop\Models2\nh00\model_010\sourceimages\nh00_010_skin_01_n_$h.png")
-        //                 AlbedoMap = TextureModel.Create(@"C:\Users\Kieran\Desktop\Cursed\diffuse.png"),
-        //                 NormalMap = TextureModel.Create(@"C:\Users\Kieran\Desktop\Cursed\normal.png")
-        //             };
-        //         }
-        //     }
-        // }
-        //return;
-
-
-        //_animationUpdater = new NodeAnimationUpdater(scene.Animations.First());
-
-
-        //_compositeHelper.Rendering += CompositeHelper_Rendering;
     }
 
     public ViewportHelper ViewportHelper { get; }
