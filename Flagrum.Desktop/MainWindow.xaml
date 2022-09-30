@@ -11,6 +11,7 @@
         xmlns:fa5="http://schemas.fontawesome.com/icons/"
         xmlns:architecture="clr-namespace:Flagrum.Desktop.Architecture"
         mc:Ignorable="d"
+        xmlns:ap="clr-namespace:Flagrum.Desktop.AttachedProperties"
         Title="Flagrum"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
@@ -205,10 +206,8 @@
                                            DefaultCamera="{Binding Camera}"
                                            Initialized="Viewer_OnInitialized">
                             <helix:Viewport3DX.InputBindings>
-                                <MouseBinding Command="helix:ViewportCommands.Rotate" Gesture="MiddleClick" />
-                                <MouseBinding Command="helix:ViewportCommands.Pan" Gesture="Shift+MiddleClick" />
-                                <MouseBinding Command="helix:ViewportCommands.Rotate" Gesture="LeftClick" />
-                                <MouseBinding Command="helix:ViewportCommands.Pan" Gesture="RightClick" />
+                                <MouseBinding Command="helix:ViewportCommands.Rotate" ap:InputBinding.Gesture="{Binding ViewportRotateGesture}" />
+                                <MouseBinding Command="helix:ViewportCommands.Pan" ap:InputBinding.Gesture="{Binding ViewportPanGesture}"  />
                             </helix:Viewport3DX.InputBindings>
                             <helix:DirectionalLight3D Direction="0, -1, -1" Color="White" />
                             <helix:DirectionalLight3D Direction="0, -1, 1" Color="#AAAAAA" />
