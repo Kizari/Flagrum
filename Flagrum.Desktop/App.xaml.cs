@@ -47,13 +47,15 @@ public partial class App
         context.Database.MigrateAsync().Wait();
 
         // Set default key bindings for 3D viewer
-        if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportRotateGesture))
+        if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportRotateModifierKey))
         {
-            context.SetString(StateKey.ViewportRotateGesture, "MiddleClick");
+            context.SetString(StateKey.ViewportRotateModifierKey, "None");
+            context.SetString(StateKey.ViewportRotateMouseAction, "MiddleClick");
         }
-        if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportPanGesture))
+        if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportPanModifierKey))
         {
-            context.SetString(StateKey.ViewportPanGesture, "Shift+MiddleClick");
+            context.SetString(StateKey.ViewportPanModifierKey, "Shift");
+            context.SetString(StateKey.ViewportPanMouseAction, "MiddleClick");
         }
 
         // Set culture based on stored language settings if any

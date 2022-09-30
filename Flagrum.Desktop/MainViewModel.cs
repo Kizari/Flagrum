@@ -56,46 +56,17 @@ public class MainViewModel : ObservableObject, IDisposable
 
         using var context = new FlagrumDbContext(new SettingsService());
 
-        // TODO improve code quality
+        var viewportRotateModifierKey = context.GetString(StateKey.ViewportRotateModifierKey);
+        var viewportRotateMouseAction = context.GetString(StateKey.ViewportRotateMouseAction);
+        Enum.TryParse(viewportRotateModifierKey, out ModifierKeys rotateModifierKeyEnum);
+        Enum.TryParse(viewportRotateMouseAction, out MouseAction rotateMouseActionEnum);
+        _viewportRotateGesture = new MouseGesture(rotateMouseActionEnum, rotateModifierKeyEnum);
 
-        var stringParts = context.GetString(StateKey.ViewportRotateGesture).Split('+');
-
-        if (stringParts.Length == 2)
-        {
-            Enum.TryParse(stringParts[1], out MouseAction rotateModifierKeyEnum);
-            Enum.TryParse(stringParts[0], out ModifierKeys rotateMouseActionEnum);
-
-            _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum, rotateMouseActionEnum);
-        }
-        else if (stringParts.Length == 1)
-        {
-            Enum.TryParse(stringParts[0], out MouseAction rotateModifierKeyEnum);
-
-            _viewportRotateGesture = new MouseGesture(rotateModifierKeyEnum);
-        }
-        else
-        {
-            throw new Exception("ViewportRotateGesture contains an invalid length");
-        }
-
-        stringParts = context.GetString(StateKey.ViewportPanGesture).Split('+');
-        if (stringParts.Length == 2)
-        {
-            Enum.TryParse(stringParts[1], out MouseAction panMouseActionEnum);
-            Enum.TryParse(stringParts[0], out ModifierKeys panModifierKeyEnum);
-
-            _viewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
-        }
-        else if (stringParts.Length == 1)
-        {
-            Enum.TryParse(stringParts[0], out MouseAction panMouseActionEnum);
-
-            _viewportPanGesture = new MouseGesture(panMouseActionEnum);
-        }
-        else
-        {
-            throw new Exception("ViewportPanGesture contains an invalid length");
-        }
+        var viewportPanModifierKey = context.GetString(StateKey.ViewportPanModifierKey);
+        var viewportPanMouseAction = context.GetString(StateKey.ViewportPanMouseAction);
+        Enum.TryParse(viewportPanModifierKey, out ModifierKeys panModifierKeyEnum);
+        Enum.TryParse(viewportPanMouseAction, out MouseAction panMouseActionEnum);
+        _viewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
     }
 
     public ViewportHelper ViewportHelper { get; }

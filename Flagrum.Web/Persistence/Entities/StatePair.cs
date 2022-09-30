@@ -14,8 +14,10 @@ public enum StateKey
     BinmodListPath = 5,
     LastSeenVersionNotes = 6,
     CurrentAssetExplorerPath = 7,
-    ViewportRotateGesture = 8,
-    ViewportPanGesture = 9
+    ViewportRotateModifierKey = 8,
+    ViewportRotateMouseAction = 9,
+    ViewportPanModifierKey = 10,
+    ViewportPanMouseAction = 11,
 }
 
 public class StatePair
