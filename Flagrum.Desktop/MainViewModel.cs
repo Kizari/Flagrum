@@ -56,13 +56,9 @@ public class MainViewModel : ObservableObject, IDisposable
 
         using var context = new FlagrumDbContext(new SettingsService());
 
-        var fullRotateGesture = context.GetString(StateKey.ViewportRotateGesture);
-        var fullPanGesture = context.GetString(StateKey.ViewportPanGesture);
-
         // TODO improve code quality
 
-
-        var stringParts = fullRotateGesture.Split('+');
+        var stringParts = context.GetString(StateKey.ViewportRotateGesture).Split('+');
 
         if (stringParts.Length == 2)
         {
@@ -79,10 +75,10 @@ public class MainViewModel : ObservableObject, IDisposable
         }
         else
         {
-            throw new Exception("Oops");
+            throw new Exception("ViewportRotateGesture contains an invalid length");
         }
 
-        stringParts = fullPanGesture.Split('+');
+        stringParts = context.GetString(StateKey.ViewportPanGesture).Split('+');
         if (stringParts.Length == 2)
         {
             Enum.TryParse(stringParts[1], out MouseAction panMouseActionEnum);
@@ -98,10 +94,8 @@ public class MainViewModel : ObservableObject, IDisposable
         }
         else
         {
-            throw new Exception("Oops");
+            throw new Exception("ViewportPanGesture contains an invalid length");
         }
-
-
     }
 
     public ViewportHelper ViewportHelper { get; }

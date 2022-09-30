@@ -10,16 +10,12 @@
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
-@*
-TODO vertaling files nog implementeren
-*@
-@inject IStringLocalizer<ModelPreviewSettingsModal> L
 @inject AppStateService AppState
 
 <Modal @ref="Modal">
     <HeaderView>
         <span class="text-grey-300 flex-grow">Model viewer settings</span>
-        <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
+        <span class="material-icons cursor-pointer" @onclick="Close">close</span>
     </HeaderView>
     <BodyView>
 	    <div class="h-full">
@@ -27,7 +23,6 @@ TODO vertaling files nog implementeren
 			    <label style="width: 250px">Rotate model</label>
 			    <select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
 				    <option>None</option>
-				    <option>Ctrl</option>
 				    <option>Shift</option>
 				    <option>Alt</option>
 			    </select>
@@ -37,17 +32,12 @@ TODO vertaling files nog implementeren
 				    <option>LeftClick</option>
 				    <option>RightClick</option>
 				    <option>MiddleClick</option>
-				    <option>WheelClick</option>
-				    <option>LeftDoubleClick</option>
-				    <option>RightDoubleClick</option>
-				    <option>MiddleDoubleClick</option>
 			    </select>
 		    </div>
 		    <div class="row">
 			    <label style="width: 250px">Pan model</label>
 			    <select @bind="PanModifierKey" class="input bg-dark-550 w-full">
 				    <option>None</option>
-				    <option>Ctrl</option>
 				    <option>Shift</option>
 				    <option>Alt</option>
 			    </select>
@@ -57,14 +47,9 @@ TODO vertaling files nog implementeren
 				    <option>LeftClick</option>
 				    <option>RightClick</option>
 				    <option>MiddleClick</option>
-				    <option>WheelClick</option>
-				    <option>LeftDoubleClick</option>
-				    <option>RightDoubleClick</option>
-				    <option>MiddleDoubleClick</option>
 			    </select>
 		    </div>
 	    </div>
-	    <Button Text="Save changes" Icon="save" OnClick="SaveChanges"></Button>
     </BodyView>
 </Modal>
 
@@ -79,10 +64,7 @@ TODO vertaling files nog implementeren
 
 	protected override void OnInitialized()
 	{
-		// TODO improve code quality
-
-		var fullRotateGesture = Context.GetString(StateKey.ViewportRotateGesture);
-		var stringParts = fullRotateGesture.Split('+');
+		var stringParts = Context.GetString(StateKey.ViewportRotateGesture).Split('+');
 		if (stringParts.Length == 2)
 		{
 			RotateModifierKey = stringParts[0];
@@ -95,11 +77,10 @@ TODO vertaling files nog implementeren
 		}
 		else
 		{
-			throw new Exception("Oops");
+			throw new Exception("ViewportRotateGesture contains an invalid length");
 		}
 
-		var fullPanGesture = Context.GetString(StateKey.ViewportPanGesture);
-		stringParts = fullPanGesture.Split('+');
+		stringParts =  Context.GetString(StateKey.ViewportPanGesture).Split('+');
 		if (stringParts.Length == 2)
 		{
 			PanModifierKey = stringParts[0];
@@ -112,7 +93,7 @@ TODO vertaling files nog implementeren
 		}
 		else
 		{
-			throw new Exception("Oops");
+			throw new Exception("ViewportPanGesture contains an invalid length");
 		}
 	}
 
@@ -127,6 +108,8 @@ TODO vertaling files nog implementeren
     {
         Modal.Close();
         AppState.IsModalOpen = false;
+
+	    SaveChanges();
         
         if (AppState.Is3DViewerOpen)
         {
@@ -143,7 +126,5 @@ TODO vertaling files nog implementeren
 		Context.SetString(StateKey.ViewportPanGesture, newViewportPanGesture);
 
 		WpfService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
-
-		Close();
 	}
 }
