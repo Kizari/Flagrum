@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Flagrum.Desktop.Architecture;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Animations;
 using HelixToolkit.SharpDX.Core.Model.Scene;
@@ -32,6 +36,8 @@ public class MainViewModel : ObservableObject, IDisposable
     private bool _showArmature;
     private int _viewportHeight;
     private int _viewportLeft = 514;
+    private InputGesture _viewportPanGesture;
+    private InputGesture _viewportRotateGesture;
     private int _viewportTop;
     private int _viewportWidth;
 
@@ -47,6 +53,16 @@ public class MainViewModel : ObservableObject, IDisposable
             NearPlaneDistance = 0,
             FarPlaneDistance = 10000
         };
+        
+        using var context = new FlagrumDbContext(new SettingsService());
+
+        var viewportRotateModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportRotateModifierKey);
+        var viewportRotateMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportRotateMouseAction);
+        _viewportRotateGesture = new MouseGesture(viewportRotateMouseAction, viewportRotateModifierKey);
+
+        var viewportPanModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportPanModifierKey);
+        var viewportPanMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportPanMouseAction);
+        _viewportPanGesture = new MouseGesture(viewportPanMouseAction, viewportPanModifierKey);
 
         ViewportLeft = 0;
         ViewportTop = 0;
@@ -159,6 +175,18 @@ public class MainViewModel : ObservableObject, IDisposable
     {
         get => _viewportHeight;
         set => SetValue(ref _viewportHeight, value);
+    }
+
+    public InputGesture ViewportRotateGesture
+    {
+        get => _viewportRotateGesture;
+        set => SetValue(ref _viewportRotateGesture, value);
+    }
+
+    public InputGesture ViewportPanGesture
+    {
+        get => _viewportPanGesture;
+        set => SetValue(ref _viewportPanGesture, value);
     }
 
     public bool IsViewportVisible

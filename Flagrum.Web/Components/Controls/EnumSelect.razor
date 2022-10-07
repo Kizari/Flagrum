@@ -1,5 +1,5 @@
 ﻿@typeparam TEnum
-
+@using Flagrum.Core.Utilities
 @inherits InputBase<TEnum>
 
 <select value="@CurrentValueAsString"
@@ -7,12 +7,15 @@
         class="input bg-dark-550 w-full">
     @foreach (var item in Enum.GetValues(typeof(TEnum)))
     {
-        <option value="@item" class="text-grey-400">@item.ToString()</option>
+        <option value="@item" class="text-grey-400">@(AutoSpaceNames ? item.ToString().SpacePascalCase() : item.ToString())</option>
     }
 </select>
 
 @code
 {
+    [Parameter]
+    public bool AutoSpaceNames { get; set; }
+
     private void OnChange(ChangeEventArgs e)
     {
         CurrentValueAsString = e.Value.ToString();

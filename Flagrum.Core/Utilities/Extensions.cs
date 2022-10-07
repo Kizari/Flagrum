@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace Flagrum.Core.Utilities;
 
@@ -26,7 +27,7 @@ public static class Extensions
         stream.CopyTo(memoryStream);
         return memoryStream.ToArray();
     }
-    
+
     public static void Align(this Stream stream, long blockSize)
     {
         var offset = stream.Position;
@@ -36,7 +37,7 @@ public static class Extensions
             stream.Seek(size, SeekOrigin.Current);
         }
     }
-    
+
     public static string ReadNullTerminatedString(this BinaryReader reader)
     {
         var result = new List<char>();
@@ -59,7 +60,7 @@ public static class Extensions
 
         writer.Write((byte)0x00);
     }
-    
+
     public static bool BitTest64(ulong address, int position)
     {
         if (position is < 0 or > 64)
@@ -73,7 +74,7 @@ public static class Extensions
         var positionInByte = position - index * 8;
         return (bytes[index] & GetBitTestNumber(positionInByte)) > 0;
     }
-    
+
     private static int GetBitTestNumber(int positionInByte)
     {
         return positionInByte switch
@@ -87,5 +88,10 @@ public static class Extensions
             1 => 2,
             0 => 1
         };
+    }
+
+    public static string SpacePascalCase(this string pascalCaseString)
+    {
+        return Regex.Replace(pascalCaseString, @"(?<=[A-Za-z])(?=[A-Z][a-z])|(?<=[a-z0-9])(?=[0-9]?[A-Z])", " ");
     }
 }

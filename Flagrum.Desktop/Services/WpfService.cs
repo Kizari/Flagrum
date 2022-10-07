@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using Flagrum.Web.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.Win32;
@@ -92,6 +94,18 @@ public class WpfService : IWpfService
         _mainViewModel.ViewportHeight = height;
     }
 
+    public void Update3DViewportBindings(string rotateModifierKey, string rotateMouseAction, string panModifierKey,
+        string panMouseAction)
+    {
+        _mainViewModel.ViewportRotateGesture = new MouseGesture(
+            Enum.Parse<MouseAction>(rotateMouseAction),
+            Enum.Parse<ModifierKeys>(rotateModifierKey));
+
+        _mainViewModel.ViewportPanGesture = new MouseGesture(
+            Enum.Parse<MouseAction>(panMouseAction),
+            Enum.Parse<ModifierKeys>(panModifierKey));
+    }
+
     public void Set3DViewportVisibility(bool isVisible)
     {
         _mainViewModel.IsViewportVisible = isVisible;
@@ -100,5 +114,15 @@ public class WpfService : IWpfService
     public async Task ChangeModel(string gmdlUri)
     {
         await _mainViewModel.ViewportHelper.ChangeModel(gmdlUri);
+    }
+
+    public IEnumerable<string> GetModifierKeys()
+    {
+        return Enum.GetNames<ModifierKeys>();
+    }
+
+    public IEnumerable<string> GetMouseActions()
+    {
+        return Enum.GetNames<MouseAction>();
     }
 }

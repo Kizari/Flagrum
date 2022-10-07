@@ -1,10 +1,33 @@
-﻿@using Flagrum.Web.Features.AssetExplorer.Data
+﻿@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Core.Utilities
+@using Flagrum.Web.Features.AssetExplorer.Data
 @implements IDisposable
 
 @inject IWpfService WpfService
 @inject JSInterop Interop
 @inject AppStateService AppState
+@inject FlagrumDbContext Context
+@inject IStringLocalizer<App> AppLocalizer
 
+<div class="flex flex-row items-center p-2 sticky top-0 z-40 bg-grey-900">
+    <span class="material-icons ml-2 mr-2 text-grey-200 text-sm">360</span>
+    <span class="text-grey-200 text-sm">
+        @{
+            var rotateModifierKey = Context.GetString(StateKey.ViewportRotateModifierKey);
+            var rotateMouseAction = Context.GetString(StateKey.ViewportRotateMouseAction).SpacePascalCase();
+        }
+        @($"{(rotateModifierKey is null or "None" ? "" : rotateModifierKey + " + ")}{rotateMouseAction}")
+    </span>
+    <span class="material-icons ml-10 mr-2 text-grey-200 text-sm">pan_tool</span>
+    <span class="text-grey-200 flex-grow text-sm">
+        @{
+            var panModifierKey = Context.GetString(StateKey.ViewportPanModifierKey);
+            var panMouseAction = Context.GetString(StateKey.ViewportPanMouseAction).SpacePascalCase();
+        }
+        @($"{(panModifierKey is null or "None" ? "" : panModifierKey + " + ")}{panMouseAction}")
+    </span>
+    <Button Icon="settings" Text=@AppLocalizer["Settings"] OnClick="OpenSettingsModal" CssClass="@(IsLoading ? "invisible" : "")"/>
+</div>
 <div id="viewportContainer" class="h-full bg-grey-700 row">
     @if (IsLoading)
     {
@@ -15,6 +38,10 @@
     }
 </div>
 
+<CascadingValue Value="this">
+    <ModelPreviewSettingsModal @ref="ModelPreviewSettingsModal"/>
+</CascadingValue>
+
 @code
 {
     [Parameter]
@@ -22,8 +49,8 @@
 
     private AssetExplorerItem _lastItem;
     private bool _isRendered;
-    
     private bool IsLoading { get; set; }
+    private ModelPreviewSettingsModal ModelPreviewSettingsModal { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -31,7 +58,7 @@
         {
             IsLoading = true;
             StateHasChanged();
-            
+
             await Interop.ObserveElementResize(DotNetObjectReference.Create(this), "viewportContainer");
 
             var left = await Interop.GetElementLeftOffset("viewportContainer");
@@ -58,7 +85,7 @@
         {
             IsLoading = true;
             StateHasChanged();
-            
+
             WpfService.Set3DViewportVisibility(false);
             await WpfService.ChangeModel(Item.Uri);
             WpfService.Set3DViewportVisibility(true);
@@ -79,5 +106,15 @@
     {
         WpfService.Set3DViewportVisibility(false);
         AppState.Is3DViewerOpen = false;
+    }
+
+    private void OpenSettingsModal()
+    {
+        ModelPreviewSettingsModal?.Open();
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
     }
 }

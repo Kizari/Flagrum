@@ -270,6 +270,14 @@
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>PatchNotes.ja-JP.Designer.cs</LastGenOutput>
         </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Previews\ModelPreviewSettingsModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelPreviewSettingsModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Previews\ModelPreviewSettingsModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelPreviewSettingsModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
 
