@@ -11,7 +11,6 @@
         xmlns:fa5="http://schemas.fontawesome.com/icons/"
         xmlns:architecture="clr-namespace:Flagrum.Desktop.Architecture"
         mc:Ignorable="d"
-        xmlns:ap="clr-namespace:Flagrum.Desktop.AttachedProperties"
         Title="Flagrum"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
@@ -190,34 +189,38 @@
                                                 VerticalOffset="{Binding ViewportTop}"
                                                 Width="{Binding ViewportWidth}"
                                                 Height="{Binding ViewportHeight}">
-                        <helix:Viewport3DX x:Name="Viewer"
-                                           BackgroundColor="#44403C"
-                                           Camera="{Binding Camera}"
-                                           CoordinateSystemLabelForeground="White"
-                                           EffectsManager="{Binding EffectsManager}"
-                                           EnableDesignModeRendering="False"
-                                           EnableSwapChainRendering="False"
-                                           FXAALevel="Medium"
-                                           ShowCoordinateSystem="True"
-                                           ShowFrameRate="False"
-                                           TextBrush="White"
-                                           UseDefaultGestures="False"
-                                           IsInertiaEnabled="False"
-                                           DefaultCamera="{Binding Camera}"
-                                           Initialized="Viewer_OnInitialized">
-                            <helix:Viewport3DX.InputBindings>
-                                <MouseBinding Command="helix:ViewportCommands.Rotate" ap:InputBinding.Gesture="{Binding ViewportRotateGesture}" />
-                                <MouseBinding Command="helix:ViewportCommands.Pan" ap:InputBinding.Gesture="{Binding ViewportPanGesture}"  />
-                            </helix:Viewport3DX.InputBindings>
-                            <helix:DirectionalLight3D Direction="0, -1, -1" Color="White" />
-                            <helix:DirectionalLight3D Direction="0, -1, 1" Color="#AAAAAA" />
-                            <helix:Element3DPresenter Content="{Binding ModelGroup}" />
-                            <!-- <helix:AxisPlaneGridModel3D -->
-                            <!--     x:Name="plane" -->
-                            <!--     AutoSpacing="False" -->
-                            <!--     RenderShadowMap="True" -->
-                            <!--     Offset="-0.2" /> -->
-                        </helix:Viewport3DX>
+                        <Grid>
+                            <helix:Viewport3DX x:Name="Viewer"
+                                               BackgroundColor="#44403C"
+                                               Camera="{Binding Camera}"
+                                               CoordinateSystemLabelForeground="White"
+                                               EffectsManager="{Binding EffectsManager}"
+                                               EnableDesignModeRendering="False"
+                                               EnableSwapChainRendering="False"
+                                               FXAALevel="Medium"
+                                               ShowCoordinateSystem="True"
+                                               ShowFrameRate="False"
+                                               TextBrush="White"
+                                               UseDefaultGestures="False"
+                                               IsInertiaEnabled="False"
+                                               DefaultCamera="{Binding Camera}"
+                                               Initialized="Viewer_OnInitialized">
+                                <helix:Viewport3DX.InputBindings>
+                                    <MouseBinding Command="helix:ViewportCommands.Rotate"
+                                                  architecture:InputBinding.Gesture="{Binding ViewportRotateGesture}" />
+                                    <MouseBinding Command="helix:ViewportCommands.Pan"
+                                                  architecture:InputBinding.Gesture="{Binding ViewportPanGesture}" />
+                                </helix:Viewport3DX.InputBindings>
+                                <helix:DirectionalLight3D Direction="0, -1, -1" Color="White" />
+                                <helix:DirectionalLight3D Direction="0, -1, 1" Color="#AAAAAA" />
+                                <helix:Element3DPresenter Content="{Binding ModelGroup}" />
+                                <!-- <helix:AxisPlaneGridModel3D -->
+                                <!--     x:Name="plane" -->
+                                <!--     AutoSpacing="False" -->
+                                <!--     RenderShadowMap="True" -->
+                                <!--     Offset="-0.2" /> -->
+                            </helix:Viewport3DX>
+                        </Grid>
                     </architecture:AirspacePopup>
                 </Grid>
             </Border>

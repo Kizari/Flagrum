@@ -39,9 +39,6 @@
     <data name="About" xml:space="preserve">
         <value>Support Me</value>
     </data>
-    <data name="Settings" xml:space="preserve">
-        <value>Settings</value>
-    </data>
     <data name="Version" xml:space="preserve">
         <value>Flagrum v</value>
     </data>

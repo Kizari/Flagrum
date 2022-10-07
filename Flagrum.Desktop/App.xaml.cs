@@ -1,8 +1,4 @@
-﻿using Flagrum.Web.Persistence;
-using Flagrum.Web.Persistence.Entities;
-using Microsoft.EntityFrameworkCore;
-using Squirrel;
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +7,11 @@ using System.Resources;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Microsoft.EntityFrameworkCore;
+using Squirrel;
 
 namespace Flagrum.Desktop;
 
@@ -49,13 +50,14 @@ public partial class App
         // Set default key bindings for 3D viewer
         if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportRotateModifierKey))
         {
-            context.SetString(StateKey.ViewportRotateModifierKey, "None");
-            context.SetString(StateKey.ViewportRotateMouseAction, "MiddleClick");
+            context.SetEnum(StateKey.ViewportRotateModifierKey, ModifierKeys.None);
+            context.SetEnum(StateKey.ViewportRotateMouseAction, MouseAction.MiddleClick);
         }
+
         if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportPanModifierKey))
         {
-            context.SetString(StateKey.ViewportPanModifierKey, "Shift");
-            context.SetString(StateKey.ViewportPanMouseAction, "MiddleClick");
+            context.SetEnum(StateKey.ViewportPanModifierKey, ModifierKeys.Shift);
+            context.SetEnum(StateKey.ViewportPanMouseAction, MouseAction.MiddleClick);
         }
 
         // Set culture based on stored language settings if any

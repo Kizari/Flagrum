@@ -1,102 +1,109 @@
-﻿@using Flagrum.Web.Persistence.Entities
-@using Index = Flagrum.Web.Features.AssetExplorer.Index
-@using Flagrum.Core.Gfxbin.Gmtl.Data
-@using Flagrum.Core.Gfxbin.Data
-@using Flagrum.Core.Gfxbin.Gmtl
-@using System.IO
-@using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
-@using Flagrum.Core.Archive
-@using System.Text
+﻿@using Flagrum.Core.Utilities
+@using Flagrum.Web.Persistence.Entities
 @inject IWpfService WpfService
-@inject SettingsService Settings
 @inject FlagrumDbContext Context
 @inject AppStateService AppState
+@inject IStringLocalizer<ModelPreviewSettingsModal> Localizer
+@inject IStringLocalizer<App> AppLocalizer
 
-<Modal @ref="Modal">
-	<HeaderView>
-		<span class="text-grey-300 flex-grow">Model viewer settings</span>
-		<span class="material-icons cursor-pointer" @onclick="Close">close</span>
-	</HeaderView>
-	<BodyView>
-		<div class="h-full">
-			<div class="row">
-				<label style="width: 250px">Rotate model</label>
-				<select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
-					<option>None</option>
-					<option>Shift</option>
-					<option>Alt</option>
-				</select>
-				<b> + </b>
-				<select @bind="RotateMouseAction" class="input bg-dark-550 w-full">
-					<option>None</option>
-					<option>LeftClick</option>
-					<option>RightClick</option>
-					<option>MiddleClick</option>
-				</select>
-			</div>
-			<div class="row">
-				<label style="width: 250px">Pan model</label>
-				<select @bind="PanModifierKey" class="input bg-dark-550 w-full">
-					<option>None</option>
-					<option>Shift</option>
-					<option>Alt</option>
-				</select>
-				<b> + </b>
-				<select @bind="PanMouseAction" class="input bg-dark-550 w-full">
-					<option>None</option>
-					<option>LeftClick</option>
-					<option>RightClick</option>
-					<option>MiddleClick</option>
-				</select>
-			</div>
-		</div>
-	</BodyView>
-</Modal>
+<AutosizeModal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Localizer["Title"]</span>
+        <span class="material-icons cursor-pointer" @onclick="Cancel">close</span>
+    </HeaderView>
+    <BodyView>
+        <div>
+            <div class="row mb-3">
+                <label class="text-right pr-3" style="width: 190px">@Localizer["Rotate"]</label>
+                <select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
+                    @foreach (var key in ModifierKeys)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+                <strong class="mx-3">+</strong>
+                <select @bind="RotateMouseAction" class="input bg-dark-550 w-full">
+                    @foreach (var key in MouseActions)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+            </div>
+            <div class="row mb-8">
+                <label class="text-right pr-3" style="width: 190px">@Localizer["Pan"]</label>
+                <select @bind="PanModifierKey" class="input bg-dark-550 w-full">
+                    @foreach (var key in ModifierKeys)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+                <strong class="mx-3">+</strong>
+                <select @bind="PanMouseAction" class="input bg-dark-550 w-full">
+                    @foreach (var key in MouseActions)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+            </div>
+            <Button Icon="save" Text=@AppLocalizer["Save"] OnClick="Save"/>
+        </div>
+    </BodyView>
+</AutosizeModal>
 
 @code
 {
-	private Modal Modal { get; set; }
+    [CascadingParameter]
+    public ModelPreviewV2 Parent { get; set; }
 
-	private string RotateModifierKey { get; set; }
-	private string RotateMouseAction { get; set; }
-	private string PanModifierKey { get; set; }
-	private string PanMouseAction { get; set; }
+    private AutosizeModal Modal { get; set; }
 
-	protected override void OnInitialized()
-	{
-		RotateModifierKey = Context.GetString(StateKey.ViewportRotateModifierKey);
-		RotateMouseAction = Context.GetString(StateKey.ViewportRotateMouseAction);
-		PanModifierKey = Context.GetString(StateKey.ViewportPanModifierKey);
-		PanMouseAction = Context.GetString(StateKey.ViewportPanMouseAction);
-	}
+    private string RotateModifierKey { get; set; }
+    private string RotateMouseAction { get; set; }
+    private string PanModifierKey { get; set; }
+    private string PanMouseAction { get; set; }
+    private List<string> ModifierKeys { get; set; } = new();
+    private List<string> MouseActions { get; set; } = new();
 
-	public void Open()
-	{
-		AppState.IsModalOpen = true;
-		WpfService.Set3DViewportVisibility(false);
-		Modal.Open();
-	}
+    protected override void OnInitialized()
+    {
+        ModifierKeys = WpfService.GetModifierKeys().ToList();
+        MouseActions = WpfService.GetMouseActions().ToList();
+    }
 
-	private void Close()
-	{
-		Modal.Close();
-		AppState.IsModalOpen = false;
+    public void Open()
+    {
+        RotateModifierKey = Context.GetString(StateKey.ViewportRotateModifierKey);
+        RotateMouseAction = Context.GetString(StateKey.ViewportRotateMouseAction);
+        PanModifierKey = Context.GetString(StateKey.ViewportPanModifierKey);
+        PanMouseAction = Context.GetString(StateKey.ViewportPanMouseAction);
 
-		SaveChanges();
+        AppState.IsModalOpen = true;
+        WpfService.Set3DViewportVisibility(false);
+        Modal.Open();
+    }
 
-		if (AppState.Is3DViewerOpen)
-		{
-			WpfService.Set3DViewportVisibility(true);
-		}
-	}
+    private void Cancel()
+    {
+        Modal.Close();
+        AppState.IsModalOpen = false;
 
-	private void SaveChanges()
-	{
-		Context.SetString(StateKey.ViewportRotateModifierKey, RotateModifierKey);
-		Context.SetString(StateKey.ViewportRotateMouseAction, RotateMouseAction);
-		Context.SetString(StateKey.ViewportPanModifierKey, PanModifierKey);
-		Context.SetString(StateKey.ViewportPanMouseAction, PanMouseAction);
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
+    }
 
-		WpfService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
-	}
+    private void Save()
+    {
+        Context.SetString(StateKey.ViewportRotateModifierKey, RotateModifierKey);
+        Context.SetString(StateKey.ViewportRotateMouseAction, RotateMouseAction);
+        Context.SetString(StateKey.ViewportPanModifierKey, PanModifierKey);
+        Context.SetString(StateKey.ViewportPanMouseAction, PanMouseAction);
+
+        WpfService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
+
+        Cancel();
+
+        Parent.CallStateHasChanged();
+    }
 }

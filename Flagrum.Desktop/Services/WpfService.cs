@@ -1,11 +1,12 @@
-﻿using Flagrum.Web.Services;
-using Microsoft.Toolkit.Uwp.Notifications;
-using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Flagrum.Web.Services;
+using Microsoft.Toolkit.Uwp.Notifications;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Flagrum.Desktop.Services;
 
@@ -93,15 +94,16 @@ public class WpfService : IWpfService
         _mainViewModel.ViewportHeight = height;
     }
 
-    public void Update3DViewportBindings(string rotateModifierKey, string rotateMouseAction, string panModifierKey, string panMouseAction)
+    public void Update3DViewportBindings(string rotateModifierKey, string rotateMouseAction, string panModifierKey,
+        string panMouseAction)
     {
-        Enum.TryParse(rotateModifierKey, out ModifierKeys rotateModifierKeyEnum);
-        Enum.TryParse(rotateMouseAction, out MouseAction rotateMouseActionEnum);
-        Enum.TryParse(panModifierKey, out ModifierKeys panModifierKeyEnum);
-        Enum.TryParse(panMouseAction, out MouseAction panMouseActionEnum);
+        _mainViewModel.ViewportRotateGesture = new MouseGesture(
+            Enum.Parse<MouseAction>(rotateMouseAction),
+            Enum.Parse<ModifierKeys>(rotateModifierKey));
 
-        _mainViewModel.ViewportRotateGesture = new MouseGesture(rotateMouseActionEnum, rotateModifierKeyEnum);
-        _mainViewModel.ViewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
+        _mainViewModel.ViewportPanGesture = new MouseGesture(
+            Enum.Parse<MouseAction>(panMouseAction),
+            Enum.Parse<ModifierKeys>(panModifierKey));
     }
 
     public void Set3DViewportVisibility(bool isVisible)
@@ -112,5 +114,15 @@ public class WpfService : IWpfService
     public async Task ChangeModel(string gmdlUri)
     {
         await _mainViewModel.ViewportHelper.ChangeModel(gmdlUri);
+    }
+
+    public IEnumerable<string> GetModifierKeys()
+    {
+        return Enum.GetNames<ModifierKeys>();
+    }
+
+    public IEnumerable<string> GetMouseActions()
+    {
+        return Enum.GetNames<MouseAction>();
     }
 }

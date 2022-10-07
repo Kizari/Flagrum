@@ -1,4 +1,10 @@
-﻿using Flagrum.Desktop.Architecture;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
+using Flagrum.Desktop.Architecture;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
@@ -7,12 +13,6 @@ using HelixToolkit.SharpDX.Core.Animations;
 using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using HelixToolkit.Wpf.SharpDX.Controls;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
 using Camera = HelixToolkit.Wpf.SharpDX.Camera;
 using Geometry3D = HelixToolkit.SharpDX.Core.Geometry3D;
 using Material = HelixToolkit.Wpf.SharpDX.Material;
@@ -36,10 +36,10 @@ public class MainViewModel : ObservableObject, IDisposable
     private bool _showArmature;
     private int _viewportHeight;
     private int _viewportLeft = 514;
+    private InputGesture _viewportPanGesture;
+    private InputGesture _viewportRotateGesture;
     private int _viewportTop;
     private int _viewportWidth;
-    private InputGesture _viewportRotateGesture;
-    private InputGesture _viewportPanGesture;
 
     public MainViewModel()
     {
@@ -56,17 +56,13 @@ public class MainViewModel : ObservableObject, IDisposable
 
         using var context = new FlagrumDbContext(new SettingsService());
 
-        var viewportRotateModifierKey = context.GetString(StateKey.ViewportRotateModifierKey);
-        var viewportRotateMouseAction = context.GetString(StateKey.ViewportRotateMouseAction);
-        Enum.TryParse(viewportRotateModifierKey, out ModifierKeys rotateModifierKeyEnum);
-        Enum.TryParse(viewportRotateMouseAction, out MouseAction rotateMouseActionEnum);
-        _viewportRotateGesture = new MouseGesture(rotateMouseActionEnum, rotateModifierKeyEnum);
+        var viewportRotateModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportRotateModifierKey);
+        var viewportRotateMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportRotateMouseAction);
+        _viewportRotateGesture = new MouseGesture(viewportRotateMouseAction, viewportRotateModifierKey);
 
-        var viewportPanModifierKey = context.GetString(StateKey.ViewportPanModifierKey);
-        var viewportPanMouseAction = context.GetString(StateKey.ViewportPanMouseAction);
-        Enum.TryParse(viewportPanModifierKey, out ModifierKeys panModifierKeyEnum);
-        Enum.TryParse(viewportPanMouseAction, out MouseAction panMouseActionEnum);
-        _viewportPanGesture = new MouseGesture(panMouseActionEnum, panModifierKeyEnum);
+        var viewportPanModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportPanModifierKey);
+        var viewportPanMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportPanMouseAction);
+        _viewportPanGesture = new MouseGesture(viewportPanMouseAction, viewportPanModifierKey);
     }
 
     public ViewportHelper ViewportHelper { get; }
