@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Flagrum.Desktop.Architecture;
 using HelixToolkit.SharpDX.Core;
 using HelixToolkit.SharpDX.Core.Animations;
-using HelixToolkit.SharpDX.Core.Assimp;
 using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using HelixToolkit.Wpf.SharpDX.Controls;
@@ -56,24 +54,25 @@ public class MainViewModel : ObservableObject, IDisposable
         ViewportHeight = 1080;
         IsViewportVisible = true;
 
-        var importer = new Importer();
-        importer.Configuration.CreateSkeletonForBoneSkinningMesh = true;
-        importer.Configuration.SkeletonSizeScale = 0.04f;
-        importer.Configuration.GlobalScale = 0.1f;
-        var scene = importer.Load(@"C:\Users\Kieran\Desktop\nh00_010_animated.fbx");
-        ModelGroup = new SceneNodeGroupModel3D();
-        ModelGroup.AddNode(scene.Root);
+        // var importer = new Importer();
+        // importer.Configuration.CreateSkeletonForBoneSkinningMesh = true;
+        // importer.Configuration.SkeletonSizeScale = 0.04f;
+        // importer.Configuration.GlobalScale = 0.1f;
+        // var scene = importer.Load(@"C:\Users\Kieran\Desktop\nh00_010_animated.fbx");
+        // ModelGroup = new SceneNodeGroupModel3D();
+        // ModelGroup.AddNode(scene.Root);
 
-        var temp = scene.Animations[0].NodeAnimationCollection.First();
-        temp.Node = new BillboardNode();
-        
-        foreach (var node in scene.Root.Items.FirstOrDefault().Traverse())
-        {
-            //if (node is BoneSkinMeshNode {IsSkeletonNode: true} n)
-            //{
-                node.Visible = false;
-            //}
-        }
+        //
+        // var temp = scene.Animations[0].NodeAnimationCollection.First();
+        // temp.Node = new BillboardNode();
+        //
+        // foreach (var node in scene.Root.Items.FirstOrDefault().Traverse())
+        // {
+        //     //if (node is BoneSkinMeshNode {IsSkeletonNode: true} n)
+        //     //{
+        //         node.Visible = false;
+        //     //}
+        // }
 
         // var builder2 = new MeshBuilder();
         // builder2.AddSphere(new Vector3(), 2);
@@ -126,11 +125,7 @@ public class MainViewModel : ObservableObject, IDisposable
         // }
         //return;
 
-
-        //_animationUpdater = new NodeAnimationUpdater(scene.Animations.First());
-
-
-        //_compositeHelper.Rendering += CompositeHelper_Rendering;
+        _compositeHelper.Rendering += CompositeHelper_Rendering;
     }
 
     public ViewportHelper ViewportHelper { get; }
@@ -190,19 +185,10 @@ public class MainViewModel : ObservableObject, IDisposable
         set => SetValue(ref _modelGroup, value);
     }
 
-    public bool ShowArmature
+    public NodeAnimationUpdater? AnimationUpdater
     {
-        get => _showArmature;
-        set
-        {
-            if (SetValue(ref _showArmature, value))
-            {
-                foreach (var node in _armatureNodes)
-                {
-                    node.Visible = value;
-                }
-            }
-        }
+        get => _animationUpdater;
+        set => SetValue(ref _animationUpdater, value);
     }
 
     public void Dispose()
@@ -218,6 +204,6 @@ public class MainViewModel : ObservableObject, IDisposable
 
     private void CompositeHelper_Rendering(object? sender, RenderingEventArgs e)
     {
-        _animationUpdater?.Update(Stopwatch.GetTimestamp(), Stopwatch.Frequency);
+        AnimationUpdater?.Update(Stopwatch.GetTimestamp(), Stopwatch.Frequency);
     }
 }

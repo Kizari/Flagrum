@@ -136,8 +136,7 @@ public class LmSkeletalAnimInfo
     public uint[] UnknownIndices3 { get; set; }
     public Quaternion[] UnknownRotations { get; set; }
     public Quaternion[] UnknownRotations2 { get; set; }
-    public LmMatrix[] Transformations { get; set; }
-    public LmMatrix[] UnknownTransformations { get; set; }
+    public LmMatrix[] BindPoseTransformations { get; set; }
 }
 
 public class DependencyLink
@@ -378,25 +377,13 @@ public class AnimationModel
                         };
                     }
 
-                    info.Transformations = new LmMatrix[info.BoneCountFullSkeleton];
-                    for (var j = 0; j < info.BoneCountFullSkeleton; j++)
+                    info.BindPoseTransformations = new LmMatrix[info.BoneCountBindOnly];
+                    for (var j = 0; j < info.BoneCountBindOnly; j++)
                     {
-                        info.Transformations[j] = new LmMatrix();
+                        info.BindPoseTransformations[j] = new LmMatrix();
                         for (var k = 0; k < 16; k++)
                         {
-                            info.Transformations[j].Values[k] = reader.ReadSingle();
-                        }
-                    }
-
-                    var finalMatricesCount = info.BoneCountBindOnly - info.BoneCountFullSkeleton;
-
-                    info.UnknownTransformations = new LmMatrix[finalMatricesCount];
-                    for (var j = 0; j < finalMatricesCount; j++)
-                    {
-                        info.UnknownTransformations[j] = new LmMatrix();
-                        for (var k = 0; k < 16; k++)
-                        {
-                            info.UnknownTransformations[j].Values[k] = reader.ReadSingle();
+                            info.BindPoseTransformations[j].Values[k] = reader.ReadSingle();
                         }
                     }
 
@@ -648,15 +635,7 @@ public class AnimationModel
                         writer.Write(rotation.W);
                     }
 
-                    foreach (var matrix in skeletalAnimInfo.Transformations)
-                    {
-                        for (var j = 0; j < 16; j++)
-                        {
-                            writer.Write(matrix.Values[j]);
-                        }
-                    }
-
-                    foreach (var matrix in skeletalAnimInfo.UnknownTransformations)
+                    foreach (var matrix in skeletalAnimInfo.BindPoseTransformations)
                     {
                         for (var j = 0; j < 16; j++)
                         {

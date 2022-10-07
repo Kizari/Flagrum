@@ -11,7 +11,7 @@ public static class Serialization
     {
         return blockSize + blockSize * (offset / blockSize) - offset;
     }
-    
+
     /// <summary>
     /// Aligns current offset to the given block size
     /// </summary>
@@ -66,7 +66,7 @@ public static class Serialization
         var bytes = Encoding.UTF8.GetBytes(input);
         return Convert.ToBase64String(bytes);
     }
-    
+
     public static void Align(this BinaryWriter writer, int blockSize, byte paddingByte)
     {
         var size = Align((uint)writer.BaseStream.Position, (uint)blockSize);
@@ -74,10 +74,21 @@ public static class Serialization
         {
             return;
         }
-        
+
         for (var i = 0; i < size; i++)
         {
             writer.Write(paddingByte);
         }
+    }
+
+    public static void Align(this BinaryReader reader, int blockSize)
+    {
+        var size = Align((uint)reader.BaseStream.Position, (uint)blockSize);
+        if (size == blockSize)
+        {
+            return;
+        }
+
+        reader.BaseStream.Seek(size, SeekOrigin.Current);
     }
 }

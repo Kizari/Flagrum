@@ -71,10 +71,7 @@ public partial class MainWindow : INotifyPropertyChanged
         File.Create(logFile);
 
         InitializeComponent();
-        Closed += (_, _) =>
-        {
-            (DataContext as IDisposable)?.Dispose();
-        };
+        Closed += (_, _) => { (DataContext as IDisposable)?.Dispose(); };
 
         try
         {
@@ -168,5 +165,7 @@ public partial class MainWindow : INotifyPropertyChanged
     private void Viewer_OnInitialized(object? sender, EventArgs e)
     {
         ((MainViewModel)DataContext).Viewer = (Viewport3DX)sender;
+        ((MainViewModel)DataContext).ViewportHelper.ChangeModel("data://character/nh/nh00/model_010/nh00_010.gmdl")
+            .Wait();
     }
 }

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Flagrum.Core.Utilities;
 
 namespace Flagrum.Core.Animation.AnimationClip;
@@ -42,10 +42,10 @@ public class AnimationClip
     public List<AnimationRawTypeInfo> RawTypeInfos { get; set; } = new();
     public AnimationFrame SeedFrame { get; set; }
 
-    public static AnimationClip FromData(byte[] amdl, byte[] ani)
-    {
-        var model = AnimationModel.FromData(amdl, false);
+    public AnimationFrame[] KeyFrames { get; set; }
 
+    public static AnimationClip FromData(byte[] ani)
+    {
         using var stream = new MemoryStream(ani);
         using var reader = new BinaryReader(stream);
 
@@ -118,6 +118,7 @@ public class AnimationClip
 
         clip.DecompressRangeScalar = reader.ReadSingle();
 
+        // Skip reading the actual custom user data as it is not yet understood
         stream.Seek((long)clip.CustomUserDataIndexOffset, SeekOrigin.Begin);
 
         if (clip.CustomUserDataCount > 0)
@@ -135,19 +136,60 @@ public class AnimationClip
             }
         }
 
-        stream.Seek((long)clip.SeedFrameOffset, SeekOrigin.Begin);
+        stream.Seek((long)clip.FrameDataOffset, SeekOrigin.Begin);
+
+        var frameCount = (int)(Math.Ceiling(clip.DurationSeconds * clip.KeyframeFps) + 1);
+        clip.KeyFrames = new AnimationFrame[frameCount];
+        for (var i = 0; i < frameCount; i++)
+        {
+            var numKeys1 = reader.ReadByte();
+            var numKeys2 = reader.ReadByte();
+
+            if (numKeys1 == 0 && numKeys2 == 0)
+            {
+                // This is an empty frame, continue to the next
+                continue;
+            }
+
+            var frame = new AnimationFrame
+            {
+                NumKeys = new[] {numKeys1, numKeys2, reader.ReadByte()}
+            };
+
+            var unknownsCount = ((frame.NumKeys[1] << 8) + frame.NumKeys[2]) & 0xFFF;
+            frame.Unknowns = new byte[unknownsCount];
+            for (var j = 0; j < unknownsCount; j++)
+            {
+                frame.Unknowns[j] = reader.ReadByte();
+            }
+
+            var currentKeyTimeBytesCount = (((frame.NumKeys[1] >> 4) + 16 * frame.NumKeys[0]) & 1) +
+                                           (((frame.NumKeys[1] >> 4) + 16 * frame.NumKeys[0]) >> 1);
+            frame.CurrentKeyTimeBytes = new byte[currentKeyTimeBytesCount];
+            for (var j = 0; j < currentKeyTimeBytesCount; j++)
+            {
+                frame.CurrentKeyTimeBytes[j] = reader.ReadByte();
+            }
+
+            stream.Align(2);
+
+            var packedKeysCount = (frame.NumKeys[1] >> 4) + 16 * frame.NumKeys[0];
+            frame.PackedKeys = new AnimationPackedKey[packedKeysCount];
+            for (var j = 0; j < packedKeysCount; j++)
+            {
+                frame.PackedKeys[j] = new AnimationPackedKey
+                {
+                    Values = new[] {reader.ReadUInt16(), reader.ReadUInt16(), reader.ReadUInt16()}
+                };
+            }
+
+            clip.KeyFrames[i] = frame;
+        }
 
         clip.SeedFrame = new AnimationFrame
         {
-            NumKeys = reader.ReadBytes(3),
-            OnOffBits = reader.ReadByte()
+            NumKeys = reader.ReadBytes(3)
         };
-
-        var seedFrameKeyCount = GetPopulationCount(clip.PartsSizeBlocks1) - GetPopulationCount(clip.PartsSizeBlocks2);
-        var first = GetPopulationCount(clip.PartsSizeBlocks1);
-        var second = GetPopulationCount(clip.PartsSizeBlocks2);
-        var third = GetPopulationCount(clip.PartsSizeBlocks3);
-        clip.CalculateRawTypeInfos(model, clip.PartsSizeBlocksCount << 6, reader);
 
         return clip;
     }
@@ -170,118 +212,5 @@ public class AnimationClip
         writer.Write(clip.FrameDataChunkStartPointerArrayOffset);
 
         return stream.ToArray();
-    }
-
-    private static ulong GetPopulationCount(IEnumerable<ulong> bitset)
-    {
-        return bitset.Aggregate(0UL, (current, value) =>
-            current + ((0x101010101010101
-                        * ((((value - ((value >> 1) & 0x5555555555555555)) & 0x3333333333333333)
-                            + (((value - ((value >> 1) & 0x5555555555555555)) >> 2) & 0x3333333333333333)
-                            + ((((value - ((value >> 1) & 0x5555555555555555)) & 0x3333333333333333)
-                                + (((value - ((value >> 1) & 0x5555555555555555)) >> 2) & 0x3333333333333333)) >> 4)) &
-                           0xF0F0F0F0F0F0F0F)) >> 32 >> 24));
-    }
-
-    private void CalculateRawTypeInfos(AnimationModel model, ulong bitsetPopulationCount, BinaryReader reader)
-    {
-        var returnAddress = reader.BaseStream.Position;
-
-        var playbackRatea = PartsSizeBlocksCount << 6;
-        var counter2 = 0;
-        var counter3 = 0;
-        var conditionalCounter = 0;
-        var rawDataEntriesCounter = 0;
-        var numPoseSpecRawTypes = model.PoseSpec.RawTypesCount;
-        var poseDataStartOffset = 16u;
-        var poseDataStartOffset2 = 16u;
-        var defaultRawDataType = LmERawType.eRawType_Num_Raw_Types;
-        var rawDataEntriesCount = model.PoseData.RawDataInfos[0].EntriesCount;
-        var rawDataEntriesCount2 = 0u;
-        var rawDataEntriesCount3 = 0u;
-        var innerCounter = 0;
-        var numConstantRawTypes = 0;
-        RawTypeInfos.Add(new AnimationRawTypeInfo());
-
-        do
-        {
-            if (counter2 >= playbackRatea)
-            {
-                break;
-            }
-
-            if (counter2 >= rawDataEntriesCount)
-            {
-                rawDataEntriesCount2 = model.PoseData.RawDataInfos[rawDataEntriesCounter].EntriesCount;
-                rawDataEntriesCounter++;
-                conditionalCounter++;
-
-                counter3 = 0;
-                rawDataEntriesCount3 = rawDataEntriesCount;
-                rawDataEntriesCount += model.PoseData.RawDataInfos[rawDataEntriesCounter].EntriesCount;
-
-                poseDataStartOffset2 = (16 * rawDataEntriesCount2 + poseDataStartOffset2 + 15) & 0xFFFFFFF0;
-                numPoseSpecRawTypes--;
-
-                poseDataStartOffset = poseDataStartOffset2;
-
-                if (numPoseSpecRawTypes <= 0)
-                {
-                    break;
-                }
-            }
-
-            var partsSize = PartsSizeBlocks1[counter2 >> 6];
-
-            if (Extensions.BitTest64(partsSize, counter2 & 0x3F))
-            {
-                var rawDataType = model.PoseData.RawDataInfos[rawDataEntriesCounter].Type;
-
-                if (defaultRawDataType != rawDataType)
-                {
-                    defaultRawDataType = rawDataType;
-
-                    if (numConstantRawTypes > 0)
-                    {
-                        innerCounter++;
-
-                        if (RawTypeInfos.Count - 1 < innerCounter)
-                        {
-                            RawTypeInfos.Add(new AnimationRawTypeInfo());
-                        }
-
-                        RawTypeInfos[innerCounter].NumberInCache = 0;
-                    }
-
-                    RawTypeInfos[innerCounter].PoseDataStartOffset = poseDataStartOffset;
-                    RawTypeInfos[innerCounter].PoseStartBit = (ushort)rawDataEntriesCount3;
-
-                    var offset = UnpackConstantsOffset + ((uint)innerCounter + CacheTypesCount) * 4;
-                    reader.BaseStream.Seek((long)offset, SeekOrigin.Begin);
-                    RawTypeInfos[innerCounter].DecompressRangeScalar = reader.ReadSingle();
-
-                    // if (CustomUserDataCount > 0)
-                    // {
-                    //     offset = CustomUserData[conditionalCounter].Offset + 32;
-                    //     reader.BaseStream.Seek((long)offset, SeekOrigin.Begin);
-                    // }
-                    // else
-                    {
-                        RawTypeInfos[innerCounter].PackedKeyType = AnimationKeys.GetDefaultForRawType(rawDataType);
-                    }
-
-                    numConstantRawTypes++;
-                    poseDataStartOffset2 = poseDataStartOffset;
-                }
-
-                bitsetPopulationCount--;
-                RawTypeInfos[innerCounter].NumberInCache++;
-            }
-
-            counter2++;
-            counter3++;
-        } while (bitsetPopulationCount > 0);
-
-        reader.BaseStream.Seek(returnAddress, SeekOrigin.Begin);
     }
 }
