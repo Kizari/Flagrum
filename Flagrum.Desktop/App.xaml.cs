@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Microsoft.EntityFrameworkCore;
+using Squirrel;
+using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
-using Flagrum.Web.Persistence;
-using Flagrum.Web.Persistence.Entities;
-using Microsoft.EntityFrameworkCore;
-using Squirrel;
 
 namespace Flagrum.Desktop;
 
@@ -40,10 +41,22 @@ public partial class App
         SquirrelAwareApp.HandleEvents(
             OnInstall,
             onAppUninstall: OnUninstall);
-        
+
         // Migrate the database if required
         using var context = new FlagrumDbContext();
         context.Database.MigrateAsync().Wait();
+
+        // Set default key bindings for 3D viewer
+        if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportRotateModifierKey))
+        {
+            context.SetString(StateKey.ViewportRotateModifierKey, "None");
+            context.SetString(StateKey.ViewportRotateMouseAction, "MiddleClick");
+        }
+        if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportPanModifierKey))
+        {
+            context.SetString(StateKey.ViewportPanModifierKey, "Shift");
+            context.SetString(StateKey.ViewportPanMouseAction, "MiddleClick");
+        }
 
         // Set culture based on stored language settings if any
         var cultureName = context.GetString(StateKey.Language);

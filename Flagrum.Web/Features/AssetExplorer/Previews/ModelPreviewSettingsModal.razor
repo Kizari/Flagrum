@@ -1,0 +1,102 @@
+﻿@using Flagrum.Web.Persistence.Entities
+@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Core.Gfxbin.Gmtl.Data
+@using Flagrum.Core.Gfxbin.Data
+@using Flagrum.Core.Gfxbin.Gmtl
+@using System.IO
+@using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
+@using Flagrum.Core.Archive
+@using System.Text
+@inject IWpfService WpfService
+@inject SettingsService Settings
+@inject FlagrumDbContext Context
+@inject AppStateService AppState
+
+<Modal @ref="Modal">
+	<HeaderView>
+		<span class="text-grey-300 flex-grow">Model viewer settings</span>
+		<span class="material-icons cursor-pointer" @onclick="Close">close</span>
+	</HeaderView>
+	<BodyView>
+		<div class="h-full">
+			<div class="row">
+				<label style="width: 250px">Rotate model</label>
+				<select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
+					<option>None</option>
+					<option>Shift</option>
+					<option>Alt</option>
+				</select>
+				<b> + </b>
+				<select @bind="RotateMouseAction" class="input bg-dark-550 w-full">
+					<option>None</option>
+					<option>LeftClick</option>
+					<option>RightClick</option>
+					<option>MiddleClick</option>
+				</select>
+			</div>
+			<div class="row">
+				<label style="width: 250px">Pan model</label>
+				<select @bind="PanModifierKey" class="input bg-dark-550 w-full">
+					<option>None</option>
+					<option>Shift</option>
+					<option>Alt</option>
+				</select>
+				<b> + </b>
+				<select @bind="PanMouseAction" class="input bg-dark-550 w-full">
+					<option>None</option>
+					<option>LeftClick</option>
+					<option>RightClick</option>
+					<option>MiddleClick</option>
+				</select>
+			</div>
+		</div>
+	</BodyView>
+</Modal>
+
+@code
+{
+	private Modal Modal { get; set; }
+
+	private string RotateModifierKey { get; set; }
+	private string RotateMouseAction { get; set; }
+	private string PanModifierKey { get; set; }
+	private string PanMouseAction { get; set; }
+
+	protected override void OnInitialized()
+	{
+		RotateModifierKey = Context.GetString(StateKey.ViewportRotateModifierKey);
+		RotateMouseAction = Context.GetString(StateKey.ViewportRotateMouseAction);
+		PanModifierKey = Context.GetString(StateKey.ViewportPanModifierKey);
+		PanMouseAction = Context.GetString(StateKey.ViewportPanMouseAction);
+	}
+
+	public void Open()
+	{
+		AppState.IsModalOpen = true;
+		WpfService.Set3DViewportVisibility(false);
+		Modal.Open();
+	}
+
+	private void Close()
+	{
+		Modal.Close();
+		AppState.IsModalOpen = false;
+
+		SaveChanges();
+
+		if (AppState.Is3DViewerOpen)
+		{
+			WpfService.Set3DViewportVisibility(true);
+		}
+	}
+
+	private void SaveChanges()
+	{
+		Context.SetString(StateKey.ViewportRotateModifierKey, RotateModifierKey);
+		Context.SetString(StateKey.ViewportRotateMouseAction, RotateMouseAction);
+		Context.SetString(StateKey.ViewportPanModifierKey, PanModifierKey);
+		Context.SetString(StateKey.ViewportPanMouseAction, PanMouseAction);
+
+		WpfService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
+	}
+}
