@@ -1,0 +1,39 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="ExportAnimationClips" xml:space="preserve">
+        <value>导出动画片段</value>
+    </data>
+    <data name="ExportAsEnvironment" xml:space="preserve">
+        <value>导出为环境</value>
+    </data>
+    <data name="ExportAsTerrain" xml:space="preserve">
+        <value>导出为地形</value>
+    </data>
+    <data name="ExportAsXml" xml:space="preserve">
+        <value>导出为XML格式</value>
+    </data>
+    <data name="ExportFile" xml:space="preserve">
+        <value>导出文档</value>
+    </data>
+    <data name="ExportFolder" xml:space="preserve">
+        <value>导出文件夹</value>
+    </data>
+    <data name="ExportWithDependencies" xml:space="preserve">
+        <value>导出文件及相关素材文件</value>
+    </data>
+</root>
