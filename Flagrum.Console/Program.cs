@@ -1,13 +1,13 @@
-﻿using System.IO;
-using System.Text;
-using Flagrum.Core.Ebex.Xmb2;
+﻿using Flagrum.Console.Utilities;
 
-foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
-{
-    var builder = new StringBuilder();
-    Xmb2Document.Dump(File.ReadAllBytes(file), builder);
-    File.WriteAllText(file.Replace(".exml", ".xml"), builder.ToString());
-}
+LocalisationHelper.DeleteLocalisationFiles("zh-hans", "zh-hant");
+
+// foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
+// {
+//     var builder = new StringBuilder();
+//     Xmb2Document.Dump(File.ReadAllBytes(file), builder);
+//     File.WriteAllText(file.Replace(".exml", ".xml"), builder.ToString());
+// }
 
 // var path = @"C:\Program Files (x86)\Steam\steamapps\workshop\content\637650\1438266368\nh02_casgrey.ffxvbinmod";
 // using var unpacker = new Unpacker(path);

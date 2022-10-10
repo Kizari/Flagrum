@@ -34,7 +34,7 @@
         <value>デフォルト C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</value>
     </data>
     <data name="BinmodPath" xml:space="preserve">
-        <value>binmodリストパス</value>
+        <value>binmod.list パス</value>
     </data>
     <data name="GamePath" xml:space="preserve">
         <value>ゲームexeのパス</value>
@@ -58,9 +58,15 @@
         <value>言語の変更を適用するには、フラーグルムを再起動する必要があります。今すぐフラーグルムを再起動しますか？</value>
     </data>
     <data name="English" xml:space="preserve">
-        <value>英語 (English)</value>
+        <value>英語</value>
     </data>
     <data name="Japanese" xml:space="preserve">
-        <value>日本語 (Japanese)</value>
+        <value>日本語</value>
+    </data>
+    <data name="Chinese (Simplified)" xml:space="preserve">
+        <value>簡体字中国語</value>
+    </data>
+    <data name="Chinese (Traditional)" xml:space="preserve">
+        <value>繁体字中国語</value>
     </data>
 </root>

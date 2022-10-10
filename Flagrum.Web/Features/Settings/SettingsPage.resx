@@ -25,7 +25,7 @@
         </value>
     </resheader>
     <data name="GamePath" xml:space="preserve">
-        <value>FInal Fantasy XV Path</value>
+        <value>Final Fantasy XV Path</value>
     </data>
     <data name="BinmodPath" xml:space="preserve">
         <value>Binmod List Path</value>
@@ -58,9 +58,15 @@
         <value>Flagrum must be restarted to apply language changes. Would you like to restart Flagrum now?</value>
     </data>
     <data name="English" xml:space="preserve">
-        <value>English (英語)</value>
+        <value>English</value>
     </data>
     <data name="Japanese" xml:space="preserve">
-        <value>Japanese (日本語)</value>
+        <value>Japanese</value>
+    </data>
+    <data name="Chinese (Simplified)" xml:space="preserve">
+        <value>Chinese (Simplified)</value>
+    </data>
+    <data name="Chinese (Traditional)" xml:space="preserve">
+        <value>Chinese (Traditional)</value>
     </data>
 </root>

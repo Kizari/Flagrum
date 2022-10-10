@@ -4,6 +4,7 @@
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject IStringLocalizer<MainMenu> L
+@inject IStringLocalizer<App> AppLocalizer
 @inject FlagrumDbContext Context
 
 <CascadingValue Value="this">
@@ -18,7 +19,7 @@
         <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri=@L["WikiUrl"]/>
         @* <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/> *@
         <MenuItem Icon="favorite" Text="@L["About"]" Uri="/about"/>
-        <MenuItem Icon="settings" Text="@L["Settings"]" Uri="/settings"/>
+        <MenuItem Icon="settings" Text="@AppLocalizer["Settings"]" Uri="/settings"/>
 
         <img alt="Discord" @onclick="OpenDiscordLink" src="discord-button.png" class="p-2 rounded-md bg-grey-800 shadow-md mt-4 mx-4 cursor-pointer" style="max-width: 165px"/>
 

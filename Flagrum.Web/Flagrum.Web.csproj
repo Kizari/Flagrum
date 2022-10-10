@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
+    
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <DebugType>embedded</DebugType>
@@ -77,6 +77,10 @@
         <EmbeddedResource Update="Layout\MainMenu.ja-JP.resx">
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>MainMenu.jp.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Layout\MainMenu.zh-hant.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>MainMenu.hk.Designer.cs</LastGenOutput>
         </EmbeddedResource>
         <EmbeddedResource Update="Features\EarcMods\Index.resx">
           <Generator>ResXFileCodeGenerator</Generator>

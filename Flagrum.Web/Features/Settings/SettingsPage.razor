@@ -22,17 +22,11 @@
 
         <div class="box p-4 mb-6 row">
             <span class="mr-3" style="flex: 0 0 200px">@Localizer["Language"]</span>
-            <select class="input bg-dark-550 flex-grow" style="max-width: 500px;" @onchange="OnLanguageChanged">
-                @if (CultureInfo.CurrentCulture.Name == "ja-JP")
-                {
-                    <option value="en-GB">@Localizer["English"]</option>
-                    <option value="ja-JP" selected>@Localizer["Japanese"]</option>
-                }
-                else
-                {
-                    <option value="en-GB" selected>@Localizer["English"]</option>
-                    <option value="ja-JP">@Localizer["Japanese"]</option>
-                }
+            <select class="input bg-dark-550 flex-grow" style="max-width: 500px;" @bind="CurrentCulture">
+                <option value="en-GB">@GetLanguageString("English")</option>
+                <option value="ja-JP">@GetLanguageString("Japanese")</option>
+                <option value="zh-Hans">@GetLanguageString("Chinese (Simplified)")</option>
+                <option value="zh-Hant">@GetLanguageString("Chinese (Traditional)")</option>
             </select>
         </div>
 
@@ -72,19 +66,81 @@
     [Parameter]
     public bool Warn { get; set; }
 
+    private string _currentCulture;
+    
     private SettingsData Data { get; } = new();
     private PromptModal RestartPrompt { get; set; }
+    private LanguageTable LanguageTable { get; set; } = new();
+
+    private string CurrentCulture
+    {
+        get => _currentCulture;
+        set
+        {
+            if (_currentCulture != value)
+            {
+                _currentCulture = value;
+                OnLanguageChanged(_currentCulture);
+            }
+        }
+    }
 
     protected override void OnInitialized()
     {
         Data.GamePath = Settings.GamePath;
         Data.WorkshopPath = Settings.WorkshopPath;
         Data.BinmodListPath = Settings.BinmodListPath;
+
+        var supportedExtraCultures = new List<CultureInfo>
+        {
+            new("ja-JP"),
+            new("zh-Hans"),
+            new("zh-Hant")
+        };
+
+        foreach (var culture in supportedExtraCultures)
+        {
+            var closestCulture = GetClosestCulture(culture);
+            if (closestCulture != null)
+            {
+                _currentCulture = closestCulture;
+                break;
+            }
+        }
+
+        _currentCulture ??= "en-GB";
     }
 
-    private void OnLanguageChanged(ChangeEventArgs e)
+    private string GetClosestCulture(CultureInfo culture)
     {
-        Context.SetString(StateKey.Language, (string)e.Value ?? "en-GB");
+        var cultureToMatch = CultureInfo.CurrentCulture;
+
+        do
+        {
+            if (cultureToMatch.Name == culture.Name)
+            {
+                return culture.Name;
+            }
+
+            cultureToMatch = cultureToMatch.Parent;
+        } while (cultureToMatch.Parent.Name != cultureToMatch.Name);
+
+        return null;
+    }
+
+    private string GetLanguageString(string language)
+    {
+        var currentCultureString = Localizer[language];
+        var nativeCultureString = LanguageTable[language];
+
+        return currentCultureString == nativeCultureString 
+            ? nativeCultureString 
+            : $"{currentCultureString} ({nativeCultureString})";
+    }
+
+    private void OnLanguageChanged(string language)
+    {
+        Context.SetString(StateKey.Language, language ?? "en-GB");
         RestartPrompt.Open();
     }
 

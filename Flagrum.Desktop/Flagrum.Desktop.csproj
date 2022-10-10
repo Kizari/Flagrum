@@ -93,6 +93,14 @@
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Localisation.ja-JP.Designer.cs</LastGenOutput>
       </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Localisation.zh-cn.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Localisation.zh-cn.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Localisation.zh-hk.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Localisation.zh-hk.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -105,6 +113,16 @@
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>Localisation.ja-JP.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Localisation.zh-cn.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Localisation.zh-cn.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Localisation.zh-hk.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
       </Compile>
     </ItemGroup>
 
