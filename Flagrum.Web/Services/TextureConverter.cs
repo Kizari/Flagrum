@@ -80,7 +80,7 @@ public class TextureConverter
             return data;
         }
     }
-    
+
     public byte[] ConvertPreview(string name, byte[] data, out byte[] jpeg)
     {
         var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
@@ -265,6 +265,30 @@ public class TextureConverter
         }
 
         return image;
+    }
+
+    public byte[] TargaToDds(byte[] wicData, int mips, DXGI_FORMAT format)
+    {
+        var pinnedData = GCHandle.Alloc(wicData, GCHandleType.Pinned);
+        var pointer = pinnedData.AddrOfPinnedObject();
+
+        var image = TexHelper.Instance.LoadFromTGAMemory(pointer, wicData.Length);
+
+        if (mips != 1)
+        {
+            image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, mips);
+        }
+
+        //image = image.Convert(format, TEX_FILTER_FLAGS.SRGB, 0.5f);
+        //image = image.Compress(format, TEX_COMPRESS_FLAGS.SRGB | TEX_COMPRESS_FLAGS.PARALLEL,
+        //    0.5f);
+
+        pinnedData.Free();
+
+        using var stream = new MemoryStream();
+        using var ddsStream = image.SaveToDDSMemory(0, DDS_FLAGS.NONE);
+        ddsStream.CopyTo(stream);
+        return stream.ToArray();
     }
 
     private byte[] ConvertWic(TextureType type, string name, byte[] data)

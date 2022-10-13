@@ -1,6 +1,15 @@
-﻿using Flagrum.Console.Utilities;
+﻿using System.IO;
+using Flagrum.Console.Scripts.Terrain;
+using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Web.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
-LocalisationHelper.DeleteLocalisationFiles("zh-hans", "zh-hant");
+// x37_y36
+HebScripts.ReplaceMergedMaskMap(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\environment\world\heightmaps\lod00\height_x37_y36.heb",
+    @"C:\Modding\Wiz\Terrain\HebTextures\2_modified.tga");
+//HebScripts.DumpImages(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\environment\world\heightmaps\lod00\height_x37_y36.heb", @"C:\Modding\Wiz\Terrain\HebTextures");
+//TerrainPaletteScripts.DumpTerrainTextureTable("data://environment/world_train/heightmaps/material/terrainmaterial.tpd");
+//TextureConversionScripts.DumpPngTextureArrayFromBtex("data://environment/world_train/sourceimages/terrainarraytex_xpec_00_b.tif", @"C:\Modding\Wiz\TextureDump");
 
 // foreach (var file in Directory.EnumerateFiles(@"C:\Users\Kieran\Desktop\XMB2"))
 // {
@@ -28,30 +37,6 @@ LocalisationHelper.DeleteLocalisationFiles("zh-hans", "zh-hant");
 // var flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Compressed;
 // Console.WriteLine((int)flags);
 // return;
-
-// using var context = new FlagrumDbContext(new SettingsService());
-// var data = context.GetFileByUri("data://environment/world/heightmaps/material/terrainmaterial.tpd");
-// var tpd = TerrainPaletteData.Read(data);
-//
-// var toleranceRange = 1.0 / tpd.Count / 2.0;
-//
-// Console.WriteLine("Texture\t\tValue\t\tEpsilon");
-// Console.WriteLine("-----------------------------------------");
-//
-// foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
-// {
-//     //Console.WriteLine($"{item.TextureIndex}\t\t{item.Value:0.00000}\t\t{item.Epsilon:0.00000}");
-//     Console.WriteLine($"({item.TextureIndex}, {item.Value}, {item.Epsilon}),");
-// }
-//
-// Console.WriteLine(tpd.Items.Sum(i => i.Epsilon));
-
-// foreach (var item in tpd.Items.OrderBy(i => i.TextureIndex))
-// {
-//     Console.WriteLine($"{item.TextureIndex}\t\t{(item.ArrayIndex / 31.0).ToString("0.00000")}\t\t{(toleranceRange / (item.MaybeToleranceDivisor == 0.0f ? 2 : item.MaybeToleranceDivisor)).ToString("0.00000")}");
-// }
-//
-// Console.WriteLine(tpd.Items.Sum(i => toleranceRange / (i.MaybeToleranceDivisor == 0 ? 2 : i.MaybeToleranceDivisor)));
 
 
 // using var context = new FlagrumDbContext(new SettingsService());
