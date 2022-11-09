@@ -9,15 +9,32 @@ using Flagrum.Console.Ps4.Porting;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Ebex.Xmb2;
+using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
 using Flagrum.Desktop.Services;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
-// var uri = "data://level/dlc_ex/feather/feather/duscae_lestallum_i_feather/map_du_le_i_env_feather.ebex";
-// using var context = Ps4Utilities.NewContext();
-// var data = Ps4Utilities.GetFileByUri(context, uri);
+var directory = @"C:\Modding\Chocomog\Testing\Materials";
+var uri = "data://character/nh/nh00/model_010/materials/nh00_010_basic_00_mat.gmtl";
+using var context = Ps4Utilities.NewContext();
+var data = Ps4Utilities.GetFileByUri(context, uri);
+
+File.WriteAllBytes($@"{directory}\nh00_010_basic_00_mat.gmtl.gfxbin", data);
+
+var material = new MaterialReader(data).Read();
+var builder = new StringBuilder();
+foreach (var shader in material.Header.Dependencies.Where(d => d.Path.EndsWith(".sb")))
+{
+    data = Ps4Utilities.GetFileByUri(context, shader.Path);
+    File.WriteAllBytes($@"{directory}\{shader.Path.Split('/').Last()}", data);
+    builder.AppendLine(shader.Path);
+}
+
+File.WriteAllText($@"{directory}\shaders.txt", builder.ToString());
+
+return;
 //
 // if (uri.EndsWith(".ebex") || uri.EndsWith(".prefab"))
 // {
