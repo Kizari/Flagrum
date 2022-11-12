@@ -510,8 +510,8 @@ public class EntityPackageXmlLoader
 
                 Debug.Assert(resolvedReferenceAttribute?.GetTextValue() != null,
                     "[EntityPackageXmlLoader] reference not found : object path is null");
-                Debug.Assert(resolvedReferenceAttribute?.GetTextValue() != "INVALID_CONNECTOR",
-                    $"[EntityPackageXmlLoader] reference not found : object path={parentElement.GetAttributeByName("path")?.GetTextValue()}, reference path={resolvedReferenceAttribute.GetTextValue()}");
+                //Debug.Assert(resolvedReferenceAttribute?.GetTextValue() != "INVALID_CONNECTOR",
+                  //  $"[EntityPackageXmlLoader] reference not found : object path={parentElement.GetAttributeByName("path")?.GetTextValue()}, reference path={resolvedReferenceAttribute.GetTextValue()}");
             }
 
             return false;

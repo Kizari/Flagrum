@@ -44,6 +44,10 @@ namespace SQEX.Luminous.Core.Object
         {
             var name = property.Name;
             var prop = this.GetType().GetField(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            if (prop == null || prop.FieldType == typeof(bool))
+            {
+                return default;
+            }
             return (T)prop.GetValue(this);
         }
 
