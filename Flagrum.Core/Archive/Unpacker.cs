@@ -27,7 +27,8 @@ public class Unpacker : IDisposable
     }
 
     public List<ArchiveFile> Files => _files ??= ReadFileHeaders().ToList();
-
+    public bool IsProtectedArchive => _header.IsProtectedArchive;
+    
     public void Dispose()
     {
         _stream?.Dispose();

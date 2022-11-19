@@ -24,7 +24,7 @@ public class ArchiveFile
 {
     private const ulong KeyMultiplier = 1103515245;
     private const ulong KeyAdditive = 12345;
-    
+
     public const uint HeaderSize = 40;
     public const ulong HeaderHash = 14695981039346656037;
 
@@ -57,7 +57,8 @@ public class ArchiveFile
         Flags = GetDefaultBinmodFlags();
     }
 
-    public ArchiveFile(string uri, string relativePath, uint size, uint processedSize, ArchiveFileFlag flags, byte localizationType,
+    public ArchiveFile(string uri, string relativePath, uint size, uint processedSize, ArchiveFileFlag flags,
+        byte localizationType,
         byte locale, ushort key)
     {
         RelativePath = relativePath;
@@ -68,12 +69,12 @@ public class ArchiveFile
         LocalizationType = localizationType;
         Locale = locale;
         Key = key;
-        
+
         var tokens = RelativePath.Split('\\', '/');
         var fileName = tokens.Last();
         var index = fileName.IndexOf('.');
         var type = index < 0 ? "" : fileName[(index + 1)..];
-        
+
         UriHash = Cryptography.Hash64(Uri);
         TypeHash = Cryptography.Hash64(type);
         UriAndTypeHash = (ulong)(((long)UriHash & 17592186044415L) | (((long)TypeHash << 44) & -17592186044416L));
@@ -99,10 +100,50 @@ public class ArchiveFile
     public bool IsDataEncrypted { get; set; }
     public bool IsDataCompressed { get; set; }
 
+    public static byte[] GetProcessedData(string uri, ArchiveFileFlag flags, byte[] data, ushort key,
+        bool isProtectedArchive, out ArchiveFile file)
+    {
+        if (key == 0 && isProtectedArchive)
+        {
+            var hashCode = uri.GetHashCode();
+            key = (ushort)((hashCode >> 16) ^ hashCode);
+            if (key == 0)
+            {
+                key = 57005;
+            }
+        }
+
+        if (!flags.HasFlag(ArchiveFileFlag.Compressed) && !flags.HasFlag(ArchiveFileFlag.Encrypted))
+        {
+            key = 0;
+        }
+
+        file = new ArchiveFile
+        {
+            Flags = flags,
+            Key = key
+        };
+
+        file.SetRawData(data);
+        return file.GetDataForExport();
+    }
+
+    public static byte[] GetUnprocessedData(ArchiveFileFlag flags, uint originalSize, ushort key, byte[] data)
+    {
+        var file = new ArchiveFile
+        {
+            Flags = flags,
+            Key = key
+        };
+
+        file.SetProcessedData(originalSize, data);
+        return file.GetReadableData();
+    }
+
     public byte[] GetReadableData()
     {
         var buffer = _buffer;
-        
+
         if (Key > 0)
         {
             var partialKey = Key * KeyMultiplier + KeyAdditive;
@@ -127,7 +168,7 @@ public class ArchiveFile
                 buffer[k + 4] = secondKey[k];
             }
         }
-        
+
         if (IsDataCompressed)
         {
             buffer = DecompressData();
@@ -136,7 +177,7 @@ public class ArchiveFile
         {
             buffer = Cryptography.Decrypt(_buffer);
         }
-        
+
         if (ProcessedSize > Size)
         {
             var finalData = new byte[Size];
@@ -149,34 +190,52 @@ public class ArchiveFile
 
     public byte[] GetDataForExport()
     {
+        if (_buffer == null)
+        {
+            return Array.Empty<byte>();
+        }
+
         if (!IsDataEncrypted && !IsDataCompressed)
         {
             Size = (uint)_buffer.Length;
         }
-        
+
         if (!(Flags.HasFlag(ArchiveFileFlag.Encrypted) || Flags.HasFlag(ArchiveFileFlag.Compressed)))
         {
             ProcessedSize = Size;
         }
-        
+
         if (!IsDataEncrypted && Flags.HasFlag(ArchiveFileFlag.Encrypted))
         {
             var encryptedData = Cryptography.Encrypt(_buffer);
             ProcessedSize = (uint)encryptedData.Length;
             return encryptedData;
         }
-        
+
         if (!IsDataCompressed && Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
             var compressedData = CompressData(_buffer);
-            ProcessedSize = (uint)compressedData.Length;
-            return compressedData;
+
+            if (compressedData.Length >= _buffer.Length)
+            {
+                Flags &= ~ArchiveFileFlag.Compressed;
+                Key = 0;
+                ProcessedSize = Size;
+            }
+            else
+            {
+                ProcessedSize = (uint)compressedData.Length;
+                return compressedData;
+            }
         }
-        
+
         return _buffer;
     }
 
-    public byte[] GetRawData() => _buffer;
+    public byte[] GetRawData()
+    {
+        return _buffer;
+    }
 
     public void SetDataByFlags(byte[] data)
     {
@@ -184,14 +243,14 @@ public class ArchiveFile
         IsDataCompressed = Flags.HasFlag(ArchiveFileFlag.Compressed);
         IsDataEncrypted = Flags.HasFlag(ArchiveFileFlag.Encrypted);
     }
-    
+
     public void SetProcessedData(uint originalSize, byte[] data)
     {
         _buffer = data;
         Size = originalSize;
         ProcessedSize = (uint)data.Length;
     }
-    
+
     public void SetRawData(byte[] data)
     {
         _buffer = data;
@@ -230,7 +289,7 @@ public class ArchiveFile
     }
 
     /// <summary>
-    ///     This is needed if using parameterless constructor to deconstruct the UriAndTypeHash
+    /// This is needed if using parameterless constructor to deconstruct the UriAndTypeHash
     /// </summary>
     public void DeconstructUriAndTypeHash()
     {
@@ -256,14 +315,14 @@ public class ArchiveFile
         while (currentPosition < dataStream.Length)
         {
             var sizeBefore = temporaryMemoryStream.Length;
-            
+
             using var compressionStream = new ZLibStream(temporaryMemoryStream, CompressionMode.Compress,
                 CompressionLevel.BestCompression, true);
-            
+
             var remainingBytes = dataStream.Length - currentPosition;
             var size = (int)(remainingBytes > chunkSize ? chunkSize : remainingBytes);
             var buffer = new byte[size];
-            
+
             dataStream.Seek(currentPosition, SeekOrigin.Begin);
             dataStream.Read(buffer, 0, size);
             compressionStream.Write(buffer, 0, size);
@@ -283,8 +342,8 @@ public class ArchiveFile
                 memoryStream.Write(BitConverter.GetBytes((int)compressedSize), 0, 4);
                 memoryStream.Write(BitConverter.GetBytes(size), 0, 4);
             }
-            
-            memoryStream.Write(temporaryMemoryStream.ToArray(), 
+
+            memoryStream.Write(temporaryMemoryStream.ToArray(),
                 (int)(temporaryMemoryStream.Length - compressedSize),
                 (int)compressedSize);
 
@@ -293,13 +352,13 @@ public class ArchiveFile
             {
                 memoryStream.Write(BitConverter.GetBytes(0), 0, 4 - alignment);
             }
-            
+
             currentPosition += size;
         }
 
         return memoryStream.ToArray();
     }
-    
+
     private byte[] DecompressData()
     {
         const int chunkSize = 128 * 1024;
@@ -325,7 +384,7 @@ public class ArchiveFile
                 {
                     offset = 0;
                 }
-                
+
                 memoryStream.Seek(offset, SeekOrigin.Current);
             }
 
@@ -372,6 +431,26 @@ public class ArchiveFile
         else if (RelativePath.EndsWith(".ebex"))
         {
             RelativePath = RelativePath.Replace(".ebex", ".exml");
+        }
+        else if (RelativePath.EndsWith(".ebex@"))
+        {
+            RelativePath = RelativePath.Replace(".ebex@", ".earc");
+        }
+        else if (RelativePath.EndsWith(".prefab@"))
+        {
+            RelativePath = RelativePath.Replace(".prefab@", ".earc");
+        }
+        else if (RelativePath.EndsWith(".htpk"))
+        {
+            RelativePath = RelativePath.Replace(".htpk", ".earc");
+        }
+        else if (RelativePath.EndsWith(".max"))
+        {
+            RelativePath = RelativePath.Replace(".max", ".win.mab");
+        }
+        else if (RelativePath.EndsWith(".sax"))
+        {
+            RelativePath = RelativePath.Replace(".sax", ".win.sab");
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Flagrum.Web.Persistence.Entities;
 public enum StateKey
 {
     CurrentAssetNode,
-    CurrentEarcCategory,
+    CurrentEarcEnabledState,
     Language,
     HaveThumbnailsBeenResized,
     GamePath,
@@ -17,7 +17,9 @@ public enum StateKey
     ViewportRotateModifierKey,
     ViewportRotateMouseAction,
     ViewportPanModifierKey,
-    ViewportPanMouseAction
+    ViewportPanMouseAction,
+    CurrentEarcCategory,
+    HasMigratedBackups
 }
 
 public class StatePair

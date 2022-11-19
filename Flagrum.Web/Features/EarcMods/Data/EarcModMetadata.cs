@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Persistence.Entities.ModManager;
 
 namespace Flagrum.Web.Features.EarcMods.Data;
 
@@ -9,7 +9,7 @@ public class EarcModMetadata
     public string Name { get; set; }
     public string Author { get; set; }
     public string Description { get; set; }
-    
+
     public Dictionary<string, IEnumerable<EarcModMetadataChange>> Changes { get; set; }
 
     // Only used for handling version 0 mods
@@ -18,7 +18,7 @@ public class EarcModMetadata
 
 public class EarcModMetadataChange
 {
-    public EarcChangeType Type { get; set; }
+    public EarcFileChangeType Type { get; set; }
     public string Uri { get; set; }
 }
 

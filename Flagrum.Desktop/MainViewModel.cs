@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using Flagrum.Core.Utilities;
 using Flagrum.Desktop.Architecture;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
@@ -65,8 +66,10 @@ public class MainViewModel : ObservableObject, IDisposable
         _viewportPanGesture = new MouseGesture(viewportPanMouseAction, viewportPanModifierKey);
     }
 
+    public string HostPage => IOHelper.GetWebRoot() + "/index.html";
     public ViewportHelper ViewportHelper { get; }
     public Viewport3DX Viewer { get; set; }
+    public string? FmodPath { get; set; }
 
     public bool HasWebView2Runtime
     {

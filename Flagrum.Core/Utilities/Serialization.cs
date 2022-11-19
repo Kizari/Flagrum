@@ -80,4 +80,29 @@ public static class Serialization
             writer.Write(paddingByte);
         }
     }
+    
+    public static void Align(this BinaryReader reader, int blockSize)
+    {
+        var size = Align((uint)reader.BaseStream.Position, (uint)blockSize);
+        if (size == blockSize)
+        {
+            return;
+        }
+
+        reader.BaseStream.Seek(size, SeekOrigin.Current);
+    }
+    
+    public static void CopyTo(this FileStream source, FileStream destination, uint count)
+    {
+        var bytesRemaining = count;
+        while (bytesRemaining > 0)
+        {
+            var readSize = Math.Min(4096, bytesRemaining);
+            var buffer = new byte[readSize];
+            _ = source.Read(buffer);
+
+            destination.Write(buffer);
+            bytesRemaining -= readSize;
+        }
+    }
 }

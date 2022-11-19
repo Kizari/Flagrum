@@ -1,0 +1,153 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using Index = Flagrum.Web.Features.EarcMods.Index
+@using Flagrum.Web.Persistence.Entities.ModManager
+@using Flagrum.Core.Utilities
+@using System.IO
+@using Blazored.TextEditor
+@inject IStringLocalizer<Editor> Localizer
+@inject FlagrumDbContext Context
+@inject IWpfService WpfService
+@inject NavigationManager Navigation
+
+<style>
+    .rte-container h1, .rte-container h2, .rte-container h3, .rte-container h4, .rte-container h5, .rte-container h6 {
+        color: #b3b1ac;
+    }
+</style>
+
+<AutosizeModal @ref="Modal" Padding="0" MinWidth="1024px">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Set Mod Information</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="flex flex-row">
+            <EditForm Model="Mod" OnValidSubmit="Submit" class="shadow-md">
+                <DataAnnotationsValidator/>
+                <img alt="Mod Thumbnail" class="relative rounded-t" style="display: block; width: 330px; height: 180px;" src="images/@(ImageName).png"/>
+                <div class="p-4 flex-grow flex flex-col">
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="@Localizer["ModName"]"/>
+                    <ValidationMessage For="() => Mod.Name"/>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="@Localizer["Author"]" Class="my-3"/>
+                    <ValidationMessage For="() => Mod.Author"/>
+                    <EnumSelect @bind-Value="Mod.Category" AutoSpaceNames="true"/>
+                    <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="@Localizer["Description"]" Class="mt-3 flex-grow"/>
+                    <ValidationMessage For="() => Mod.Description"/>
+                </div>
+                <div class="px-4 pb-4 flex flex-row">
+                    <Button Icon="image" Text="@Localizer["ChangeImage"]" CssClass="mr-3" OnClickAsync="SelectImage"/>
+                    <div class="flex-grow"></div>
+                    <Button Icon="save" Text=@Localizer["Save"] Type="submit"/>
+                </div>
+            </EditForm>
+            <div class="bg-dark px-6 pt-6 flex-grow rte-container" style="padding-bottom: 102px;">
+                <h6 class="text-grey-300 mb-4">README (Optional)</h6>
+                <BlazoredTextEditor @ref="Editor" Placeholder="@string.Empty">
+                    <ToolbarContent>
+                        <select class="ql-header">
+                            <option selected=""></option>
+                            <option value="1"></option>
+                            <option value="2"></option>
+                            <option value="3"></option>
+                            <option value="4"></option>
+                            <option value="5"></option>
+                        </select>
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                        </span>
+                    </ToolbarContent>
+                </BlazoredTextEditor>
+            </div>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+
+    private EarcMod Mod { get; set; } = new();
+    private AutosizeModal Modal { get; set; }
+    private BlazoredTextEditor Editor { get; set; }
+    private string ImageName { get; set; } = "current_earc_preview";
+
+    public async Task Open(int modId)
+    {
+        var currentPreviewPath = $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png";
+
+        if (modId == 0)
+        {
+            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+            File.Copy(defaultPreviewPath, currentPreviewPath, true);
+            Mod = new EarcMod();
+        }
+        else
+        {
+            Mod = Context.EarcMods
+                .Include(e => e.Earcs)
+                .ThenInclude(e => e.Files)
+                .Include(m => m.LooseFiles)
+                .Where(m => m.Id == modId)
+                .AsNoTracking()
+                .ToList()
+                .FirstOrDefault()!;
+
+            var file = $@"{IOHelper.GetWebRoot()}\EarcMods\{Mod.Id}.png";
+
+            if (File.Exists(file))
+            {
+                var image = await File.ReadAllBytesAsync(file);
+                await File.WriteAllBytesAsync(currentPreviewPath, image);
+            }
+            else
+            {
+                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+                File.Copy(defaultPreviewPath, currentPreviewPath, true);
+            }
+        }
+
+        await Editor.LoadHTMLContent(Mod.Readme);
+
+        StateHasChanged();
+        Modal.Open();
+    }
+
+    private async Task SelectImage()
+    {
+        await WpfService.OpenFileDialogAsync(
+            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            async path =>
+            {
+                var converter = new TextureConverter();
+                var processedImage = converter.ProcessEarcModThumbnail(await File.ReadAllBytesAsync(path));
+                await File.WriteAllBytesAsync($@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png", processedImage);
+    // This jank is required or the UI won't update the image if the value hasn't changed
+                ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private async Task Submit()
+    {
+        var isNew = Mod.Id == 0;
+
+        Mod.Readme = await Editor.GetHTML();
+        await Mod.SaveCardOnly(Context);
+        Parent.AddTimestampToUpdate(Mod.Id);
+        Parent.CallStateHasChanged();
+        Modal.Close();
+
+        if (isNew)
+        {
+            Navigation.NavigateTo($"/earc/editor/{Mod.Id}");
+        }
+    }
+}

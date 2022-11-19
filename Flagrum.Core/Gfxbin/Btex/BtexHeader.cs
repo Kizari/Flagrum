@@ -54,7 +54,7 @@ public class BtexHeader
         p_ImageFlags = 0,
         p_HighTextureMipLevels = 0;
 
-    public List<BtexMipMap> MipMaps { get; set; } = new();
+    public List<List<BtexMipMap>> MipMaps { get; set; } = new();
 
     public ushort p_Version = 4,
         p_ImageCount = 1,
@@ -70,7 +70,7 @@ public class BtexHeader
 
     public ushort Pitch { get; set; } = 0;
 
-    public ushort ArraySize { get; set; } = 0;
+    public uint ArraySize { get; set; } = 0;
 
     public BtexFormat Format { get; set; } = 0;
 

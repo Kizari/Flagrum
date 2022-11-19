@@ -26,7 +26,7 @@ namespace Flagrum.Desktop;
 /// </summary>
 public partial class MainWindow : INotifyPropertyChanged
 {
-    public MainWindow()
+    public MainWindow(string? fmodPath)
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
         var bounds = screen.Bounds;
@@ -71,10 +71,9 @@ public partial class MainWindow : INotifyPropertyChanged
         File.Create(logFile);
 
         InitializeComponent();
-        Closed += (_, _) =>
-        {
-            (DataContext as IDisposable)?.Dispose();
-        };
+        Closed += (_, _) => { (DataContext as IDisposable)?.Dispose(); };
+
+        ((MainViewModel)DataContext).FmodPath = fmodPath;
 
         try
         {

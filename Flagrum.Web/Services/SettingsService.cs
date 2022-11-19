@@ -38,6 +38,22 @@ public class SettingsService
             Directory.CreateDirectory(FlagrumDirectory);
         }
 
+        CacheDirectory =
+            $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Temp\Flagrum\cache";
+
+        if (!Directory.Exists(CacheDirectory))
+        {
+            Directory.CreateDirectory(CacheDirectory);
+        }
+
+        ModStagingDirectory =
+            $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Temp\Flagrum\staging";
+
+        if (!Directory.Exists(ModStagingDirectory))
+        {
+            Directory.CreateDirectory(ModStagingDirectory);
+        }
+
         EarcModsDirectory = $@"{FlagrumDirectory}\earc";
         if (!Directory.Exists(EarcModsDirectory))
         {
@@ -58,14 +74,14 @@ public class SettingsService
         {
             var json = File.ReadAllText(SettingsPath);
             var settingsData = JsonConvert.DeserializeObject<SettingsData>(json)!;
-            
+
             context.SetString(StateKey.GamePath, settingsData.GamePath);
             context.SetString(StateKey.BinmodListPath, settingsData.BinmodListPath);
             context.SetString(StateKey.LastSeenVersionNotes, settingsData.LastVersionNotes);
-            
+
             File.Delete(SettingsPath);
         }
-        
+
         // Read persisted settings
         GamePath = context.GetString(StateKey.GamePath);
         BinmodListPath = context.GetString(StateKey.BinmodListPath);
@@ -145,6 +161,8 @@ public class SettingsService
 
     public bool IsReady { get; set; }
     public string FlagrumDirectory { get; }
+    public string CacheDirectory { get; }
+    public string ModStagingDirectory { get; }
     public string EarcModsDirectory { get; }
     public string SettingsPath { get; }
     public string TempDirectory { get; }
@@ -168,6 +186,7 @@ public class SettingsService
             return $@"{steamAppsFolder}\workshop\appworkshop_637650.acf";
         }
     }
+
     public string LastVersionNotes { get; private set; }
 
     public string ModDirectory => $"{Path.GetDirectoryName(BinmodListPath)}";
