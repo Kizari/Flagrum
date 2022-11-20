@@ -33,55 +33,10 @@
     <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
     <Button Icon="block" Text="@Localizer["RemoveAsset"]" CssClass="mr-3" OnClick="OpenRemoveModal"/>
 </div>
-<div class="box flex flex-row items-center px-6 py-3 border-b border-black">
-    @{
-        var total = Mod.Earcs.Sum(e => e.Files.Count) + Mod.LooseFiles.Count;
-        var archives = Mod.Earcs.Count;
-        var newArchives = Mod.Earcs.Count(e => e.Type == EarcChangeType.Create);
-        var modifiedArchives = Mod.Earcs.Count(e => e.Type == EarcChangeType.Change);
-        var newFiles = Mod.Earcs.Sum(e => e.Files.Count(f => f.Type == EarcFileChangeType.Add));
-        var modifiedFiles = Mod.Earcs.Sum(e => e.Files.Count(f => f.Type == EarcFileChangeType.Replace));
-        var removedFiles = Mod.Earcs.Sum(e => e.Files.Count(f => f.Type == EarcFileChangeType.Remove));
-        var newReferences = Mod.Earcs.Sum(e => e.Files.Count(f => f.Type == EarcFileChangeType.AddReference));
-    }
-
-    <span class="mr-10">Total Instructions: <strong>@total</strong></span>
-    <span class="mr-10">Total Archives: <strong>@archives</strong></span>
-
-    @if (newArchives > 0)
-    {
-        <span class="mr-10">New Archives: <strong>@newArchives</strong></span>
-    }
-
-    @if (modifiedArchives > 0)
-    {
-        <span class="mr-10">Modified Archives: <strong>@modifiedArchives</strong></span>
-    }
-
-    @if (newFiles > 0)
-    {
-        <span class="mr-10">New Files: <strong>@newFiles</strong></span>
-    }
-
-    @if (modifiedFiles > 0)
-    {
-        <span class="mr-10">Modified Files: <strong>@modifiedFiles</strong></span>
-    }
-
-    @if (removedFiles > 0)
-    {
-        <span class="mr-10">Removed Files: <strong>@removedFiles</strong></span>
-    }
-
-    @if (newReferences > 0)
-    {
-        <span>New References: <strong>@newReferences</strong></span>
-    }
-</div>
 <div class="flex-grow box overflow-auto">
-    @if (Mod.Earcs.Any())
+    @if (Mod.Earcs.Any(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
     {
-        foreach (var earc in Mod.Earcs)
+        foreach (var earc in Mod.Earcs.Where(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
         {
             <div class="row border-b border-black px-4 py-3">
                 <span class="material-icons mr-3 cursor-pointer select-none"
@@ -103,7 +58,7 @@
                     </div>
                 }
 
-                foreach (var replacement in earc.Files)
+                foreach (var replacement in earc.Files.Where(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
                 {
                     <div class="flex flex-row px-4 py-2 border-b border-black">
                         <div class="text-right mx-4" style="flex: 0 0 120px;">
@@ -169,65 +124,7 @@
         }
     }
 
-    @if (Mod.LooseFiles.Any())
-    {
-        <div class="row border-b border-black px-4 py-3">
-            <span class="material-icons mr-3 cursor-pointer select-none"
-                  @onclick="() => { IsLooseFilesExpanded = !IsLooseFilesExpanded; StateHasChanged(); }">
-                @(IsLooseFilesExpanded ? "expand_more" : "chevron_right")
-            </span>
-            <h5 class="text-grey-300 flex-grow">Loose Files</h5>
-        </div>
-
-        if (IsLooseFilesExpanded)
-        {
-            foreach (var file in Mod.LooseFiles)
-            {
-                <div class="flex flex-row px-4 py-2 border-b border-black">
-                    <div class="text-right mx-4" style="flex: 0 0 120px;">
-                        @switch (file.Type)
-                        {
-                            case EarcChangeType.Create:
-                                <strong>@Localizer["AddFile"]:</strong>
-                                <br/>
-                                <strong>@Localizer["From"]:</strong>
-                                break;
-                            case EarcChangeType.Change:
-                                <strong>@Localizer["Replace"]:</strong>
-                                <br/>
-                                <strong>@Localizer["With"]:</strong>
-                                break;
-                        }
-                    </div>
-                    <div style="flex: 1 1 auto;">
-                        @switch (file.Type)
-                        {
-                            case EarcChangeType.Create:
-                            case EarcChangeType.Change:
-                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                    <div>@string.Join('\\', file.RelativePath.Split('\\')[..^1])</div>
-                                    <div>\@file.RelativePath.Split('\\').Last()</div>
-                                </div>
-                                <br/>
-                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                    <div>@string.Join('\\', file.FilePath.Split('\\')[..^1])</div>
-                                    <div>\@file.FilePath.Split('\\').Last()</div>
-                                    <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchAbsolutePath(file.FilePath)">
-                                        open_in_new
-                                    </span>
-                                </div>
-                                break;
-                        }
-                    </div>
-                    <div class="ml-8">
-                        <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveLooseFile(file)">delete</span>
-                    </div>
-                </div>
-            }
-        }
-    }
-
-    @if (!Mod.Earcs.Any() && !Mod.LooseFiles.Any())
+    @if (!Mod.Earcs.Any())
     {
         <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4 mx-4">
             @Localizer["NoFileChangesSet"]
@@ -256,8 +153,6 @@
     private UriSelectModal Modal { get; set; }
     private AlertModal Alert { get; set; }
     private EarcFileChangeType ModalType { get; set; }
-    private EarcModEarc ContextEarc { get; set; }
-    private ArchiveFileFlag ContextFlags { get; set; }
     private bool IsLooseFilesExpanded { get; set; }
     private bool HasChanged { get; set; }
 
