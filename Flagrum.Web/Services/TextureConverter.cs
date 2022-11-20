@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
 using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Web.Services;
 
@@ -194,6 +195,46 @@ public class TextureConverter
         };
     }
 
+    public byte[] ToBtex(BtexBuildRequest request)
+    {
+        var pinnedData = GCHandle.Alloc(request.SourceData, GCHandleType.Pinned);
+        var pointer = pinnedData.AddrOfPinnedObject();
+
+        var image = request.SourceFormat switch
+        {
+            BtexSourceFormat.Wic => TexHelper.Instance.LoadFromWICMemory(pointer, request.SourceData.Length,
+                WIC_FLAGS.NONE),
+            BtexSourceFormat.Targa => TexHelper.Instance.LoadFromTGAMemory(pointer, request.SourceData.Length),
+            _ => throw new NotImplementedException("Unsupported source format")
+        };
+
+        if (request.MipLevels != 1)
+        {
+            image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, request.MipLevels);
+        }
+
+        var dxgiFormat = (DXGI_FORMAT)BtexConverter.FormatMap[request.PixelFormat];
+        var metadata = image.GetMetadata();
+
+        if (metadata.Format != dxgiFormat)
+        {
+            image = TexHelper.Instance.IsCompressed(dxgiFormat)
+                ? image.Compress(dxgiFormat, TEX_COMPRESS_FLAGS.SRGB | TEX_COMPRESS_FLAGS.PARALLEL, 0.5f)
+                : image.Convert(dxgiFormat, TEX_FILTER_FLAGS.SRGB, 0.5f);
+        }
+
+        pinnedData.Free();
+        TexHelper.Instance.ComputePitch(dxgiFormat, metadata.Width, metadata.Height, out var rowPitch, out _,
+            CP_FLAGS.NONE);
+
+        using var stream = new MemoryStream();
+        using var ddsStream = image.SaveToDDSMemory(DDS_FLAGS.FORCE_DX10_EXT | DDS_FLAGS.FORCE_DX10_EXT_MISC2);
+        ddsStream.CopyTo(stream);
+
+        return BtexConverter.DdsToBtex(request.Name, stream.ToArray(), request.ImageFlags, rowPitch,
+            (DxgiFormat)dxgiFormat);
+    }
+
     public byte[] BtexToDds(byte[] btex)
     {
         var dds = BtexConverter.BtexToDds(btex);
@@ -366,4 +407,21 @@ public class TextureConverter
 
         return BtexConverter.DdsToBtex(type, name, stream.ToArray());
     }
+}
+
+public class BtexBuildRequest
+{
+    public string Name { get; set; }
+    public BtexFormat PixelFormat { get; set; }
+    public byte ImageFlags { get; set; }
+    public int MipLevels { get; set; }
+    public BtexSourceFormat SourceFormat { get; set; }
+    public byte[] SourceData { get; set; }
+}
+
+public enum BtexSourceFormat
+{
+    Wic,
+    Targa,
+    Dds
 }

@@ -540,6 +540,7 @@ public class EarcMod
         // Move built earcs to the correct locations
         foreach (var (stagingPath, destinationPath) in earcs)
         {
+            IOHelper.EnsureDirectoriesExistForFilePath(destinationPath);
             File.Move(stagingPath, destinationPath, true);
         }
 
@@ -638,7 +639,7 @@ public class EarcMod
             var originalName = file.Uri.Split('/').Last();
             var originalNameWithoutExtension = originalName[..originalName.LastIndexOf('.')];
             var extension =
-                file.ReplacementFilePath[(file.ReplacementFilePath.LastIndexOf('.') + 1)..];
+                file.ReplacementFilePath[(file.ReplacementFilePath.LastIndexOf('.') + 1)..].ToLower();
 
             var originalType = TextureType.Undefined;
             var types = new Dictionary<string, TextureType>
@@ -670,7 +671,9 @@ public class EarcMod
                 originalType = TextureType.BaseColor;
             }
 
-            if (originalType == TextureType.Undefined)
+            var converter = new TextureConverter();
+
+            if (originalType == TextureType.Undefined || file.Type == EarcFileChangeType.Replace)
             {
                 var btex = getOriginalData(file.Uri);
 
@@ -683,13 +686,24 @@ public class EarcMod
                     var withoutSedb = new byte[btex.Length - 128];
                     Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
                     var btexHeader = BtexConverter.ReadBtexHeader(withoutSedb);
-                    originalType = btexHeader.Format is BtexFormat.B8G8R8A8_UNORM or BtexFormat.BC7_UNORM
-                        ? TextureType.MenuSprites
-                        : TextureType.BaseColor;
+
+                    return converter.ToBtex(new BtexBuildRequest
+                    {
+                        Name = originalNameWithoutExtension,
+                        PixelFormat = btexHeader.Format,
+                        ImageFlags = btexHeader.p_ImageFlags,
+                        MipLevels = btexHeader.MipMapCount,
+                        SourceFormat = extension switch
+                        {
+                            "tga" => BtexSourceFormat.Targa,
+                            "dds" => BtexSourceFormat.Dds,
+                            _ => BtexSourceFormat.Wic
+                        },
+                        SourceData = data
+                    });
                 }
             }
 
-            var converter = new TextureConverter();
             data = converter.ToBtex(originalNameWithoutExtension, extension, originalType, data);
         }
 

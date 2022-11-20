@@ -201,6 +201,57 @@ public static class BtexConverter
         return stream.ToArray();
     }
 
+    public static byte[] DdsToBtex(string fileName, byte[] dds, byte imageFlags, long rowPitch, DxgiFormat format)
+    {
+        var ddsHeader = ReadDdsHeader(dds, out var ddsContent);
+        var btexHeader = new BtexHeader
+        {
+            Height = (ushort)ddsHeader.Height,
+            Width = (ushort)ddsHeader.Width,
+            Pitch = (ushort)rowPitch,
+            Depth = (byte)ddsHeader.Depth,
+            MipMapCount = (byte)ddsHeader.MipMapCount,
+            ArraySize = (ushort)ddsHeader.DX10Header.ArraySize,
+            Format = FormatMap[ddsHeader.DX10Header.Format],
+            Dimension = (byte)(ddsHeader.DX10Header.ResourceDimension - 1u),
+            Data = ddsContent,
+            p_ImageFileSize = (uint)ddsContent.Length,
+            p_ImageFlags = imageFlags,
+            p_Name = fileName,
+            p_SurfaceCount = (ushort)ddsHeader.MipMapCount
+        };
+
+        uint width = btexHeader.Width;
+        uint height = btexHeader.Height;
+
+        var mips = new List<BtexMipMap>();
+        for (var i = 0; i < btexHeader.MipMapCount; i++)
+        {
+            mips.Add(new BtexMipMap
+            {
+                Offset = i == 0 ? 0 : mips[i - 1].Offset + mips[i - 1].Size,
+                Size = (uint)Math.Max(GetBlockSize(format), CalculatePitch(width, format) * height)
+            });
+
+            width /= 2;
+            height /= 2;
+        }
+
+        btexHeader.MipMaps.Add(mips);
+        var btex = WriteBtex(btexHeader);
+
+        var sedbHeader = new SedbBtexHeader
+        {
+            FileSize = (ulong)btex.Length + 128 // Size of this header itself
+        };
+
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, Encoding.UTF8);
+        writer.Write(sedbHeader.ToBytes());
+        writer.Write(btex);
+        return stream.ToArray();
+    }
+
     public static byte[] WriteDds(DdsHeader header, byte[] data)
     {
         using var memoryStream = new MemoryStream();
@@ -343,6 +394,11 @@ public static class BtexConverter
         };
     }
 
+    private static double CalculatePitch(double width, DxgiFormat format)
+    {
+        return Math.Max(1, (width + 3) / 4 * (GetBlockSize(format) / 4));
+    }
+
     private static int GetBlockSize(TextureType type)
     {
         return type switch
@@ -352,6 +408,21 @@ public static class BtexConverter
             TextureType.Mrs => 2,
             TextureType.Undefined => 2,
             _ => 4
+        };
+    }
+
+    private static int GetBlockSize(DxgiFormat format)
+    {
+        return format switch
+        {
+            DxgiFormat.BC1_UNORM or DxgiFormat.BC1_UNORM_SRGB or DxgiFormat.BC1_TYPELESS => 8,
+            DxgiFormat.BC2_UNORM or DxgiFormat.BC2_UNORM_SRGB or DxgiFormat.BC2_TYPELESS => 16,
+            DxgiFormat.BC3_UNORM or DxgiFormat.BC3_UNORM_SRGB or DxgiFormat.BC3_TYPELESS => 16,
+            DxgiFormat.BC4_UNORM or DxgiFormat.BC4_SNORM or DxgiFormat.BC4_TYPELESS => 8,
+            DxgiFormat.BC5_UNORM or DxgiFormat.BC5_SNORM or DxgiFormat.BC5_TYPELESS => 16,
+            DxgiFormat.BC6H_UF16 or DxgiFormat.BC6H_SF16 or DxgiFormat.BC6H_TYPELESS => 16,
+            DxgiFormat.BC7_UNORM or DxgiFormat.BC7_UNORM_SRGB or DxgiFormat.BC7_TYPELESS => 16,
+            _ => throw new Exception("Unsupported pixel format")
         };
     }
 
