@@ -66,7 +66,7 @@
                     <DropdownButtonItem Text="Other" OnClick="() => { SetCategory((int)ModCategory.Other); return Task.CompletedTask; }"/>
                 </DropdownButton>
                 <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(0))"/>
-                <Button Icon="folder_zip" Text=@Localizer["Install"] OnClickAsync="Install"/>
+                <Button Icon="upload" Variant="true" Text=@Localizer["InstallFromZip"] OnClickAsync="Install"/>
             </div>
         }
         <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">

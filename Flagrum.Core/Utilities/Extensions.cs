@@ -53,9 +53,12 @@ public static class Extensions
 
     public static void WriteNullTerminatedString(this BinaryWriter writer, string value)
     {
-        foreach (var character in value)
+        if (value != null)
         {
-            writer.Write(character);
+            foreach (var character in value)
+            {
+                writer.Write(character);
+            }
         }
 
         writer.Write((byte)0x00);

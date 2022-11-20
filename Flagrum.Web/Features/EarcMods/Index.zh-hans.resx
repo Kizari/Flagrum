@@ -72,9 +72,6 @@
     <data name="IncompatibleNewFilesDescription" xml:space="preserve">
         <value>该ZIP文件中的一个或多个模组在游戏中添加了新文件。Flagrum目前暂不支持添加新文件，但在未来的更新中会增加此功能。在此期间，请参考MOD作者的原始安装说明。</value>
     </data>
-    <data name="InstallFromZip" xml:space="preserve">
-        <value>从ZIP安装</value>
-    </data>
     <data name="InstallingMod" xml:space="preserve">
         <value>正在安装MOD</value>
     </data>

@@ -28,7 +28,7 @@ public class Unpacker : IDisposable
 
     public List<ArchiveFile> Files => _files ??= ReadFileHeaders().ToList();
     public bool IsProtectedArchive => _header.IsProtectedArchive;
-    
+
     public void Dispose()
     {
         _stream?.Dispose();
@@ -127,9 +127,14 @@ public class Unpacker : IDisposable
 
     public void ReadFileData(ArchiveFile file)
     {
-        _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
-        var buffer = new byte[file.ProcessedSize];
-        _stream.Read(buffer, 0, (int)file.ProcessedSize);
+        byte[] buffer;
+
+        lock (_stream)
+        {
+            _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
+            buffer = new byte[file.ProcessedSize];
+            _ = _stream.Read(buffer, 0, (int)file.ProcessedSize);
+        }
 
         if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
         {

@@ -4,7 +4,6 @@
 @using Flagrum.Web.Persistence.Entities
 @using Flagrum.Web.Persistence.Entities.ModManager
 @using Flagrum.Web.Features.EarcMods.Modals
-@using Flagrum.Core.Archive
 @using System.IO
 @using System.Diagnostics
 @inherits ModComponentBase
@@ -16,124 +15,124 @@
 @inject SettingsService Settings
 
 <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
-<div class="p-6 flex flex-row h-full">
-<div class="flex-grow h-full flex flex-col">
-<div class="box p-6 mb-6 flex flex-row items-center">
-    <h4 class="text-grey-200 flex-grow">@Mod.Name</h4>
-    <Button Icon="save" Text="@Localizer["Save"]" CssClass="mr-3" OnClickAsync="Save"/>
-    @if (ModId != null && Mod.HasAnyCachedFiles)
-    {
-        <Button Icon="folder_off" Text="@Localizer["ClearCache"]" OnClick="ClearCache" CssClass="mr-3"/>
-    }
-    <Button Icon="delete_forever" Text="@Localizer["Delete"]" OnClick="Delete" CssClass="bg-error hover:bg-error mr-3"/>
-    <Button Icon="cancel" Text="@Localizer["Cancel"]" OnClick="@(() => Navigation.NavigateTo("/"))"/>
-</div>
-<div class="box flex flex-row items-center p-6 border-b border-black">
-    <h5 class="text-grey-200 flex-grow">@Localizer["BuildList"]</h5>
-    <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
-    <Button Icon="block" Text="@Localizer["RemoveAsset"]" CssClass="mr-3" OnClick="OpenRemoveModal"/>
-</div>
-<div class="flex-grow box overflow-auto">
-    @if (Mod.Earcs.Any(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
-    {
-        foreach (var earc in Mod.Earcs.Where(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
-        {
-            <div class="row border-b border-black px-4 py-3">
-                <span class="material-icons mr-3 cursor-pointer select-none"
-                      @onclick="() => { earc.IsExpanded = !earc.IsExpanded; StateHasChanged(); }">
-                    @(earc.IsExpanded ? "expand_more" : "chevron_right")
-                </span>
-                <h5 class="text-grey-300">@earc.EarcRelativePath</h5>
-                <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchRelativePath(earc.EarcRelativePath)">
-                    open_in_new
-                </span>
-            </div>
-
-            if (earc.IsExpanded)
-            {
-                if (earc.Files.Count < 1)
+    <div class="p-6 flex flex-row h-full">
+        <div class="flex-grow h-full flex flex-col">
+            <div class="box p-6 mb-6 flex flex-row items-center">
+                <h4 class="text-grey-200 flex-grow">@Mod.Name</h4>
+                <Button Icon="save" Text="@Localizer["Save"]" CssClass="mr-3" OnClickAsync="Save"/>
+                @if (ModId != null && Mod.HasAnyCachedFiles)
                 {
-                    <div class="px-12 py-4 border-b border-black">
+                    <Button Icon="folder_off" Text="@Localizer["ClearCache"]" OnClick="ClearCache" CssClass="mr-3"/>
+                }
+                <Button Icon="delete_forever" Text="@Localizer["Delete"]" OnClick="Delete" CssClass="bg-error hover:bg-error mr-3"/>
+                <Button Icon="cancel" Text="@Localizer["Cancel"]" OnClick="@(() => Navigation.NavigateTo("/"))"/>
+            </div>
+            <div class="box flex flex-row items-center p-6 border-b border-black">
+                <h5 class="text-grey-200 flex-grow">@Localizer["BuildList"]</h5>
+                <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
+                <Button Icon="block" Text="@Localizer["RemoveAsset"]" CssClass="mr-3" OnClick="OpenRemoveModal"/>
+            </div>
+            <div class="flex-grow box overflow-auto">
+                @if (Mod.Earcs.Any(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
+                {
+                    foreach (var earc in Mod.Earcs.Where(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
+                    {
+                        <div class="row border-b border-black px-4 py-3">
+                            <span class="material-icons mr-3 cursor-pointer select-none"
+                                  @onclick="() => { earc.IsExpanded = !earc.IsExpanded; StateHasChanged(); }">
+                                @(earc.IsExpanded ? "expand_more" : "chevron_right")
+                            </span>
+                            <h5 class="text-grey-300">@earc.EarcRelativePath</h5>
+                            <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchRelativePath(earc.EarcRelativePath)">
+                                open_in_new
+                            </span>
+                        </div>
+
+                        if (earc.IsExpanded)
+                        {
+                            if (earc.Files.Count < 1)
+                            {
+                                <div class="px-12 py-4 border-b border-black">
+                                    @Localizer["NoFileChangesSet"]
+                                </div>
+                            }
+
+                            foreach (var replacement in earc.Files.Where(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
+                            {
+                                <div class="flex flex-row px-4 py-2 border-b border-black">
+                                    <div class="text-right mx-4" style="flex: 0 0 120px;">
+                                        @switch (replacement.Type)
+                                        {
+                                            case EarcFileChangeType.Replace:
+                                                <strong>@Localizer["Replace"]:</strong>
+                                                <br/>
+                                                <strong>@Localizer["With"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.Remove:
+                                                <strong>@Localizer["Remove"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.AddReference:
+                                                <strong>@Localizer["AddReference"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.Add:
+                                                <strong>@Localizer["AddFile"]:</strong>
+                                                <br/>
+                                                <strong>@Localizer["From"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.AddToTextureArray:
+                                                <strong>Add To:</strong>
+                                                <br/>
+                                                <strong>@Localizer["From"]:</strong>
+                                                break;
+                                        }
+                                    </div>
+                                    <div style="flex: 1 1 auto;">
+                                        @switch (replacement.Type)
+                                        {
+                                            case EarcFileChangeType.Replace:
+                                            case EarcFileChangeType.Add:
+                                            case EarcFileChangeType.AddToTextureArray:
+                                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                    <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                                    <div>/@replacement.Uri.Split('/').Last()</div>
+                                                </div>
+                                                <br/>
+                                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                    <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
+                                                    <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
+                                                    <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchAbsolutePath(replacement.ReplacementFilePath)">
+                                                        open_in_new
+                                                    </span>
+                                                </div>
+                                                break;
+                                            case EarcFileChangeType.Remove:
+                                            case EarcFileChangeType.AddReference:
+                                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                    <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                                    <div>/@replacement.Uri.Split('/').Last()</div>
+                                                </div>
+                                                break;
+                                        }
+                                    </div>
+                                    <div class="ml-8">
+                                        <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                }
+
+                @if (!Mod.Earcs.Any())
+                {
+                    <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4 mx-4">
                         @Localizer["NoFileChangesSet"]
                     </div>
                 }
-
-                foreach (var replacement in earc.Files.Where(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
-                {
-                    <div class="flex flex-row px-4 py-2 border-b border-black">
-                        <div class="text-right mx-4" style="flex: 0 0 120px;">
-                            @switch (replacement.Type)
-                            {
-                                case EarcFileChangeType.Replace:
-                                    <strong>@Localizer["Replace"]:</strong>
-                                    <br/>
-                                    <strong>@Localizer["With"]:</strong>
-                                    break;
-                                case EarcFileChangeType.Remove:
-                                    <strong>@Localizer["Remove"]:</strong>
-                                    break;
-                                case EarcFileChangeType.AddReference:
-                                    <strong>@Localizer["AddReference"]:</strong>
-                                    break;
-                                case EarcFileChangeType.Add:
-                                    <strong>@Localizer["AddFile"]:</strong>
-                                    <br/>
-                                    <strong>@Localizer["From"]:</strong>
-                                    break;
-                                case EarcFileChangeType.AddToTextureArray:
-                                    <strong>Add To:</strong>
-                                    <br/>
-                                    <strong>@Localizer["From"]:</strong>
-                                    break;
-                            }
-                        </div>
-                        <div style="flex: 1 1 auto;">
-                            @switch (replacement.Type)
-                            {
-                                case EarcFileChangeType.Replace:
-                                case EarcFileChangeType.Add:
-                                case EarcFileChangeType.AddToTextureArray:
-                                    <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                        <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
-                                        <div>/@replacement.Uri.Split('/').Last()</div>
-                                    </div>
-                                    <br/>
-                                    <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                        <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
-                                        <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
-                                        <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchAbsolutePath(replacement.ReplacementFilePath)">
-                                            open_in_new
-                                        </span>
-                                    </div>
-                                    break;
-                                case EarcFileChangeType.Remove:
-                                case EarcFileChangeType.AddReference:
-                                    <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                        <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
-                                        <div>/@replacement.Uri.Split('/').Last()</div>
-                                    </div>
-                                    break;
-                            }
-                        </div>
-                        <div class="ml-8">
-                            <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
-                        </div>
-                    </div>
-                }
-            }
-        }
-    }
-
-    @if (!Mod.Earcs.Any())
-    {
-        <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4 mx-4">
-            @Localizer["NoFileChangesSet"]
+            </div>
         </div>
-    }
-</div>
-</div>
 
-</div>
+    </div>
 </LoadingView>
 
 <CascadingValue Value="this">
@@ -153,7 +152,6 @@
     private UriSelectModal Modal { get; set; }
     private AlertModal Alert { get; set; }
     private EarcFileChangeType ModalType { get; set; }
-    private bool IsLooseFilesExpanded { get; set; }
     private bool HasChanged { get; set; }
 
     protected override void OnInitialized()
@@ -222,13 +220,6 @@
             Mod.Earcs.Remove(earc);
         }
 
-        HasChanged = true;
-        StateHasChanged();
-    }
-
-    private void RemoveLooseFile(EarcModLooseFile file)
-    {
-        Mod.LooseFiles.Remove(file);
         HasChanged = true;
         StateHasChanged();
     }

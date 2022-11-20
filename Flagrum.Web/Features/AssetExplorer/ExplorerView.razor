@@ -36,6 +36,11 @@
         }
     }
 
+    public void Refresh()
+    {
+        InitialLoad?.Invoke(this, EventArgs.Empty);
+    }
+
     protected override void OnParametersSet()
     {
         if (Path == _previousDirectory)

@@ -50,6 +50,7 @@ public class EarcMod
     public ModCategory Category { get; set; }
     public bool IsFavourite { get; set; }
 
+
     public ICollection<EarcModEarc> Earcs { get; set; } = new List<EarcModEarc>();
     public ICollection<EarcModLooseFile> LooseFiles { get; set; } = new List<EarcModLooseFile>();
 
@@ -61,7 +62,8 @@ public class EarcMod
             foreach (var earc in Earcs)
             {
                 foreach (var file in earc.Files.Where(f =>
-                             f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace))
+                             f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+                                 or EarcFileChangeType.AddToTextureArray))
                 {
                     if (file.FileLastModified != File.GetLastWriteTime(file.ReplacementFilePath).Ticks)
                     {
@@ -100,7 +102,7 @@ public class EarcMod
     }
 
     public bool HasAnyCachedFiles => Earcs.Any(e => e.Files
-        .Any(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+        .Any(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace or EarcFileChangeType.AddToTextureArray
                   && File.Exists($"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}" +
                                  $@"\Temp\Flagrum\cache\{Id}{f.Id}{Cryptography.HashFileUri64(f.Uri)}.ffg")));
 
@@ -286,15 +288,16 @@ public class EarcMod
                     var cachePath = $@"{appdata}\Temp\Flagrum\cache\{Id}{file.Id}{hash}.ffg";
 
                     // Only build files that are not already processed
-                    if (file.FileLastModified != File.GetLastWriteTime(file.ReplacementFilePath).Ticks
-                        || !File.Exists(cachePath))
+                    if (!file.ReplacementFilePath.EndsWith(".ffg")
+                        && (file.FileLastModified != File.GetLastWriteTime(file.ReplacementFilePath).Ticks
+                            || !File.Exists(cachePath)))
                     {
                         FmodFragment fragment;
                         if (file.Type == EarcFileChangeType.Replace)
                         {
                             var original = unpacker!.Files.First(f => f.Uri == file.Uri);
                             var data = ConvertAsset(file, logger,
-                                uri => unpacker.Files.First(f => f.Uri == uri).GetReadableData());
+                                uri => unpacker.UnpackFileByQuery(file.Uri, out _));
                             var processedData = ArchiveFile.GetProcessedData(file.Uri,
                                 original.Flags,
                                 data,

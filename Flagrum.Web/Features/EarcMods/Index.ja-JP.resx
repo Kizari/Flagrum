@@ -33,9 +33,6 @@
     <data name="DisabledMods" xml:space="preserve">
         <value>無効化されたMOD</value>
     </data>
-    <data name="InstallFromZip" xml:space="preserve">
-        <value>ZIPからインストールする</value>
-    </data>
     <data name="NoActiveMods" xml:space="preserve">
         <value>表示するアクティブなEARCのMODはありません</value>
     </data>

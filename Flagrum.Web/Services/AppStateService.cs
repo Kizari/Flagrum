@@ -51,7 +51,7 @@ public class AppStateService
     public string GetCurrentAssetExplorerPath()
     {
         var path = _context.GetString(StateKey.CurrentAssetExplorerPath);
-        if (path == null || !File.Exists(path))
+        if (path == null || (!File.Exists(path) && !Directory.Exists(path)))
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         }

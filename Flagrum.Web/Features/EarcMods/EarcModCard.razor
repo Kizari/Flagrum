@@ -160,6 +160,12 @@
             .ToList()
             .FirstOrDefault()!;
 
+        if (earcMod.LooseFiles.Any() || earcMod.Earcs.Any(e => e.Files
+            .Any(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.AddReference or EarcFileChangeType.AddToTextureArray)))
+        {
+            throw new Exception("gtm detected");
+        }
+
         if (!earcMod.IsCached)
         {
             var deadFiles = earcMod.Earcs.SelectMany(e => e.Files

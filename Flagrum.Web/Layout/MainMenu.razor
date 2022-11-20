@@ -1,5 +1,5 @@
-﻿@using System.IO
-@using Flagrum.Core.Utilities
+﻿@using Flagrum.Core.Utilities
+@using System.IO
 @using System.Diagnostics
 @inject IWpfService WpfService
 @inject SettingsService Settings
@@ -10,13 +10,13 @@
 <CascadingValue Value="this">
     <Bootstrapper/>
     <div class="h-full bg-dark flex flex-col border-dark-550 border-r" style="flex: 0 0 195px">
-        <MenuItem Icon="dashboard" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
+        <MenuItem Icon="apps" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
         <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
-        <MenuItem Icon="apps" Text=@L["WorkshopMods"] Uri="/mod"/>
+        <MenuItem Icon="steam" Text=@L["WorkshopMods"] Uri="/mod"/>
         @* <MenuItem Icon="share" Text="Sequence Editor" Uri="/sequenceeditor"></MenuItem> *@
         <div class="flex-grow"></div>
 
-        <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri=@L["WikiUrl"]/>
+        <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri="@L["WikiUrl"]"/>
         @* <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/> *@
         <MenuItem Icon="favorite" Text="@L["About"]" Uri="/about"/>
         <MenuItem Icon="settings" Text="@AppLocalizer["Settings"]" Uri="/settings"/>
@@ -61,21 +61,25 @@
             {
                 try
                 {
-                    var previousAppDirectory = Directory
-                        .EnumerateDirectories(Settings.FlagrumDirectory)
-                        .FirstOrDefault(d => d.Contains(@"\app-") && !d.Contains($@"\app-{Version}"));
-
-                    var previousThumbnailDirectory = $@"{previousAppDirectory}\wwwroot\EarcMods";
-
-                    foreach (var thumbnail in Directory.EnumerateFiles(previousThumbnailDirectory))
+    // This check is here to stop thumbnails being moved around in development
+                    if (IOHelper.GetWebRoot().StartsWith(Settings.FlagrumDirectory, StringComparison.OrdinalIgnoreCase))
                     {
-                        try
+                        var previousAppDirectory = Directory
+                            .EnumerateDirectories(Settings.FlagrumDirectory)
+                            .FirstOrDefault(d => d.Contains(@"\app-") && !d.Contains($@"\app-{Version}"));
+
+                        var previousThumbnailDirectory = $@"{previousAppDirectory}\wwwroot\EarcMods";
+
+                        foreach (var thumbnail in Directory.EnumerateFiles(previousThumbnailDirectory))
                         {
-                            File.Move(thumbnail, $@"{IOHelper.GetWebRoot()}\EarcMods\{thumbnail.Split('\\').Last()}");
-                        }
-                        catch
-                        {
+                            try
+                            {
+                                File.Move(thumbnail, $@"{IOHelper.GetWebRoot()}\EarcMods\{thumbnail.Split('\\').Last()}");
+                            }
+                            catch
+                            {
     // Ignore
+                            }
                         }
                     }
                 }
@@ -85,6 +89,13 @@
                 }
 
                 VersionNotesModal.Open();
+
+    // Clear build cache in case any build changes have been made in the new version that need to be applied
+                foreach (var file in Directory.EnumerateFiles(Settings.CacheDirectory))
+                {
+                    File.Delete(file);
+                }
+
                 Settings.SetLastVersionNotes(Version);
             }
         }

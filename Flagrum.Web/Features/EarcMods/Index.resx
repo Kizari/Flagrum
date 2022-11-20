@@ -34,7 +34,7 @@
         <value>Create Mod</value>
     </data>
     <data name="InstallFromZip" xml:space="preserve">
-        <value>Install from ZIP</value>
+        <value>Install Mod</value>
     </data>
     <data name="NoActiveMods" xml:space="preserve">
         <value>No active EARC mods to show</value>

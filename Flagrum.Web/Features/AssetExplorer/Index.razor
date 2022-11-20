@@ -2,6 +2,8 @@
 @using Flagrum.Web.Persistence.Entities
 @using System.Timers
 @using Flagrum.Web.Features.AssetExplorer.Data
+@using Microsoft.EntityFrameworkCore
+@using System.IO
 
 @inject AppStateService AppState
 @inject SettingsService Settings
@@ -22,8 +24,8 @@
             <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="() => SetNode(AppState.Node.Parent)">arrow_upward</span>
         }
         <div class="flex-grow pr-3">
-            <EditForm Model="new object()">
-                <Textbox IsReadOnly="true" @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch"/>
+            <EditForm Model="this">
+                <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter"/>
             </EditForm>
         </div>
         <div class="flex flex-row">
@@ -97,7 +99,7 @@
                 }
                 else
                 {
-                    <ExplorerView Path="" Directories="true" InitialPath="@Directory"/>
+                    <ExplorerView @ref="FileSystemExplorer" Path="" Directories="true" InitialPath="@Directory"/>
                 }
             </CascadingValue>
         </div>
@@ -117,6 +119,8 @@
     </div>
 </LoadingView>
 
+<AlertModal @ref="Alert" />
+
 @code
 {
     private string _directory;
@@ -134,6 +138,8 @@
     public AssetExplorerNode ContextNode { get; set; }
     private BatchExportModal BatchExportModal { get; set; }
     private RegenerateModal RegenerateModal { get; set; }
+    private AlertModal Alert { get; set; }
+    private ExplorerView FileSystemExplorer { get; set; }
 
     private string CurrentPath { get; set; }
 
@@ -150,11 +156,6 @@
     protected override void OnInitialized()
     {
         Directory = AppState.GetCurrentAssetExplorerPath();
-
-        if (!System.IO.Directory.Exists(Directory))
-        {
-            Directory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        }
 
         if (AppState.Node == null)
         {
@@ -182,6 +183,82 @@
 
         UpdateCurrentPath();
         StateHasChanged();
+    }
+
+    private async void CheckEnter(KeyboardEventArgs e)
+    {
+        if (e.Code is "Enter" or "NumpadEnter")
+        {
+            if (View == 2)
+            {
+                if (File.Exists(CurrentPath))
+                {
+                    var directory = Path.GetDirectoryName(CurrentPath);
+                    SetActiveDirectory(directory);
+                    View = 1;
+                    StateHasChanged();
+                    await Task.Delay(100);
+                    View = 2;
+                    StateHasChanged();
+                }
+                else if (System.IO.Directory.Exists(CurrentPath))
+                {
+                    SetActiveDirectory(CurrentPath);
+                    View = 1;
+                    StateHasChanged();
+                    await Task.Delay(100);
+                    View = 2;
+                    StateHasChanged();
+                }
+                else
+                {
+                    Alert.Open("Error", "Invalid Path", "Nothing was found at the given path.", null);
+                }
+            }
+            else
+            {
+                var processedUri = CurrentPath.Trim().Replace("data://", "data:/");
+                if (processedUri[^1] == '/')
+                {
+                    processedUri = processedUri[..^1];
+                }
+                
+                var tokens = processedUri.Split('/')
+                    .Select(t => t.ToLower())
+                    .ToList();
+
+                if (tokens[0] == "data:")
+                {
+                    var currentNode = Context.AssetExplorerNodes.Include(n => n.Children).First();
+                    for (var i = 1; i < tokens.Count; i++)
+                    {
+                        currentNode = Context.AssetExplorerNodes.Include(n => n.Children)
+                            .FirstOrDefault(n => n.ParentId == currentNode.Id && n.Name == tokens[i]);
+
+                        if (currentNode == null)
+                        {
+                            Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
+                            return;
+                        }
+                    }
+
+                    if (!Context.AssetExplorerNodes.Any(n => n.Id == currentNode.Id && n.Children.Any()))
+                    {
+                        var parent = Context.AssetExplorerNodes.First(n => n.Id == currentNode.ParentId);
+                        SetNode(parent);
+                        SetSelectedItem(AssetExplorerItem.FromNode(currentNode, Context));
+                    }
+                    else
+                    {
+                        SetNode(currentNode);
+                    }
+                }
+                else
+                {
+                    Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
+                }
+            }
+        }
     }
 
     public void SetNode(AssetExplorerNode node)
