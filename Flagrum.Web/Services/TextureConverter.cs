@@ -210,7 +210,7 @@ public class TextureConverter
 
         if (request.MipLevels != 1)
         {
-            image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, request.MipLevels);
+            image = image.GenerateMipMaps(TEX_FILTER_FLAGS.CUBIC, 0);
         }
 
         var dxgiFormat = (DXGI_FORMAT)BtexConverter.FormatMap[request.PixelFormat];
