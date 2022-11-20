@@ -21,9 +21,6 @@
     <data name="HasBeenUpdated" xml:space="preserve">
         <value>Flagrum已被更新為版本：{0}!</value>
     </data>
-    <data name="UpdateNotes" xml:space="preserve">
-        <value>3D模型現可在資源管理器中預覽！</value>
-    </data>
     <data name="ViewFullChangelog" xml:space="preserve">
         <value>查看完整的更新日誌</value>
     </data>
