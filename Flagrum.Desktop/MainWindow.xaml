@@ -144,7 +144,7 @@
                     <ContentPresenter Grid.Row="1" x:Name="MainContentPresenter" Content="{Binding}">
                         <ContentPresenter.Resources>
                             <DataTemplate x:Key="BlazorWebViewTemplate">
-                                <wpf:BlazorWebView x:Name="MainBlazorWebView" HostPage="wwwroot/index.html"
+                                <wpf:BlazorWebView x:Name="MainBlazorWebView" HostPage="{Binding HostPage}"
                                                    Services="{StaticResource services}" Background="#181512"
                                                    Loaded="MainBlazorWebView_OnInitialized">
                                     <wpf:BlazorWebView.RootComponents>

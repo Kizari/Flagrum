@@ -21,4 +21,6 @@ public interface IWpfService
 
     IEnumerable<string> GetModifierKeys();
     IEnumerable<string> GetMouseActions();
+    string GetFmodPath();
+    void ClearFmodPath();
 }

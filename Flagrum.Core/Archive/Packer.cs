@@ -15,29 +15,82 @@ public class Packer
     private readonly ArchiveHeader _header;
 
     private readonly Logger _logger;
-    private List<ArchiveFile> _files;
 
     public Packer()
     {
         _logger = new ConsoleLogger();
         _header = new ArchiveHeader();
-        _files = new List<ArchiveFile>();
+        Files = new ConcurrentCollection<ArchiveFile>();
     }
 
     private Packer(ArchiveHeader header, List<ArchiveFile> files) : this()
     {
         _header = header;
-        _files = files;
+        Files = new ConcurrentCollection<ArchiveFile>(files);
     }
+
+    public ConcurrentCollection<ArchiveFile> Files { get; private set; }
+
+    public bool IsProtectedArchive => _header.IsProtectedArchive;
 
     public static Packer FromUnpacker(ArchiveHeader header, List<ArchiveFile> files)
     {
         return new Packer(header, files);
     }
 
+    public void SetFlags(ArchiveHeaderFlags flags)
+    {
+        _header.Flags = flags;
+    }
+
     public bool HasFile(string uri)
     {
-        return _files.Any(f => f.Uri == uri);
+        return Files.Any(f => f.Uri == uri);
+    }
+
+    public void AddCompressedFile(string uri, byte[] data, bool autoload = false)
+    {
+        var file = new ArchiveFile(uri)
+        {
+            Flags = ArchiveFileFlag.Compressed
+        };
+
+        if (autoload)
+        {
+            file.Flags |= ArchiveFileFlag.Autoload;
+        }
+
+        file.SetRawData(data);
+        Files.Add(file);
+    }
+
+    public void AddProcessedFile(string uri, ArchiveFileFlag flags, byte[] data, uint size, ushort key)
+    {
+        var file = new ArchiveFile(uri);
+        file.Flags = flags;
+        file.Size = size;
+        file.Key = key;
+
+        if (data != null)
+        {
+            file.ProcessedSize = (uint)data.Length;
+            file.SetDataByFlags(data);
+        }
+
+        Files.Add(file);
+    }
+
+    public void AddFile(string uri, ArchiveFileFlag flags, byte[] data)
+    {
+        var file = new ArchiveFile(uri);
+        file.Flags = flags;
+
+        if (data != null)
+        {
+            file.SetRawData(data);
+        }
+
+        Files.Add(file);
     }
 
     public void AddFile(byte[] data, string uri)
@@ -45,12 +98,25 @@ public class Packer
         var file = new ArchiveFile(uri);
         file.SetRawData(data);
 
-        _files.Add(file);
+        Files.Add(file);
+    }
+
+    public void AddReference(string uri, bool autoload)
+    {
+        var file = new ArchiveFile(uri);
+        file.Flags = ArchiveFileFlag.Reference;
+
+        if (autoload)
+        {
+            file.Flags |= ArchiveFileFlag.Autoload;
+        }
+
+        Files.Add(file);
     }
 
     public void UpdateFile(string query, byte[] data)
     {
-        var match = _files.FirstOrDefault(f => f.Uri.EndsWith(query));
+        var match = Files.FirstOrDefault(f => f.Uri.EndsWith(query));
         if (match != null)
         {
             match.SetRawData(data);
@@ -62,12 +128,26 @@ public class Packer
         }
     }
 
-    public void RemoveFile(string uri)
+    public void UpdateFileWithProcessedData(string query, byte[] data)
     {
-        var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        var match = Files.FirstOrDefault(f => f.Uri.EndsWith(query));
         if (match != null)
         {
-            _files.Remove(match);
+            match.SetDataByFlags(data);
+        }
+        else
+        {
+            throw new ArgumentException($"Could not find file ending with \"{query}\" in the archive.",
+                nameof(query));
+        }
+    }
+
+    public void RemoveFile(string uri)
+    {
+        var match = Files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        if (match != null)
+        {
+            Files.Remove(match);
         }
         else
         {
@@ -77,7 +157,7 @@ public class Packer
 
     public void UpdateFileWithProcessedData(string uri, uint originalSize, byte[] data)
     {
-        var match = _files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
+        var match = Files.FirstOrDefault(f => f.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase));
         if (match != null)
         {
             match.SetProcessedData(originalSize, data);
@@ -88,12 +168,12 @@ public class Packer
         }
     }
 
-    public void AddFileFromBackup(string uri, string relativePath, uint size, ArchiveFileFlag flags,
-        byte localizationType, byte locale, ushort key, byte[] data)
+    public void AddFileFromBackup(string uri, string relativePath, uint size, ArchiveFileFlag flags, ushort key,
+        byte[] data)
     {
-        var file = new ArchiveFile(uri, relativePath, size, (uint)data.Length, flags, localizationType, locale, key);
+        var file = new ArchiveFile(uri, relativePath, size, (uint)data.Length, flags, 0, 0, key);
         file.SetDataByFlags(data);
-        _files.Add(file);
+        Files.Add(file);
     }
 
     public void WriteToFile(string path)
@@ -107,16 +187,15 @@ public class Packer
             _header.Version |= ArchiveHeader.ProtectVersionHash;
         }
 
-        _files = _files
+        Files = new ConcurrentCollection<ArchiveFile>(Files
             .OrderBy(f => f.Flags.HasFlag(ArchiveFileFlag.Autoload))
             .ThenBy(f => f.Uri.EndsWith(".autoext"))
             .ThenBy(f => f.Flags.HasFlag(ArchiveFileFlag.Reference))
             .ThenBy(f => f.TypeHash)
-            .ThenBy(f => f.UriHash)
-            .ToList();
+            .ThenBy(f => f.UriHash));
 
         _header.UriListOffset = ArchiveHeader.Size +
-                                Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,
+                                Serialization.GetAlignment((uint)Files.Count * ArchiveFile.HeaderSize,
                                     PointerSize);
 
         var endOfUriList = SerializeUriList(out var uriListStream);
@@ -155,7 +234,7 @@ public class Packer
 
         stream.Write(ArchiveHeader.DefaultTag);
         stream.Write(BitConverter.GetBytes(_header.Version));
-        stream.Write(BitConverter.GetBytes((uint)_files.Count));
+        stream.Write(BitConverter.GetBytes((uint)Files.Count));
         stream.Write(BitConverter.GetBytes(BlockSize));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.Size));
         stream.Write(BitConverter.GetBytes(_header.UriListOffset));
@@ -176,7 +255,7 @@ public class Packer
 
         stream.Write(ArchiveHeader.DefaultTag);
         stream.Write(BitConverter.GetBytes(_header.Version));
-        stream.Write(BitConverter.GetBytes((uint)_files.Count));
+        stream.Write(BitConverter.GetBytes((uint)Files.Count));
         stream.Write(BitConverter.GetBytes(BlockSize));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.Size));
         stream.Write(BitConverter.GetBytes(_header.UriListOffset));
@@ -200,7 +279,7 @@ public class Packer
         var stream = new MemoryStream();
         var hash = ArchiveFile.HeaderHash ^ _header.Hash;
 
-        foreach (var file in _files)
+        foreach (var file in Files)
         {
             var size = file.Size;
             var processedSize = file.ProcessedSize;
@@ -238,7 +317,7 @@ public class Packer
         uriListStream = new MemoryStream();
         var currentUriOffset = 0;
 
-        foreach (var file in _files)
+        foreach (var file in Files)
         {
             var size = EncodeString(file.Uri, out var bytes);
             file.UriOffset = _header.UriListOffset + (uint)currentUriOffset;
@@ -258,7 +337,7 @@ public class Packer
         pathListStream = new MemoryStream();
         var currentPathOffset = 0;
 
-        foreach (var file in _files)
+        foreach (var file in Files)
         {
             var size = EncodeString(file.RelativePath, out var bytes);
             file.RelativePathOffset = _header.PathListOffset + (uint)currentPathOffset;
@@ -279,8 +358,18 @@ public class Packer
         var rng = new Random((int)_header.Hash);
         var currentDataOffset = 0L;
 
-        foreach (var file in _files)
+        foreach (var file in Files)
         {
+            if (file.Key == 0 && _header.IsProtectedArchive)
+            {
+                var hashCode = file.Uri.GetHashCode();
+                file.Key = (ushort)((hashCode >> 16) ^ hashCode);
+                if (file.Key == 0)
+                {
+                    file.Key = 57005;
+                }
+            }
+
             if (!file.Flags.HasFlag(ArchiveFileFlag.Compressed) && !file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
             {
                 file.Key = 0;

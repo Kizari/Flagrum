@@ -1,4 +1,4 @@
-﻿<Modal @ref="Modal" Width="@Width" Height="@Height">
+﻿<AutosizeModal @ref="Modal" Width="@Width" Height="@Height" MaxWidth="@(DisableMaxWidth ? "90vw" : Width + "px")">
     <HeaderView>
         <span class="text-grey-300 flex-grow">@Title</span>
         <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
@@ -6,16 +6,16 @@
     <BodyView>
         <div class="text-center w-full">
             <h3 class="mb-4 text-grey-300">@Heading</h3>
-            <span class="block mb-20">
+            <span class="block mb-6">
                 @((MarkupString)Subtext)
             </span>
         </div>
     </BodyView>
-</Modal>
+</AutosizeModal>
 
 @code
 {
-    private Modal Modal { get; set; }
+    private AutosizeModal Modal { get; set; }
 
     private string Title { get; set; }
     private string Heading { get; set; }
@@ -23,8 +23,9 @@
     private Action OnClose { get; set; }
     private int Width { get; set; } = 400;
     private int Height { get; set; } = 300;
+    private bool DisableMaxWidth { get; set; }
 
-    public void Open(string title, string heading, string subtext, Action onClose, int width = 400, int height = 300)
+    public void Open(string title, string heading, string subtext, Action onClose, int width = 400, int height = 300, bool disableMaxWidth = false)
     {
         Title = title;
         Heading = heading;
@@ -32,6 +33,7 @@
         OnClose = onClose;
         Width = width;
         Height = height;
+        DisableMaxWidth = disableMaxWidth;
         StateHasChanged();
 
         Modal.Open();

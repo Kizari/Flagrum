@@ -125,4 +125,14 @@ public class WpfService : IWpfService
     {
         return Enum.GetNames<MouseAction>();
     }
+
+    public string? GetFmodPath()
+    {
+        return _mainViewModel.FmodPath;
+    }
+
+    public void ClearFmodPath()
+    {
+        _mainViewModel.FmodPath = null;
+    }
 }

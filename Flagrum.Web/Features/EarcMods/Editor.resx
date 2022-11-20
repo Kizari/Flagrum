@@ -80,4 +80,13 @@
     <data name="DescriptionRequired" xml:space="preserve">
         <value>The description field must not be empty</value>
     </data>
+    <data name="BuildList" xml:space="preserve">
+        <value>Build List</value>
+    </data>
+    <data name="AddFile" xml:space="preserve">
+        <value>Add File</value>
+    </data>
+    <data name="AddReference" xml:space="preserve">
+        <value>Reference</value>
+    </data>
 </root>

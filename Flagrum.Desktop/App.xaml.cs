@@ -8,9 +8,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using Squirrel;
 
 namespace Flagrum.Desktop;
@@ -19,7 +21,9 @@ public partial class App
 {
     public App()
     {
+        // This is needed so Flagrum stacks with its pinned icon on the taskbar
         SetCurrentProcessExplicitAppUserModelID("Flagrum");
+
         var resources = new ResourceManager("Flagrum.Desktop.Resources.Localisation", Assembly.GetExecutingAssembly());
 
         // Catch and log any exceptions that occur during runtime
@@ -42,6 +46,8 @@ public partial class App
         SquirrelAwareApp.HandleEvents(
             OnInstall,
             onAppUninstall: OnUninstall);
+
+        SetFileTypeAssociation();
 
         // Migrate the database if required
         using var context = new FlagrumDbContext();
@@ -104,5 +110,37 @@ public partial class App
 
             exception = exception.InnerException;
         }
+    }
+
+    [DllImport("Shell32.dll")]
+    private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
+
+    private void SetFileTypeAssociation()
+    {
+        var flagrumPath = $"{IOHelper.GetExecutingDirectory()}\\Flagrum.exe \"%1\"";
+        if (Registry.GetValue("HKEY_CLASSES_ROOT\\Flagrum", string.Empty, string.Empty) == null)
+        {
+            Registry.SetValue("HKEY_CURRENT_USER\\Software\\Classes\\Flagrum", "", "FMOD");
+            Registry.SetValue("HKEY_CURRENT_USER\\Software\\Classes\\Flagrum", "FriendlyTypeName", "Flagrum Mod");
+            Registry.SetValue("HKEY_CURRENT_USER\\Software\\Classes\\Flagrum\\shell\\open\\command", "",
+                flagrumPath);
+            Registry.SetValue("HKEY_CURRENT_USER\\Software\\Classes\\.fmod", "", "Flagrum");
+
+            //this call notifies Windows that it needs to redo the file associations and icons
+            _ = SHChangeNotify(0x08000000, 0x2000, IntPtr.Zero, IntPtr.Zero);
+        }
+    }
+
+    private void App_OnStartup(object sender, StartupEventArgs e)
+    {
+        string? fmodPath = null;
+
+        if (e.Args.Length == 1 && e.Args[0].EndsWith(".fmod"))
+        {
+            fmodPath = e.Args[0];
+        }
+
+        var window = new MainWindow(fmodPath);
+        window.Show();
     }
 }
