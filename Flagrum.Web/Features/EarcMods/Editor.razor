@@ -30,7 +30,7 @@
             <div class="box flex flex-row items-center p-6 border-b border-black">
                 <h5 class="text-grey-200 flex-grow">@Localizer["BuildList"]</h5>
                 <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
-                <Button Icon="block" Text="@Localizer["RemoveAsset"]" CssClass="mr-3" OnClick="OpenRemoveModal"/>
+                <Button Icon="block" Text="@Localizer["RemoveAsset"]" OnClick="OpenRemoveModal"/>
             </div>
             <div class="flex-grow box overflow-auto">
                 @if (Mod.Earcs.Any(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))

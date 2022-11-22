@@ -72,4 +72,10 @@
     <data name="With" xml:space="preserve">
         <value>为</value>
     </data>
+    <data name="BuildList" xml:space="preserve">
+        <value>构建列表</value>
+    </data>
+    <data name="ClearCache" xml:space="preserve">
+        <value>清除缓存</value>
+    </data>
 </root>

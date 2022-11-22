@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
                 xmlns="">
         <xsd:element name="root" msdata:IsDataSet="true">
 
@@ -79,5 +80,11 @@
     </data>
     <data name="NameRequired" xml:space="preserve">
         <value>名前欄は空であってはならない</value>
+    </data>
+    <data name="BuildList" xml:space="preserve">
+        <value>ビルド・リスト</value>
+    </data>
+    <data name="ClearCache" xml:space="preserve">
+        <value>キャッシュをクリアする</value>
     </data>
 </root>

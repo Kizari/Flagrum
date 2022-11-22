@@ -24,4 +24,7 @@
     <data name="ViewFullChangelog" xml:space="preserve">
         <value>查看完整的更新日誌</value>
     </data>
+    <data name="UpdateNotes" xml:space="preserve">
+        <value>本次更新包括：支援中文語言；MOD管理的巨大升級；從各方面進行大幅升級從而使遊戲體驗得到明顯的改善，以及一些重要bug的修復。</value>
+    </data>
 </root>

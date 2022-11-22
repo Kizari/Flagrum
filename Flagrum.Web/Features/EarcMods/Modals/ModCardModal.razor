@@ -4,7 +4,9 @@
 @using Flagrum.Core.Utilities
 @using System.IO
 @using Blazored.TextEditor
-@inject IStringLocalizer<Editor> Localizer
+@inject IStringLocalizer<Editor> EditorLocalizer
+@inject IStringLocalizer<ModCardModal> Localizer
+@inject IStringLocalizer<Index> IndexLocalizer
 @inject FlagrumDbContext Context
 @inject IWpfService WpfService
 @inject NavigationManager Navigation
@@ -17,7 +19,7 @@
 
 <AutosizeModal @ref="Modal" Padding="0" MinWidth="1024px">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Set Mod Information</span>
+        <span class="text-grey-300 flex-grow">@Localizer["SetModInformation"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
@@ -26,22 +28,22 @@
                 <DataAnnotationsValidator/>
                 <img alt="Mod Thumbnail" class="relative rounded-t" style="display: block; width: 330px; height: 180px;" src="images/@(ImageName).png"/>
                 <div class="p-4 flex-grow flex flex-col">
-                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="@Localizer["ModName"]"/>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="@EditorLocalizer["ModName"]"/>
                     <ValidationMessage For="() => Mod.Name"/>
-                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="@Localizer["Author"]" Class="my-3"/>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="@EditorLocalizer["Author"]" Class="my-3"/>
                     <ValidationMessage For="() => Mod.Author"/>
-                    <EnumSelect @bind-Value="Mod.Category" AutoSpaceNames="true"/>
-                    <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="@Localizer["Description"]" Class="mt-3 flex-grow"/>
+                    <EnumSelect @bind-Value="Mod.Category" Localizer="IndexLocalizer" LocalizerPrefix="Category"/>
+                    <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="@EditorLocalizer["Description"]" Class="mt-3 flex-grow"/>
                     <ValidationMessage For="() => Mod.Description"/>
                 </div>
                 <div class="px-4 pb-4 flex flex-row">
-                    <Button Icon="image" Text="@Localizer["ChangeImage"]" CssClass="mr-3" OnClickAsync="SelectImage"/>
+                    <Button Icon="image" Text="@EditorLocalizer["ChangeImage"]" CssClass="mr-3" OnClickAsync="SelectImage"/>
                     <div class="flex-grow"></div>
-                    <Button Icon="save" Text=@Localizer["Save"] Type="submit"/>
+                    <Button Icon="save" Text=@EditorLocalizer["Save"] Type="submit"/>
                 </div>
             </EditForm>
             <div class="bg-dark px-6 pt-6 flex-grow rte-container" style="padding-bottom: 102px;">
-                <h6 class="text-grey-300 mb-4">README (Optional)</h6>
+                <h6 class="text-grey-300 mb-4">@Localizer["Readme"]</h6>
                 <BlazoredTextEditor @ref="Editor" Placeholder="@string.Empty">
                     <ToolbarContent>
                         <select class="ql-header">

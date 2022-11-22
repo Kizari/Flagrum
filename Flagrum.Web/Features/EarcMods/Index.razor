@@ -57,13 +57,13 @@
                 </div>
                 <div class="flex-grow"></div>
                 <DropdownButton CssClass="mr-4" Icon="filter_alt" DropdownWidth="150"
-                                Text=@($"Filter: {(Category == -1 ? "All Mods" : ((ModCategory)Category).ToString().SpacePascalCase())}")>
-                    <DropdownButtonItem Text="All Mods" OnClick="() => { SetCategory(-1); return Task.CompletedTask; }"/>
+                                Text=@($"{Localizer["Filter"]} {(Category == -1 ? Localizer["CategoryAll"] : Localizer[$"Category{(ModCategory)Category}"])}")>
+                    <DropdownButtonItem Text="@Localizer["CategoryAll"]" OnClick="() => { SetCategory(-1); return Task.CompletedTask; }"/>
                     @foreach (var category in Enum.GetValues<ModCategory>().Where(e => e != ModCategory.Other).OrderBy(e => e.ToString()))
                     {
-                        <DropdownButtonItem Text="@category.ToString().SpacePascalCase()" OnClick="() => { SetCategory((int)category); return Task.CompletedTask; }"/>
+                        <DropdownButtonItem Text="@Localizer[$"Category{category}"]" OnClick="() => { SetCategory((int)category); return Task.CompletedTask; }"/>
                     }
-                    <DropdownButtonItem Text="Other" OnClick="() => { SetCategory((int)ModCategory.Other); return Task.CompletedTask; }"/>
+                    <DropdownButtonItem Text="@Localizer["CategoryOther"]" OnClick="() => { SetCategory((int)ModCategory.Other); return Task.CompletedTask; }"/>
                 </DropdownButton>
                 <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(0))"/>
                 <Button Icon="upload" Variant="true" Text=@Localizer["InstallFromZip"] OnClickAsync="Install"/>
@@ -153,7 +153,7 @@
 
         <AutosizeModal @ref="ReadmeModal" MinWidth="600px">
             <HeaderView>
-                <span class="text-grey-300 flex-grow">Mod README</span>
+                <span class="text-grey-300 flex-grow">@Localizer["ModReadme"]</span>
                 <span class="material-icons cursor-pointer" @onclick="() => ReadmeModal.Close()">cancel</span>
             </HeaderView>
             <BodyView>

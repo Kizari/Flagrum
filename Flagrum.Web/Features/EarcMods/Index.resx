@@ -108,4 +108,40 @@
     <data name="ExportingModPack" xml:space="preserve">
         <value>Exporting Mod Pack</value>
     </data>
+    <data name="Filter" xml:space="preserve">
+        <value>Filter:</value>
+    </data>
+    <data name="CategoryAll" xml:space="preserve">
+        <value>All Mods</value>
+    </data>
+    <data name="CategoryCheat" xml:space="preserve">
+        <value>Cheat</value>
+    </data>
+    <data name="CategoryContent" xml:space="preserve">
+        <value>Content</value>
+    </data>
+    <data name="CategoryFix" xml:space="preserve">
+        <value>Fix</value>
+    </data>
+    <data name="CategoryGameplay" xml:space="preserve">
+        <value>Gameplay</value>
+    </data>
+    <data name="CategoryLighthearted" xml:space="preserve">
+        <value>Lighthearted</value>
+    </data>
+    <data name="CategoryQualityOfLife" xml:space="preserve">
+        <value>Quality of Life</value>
+    </data>
+    <data name="CategoryReplacement" xml:space="preserve">
+        <value>Replacement</value>
+    </data>
+    <data name="CategoryRework" xml:space="preserve">
+        <value>Rework</value>
+    </data>
+    <data name="CategoryOther" xml:space="preserve">
+        <value>Other</value>
+    </data>
+    <data name="ModReadme" xml:space="preserve">
+        <value>Mod README</value>
+    </data>
 </root>

@@ -105,4 +105,43 @@
     <data name="ExportingModPack" xml:space="preserve">
         <value>MODパックの書き出し</value>
     </data>
+    <data name="CategoryAll" xml:space="preserve">
+        <value>すべてのMOD</value>
+    </data>
+    <data name="CategoryCheat" xml:space="preserve">
+        <value>チート</value>
+    </data>
+    <data name="CategoryContent" xml:space="preserve">
+        <value>コンテンツ</value>
+    </data>
+    <data name="CategoryFix" xml:space="preserve">
+        <value>修正</value>
+    </data>
+    <data name="CategoryGameplay" xml:space="preserve">
+        <value>ゲームプレイ</value>
+    </data>
+    <data name="CategoryLighthearted" xml:space="preserve">
+        <value>軽快</value>
+    </data>
+    <data name="CategoryOther" xml:space="preserve">
+        <value>その他</value>
+    </data>
+    <data name="CategoryQualityOfLife" xml:space="preserve">
+        <value>クオリティ・オブ・ライフ</value>
+    </data>
+    <data name="CategoryReplacement" xml:space="preserve">
+        <value>置き換え</value>
+    </data>
+    <data name="CategoryRework" xml:space="preserve">
+        <value>リワーク</value>
+    </data>
+    <data name="Filter" xml:space="preserve">
+        <value>フィルター：</value>
+    </data>
+    <data name="InstallFromZip" xml:space="preserve">
+        <value>MODのインストール</value>
+    </data>
+    <data name="ModReadme" xml:space="preserve">
+        <value>MOD READMEのご案内</value>
+    </data>
 </root>

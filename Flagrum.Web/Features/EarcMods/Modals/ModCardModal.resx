@@ -18,16 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="HasBeenUpdated" xml:space="preserve">
-        <value>Flagrum has been updated to Version {0}!</value>
+    <data name="SetModInformation" xml:space="preserve">
+        <value>Set Mod Information</value>
     </data>
-    <data name="UpdateNotes" xml:space="preserve">
-        <value>This update brings Chinese language support, a huge upgrade to the Mod Manager, many quality of life updates, and some important bug fixes.</value>
-    </data>
-    <data name="ViewFullChangelog" xml:space="preserve">
-        <value>View Full Changelog</value>
-    </data>
-    <data name="ChangelogUrl" xml:space="preserve">
-        <value>https://github.com/Kizari/Flagrum/wiki/Flagrum-Changelog</value>
+    <data name="Readme" xml:space="preserve">
+        <value>README (Optional)</value>
     </data>
 </root>
