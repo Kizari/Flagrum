@@ -266,10 +266,61 @@ public class EarcMod
 
     public void BuildCache(FlagrumDbContext context, ILogger logger)
     {
+        var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var imageMap = new ConcurrentDictionary<string, byte[]>();
+        
+        // Process image files
+        foreach (var earc in Earcs.Where(e => e.Files.Any(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+                                                                   or EarcFileChangeType.AddToTextureArray
+                                                               && AssetExplorerItem.GetType(f.Uri) == ExplorerItemType.Texture
+                                                               && !f.ReplacementFilePath.EndsWith(".btex"))))
+        {
+            Unpacker unpacker = null;
+
+            if (earc.Type == EarcChangeType.Change)
+            {
+                var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
+                unpacker = new Unpacker(path);
+            }
+            
+            foreach (var file in earc.Files
+                         .Where(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+                                         or EarcFileChangeType.AddToTextureArray
+                                     && AssetExplorerItem.GetType(f.Uri) == ExplorerItemType.Texture
+                                     && !f.ReplacementFilePath.EndsWith(".btex")))
+            {
+                var hash = Cryptography.HashFileUri64(file.Uri);
+                var cachePath = $@"{appdata}\Temp\Flagrum\cache\{Id}{file.Id}{hash}.ffg";
+                var needsRebuild = !file.ReplacementFilePath.EndsWith(".ffg") 
+                                   && (file.FileLastModified !=
+                                   File.GetLastWriteTime(file.ReplacementFilePath).Ticks
+                                   || !File.Exists(cachePath));
+
+                if (needsRebuild)
+                {
+                    if (file.Type == EarcFileChangeType.Replace)
+                    {
+                        imageMap.TryAdd(file.Uri, ConvertAsset(file, logger,
+                            uri =>
+                            {
+                                var archiveFile = unpacker!.Files.First(f => f.Uri == uri);
+                                unpacker.ReadFileData(archiveFile);
+                                return archiveFile.GetReadableData();
+                            }));
+                    }
+                    else
+                    {
+                        imageMap.TryAdd(file.Uri, ConvertAsset(file, logger, _ => null));
+                    }
+                }
+            }
+            
+            unpacker?.Dispose();
+        }
+        
         Parallel.ForEach(Earcs.Where(e => e.Files.Any()), earc =>
         {
             var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
-            var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             IOHelper.EnsureDirectoryExists($@"{appdata}\Temp\Flagrum\cache");
 
             Unpacker unpacker = null;
@@ -296,8 +347,8 @@ public class EarcMod
                         if (file.Type == EarcFileChangeType.Replace)
                         {
                             var original = unpacker!.Files.First(f => f.Uri == file.Uri);
-                            var data = ConvertAsset(file, logger,
-                                uri => unpacker.UnpackFileByQuery(file.Uri, out _));
+                            var data = imageMap.ContainsKey(file.Uri) ? imageMap[file.Uri] : ConvertAsset(file, logger,
+                                uri => unpacker.Files.First(f => f.Uri == uri).GetReadableData());
                             var processedData = ArchiveFile.GetProcessedData(file.Uri,
                                 original.Flags,
                                 data,
@@ -317,7 +368,7 @@ public class EarcMod
                         }
                         else
                         {
-                            var data = ConvertAsset(file, logger, _ => null);
+                            var data = imageMap.ContainsKey(file.Uri) ? imageMap[file.Uri] : ConvertAsset(file, logger, _ => null);
                             var processedData =
                                 ArchiveFile.GetProcessedData(file.Uri, file.Flags, data, 0, true,
                                     out var archiveFile);
@@ -350,7 +401,9 @@ public class EarcMod
         }
 
         var settings = new SettingsService();
+        var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var earcs = new ConcurrentDictionary<string, string>();
+        var imageMap = new ConcurrentDictionary<string, byte[]>();
 
         // Backup all files that will be replaced, altered, or removed
         Parallel.ForEach(
@@ -386,6 +439,55 @@ public class EarcMod
                 }
             });
 
+        // Process image files
+        foreach (var earc in Earcs.Where(e => e.Files.Any(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+                                                                   or EarcFileChangeType.AddToTextureArray
+                                                               && AssetExplorerItem.GetType(f.Uri) == ExplorerItemType.Texture
+                                                               && !f.ReplacementFilePath.EndsWith(".btex"))))
+        {
+            Unpacker unpacker = null;
+
+            if (earc.Type == EarcChangeType.Change)
+            {
+                var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
+                unpacker = new Unpacker(path);
+            }
+            
+            foreach (var file in earc.Files
+                         .Where(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+                                         or EarcFileChangeType.AddToTextureArray
+                                     && AssetExplorerItem.GetType(f.Uri) == ExplorerItemType.Texture
+                                     && !f.ReplacementFilePath.EndsWith(".btex")))
+            {
+                var hash = Cryptography.HashFileUri64(file.Uri);
+                var cachePath = $@"{appdata}\Temp\Flagrum\cache\{Id}{file.Id}{hash}.ffg";
+                var needsRebuild = !file.ReplacementFilePath.EndsWith(".ffg") 
+                                   && (file.FileLastModified !=
+                                   File.GetLastWriteTime(file.ReplacementFilePath).Ticks
+                                   || !File.Exists(cachePath));
+
+                if (needsRebuild)
+                {
+                    if (file.Type == EarcFileChangeType.Replace)
+                    {
+                        imageMap.TryAdd(file.Uri, ConvertAsset(file, logger,
+                            uri =>
+                            {
+                                var archiveFile = unpacker!.Files.First(f => f.Uri == uri);
+                                unpacker.ReadFileData(archiveFile);
+                                return archiveFile.GetReadableData();
+                            }));
+                    }
+                    else
+                    {
+                        imageMap.TryAdd(file.Uri, ConvertAsset(file, logger, _ => null));
+                    }
+                }
+            }
+            
+            unpacker?.Dispose();
+        }
+        
         Parallel.ForEach(Earcs.Where(e => e.Files.Any()), earc =>
         {
             var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
@@ -401,8 +503,7 @@ public class EarcMod
                 var unpacker = new Unpacker(path);
                 packer = unpacker.ToPacker();
             }
-
-            var appdata = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            
             IOHelper.EnsureDirectoryExists($@"{appdata}\Temp\Flagrum\cache");
 
             // Process physical files
@@ -434,7 +535,7 @@ public class EarcMod
                                     }
                                     else
                                     {
-                                        var data = ConvertAsset(file, logger,
+                                        var data = imageMap.ContainsKey(file.Uri) ? imageMap[file.Uri] : ConvertAsset(file, logger,
                                             uri => packer.Files.First(f => f.Uri == uri).GetReadableData());
                                         var processedData = ArchiveFile.GetProcessedData(file.Uri,
                                             original.Flags,
@@ -464,7 +565,7 @@ public class EarcMod
                                     }
                                     else
                                     {
-                                        var data = ConvertAsset(file, logger, uri => null);
+                                        var data = imageMap.ContainsKey(file.Uri) ? imageMap[file.Uri] : ConvertAsset(file, logger, _ => null);
                                         var processedData =
                                             ArchiveFile.GetProcessedData(file.Uri, file.Flags, data, 0, true,
                                                 out var archiveFile);

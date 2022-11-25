@@ -6,10 +6,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
+using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Layout;
@@ -27,6 +29,7 @@ public class Bootstrapper : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        ConvertBackups();
         await ScaleEarcModThumbnails();
         await LoadBinmods();
         LoadNodes();
@@ -49,7 +52,7 @@ public class Bootstrapper : ComponentBase
                     await File.WriteAllBytesAsync(imagePath, image);
                 }
             }
-            
+
             Context.SetBool(StateKey.HaveThumbnailsBeenResized, true);
         }
     }
@@ -202,5 +205,38 @@ public class Bootstrapper : ComponentBase
                 // Ignore, try again next time
             }
         });
+    }
+
+    private void ConvertBackups()
+    {
+        if (!Context.GetBool(StateKey.HasMigratedBackups))
+        {
+            var backupDirectory = $@"{Context.Settings.FlagrumDirectory}\earc\backup";
+            foreach (var backup in Context.EarcModBackups)
+            {
+                var hash = Cryptography.HashFileUri64(backup.Uri);
+                var backupPath = $@"{backupDirectory}\{hash}";
+
+                if (File.Exists(backupPath))
+                {
+                    var data = File.ReadAllBytes(backupPath);
+                    var fragment = new FmodFragment
+                    {
+                        OriginalSize = backup.Size,
+                        ProcessedSize = (uint)data.Length,
+                        Flags = backup.Flags,
+                        Key = backup.Key,
+                        RelativePath = backup.RelativePath,
+                        Data = data
+                    };
+
+                    fragment.Write($@"{backupDirectory}\{hash}.ffg");
+                    File.Delete(backupPath);
+                }
+            }
+
+            Context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(Context.EarcModBackups)}");
+            Context.SetBool(StateKey.HasMigratedBackups, true);
+        }
     }
 }
