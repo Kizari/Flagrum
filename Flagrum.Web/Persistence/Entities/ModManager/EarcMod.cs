@@ -391,7 +391,7 @@ public class EarcMod
                 var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
 
                 // Skip if 4K pack is missing so Flagrum doesn't crash
-                if (!File.Exists(path) && path.Contains(@"\highimages\"))
+                if (!File.Exists(path) && (path.Contains(@"\highimages\") || path.EndsWith("_$h2.earc")))
                 {
                     return;
                 }
@@ -436,7 +436,7 @@ public class EarcMod
                 var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
 
                 // Skip if 4K pack is missing so Flagrum doesn't crash
-                if (!File.Exists(path) && path.Contains(@"\highimages\"))
+                if (!File.Exists(path) && (path.Contains(@"\highimages\") || path.EndsWith("_$h2.earc")))
                 {
                     continue;
                 }
@@ -492,7 +492,7 @@ public class EarcMod
             else
             {
                 // Skip if 4K pack is missing so Flagrum doesn't crash
-                if (!File.Exists(path) && path.Contains(@"\highimages\"))
+                if (!File.Exists(path) && (path.Contains(@"\highimages\") || path.EndsWith("_$h2.earc")))
                 {
                     return;
                 }
@@ -939,7 +939,7 @@ public class EarcMod
             }
 
             // Skip if the 4K pack is not present to prevent crash
-            if (!File.Exists(earcPath) && earcPath.Contains(@"\highimages\"))
+            if (!File.Exists(earcPath) && (earcPath.Contains(@"\highimages\") || earcPath.EndsWith("_$h2.earc")))
             {
                 continue;
             }
