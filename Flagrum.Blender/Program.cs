@@ -113,8 +113,10 @@ public static class Program
                         {
                             Hash = m.DefaultMaterialHash.ToString(),
                             Name = material.Name,
+                            DetailUVScale = material.InterfaceInputs.FirstOrDefault(i => i.ShaderGenName == "Detail_UVScale")?.Values
+                                ?? material.InterfaceInputs.FirstOrDefault(i => i.ShaderGenName == "Normal1_UVScale")?.Values,
                             Textures = material.Textures
-                                .Where(t => t.ResourceFileHash > 0 && t.Path != null)
+                                .Where(t => t.ResourceFileHash > 0 && t.Path != null && t.Path.Contains('.'))
                                 .Select(t =>
                                 {
                                     var fileName = t.Path.Split('/').Last();

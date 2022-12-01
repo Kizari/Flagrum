@@ -178,7 +178,7 @@ public class Packer
 
     public void WriteToFile(string path)
     {
-        var archiveStream = new MemoryStream();
+        using var archiveStream = new MemoryStream();
 
         _logger.LogInformation("Packing archive...");
 
@@ -201,6 +201,7 @@ public class Packer
         var endOfUriList = SerializeUriList(out var uriListStream);
         archiveStream.Seek(_header.UriListOffset, SeekOrigin.Begin);
         uriListStream.CopyTo(archiveStream);
+        uriListStream.Dispose();
 
         _header.PathListOffset =
             Serialization.GetAlignment((uint)(_header.UriListOffset + endOfUriList), PointerSize);
@@ -208,20 +209,24 @@ public class Packer
         var endOfPathList = SerializePathList(out var pathListStream);
         archiveStream.Seek(_header.PathListOffset, SeekOrigin.Begin);
         pathListStream.CopyTo(archiveStream);
+        pathListStream.Dispose();
 
         _header.DataOffset = Serialization.GetAlignment(_header.PathListOffset + (uint)endOfPathList, BlockSize);
 
         var dataStream = SerializeFileData();
         archiveStream.Seek(_header.DataOffset, SeekOrigin.Begin);
         dataStream.CopyTo(archiveStream);
+        dataStream.Dispose();
 
         var headerStream = SerializeHeader();
         archiveStream.Seek(0, SeekOrigin.Begin);
         headerStream.CopyTo(archiveStream);
+        headerStream.Dispose();
 
         var fileHeaderStream = SerializeFileHeaders();
         archiveStream.Seek(ArchiveHeader.Size, SeekOrigin.Begin);
         fileHeaderStream.CopyTo(archiveStream);
+        fileHeaderStream.Dispose();
 
         File.WriteAllBytes(path, archiveStream.ToArray());
     }
@@ -250,6 +255,7 @@ public class Packer
         stream.Write(new byte[16]);
 
         _header.Hash = Cryptography.Base64Hash(stream.ToArray());
+        stream.Dispose();
 
         stream = new MemoryStream();
 

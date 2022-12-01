@@ -29,6 +29,7 @@ public class Bootstrapper : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
+        HandleEarcModThumbnails();
         ConvertBackups();
         await ScaleEarcModThumbnails();
         await LoadBinmods();
@@ -237,6 +238,54 @@ public class Bootstrapper : ComponentBase
 
             Context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(Context.EarcModBackups)}");
             Context.SetBool(StateKey.HasMigratedBackups, true);
+        }
+    }
+
+    private void HandleEarcModThumbnails()
+    {
+        var modIds = Context.EarcMods.Select(m => m.Id).ToList();
+        var thumbnailPaths = Directory.EnumerateFiles(Context.Settings.EarcModThumbnailDirectory).ToList();
+        var thumbnailIds = thumbnailPaths.Select(p => p.Split('\\').Last().Split('.').First()).ToList();
+        var wwwrootIds = Directory.EnumerateFiles($@"{IOHelper.GetWebRoot()}\EarcMods")
+            .Select(p => p.Split('\\').Last().Split('.').First())
+            .ToList();
+        
+        // Delete any thumbnails for mods that no longer exist
+        foreach (var thumbnail in thumbnailPaths)
+        {
+            var thumbnailId = thumbnail.Split('\\').Last().Split('.').First();
+            if (!modIds.Any(m => m.ToString() == thumbnailId))
+            {
+                File.Delete(thumbnail);
+            }
+        }
+        
+        // Clone any thumbnails that aren't in this folder yet
+        foreach (var modId in modIds)
+        {
+            if (!thumbnailIds.Any(t => t == modId.ToString()))
+            {
+                var path = $@"{IOHelper.GetWebRoot()}\EarcMods\{modId}.png";
+                if (File.Exists(path))
+                {
+                    var destination = $@"{Context.Settings.EarcModThumbnailDirectory}\{modId}.png";
+                    File.Copy(path, destination);
+                }
+            }
+        }
+        
+        // Clone any thumbnails that exist in this folder, but not wwwroot
+        foreach (var modId in modIds)
+        {
+            if (!wwwrootIds.Any(t => t == modId.ToString()))
+            {
+                var path = $@"{Context.Settings.EarcModThumbnailDirectory}\{modId}.png";
+                if (File.Exists(path))
+                {
+                    var destination = $@"{IOHelper.GetWebRoot()}\EarcMods\{modId}.png";
+                    File.Copy(path, destination);
+                }
+            }
         }
     }
 }

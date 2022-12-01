@@ -96,6 +96,7 @@ public class BlenderMaterialData
     public string Hash { get; set; }
     public string Name { get; set; }
     public float[] UVScale { get; set; }
+    public float[] DetailUVScale { get; set; }
     public IEnumerable<BlenderTextureData> Textures { get; set; }
 }
 

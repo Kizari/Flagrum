@@ -154,29 +154,6 @@ public class EarcMod
         });
     }
 
-    public void AddTextureArrayAddition(string earcPath, string textureArrayUri, string texturePath)
-    {
-        var earc = Earcs.FirstOrDefault(e => e.EarcRelativePath.Equals(earcPath, StringComparison.OrdinalIgnoreCase));
-
-        if (earc == null)
-        {
-            earc = new EarcModEarc
-            {
-                EarcRelativePath = earcPath
-            };
-
-            Earcs.Add(earc);
-        }
-
-        earc.IsExpanded = true;
-        earc.Files.Add(new EarcModFile
-        {
-            Uri = textureArrayUri,
-            ReplacementFilePath = texturePath,
-            Type = EarcFileChangeType.AddToTextureArray
-        });
-    }
-
     public async Task SaveCardOnly(FlagrumDbContext context)
     {
         var mod = context.EarcMods.FirstOrDefault(m => m.Id == Id) ?? new EarcMod();
@@ -412,6 +389,13 @@ public class EarcMod
                     or EarcFileChangeType.AddToTextureArray)), earc =>
             {
                 var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
+
+                // Skip if 4K pack is missing so Flagrum doesn't crash
+                if (!File.Exists(path) && path.Contains(@"\highimages\"))
+                {
+                    return;
+                }
+                
                 using var unpacker = new Unpacker(path);
 
                 foreach (var replacement in earc.Files.Where(r =>
@@ -450,6 +434,13 @@ public class EarcMod
             if (earc.Type == EarcChangeType.Change)
             {
                 var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
+
+                // Skip if 4K pack is missing so Flagrum doesn't crash
+                if (!File.Exists(path) && path.Contains(@"\highimages\"))
+                {
+                    continue;
+                }
+                
                 unpacker = new Unpacker(path);
             }
             
@@ -487,7 +478,7 @@ public class EarcMod
             
             unpacker?.Dispose();
         }
-        
+
         Parallel.ForEach(Earcs.Where(e => e.Files.Any()), earc =>
         {
             var path = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
@@ -500,6 +491,12 @@ public class EarcMod
             }
             else
             {
+                // Skip if 4K pack is missing so Flagrum doesn't crash
+                if (!File.Exists(path) && path.Contains(@"\highimages\"))
+                {
+                    return;
+                }
+                
                 var unpacker = new Unpacker(path);
                 packer = unpacker.ToPacker();
             }
@@ -666,6 +663,8 @@ public class EarcMod
             var destination = $@"{settings.GameDataDirectory}\{file.RelativePath}";
             File.Copy(file.FilePath, destination, true);
         });
+        
+        GC.Collect();
     }
 
     private void UpdateThumbnail()
@@ -788,7 +787,7 @@ public class EarcMod
                     Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
                     var btexHeader = BtexConverter.ReadBtexHeader(withoutSedb);
 
-                    return converter.ToBtex(new BtexBuildRequest
+                    var result = converter.ToBtex(new BtexBuildRequest
                     {
                         Name = originalNameWithoutExtension,
                         PixelFormat = btexHeader.Format,
@@ -802,10 +801,14 @@ public class EarcMod
                         },
                         SourceData = data
                     });
+                    
+                    GC.Collect();
+                    return result;
                 }
             }
 
             data = converter.ToBtex(originalNameWithoutExtension, extension, originalType, data);
+            GC.Collect();
         }
 
         // Convert any XML files to XMB2
@@ -935,6 +938,12 @@ public class EarcMod
                 continue;
             }
 
+            // Skip if the 4K pack is not present to prevent crash
+            if (!File.Exists(earcPath) && earcPath.Contains(@"\highimages\"))
+            {
+                continue;
+            }
+            
             using var unpacker = new Unpacker(earcPath);
             var packer = unpacker.ToPacker();
 

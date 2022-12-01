@@ -120,7 +120,11 @@
                     }
 
                     var textureData = Context.GetFileByUri(texture.Path);
-                    textures.Add(texture.Path, ConvertTexture(textureData));
+
+                    if (textureData.Length > 0)
+                    {
+                        textures.Add(texture.Path, ConvertTexture(textureData));
+                    }
                 }
 
                 if (IncludeHighTextures && !string.IsNullOrWhiteSpace(material.HighTexturePackAsset))
@@ -243,7 +247,11 @@
                 }
 
                 var textureData = Context.GetFileByUri(highTexture);
-                textures.Add(highTexture, ConvertTexture(textureData));
+
+                if (textureData.Length > 0)
+                {
+                    textures.Add(highTexture, ConvertTexture(textureData));
+                }
             }
 
             return highTexturePack;

@@ -79,6 +79,7 @@ class BlenderMaterialData:
     Name: str
     UVScale: list[float]
     Textures: dict[str, str]
+    DetailUVScale: list[float]
 
 
 @dataclass(init=False)

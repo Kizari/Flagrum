@@ -132,7 +132,7 @@ public class BuildContext
                 materials.Add(materialEntry.Name.Replace(".json", ""), materialBytes);
             }
 
-            Parallel.ForEach(textures, data =>
+            foreach (var data in textures)
             {
                 var texture = new FmdTexture();
                 var converter = new TextureConverter();
@@ -140,7 +140,7 @@ public class BuildContext
                 texture.TextureSlot = data.TextureSlot;
                 texture.Data = converter.ToBtex(data.Name, data.Extension, data.Type, data.Data);
                 fmd.Textures.Add(texture);
-            });
+            }
 
             Parallel.ForEach(materials, material =>
             {

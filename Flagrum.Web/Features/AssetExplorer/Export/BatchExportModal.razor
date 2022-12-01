@@ -79,7 +79,7 @@
                     Directory.CreateDirectory($"{folder}\\{directory}");
                 }
 
-                Parallel.ForEach(files, file =>
+                foreach (var file in files)
                 {
                     var relativePath = file.Replace(Parent.SelectedDirectory.Item.Path, "");
                     var outputPath = $"{folder}{relativePath.Replace(".btex", $".{Extension.ToLower()}")}";
@@ -93,7 +93,7 @@
                         };
 
                     File.WriteAllBytes(outputPath, data);
-                });
+                }
 
                 Parent.IsLoading = false;
                 StateHasChanged();

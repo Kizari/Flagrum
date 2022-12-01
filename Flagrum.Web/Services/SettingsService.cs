@@ -45,6 +45,13 @@ public class SettingsService
         {
             Directory.CreateDirectory(CacheDirectory);
         }
+        
+        EarcModThumbnailDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\earc\thumbnails";
+
+        if (!Directory.Exists(EarcModThumbnailDirectory))
+        {
+            Directory.CreateDirectory(EarcModThumbnailDirectory);
+        }
 
         ModStagingDirectory =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Temp\Flagrum\staging";
@@ -162,6 +169,7 @@ public class SettingsService
     public bool IsReady { get; set; }
     public string FlagrumDirectory { get; }
     public string CacheDirectory { get; }
+    public string EarcModThumbnailDirectory { get; }
     public string ModStagingDirectory { get; }
     public string EarcModsDirectory { get; }
     public string SettingsPath { get; }
