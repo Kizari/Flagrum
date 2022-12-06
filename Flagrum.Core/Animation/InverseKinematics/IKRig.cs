@@ -49,11 +49,12 @@ public class IKJoint
     [ProtoMember(1)] public IKJointType Type { get; set; }
     [ProtoMember(2)] public int ModelBoneId { get; set; }
     [ProtoMember(3)] public string ModelBoneName { get; set; }
-    [ProtoMember(5)] public int Parent { get; set; }
     [ProtoMember(4)] public IList<int> NonIKChildrenIds { get; set; }
+    [ProtoMember(5)] public int Parent { get; set; }
     [ProtoMember(6)] public IList<uint> Children { get; set; }
     [ProtoMember(7)] public IList<string> NonIKChildren { get; set; }
-    [ProtoMember(8)] public IKFrame BindPose { get; set; }
+    [ProtoMember(8)] public float Unknown { get; set; }
+    [ProtoMember(9)] public IKFrame BindPose { get; set; }
 }
 
 [ProtoContract]
