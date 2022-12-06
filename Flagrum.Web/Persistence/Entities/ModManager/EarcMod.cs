@@ -927,21 +927,24 @@ public class EarcMod
             .FirstOrDefault()!;
 
         var backupDirectory = $@"{context.Settings.FlagrumDirectory}\earc\backup";
+        var earcs = new ConcurrentDictionary<string, string>();
 
-        foreach (var earc in unmodified.Earcs)
+        // Repack all earcs with their original files
+        Parallel.ForEach(unmodified.Earcs, earc =>
         {
             var earcPath = $@"{context.Settings.GameDataDirectory}\{earc.EarcRelativePath}";
+            var stagingPath = $@"{context.Settings.ModStagingDirectory}\{earc.Id}.earc";
 
             if (earc.Type == EarcChangeType.Create)
             {
                 File.Delete(earcPath);
-                continue;
+                return;
             }
 
             // Skip if the 4K pack is not present to prevent crash
             if (!File.Exists(earcPath) && (earcPath.Contains(@"\highimages\") || earcPath.EndsWith("_$h2.earc")))
             {
-                continue;
+                return;
             }
             
             using var unpacker = new Unpacker(earcPath);
@@ -975,20 +978,17 @@ public class EarcMod
                 }
             }
 
-            packer.WriteToFile(earcPath);
-
-            // Remove backups
-            foreach (var replacement in earc.Files.Where(r =>
-                         r.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
-            {
-                var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
-                var backupFilePath = $@"{backupDirectory}\{hash}.ffg";
-                File.Delete(backupFilePath);
-            }
-
-            context.ChangeTracker.Clear();
+            packer.WriteToFile(stagingPath);
+            earcs.TryAdd(earcPath, stagingPath);
+        });
+        
+        // Move the repacked earcs into place now that they have all repacked successfully
+        foreach (var (earcPath, stagingPath) in earcs)
+        {
+            File.Move(stagingPath, earcPath, true);
         }
-
+        
+        // Revert loose files
         foreach (var file in unmodified.LooseFiles)
         {
             var path = $@"{context.Settings.GameDataDirectory}\{file.RelativePath}";
@@ -1006,6 +1006,20 @@ public class EarcMod
                 File.Delete(backupPath);
             }
         }
+        
+        // Now that the mod has been successfully reverted, remove the backup files
+        foreach (var earc in unmodified.Earcs)
+        {
+            foreach (var replacement in earc.Files.Where(r =>
+                         r.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
+            {
+                var hash = Cryptography.HashFileUri64(replacement.Uri).ToString();
+                var backupFilePath = $@"{backupDirectory}\{hash}.ffg";
+                File.Delete(backupFilePath);
+            }
+        }
+        
+        context.ChangeTracker.Clear();
     }
 
     public static async Task<EarcLegacyConversionResult> ConvertLegacyZip(string path, FlagrumDbContext context,

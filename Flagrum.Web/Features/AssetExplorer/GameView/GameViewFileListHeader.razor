@@ -1,0 +1,15 @@
+﻿@inherits Flagrum.Web.Features.AssetExplorer.Base.AssetExplorerComponent
+
+@if (AppState.Node == null)
+{
+    <div class="row">
+        <strong class="font-display flex-grow">data://</strong>
+    </div>
+}
+else
+{
+    <div class="row">
+        <strong class="font-display flex-grow">@AppState.Node.Name</strong>
+        <span class="material-icons select-none cursor-pointer" style="font-size: 0.9rem" @onclick="() => Parent.RegenerateModal?.Open()">settings</span>
+    </div>
+}

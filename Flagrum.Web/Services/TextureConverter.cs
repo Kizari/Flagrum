@@ -234,6 +234,7 @@ public class TextureConverter
             BtexSourceFormat.Wic => TexHelper.Instance.LoadFromWICMemory(pointer, request.SourceData.Length,
                 WIC_FLAGS.NONE),
             BtexSourceFormat.Targa => TexHelper.Instance.LoadFromTGAMemory(pointer, request.SourceData.Length),
+            BtexSourceFormat.Dds => TexHelper.Instance.LoadFromDDSMemory(pointer, request.SourceData.Length, DDS_FLAGS.NONE),
             _ => throw new NotImplementedException("Unsupported source format")
         };
         
@@ -249,7 +250,8 @@ public class TextureConverter
         var dxgiFormat = (DXGI_FORMAT)BtexConverter.FormatMap[request.PixelFormat];
         var metadata = image.GetMetadata();
 
-        if (metadata.Format != dxgiFormat)
+        // If the image is already DDS, let the user commit their own sins
+        if (metadata.Format != dxgiFormat && request.SourceFormat != BtexSourceFormat.Dds)
         {
             var beforeConversionImage = image;
             image = TexHelper.Instance.IsCompressed(dxgiFormat)

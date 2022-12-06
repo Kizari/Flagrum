@@ -422,7 +422,7 @@ public static class BtexConverter
             DxgiFormat.BC5_UNORM or DxgiFormat.BC5_SNORM or DxgiFormat.BC5_TYPELESS => 16,
             DxgiFormat.BC6H_UF16 or DxgiFormat.BC6H_SF16 or DxgiFormat.BC6H_TYPELESS => 16,
             DxgiFormat.BC7_UNORM or DxgiFormat.BC7_UNORM_SRGB or DxgiFormat.BC7_TYPELESS => 16,
-            _ => throw new Exception("Unsupported pixel format")
+            _ => 16 // This may come back to bite me in the ass :)))))
         };
     }
 

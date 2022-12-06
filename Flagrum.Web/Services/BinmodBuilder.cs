@@ -31,6 +31,7 @@ public class BinmodBuilder
     {
         _mod = mod;
         _packer = new Packer();
+        _packer.SetFlags(ArchiveHeaderFlags.Copyguard);
         _packer.AddFile(_modmeta.Build(_mod), GetDataPath("index.modmeta"));
 
         var exml = _entityPackageBuilder.BuildExml(_mod);

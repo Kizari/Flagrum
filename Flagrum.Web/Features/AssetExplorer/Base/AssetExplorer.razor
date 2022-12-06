@@ -1,0 +1,14 @@
+﻿@inherits AssetExplorerComponent
+
+<LoadingView Text="@LoadingMessage" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
+    <CascadingValue Value="this" Name="AssetExplorer">
+
+        @AddressBarTemplate
+
+        <div class="flex flex-row flex-grow flex-shrink bg-dark-600" style="max-height: calc(100vh - 58px);">
+            @FileListTemplate
+            <Preview @ref="Preview" />
+        </div>
+
+    </CascadingValue>
+</LoadingView>

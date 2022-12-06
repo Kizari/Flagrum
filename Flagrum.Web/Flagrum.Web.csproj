@@ -99,14 +99,6 @@
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>Index.ja-JP.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-        <EmbeddedResource Update="Features\AssetExplorer\Previews\Preview.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>Preview.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Features\AssetExplorer\Previews\Preview.ja-JP.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>Preview.ja-JP.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
         <EmbeddedResource Update="Features\ModLibrary\Index.resx">
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>Index.Designer.cs</LastGenOutput>
@@ -286,6 +278,14 @@
         <EmbeddedResource Update="Features\EarcMods\Modals\ModCardModal.resx">
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>ModCardModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Base\Preview.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Preview.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Base\Preview.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Preview.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
 

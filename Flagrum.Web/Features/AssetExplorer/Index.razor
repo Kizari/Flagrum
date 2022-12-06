@@ -1,9 +1,7 @@
-﻿@page "/assets"
+﻿@page "/assetsold"
 @using Flagrum.Web.Persistence.Entities
 @using System.Timers
 @using Flagrum.Web.Features.AssetExplorer.Data
-@using Microsoft.EntityFrameworkCore
-@using System.IO
 
 @inject AppStateService AppState
 @inject SettingsService Settings
@@ -15,74 +13,73 @@
     <ExportContextMenu/>
     <RegenerateModal @ref="RegenerateModal"/>
     <BatchExportModal @ref="BatchExportModal"/>
-</CascadingValue>
 
-<LoadingView Text="@LoadingMessage" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
-    <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
-        @if (View == 1 && AppState.Node != null)
-        {
-            <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="() => SetNode(AppState.Node.Parent)">arrow_upward</span>
-        }
-        <div class="flex-grow pr-3">
-            <EditForm Model="this">
-                <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter"/>
-            </EditForm>
-        </div>
-        <div class="flex flex-row">
-            <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
-                <ModTypeButton Text="@L["GameView"]" Value="1"/>
-                <ModTypeButton Text="@L["FileSystem"]" Value="2"/>
-            </ModTypeButtonGroup>
-        </div>
-    </div>
 
-    <div class="flex flex-row">
-        <div class="bg-dark border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
-            @if (View == 1)
+    <LoadingView Text="@LoadingMessage" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
+        <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+            @if (View == 1 && AppState.Node != null)
             {
-                if (AppState.Node == null)
+                <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="() => SetNode(AppState.Node.Parent)">arrow_upward</span>
+            }
+            <div class="flex-grow pr-3">
+                <EditForm Model="this">
+                    <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter"/>
+                </EditForm>
+            </div>
+            <div class="flex flex-row">
+                <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
+                    <ModTypeButton Text="@L["GameView"]" Value="1"/>
+                    <ModTypeButton Text="@L["FileSystem"]" Value="2"/>
+                </ModTypeButtonGroup>
+            </div>
+        </div>
+
+        <div class="flex flex-row">
+            <div class="bg-dark border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
+                @if (View == 1)
                 {
-                    <div class="row">
-                        <strong class="font-display flex-grow">data://</strong>
-                    </div>
+                    if (AppState.Node == null)
+                    {
+                        <div class="row">
+                            <strong class="font-display flex-grow">data://</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <strong class="font-display flex-grow">@AppState.Node.Name</strong>
+                            <span class="material-icons select-none cursor-pointer" style="font-size: 0.9rem" @onclick="() => RegenerateModal?.Open()">settings</span>
+                        </div>
+                    }
                 }
                 else
                 {
-                    <div class="row">
-                        <strong class="font-display flex-grow">@AppState.Node.Name</strong>
-                        <span class="material-icons select-none cursor-pointer" style="font-size: 0.9rem" @onclick="() => RegenerateModal?.Open()">settings</span>
-                    </div>
+                    <strong class="font-display flex-grow">@L["FileSystem"]</strong>
                 }
-            }
-            else
-            {
-                <strong class="font-display flex-grow">@L["FileSystem"]</strong>
-            }
-        </div>
-        @if (View == 2)
-        {
-            <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
-                <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong>
-                <Button Icon="file_download" Text="@L["BatchExport"]" OnClick="() => BatchExportModal?.Open()"/>
             </div>
-        }
-        <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
-            @if (SelectedItem == null)
+            @if (View == 2)
             {
-                <strong class="flex-grow font-display">@L["NoFileSelected"]</strong>
+                <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
+                    @* <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong> *@
+                    <Button Icon="file_download" Text="@L["BatchExport"]" OnClick="() => BatchExportModal?.Open()"/>
+                </div>
             }
-            else
-            {
-                var relativePath = Context.GetArchiveRelativeLocationByUri(SelectedItem.Uri);
-                <Hyperlink Uri="@($@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}")" Text="@relativePath"/>
-            }
+            <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
+                @if (SelectedItem == null)
+                {
+                    <strong class="flex-grow font-display">@L["NoFileSelected"]</strong>
+                }
+                else
+                {
+                    var relativePath = Context.GetArchiveRelativeLocationByUri(SelectedItem.Uri);
+                    <Hyperlink Uri="@($@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}")" Text="@relativePath"/>
+                }
+            </div>
         </div>
-    </div>
 
-    <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
-        <div class="border-r border-dark-550 overflow-auto py-2"
-             style="flex: 0 0 315px; height: 100%;">
-            <CascadingValue Value="this">
+        <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
+            <div class="border-r border-dark-550 overflow-auto py-2"
+                 style="flex: 0 0 315px; height: 100%;">
                 @if (View == 1)
                 {
                     if (AppState.Node != null)
@@ -97,38 +94,33 @@
                         </span>
                     }
                 }
-                else
-                {
-                    <ExplorerView @ref="FileSystemExplorer" Path="" Directories="true" InitialPath="@Directory"/>
-                }
-            </CascadingValue>
-        </div>
-
-        @if (View == 2)
-        {
-            <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
-                <CascadingValue Value="this">
-                    <ExplorerView Path="@Directory"/>
-                </CascadingValue>
             </div>
-        }
 
-        <div class="flex flex-col bg-dark-600 overflow-y-auto" style="flex: 1 1 auto; height: 100%">
-            <Preview Item="SelectedItem"/>
+            @if (View == 2)
+            {
+                <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
+                    <ExplorerView Path="@Directory"/>
+                </div>
+            }
+
+            <div class="flex flex-col bg-dark-600 overflow-y-auto" style="flex: 1 1 auto; height: 100%">
+                <Preview Item="SelectedItem"/>
+            </div>
         </div>
-    </div>
-</LoadingView>
+    </LoadingView>
 
-<AlertModal @ref="Alert" />
+</CascadingValue>
+
+<AlertModal @ref="Alert"/>
 
 @code
 {
     private string _directory;
     private Timer _timer;
 
-    private int View { get; set; } = 1;
+    public int View { get; set; }
     public ExplorerItemRow SelectedDirectory { get; set; }
-    private ExplorerItemRow SelectedFile { get; set; }
+    //private ExplorerItemRow SelectedFile { get; set; }
     public AssetExplorerItem SelectedItem { get; set; }
 
     public bool IsLoading { get; set; }
@@ -138,10 +130,10 @@
     public AssetExplorerNode ContextNode { get; set; }
     private BatchExportModal BatchExportModal { get; set; }
     private RegenerateModal RegenerateModal { get; set; }
-    private AlertModal Alert { get; set; }
-    private ExplorerView FileSystemExplorer { get; set; }
+    public AlertModal Alert { get; set; }
+    //private ExplorerView FileSystemExplorer { get; set; }
 
-    private string CurrentPath { get; set; }
+    public string CurrentPath { get; set; }
 
     private string Directory
     {
@@ -153,8 +145,11 @@
         }
     }
 
+    public void CheckEnter(KeyboardEventArgs e) { }
+
     protected override void OnInitialized()
     {
+    //View = Context.GetEnum<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
         Directory = AppState.GetCurrentAssetExplorerPath();
 
         if (AppState.Node == null)
@@ -185,82 +180,6 @@
         StateHasChanged();
     }
 
-    private async void CheckEnter(KeyboardEventArgs e)
-    {
-        if (e.Code is "Enter" or "NumpadEnter")
-        {
-            if (View == 2)
-            {
-                if (File.Exists(CurrentPath))
-                {
-                    var directory = Path.GetDirectoryName(CurrentPath);
-                    SetActiveDirectory(directory);
-                    View = 1;
-                    StateHasChanged();
-                    await Task.Delay(100);
-                    View = 2;
-                    StateHasChanged();
-                }
-                else if (System.IO.Directory.Exists(CurrentPath))
-                {
-                    SetActiveDirectory(CurrentPath);
-                    View = 1;
-                    StateHasChanged();
-                    await Task.Delay(100);
-                    View = 2;
-                    StateHasChanged();
-                }
-                else
-                {
-                    Alert.Open("Error", "Invalid Path", "Nothing was found at the given path.", null);
-                }
-            }
-            else
-            {
-                var processedUri = CurrentPath.Trim().Replace("data://", "data:/");
-                if (processedUri[^1] == '/')
-                {
-                    processedUri = processedUri[..^1];
-                }
-                
-                var tokens = processedUri.Split('/')
-                    .Select(t => t.ToLower())
-                    .ToList();
-
-                if (tokens[0] == "data:")
-                {
-                    var currentNode = Context.AssetExplorerNodes.Include(n => n.Children).First();
-                    for (var i = 1; i < tokens.Count; i++)
-                    {
-                        currentNode = Context.AssetExplorerNodes.Include(n => n.Children)
-                            .FirstOrDefault(n => n.ParentId == currentNode.Id && n.Name == tokens[i]);
-
-                        if (currentNode == null)
-                        {
-                            Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
-                            return;
-                        }
-                    }
-
-                    if (!Context.AssetExplorerNodes.Any(n => n.Id == currentNode.Id && n.Children.Any()))
-                    {
-                        var parent = Context.AssetExplorerNodes.First(n => n.Id == currentNode.ParentId);
-                        SetNode(parent);
-                        SetSelectedItem(AssetExplorerItem.FromNode(currentNode, Context));
-                    }
-                    else
-                    {
-                        SetNode(currentNode);
-                    }
-                }
-                else
-                {
-                    Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
-                }
-            }
-        }
-    }
-
     public void SetNode(AssetExplorerNode node)
     {
         if (node != null)
@@ -287,24 +206,24 @@
         StateHasChanged();
     }
 
-    public void SetSelectedItem(ExplorerItemRow item)
-    {
-        if (item.Item.Type == ExplorerItemType.Directory)
-        {
-            SelectedDirectory?.SetSelected(false);
-            SelectedDirectory = item;
-            SelectedDirectory.SetSelected(true);
-        }
-        else
-        {
-            SelectedFile?.SetSelected(false);
-            SelectedFile = item;
-            SelectedFile.SetSelected(true);
-            SetSelectedItem(AssetExplorerItem.FromExplorerItem(item.Item));
-        }
-
-        StateHasChanged();
-    }
+    // public void SetSelectedItem(ExplorerItemRow item)
+    // {
+    //     if (item.Item.Type == ExplorerItemType.Directory)
+    //     {
+    //         SelectedDirectory?.SetSelected(false);
+    //         SelectedDirectory = item;
+    //         SelectedDirectory.SetSelected(true);
+    //     }
+    //     else
+    //     {
+    //         SelectedFile?.SetSelected(false);
+    //         SelectedFile = item;
+    //         SelectedFile.SetSelected(true);
+    //         SetSelectedItem(AssetExplorerItem.FromExplorerItem(item.Item));
+    //     }
+    //
+    //     StateHasChanged();
+    // }
 
     public void SetSelectedItem(AssetExplorerItem item)
     {
@@ -326,10 +245,12 @@
         {
             WpfService.Set3DViewportVisibility(false);
         }
-        
+
         ClearSelectedItem();
-        
+
         View = view;
+        Context.SetEnum(StateKey.CurrentAssetExplorerView, view);
+
         UpdateCurrentPath();
         StateHasChanged();
     }

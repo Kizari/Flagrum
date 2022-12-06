@@ -1,0 +1,76 @@
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Persistence.Entities
+@inject FlagrumDbContext Context
+@inject IStringLocalizer<Features.AssetExplorer.Index> Localizer
+@inject IStringLocalizer<Preview> PreviewLocalizer
+@inject SettingsService Settings
+
+<div class="border-t border-b border-r border-dark-550 flex flex-col" style="flex: 1 1 auto;">
+    <div class="row border-b border-dark-550 px-4 py-3 bg-dark">
+        @if (Item == null)
+        {
+            <strong class="flex-grow font-display">@Localizer["NoFileSelected"]</strong>
+        }
+        else
+        {
+            <Hyperlink Uri="@EarcUri" Text="@EarcRelativePath" CssClass="mt-0"/>
+        }
+    </div>
+    @switch (Item?.Type)
+    {
+        case ExplorerItemType.Texture:
+            <TexturePreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Material:
+            <MaterialPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Xml:
+            <XmlPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Text:
+            <TextPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Model:
+            <ModelPreviewV2 Item="@Item"/>
+            break;
+        default:
+            <div class="flex-grow flex flex-row items-center">
+                <div class="mx-auto">
+                    <strong class="text-grey-500">
+                        @PreviewLocalizer["NoPreview"]
+                    </strong>
+                </div>
+            </div>
+            break;
+    }
+</div>
+
+@code
+{
+    private AssetExplorerItem _item;
+    private AssetExplorerItem Item
+    {
+        get => _item;
+        set
+        {
+            if (_item != value)
+            {
+                _item = value;
+                EarcRelativePath = Context.GetArchiveRelativeLocationByUri(Item.Uri);
+                var relativePath = EarcRelativePath.Contains('\\')
+                    ? '\\' + EarcRelativePath[..EarcRelativePath.LastIndexOf('\\')]
+                    : "";
+                EarcUri = $@"{Settings.GameDataDirectory}{relativePath}";
+            }
+        }
+    }
+    
+    private string EarcRelativePath { get; set; }
+    private string EarcUri { get; set; }
+
+    public void SetItem(AssetExplorerNode node)
+    {
+        Item = AssetExplorerItem.FromNode(node, Context);
+        StateHasChanged();
+    }
+}

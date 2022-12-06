@@ -1,0 +1,46 @@
+﻿@page "/assets"
+
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Features.AssetExplorer.FileSystem
+@using Flagrum.Web.Features.AssetExplorer.GameView
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Persistence.Entities
+
+@inject FlagrumDbContext Context
+
+<CascadingValue Value="this">
+    @switch (CurrentView)
+    {
+        case AssetExplorerView.GameView:
+            <GameViewAssetExplorer @ref="AssetExplorer" />
+            break;
+        case AssetExplorerView.FileSystem:
+            <FileSystemAssetExplorer @ref="AssetExplorer" />
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+    
+    <ExportContextMenu/>
+    <RegenerateModal @ref="RegenerateModal"/>
+    <BatchExportModal @ref="BatchExportModal"/>
+</CascadingValue>
+
+<AlertModal @ref="Alert" />
+
+@code 
+{
+    public AlertModal Alert { get; set; }
+    private BatchExportModal BatchExportModal { get; set; }
+    public RegenerateModal RegenerateModal { get; set; }
+    private AssetExplorer AssetExplorer { get; set; }
+    
+    public AssetExplorerView CurrentView { get; set; }
+
+    public void CallStateHasChanged() => StateHasChanged();
+
+    protected override void OnInitialized()
+    {
+        CurrentView = Context.GetEnum<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
+    }
+}

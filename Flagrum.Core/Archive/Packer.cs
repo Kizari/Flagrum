@@ -284,6 +284,11 @@ public class Packer
 
         var stream = new MemoryStream();
         var hash = ArchiveFile.HeaderHash ^ _header.Hash;
+        
+        if (_header.Flags.HasFlag(ArchiveHeaderFlags.Copyguard))
+        {
+            hash ^= ArchiveHeader.CopyguardHash;
+        }
 
         foreach (var file in Files)
         {

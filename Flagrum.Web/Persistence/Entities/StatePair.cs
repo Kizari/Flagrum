@@ -19,7 +19,8 @@ public enum StateKey
     ViewportPanModifierKey,
     ViewportPanMouseAction,
     CurrentEarcCategory,
-    HasMigratedBackups
+    HasMigratedBackups,
+    CurrentAssetExplorerView
 }
 
 public class StatePair

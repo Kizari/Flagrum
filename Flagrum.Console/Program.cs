@@ -1,12 +1,19 @@
 ﻿using System.IO;
+using System.Text;
 using Flagrum.Console.Scripts.Terrain;
+using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
+var path = @"C:\Users\Kieran\Downloads\nh02_000_player_vr.exml";
+var output = new StringBuilder();
+Xmb2Document.Dump(File.ReadAllBytes(path), output);
+File.WriteAllText(path.Replace(".exml", ".xml"), output.ToString());
+
 // x37_y36
-HebScripts.ReplaceMergedMaskMap(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\environment\world\heightmaps\lod00\height_x37_y36.heb",
-    @"C:\Modding\Wiz\Terrain\HebTextures\2_modified.tga");
+// HebScripts.ReplaceMergedMaskMap(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\environment\world\heightmaps\lod00\height_x37_y36.heb",
+//     @"C:\Modding\Wiz\Terrain\HebTextures\2_modified.tga");
 //HebScripts.DumpImages(@"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\environment\world\heightmaps\lod00\height_x37_y36.heb", @"C:\Modding\Wiz\Terrain\HebTextures");
 //TerrainPaletteScripts.DumpTerrainTextureTable("data://environment/world_train/heightmaps/material/terrainmaterial.tpd");
 //TextureConversionScripts.DumpPngTextureArrayFromBtex("data://environment/world_train/sourceimages/terrainarraytex_xpec_00_b.tif", @"C:\Modding\Wiz\TextureDump");

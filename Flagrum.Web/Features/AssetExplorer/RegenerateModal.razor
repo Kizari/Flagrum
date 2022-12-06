@@ -45,16 +45,16 @@
         {
             WpfService.Set3DViewportVisibility(false);
         }
-        
+
         Modal.Open();
     }
 
     private async Task OnClick()
     {
         AppState.Node = null;
-        Parent.ClearSelectedItem();
+    //Parent.ClearSelectedItem();
         MainLayout.CallStateHasChanged();
-        CloseModal();        
+        CloseModal();
 
         await Task.Run(() =>
         {
@@ -71,7 +71,7 @@
     private void CloseModal()
     {
         Modal.Close();
-        
+
         if (AppState.Is3DViewerOpen)
         {
             WpfService.Set3DViewportVisibility(true);

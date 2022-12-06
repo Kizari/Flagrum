@@ -1,4 +1,5 @@
-﻿@using Flagrum.Web.Features.AssetExplorer.Data
+﻿@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Features.AssetExplorer.Data
 @implements IDisposable
 @inject JSInterop Interop
 @inject AppStateService AppState
@@ -26,7 +27,7 @@
 
 @if (Item.IsExpanded)
 {
-    <ExplorerView Path="@Item.Path" Indent="Indent" Directories="Item.IsExpandable" InitialPath="@DirectParent.InitialPath"/>
+    @* <ExplorerView Path="@Item.Path" Indent="Indent" Directories="Item.IsExpandable" InitialPath="@DirectParent.InitialPath"/> *@
 }
 
 @code
@@ -56,10 +57,10 @@
 
     protected override void OnInitialized()
     {
-        if (DirectParent.InitialPath != null)
-        {
-            DirectParent.InitialLoad += OnInitialLoad;
-        }
+    // if (DirectParent.InitialPath != null)
+    // {
+    //     DirectParent.InitialLoad += OnInitialLoad;
+    // }
     }
 
     public void SetSelected(bool state)
@@ -80,7 +81,7 @@
             Parent.SetActiveDirectory(Item.Path);
         }
 
-        Parent.SetSelectedItem(this);
+    //Parent.SetSelectedItem(this);
     }
 
     private void Expand()
@@ -91,27 +92,27 @@
 
     private async void OnInitialLoad(object sender, EventArgs e)
     {
-        var path = DirectParent.InitialPath;
+    //var path = DirectParent.InitialPath;
 
-        if (path.StartsWith(Item.Path) && Item.IsExpandable)
-        {
-            Item.IsExpanded = true;
-        }
-
-        if (path.Equals(Item.Path))
-        {
-            Parent.SetSelectedItem(this);
-            await Interop.ScrollToElement(_id);
-        }
+    // if (path.StartsWith(Item.Path) && Item.IsExpandable)
+    // {
+    //     Item.IsExpanded = true;
+    // }
+    //
+    // if (path.Equals(Item.Path))
+    // {
+    //     Parent.SetSelectedItem(this);
+    //     await Interop.ScrollToElement(_id);
+    // }
 
         StateHasChanged();
     }
 
     public void Dispose()
     {
-        if (DirectParent.InitialPath != null)
-        {
-            DirectParent.InitialLoad -= OnInitialLoad;
-        }
+    // if (DirectParent.InitialPath != null)
+    // {
+    //     DirectParent.InitialLoad -= OnInitialLoad;
+    // }
     }
 }
