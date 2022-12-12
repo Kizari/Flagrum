@@ -1,33 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Features.AssetExplorer.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Flagrum.Web.Features.AssetExplorer.Base;
 
-public partial class ExplorerView
+public partial class ExplorerListView
 {
-    private AssetExplorerNode _node;
+    [CascadingParameter(Name = "AssetExplorer")]
+    public AssetExplorer Parent { get; set; }
 
-    [CascadingParameter] public System.Index Parent { get; set; }
+    [Parameter] public IAssetExplorerNode Node { get; set; }
 
-    [Parameter]
-    public AssetExplorerNode Node
-    {
-        get => _node;
-        set
-        {
-            if (_node != value)
-            {
-                _node = value;
-                GetNodes();
-            }
-        }
-    }
-
-    private List<AssetExplorerNode> Nodes { get; set; } = new();
+    private ICollection<IAssetExplorerNode> Children => Parent.CurrentLayout == FileListLayout.TreeView
+        ? Node.Children.Where(n => n.Type != ExplorerItemType.Directory).ToList()
+        : Node.Children ?? Node.Parent.Children;
 
     protected override async Task OnAfterRenderAsync(bool first)
     {
@@ -35,15 +24,6 @@ public partial class ExplorerView
         {
             await JSInterop.SetFocusToElement("directoryView");
         }
-    }
-
-    private void GetNodes()
-    {
-        Nodes = Context.AssetExplorerNodes
-            .Where(n => n.ParentId == Node.Id)
-            .OrderByDescending(n => n.Children.Any())
-            .ThenBy(n => n.Name)
-            .ToList();
     }
 
     private void OnKeyDown(KeyboardEventArgs e)
@@ -61,6 +41,28 @@ public partial class ExplorerView
 
     private void ShiftNode(bool up)
     {
+        // var currentNode = Parent.FileList.CurrentNode;
+        // if (currentNode != null)
+        // {
+        //     var children = currentNode.Parent.Children.ToList();
+        //     var index = children.IndexOf(currentNode);
+        //     if (up)
+        //     {
+        //         index--;
+        //         if (index >= 0)
+        //         {
+        //             Parent.FileList.SetCurrentNode(children[index]);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         index++;
+        //         if (index < children.Count)
+        //         {
+        //             Parent.FileList.SetCurrentNode(children[index]);
+        //         }
+        //     }
+        // }
         // var currentNode = Nodes.FirstOrDefault(n => n.GetUri(Context) == Parent.SelectedItem?.Uri);
         // if (currentNode == null && Nodes.Any())
         // {
@@ -87,5 +89,10 @@ public partial class ExplorerView
         //         }
         //     }
         // }
+    }
+
+    private void SetContextNode(IAssetExplorerNode node)
+    {
+        Parent.ContextNode = node;
     }
 }

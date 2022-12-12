@@ -103,7 +103,7 @@ public class AirspacePopup : Popup
         }
     }
 
-    private void UpdatePopupPosition()
+    public void UpdatePopupPosition()
     {
         var placementTarget = PlacementTarget as FrameworkElement;
         var child = Child as FrameworkElement;

@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject AppStateService AppState
 @inject SettingsService Settings
+@inject FlagrumDbContext Context
 
 <div class="flex flex-row h-full">
     @if (Settings.IsReady)
@@ -9,7 +10,7 @@
             <MainMenu/>
         </CascadingValue>
         <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
-            @if (AppState.Node == null && IsReady)
+            @if (AppState.IsIndexing)
             {
                 <div class="row py-2 px-4 text-grey-400" style="background-color: rgba(5, 5, 1, 0.35)">
                     <LoadingIndicator/>
@@ -35,7 +36,13 @@
 
 @code
 {
-    public bool IsReady { get; set; }
+    protected override void OnInitialized()
+    {
+        if (!Context.AssetExplorerNodes.Any())
+        {
+            AppState.IsIndexing = true;
+        }
+    }
 
     public void CallStateHasChanged()
     {

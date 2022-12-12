@@ -7,6 +7,7 @@
 @using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
 @using Flagrum.Core.Archive
 @using System.Text
+@using Flagrum.Web.Features.AssetExplorer.Base
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
@@ -44,8 +45,8 @@
 
 @code
 {
-    [CascadingParameter]
-    public Index Parent { get; set; }
+    [CascadingParameter(Name = "AssetExplorer")]
+    public AssetExplorer Parent { get; set; }
 
     private Modal Modal { get; set; }
     private string Extension { get; set; } = "PNG";
@@ -72,7 +73,7 @@
 
     private async Task Export()
     {
-        var item = Parent.ContextItem;
+        var item = Parent.ContextNode;
         var defaultName = item.Name + ".gfxbin";
         const string filter = "Game Model|*.gmdl.gfxbin";
 
@@ -89,7 +90,7 @@
             path = path.Replace(".gmdl.gfxbin", "");
             path += ".gmdl.gfxbin";
 
-            var gfxbin = item.Data();
+            var gfxbin = item.Data;
             var reader = new BinaryReader(gfxbin);
             var header = new GfxbinHeader();
             header.Read(reader);

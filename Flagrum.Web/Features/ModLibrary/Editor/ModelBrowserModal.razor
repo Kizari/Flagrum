@@ -1,4 +1,5 @@
 ﻿@using System.Timers
+@using Flagrum.Web.Features.AssetExplorer.Data
 @using Flagrum.Web.Persistence.Entities
 @inject AppStateService AppState
 @inject FlagrumDbContext Context
@@ -38,7 +39,7 @@
                     <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
                         <CascadingValue Value="this">
                             @foreach (var node in CurrentNode.Children
-                                .OrderByDescending(n => n.Children.Any())
+                                .OrderByDescending(n => n.Children != null && n.Children.Any())
                                 .ThenBy(n => n.Name))
                             {
                                 <ModelExplorerRow Node="node"/>
@@ -67,20 +68,20 @@
     public ModelReplacement Parent { get; set; }
 
     private Timer _timer;
-    private AssetExplorerNode _currentNode;
+    private IAssetExplorerNode _currentNode;
     private ModelReplacementPath _path;
 
     private Modal Modal { get; set; }
 
     private string CurrentUri { get; set; }
 
-    private AssetExplorerNode CurrentNode
+    private IAssetExplorerNode CurrentNode
     {
         get => _currentNode;
         set
         {
             _currentNode = value;
-            CurrentUri = _currentNode.GetUri(Context);
+            CurrentUri = _currentNode.Path;
         }
     }
 
@@ -110,11 +111,11 @@
         }
     }
 
-    public void SetNode(AssetExplorerNode node)
+    public void SetNode(IAssetExplorerNode node)
     {
         if (node.Name.EndsWith(".gmdl"))
         {
-            _path.Path = node.GetUri(Context).Replace("data://", "");
+            _path.Path = node.Path.Replace("data://", "");
             Close();
             Parent.CallStateHasChanged();
             return;
@@ -128,7 +129,7 @@
     {
         if (CurrentNode.Parent != null)
         {
-            CurrentNode = CurrentNode.Parent;
+            CurrentNode = (AssetExplorerNode)CurrentNode.Parent;
         }
     }
 

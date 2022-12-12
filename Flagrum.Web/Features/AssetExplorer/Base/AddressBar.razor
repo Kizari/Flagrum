@@ -2,19 +2,22 @@
 @inherits AssetExplorerComponent
 
 <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
-    @if (Parent.CurrentView == AssetExplorerView.FileSystem || AppState.Node != null)
+    @if (Parent.CurrentView == AssetExplorerView.FileSystem || AppState.RootGameViewNode != null)
     {
         <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="Up">arrow_upward</span>
     }
     <div class="flex-grow pr-3">
         <EditForm Model="this">
-            <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter"/>
+            <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter" IsReadOnly="IsDisabled"/>
         </EditForm>
     </div>
-    <div class="flex flex-row">
-        <ModTypeButtonGroup Target="@((int)Parent.CurrentView)" OnItemSelected="OnViewChanged">
-            <ModTypeButton Text="@Localizer["GameView"]" Value="@((int)AssetExplorerView.GameView)"/>
-            <ModTypeButton Text="@Localizer["FileSystem"]" Value="@((int)AssetExplorerView.FileSystem)"/>
-        </ModTypeButtonGroup>
-    </div>
+    @if (AssetExplorer.ItemSelectedOverride == null)
+    {
+        <div class="flex flex-row">
+            <ModTypeButtonGroup Target="@((int)Parent.CurrentView)" OnItemSelected="OnViewChanged">
+                <ModTypeButton Text="@Localizer["GameView"]" Value="@((int)AssetExplorerView.GameView)"/>
+                <ModTypeButton Text="@Localizer["FileSystem"]" Value="@((int)AssetExplorerView.FileSystem)"/>
+            </ModTypeButtonGroup>
+        </div>
+    }
 </div>

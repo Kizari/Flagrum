@@ -177,6 +177,7 @@
                         </ContentPresenter.Style>
                     </ContentPresenter>
                     <architecture:AirspacePopup Grid.Row="1"
+                                                x:Name="AirspacePopup"
                                                 PlacementTarget="{Binding ElementName=MainContentPresenter}"
                                                 FollowPlacementTarget="True"
                                                 AllowOutsideScreenPlacement="False"
@@ -187,7 +188,20 @@
                                                 HorizontalOffset="{Binding ViewportLeft}"
                                                 VerticalOffset="{Binding ViewportTop}"
                                                 Width="{Binding ViewportWidth}"
-                                                Height="{Binding ViewportHeight}">
+                                                Height="{Binding ViewportHeight}"
+                                                Initialized="AirspacePopup_OnInitialized">
+                        <!-- <architecture:AirspacePopup Grid.Row="1"  -->
+                        <!--     PlacementTarget="{Binding ElementName=MainContentPresenter}" -->
+                        <!--                             FollowPlacementTarget="True" -->
+                        <!--                             AllowOutsideScreenPlacement="True" -->
+                        <!--                             ParentWindow="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" -->
+                        <!--                             IsOpen="{Binding IsViewportVisible}" -->
+                        <!--                             AllowsTransparency="True" -->
+                        <!--                             Placement="Relative" -->
+                        <!--     HorizontalOffset="{Binding ViewportLeft}" -->
+                        <!--     VerticalOffset="{Binding ViewportTop}" -->
+                        <!--                             Width="{Binding ViewportWidth}" -->
+                        <!--                             Height="{Binding ViewportHeight}"> -->
                         <helix:Viewport3DX x:Name="Viewer"
                                            BackgroundColor="#44403C"
                                            Camera="{Binding Camera}"

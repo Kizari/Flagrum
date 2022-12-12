@@ -33,4 +33,11 @@ public static class Xmb2Document
 
         Thread.CurrentThread.CurrentCulture = previousCulture;
     }
+
+    public static byte[] ToXml(byte[] xmb2)
+    {
+        var builder = new StringBuilder();
+        Dump(xmb2, builder);
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
 }

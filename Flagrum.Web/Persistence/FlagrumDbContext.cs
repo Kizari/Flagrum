@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Flagrum.Web.Features.AssetExplorer.Data;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;

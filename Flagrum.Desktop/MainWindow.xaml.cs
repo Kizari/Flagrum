@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using Flagrum.Desktop.Architecture;
 using Flagrum.Desktop.Services;
 using Flagrum.Web.Services;
 using HelixToolkit.Wpf.SharpDX;
@@ -26,7 +27,7 @@ namespace Flagrum.Desktop;
 /// </summary>
 public partial class MainWindow : INotifyPropertyChanged
 {
-    public MainWindow(string? fmodPath)
+    public MainWindow(AppStateService appStateService, string? fmodPath)
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
         var bounds = screen.Bounds;
@@ -97,7 +98,8 @@ public partial class MainWindow : INotifyPropertyChanged
             builder.Services.Configure(configure);
         });
 
-        services.AddScoped<IWpfService, WpfService>(services => new WpfService(this));
+        services.AddScoped<IWpfService, WpfService>(_ => new WpfService(this));
+        services.AddSingleton(_ => appStateService);
         services.AddBlazorWebView();
 
         services.AddFlagrum();
@@ -167,5 +169,10 @@ public partial class MainWindow : INotifyPropertyChanged
     private void Viewer_OnInitialized(object? sender, EventArgs e)
     {
         ((MainViewModel)DataContext).Viewer = (Viewport3DX)sender;
+    }
+
+    private void AirspacePopup_OnInitialized(object? sender, EventArgs e)
+    {
+        ((MainViewModel)DataContext).AirspacePopup = (AirspacePopup)sender;
     }
 }

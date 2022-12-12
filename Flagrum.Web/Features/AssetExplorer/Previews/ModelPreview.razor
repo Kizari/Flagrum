@@ -1,54 +1,132 @@
 ﻿@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Core.Utilities
+@using Flagrum.Web.Features.AssetExplorer.Base
 @using Flagrum.Web.Features.AssetExplorer.Data
-@using Flagrum.Core.Gfxbin.Gmdl.Components
-@using Flagrum.Core.Gfxbin.Serialization
-@using Flagrum.Core.Gfxbin.Data
-@using Flagrum.Core.Gfxbin.Gmdl
-@inject FlagrumDbContext Context
+@implements IDisposable
 
-<div class="p-6">
-    @if (Model != null)
-    {
-        foreach (var meshObject in Model.MeshObjects.Where(mo => mo.Meshes.Any(m => m.LodNear == 0)).OrderBy(mo => mo.Name))
-        {
-            <h4 class="text-grey-300 mb-4">@meshObject.Name</h4>
-            @foreach (var mesh in meshObject.Meshes.Where(m => m.LodNear == 0).OrderBy(m => m.Name))
-            {
-                <div class="box p-4 mb-4">
-                    <h6 class="text-grey-300 mb-1">@mesh.Name</h6>
-                    @Model.Header.Dependencies.FirstOrDefault(d => d.PathHash == mesh.DefaultMaterialHash.ToString())?.Path
-                </div>
-            }
+@inject IWpfService WpfService
+@inject JSInterop Interop
+@inject AppStateService AppState
+@inject FlagrumDbContext Context
+@inject IStringLocalizer<App> AppLocalizer
+
+<div class="flex flex-row items-center p-2 sticky top-0 z-40 bg-grey-900">
+    <span class="material-icons ml-2 mr-2 text-grey-200 text-sm">360</span>
+    <span class="text-grey-200 text-sm">
+        @{
+            var rotateModifierKey = Context.GetString(StateKey.ViewportRotateModifierKey);
+            var rotateMouseAction = Context.GetString(StateKey.ViewportRotateMouseAction).SpacePascalCase();
         }
+        @($"{(rotateModifierKey is null or "None" ? "" : rotateModifierKey + " + ")}{rotateMouseAction}")
+    </span>
+    <span class="material-icons ml-10 mr-2 text-grey-200 text-sm">pan_tool</span>
+    <span class="text-grey-200 flex-grow text-sm">
+        @{
+            var panModifierKey = Context.GetString(StateKey.ViewportPanModifierKey);
+            var panMouseAction = Context.GetString(StateKey.ViewportPanMouseAction).SpacePascalCase();
+        }
+        @($"{(panModifierKey is null or "None" ? "" : panModifierKey + " + ")}{panMouseAction}")
+    </span>
+    <Button Icon="settings" Text=@AppLocalizer["Settings"] OnClick="OpenSettingsModal" CssClass="@(IsLoading ? "invisible" : "")"/>
+</div>
+<div id="viewportContainer" class="h-full bg-grey-700 row">
+    @if (IsLoading)
+    {
+        <div class="flex flex-col items-center w-full">
+            <div class="continuous-3"></div>
+            <span class="block text-accent1-200 font-display font-bold mt-4 mr-2">Loading Model</span>
+        </div>
     }
 </div>
 
+<CascadingValue Value="this">
+    <ModelPreviewSettingsModal @ref="ModelPreviewSettingsModal"/>
+</CascadingValue>
+
 @code
 {
-    private AssetExplorerItem _previousItem;
-
+    [CascadingParameter]
+    public IAssetExplorerParent Parent { get; set; }
+    
     [Parameter]
-    public AssetExplorerItem Item { get; set; }
+    public IAssetExplorerNode Item { get; set; }
 
-    private Model Model { get; set; }
+    private IAssetExplorerNode _lastItem;
+    private bool _isRendered;
+    private bool IsLoading { get; set; }
+    private ModelPreviewSettingsModal ModelPreviewSettingsModal { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_previousItem == Item)
+        if (firstRender)
         {
-            return;
+            IsLoading = true;
+            StateHasChanged();
+
+            await Interop.ObserveElementResize(DotNetObjectReference.Create(this), "viewportContainer");
+
+            var left = await Interop.GetElementLeftOffset("viewportContainer");
+            var top = await Interop.GetElementTopOffset("viewportContainer");
+            var width = await Interop.GetElementWidth("viewportContainer");
+            var height = await Interop.GetElementHeight("viewportContainer");
+
+            WpfService.Resize3DViewport((int)left, (int)top, (int)width, (int)height);
+            WpfService.Set3DViewportVisibility(true);
+
+            var gpubin = Item.Parent.Children.FirstOrDefault(n => n.Path.EndsWith(".gpubin"))!;
+            await WpfService.ChangeModel(Item.Data, gpubin.Data, Parent.CurrentView, gpubin.Path);
+
+            _lastItem = Item;
+            _isRendered = true;
+            AppState.Is3DViewerOpen = true;
+
+            IsLoading = false;
+            StateHasChanged();
         }
+    }
 
-        var gfxbin = Item.Data();
-        var reader = new BinaryReader(gfxbin);
-        var header = new GfxbinHeader();
-        header.Read(reader);
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_isRendered && Item.Path != _lastItem.Path)
+        {
+            IsLoading = true;
+            StateHasChanged();
+            
+            WpfService.Set3DViewportVisibility(false);
 
-        var gpubinUri = header.Dependencies.FirstOrDefault(d => d.Path.EndsWith(".gpubin"))?.Path;
-        var gpubin = Context.GetFileByUri(gpubinUri);
+            await Task.Run(async () =>
+            {
+                var gpubin = Item.Parent.Children.FirstOrDefault(n => n.Path.EndsWith(".gpubin"))!;
+                await InvokeAsync(async () => await WpfService.ChangeModel(Item.Data, gpubin.Data, Parent.CurrentView, gpubin.Path));
+            });
+            
+            WpfService.Set3DViewportVisibility(true);
 
-        Model = new ModelReader(gfxbin, gpubin).Read();
+            _lastItem = Item;
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
 
+    [JSInvokable]
+    public void OnResize(double left, double top, double width, double height)
+    {
+        WpfService.Resize3DViewport((int)left, (int)top, (int)width, (int)height);
+    }
+
+    public void Dispose()
+    {
+        WpfService.Set3DViewportVisibility(false);
+        AppState.Is3DViewerOpen = false;
+    }
+
+    private void OpenSettingsModal()
+    {
+        ModelPreviewSettingsModal?.Open();
+    }
+
+    public void CallStateHasChanged()
+    {
         StateHasChanged();
     }
 }

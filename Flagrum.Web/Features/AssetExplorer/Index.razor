@@ -1,281 +1,59 @@
-﻿@page "/assetsold"
-@using Flagrum.Web.Persistence.Entities
-@using System.Timers
-@using Flagrum.Web.Features.AssetExplorer.Data
+﻿@page "/assets"
 
-@inject AppStateService AppState
-@inject SettingsService Settings
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Features.AssetExplorer.FileSystem
+@using Flagrum.Web.Features.AssetExplorer.GameView
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Persistence.Entities
+
+@implements IAssetExplorerParent
+
 @inject FlagrumDbContext Context
-@inject IStringLocalizer<Index> L
-@inject IWpfService WpfService
 
 <CascadingValue Value="this">
-    <ExportContextMenu/>
+    @switch (CurrentView)
+    {
+        case AssetExplorerView.GameView:
+            <AssetExplorer @ref="AssetExplorer">
+                <AddressBarTemplate>
+                    <GameViewAddressBar @ref="AssetExplorer.AddressBar"/>
+                </AddressBarTemplate>
+                <FileListTemplate>
+                    <GameViewFileList @ref="AssetExplorer.FileList"/>
+                </FileListTemplate>
+            </AssetExplorer>
+            break;
+        case AssetExplorerView.FileSystem:
+            <AssetExplorer @ref="AssetExplorer">
+                <AddressBarTemplate>
+                    <FileSystemAddressBar @ref="AssetExplorer.AddressBar"/>
+                </AddressBarTemplate>
+                <FileListTemplate>
+                    <FileSystemFileList @ref="AssetExplorer.FileList"/>
+                </FileListTemplate>
+            </AssetExplorer>
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+    
     <RegenerateModal @ref="RegenerateModal"/>
-    <BatchExportModal @ref="BatchExportModal"/>
-
-
-    <LoadingView Text="@LoadingMessage" IsLoading="@IsLoading" CssClass="flex flex-col h-full">
-        <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
-            @if (View == 1 && AppState.Node != null)
-            {
-                <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="() => SetNode(AppState.Node.Parent)">arrow_upward</span>
-            }
-            <div class="flex-grow pr-3">
-                <EditForm Model="this">
-                    <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter"/>
-                </EditForm>
-            </div>
-            <div class="flex flex-row">
-                <ModTypeButtonGroup Target="1" OnItemSelected="OnViewChanged">
-                    <ModTypeButton Text="@L["GameView"]" Value="1"/>
-                    <ModTypeButton Text="@L["FileSystem"]" Value="2"/>
-                </ModTypeButtonGroup>
-            </div>
-        </div>
-
-        <div class="flex flex-row">
-            <div class="bg-dark border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
-                @if (View == 1)
-                {
-                    if (AppState.Node == null)
-                    {
-                        <div class="row">
-                            <strong class="font-display flex-grow">data://</strong>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="row">
-                            <strong class="font-display flex-grow">@AppState.Node.Name</strong>
-                            <span class="material-icons select-none cursor-pointer" style="font-size: 0.9rem" @onclick="() => RegenerateModal?.Open()">settings</span>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <strong class="font-display flex-grow">@L["FileSystem"]</strong>
-                }
-            </div>
-            @if (View == 2)
-            {
-                <div class="row bg-dark border-t border-b border-r border-dark-550 py-2 px-3" style="flex: 0 0 315px;">
-                    @* <strong class="font-display flex-grow" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">@SelectedDirectory?.Item?.Name</strong> *@
-                    <Button Icon="file_download" Text="@L["BatchExport"]" OnClick="() => BatchExportModal?.Open()"/>
-                </div>
-            }
-            <div class="flex-grow bg-dark border-t border-b border-dark-550 row py-2 px-3">
-                @if (SelectedItem == null)
-                {
-                    <strong class="flex-grow font-display">@L["NoFileSelected"]</strong>
-                }
-                else
-                {
-                    var relativePath = Context.GetArchiveRelativeLocationByUri(SelectedItem.Uri);
-                    <Hyperlink Uri="@($@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}")" Text="@relativePath"/>
-                }
-            </div>
-        </div>
-
-        <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
-            <div class="border-r border-dark-550 overflow-auto py-2"
-                 style="flex: 0 0 315px; height: 100%;">
-                @if (View == 1)
-                {
-                    if (AppState.Node != null)
-                    {
-                        <VirtualExplorerView Node="AppState.Node"/>
-                    }
-                    else
-                    {
-                        <span class="block py-1 px-3">
-                            @L["WaitFileIndexing"]<br/><br/>
-                            <em>@L["PleaseWait"]</em>
-                        </span>
-                    }
-                }
-            </div>
-
-            @if (View == 2)
-            {
-                <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
-                    <ExplorerView Path="@Directory"/>
-                </div>
-            }
-
-            <div class="flex flex-col bg-dark-600 overflow-y-auto" style="flex: 1 1 auto; height: 100%">
-                <Preview Item="SelectedItem"/>
-            </div>
-        </div>
-    </LoadingView>
-
 </CascadingValue>
 
-<AlertModal @ref="Alert"/>
+<AlertModal @ref="Alert" />
 
-@code
+@code 
 {
-    private string _directory;
-    private Timer _timer;
-
-    public int View { get; set; }
-    public ExplorerItemRow SelectedDirectory { get; set; }
-    //private ExplorerItemRow SelectedFile { get; set; }
-    public AssetExplorerItem SelectedItem { get; set; }
-
-    public bool IsLoading { get; set; }
-    private string LoadingMessage { get; set; }
-
-    public AssetExplorerItem ContextItem { get; set; }
-    public AssetExplorerNode ContextNode { get; set; }
-    private BatchExportModal BatchExportModal { get; set; }
-    private RegenerateModal RegenerateModal { get; set; }
     public AlertModal Alert { get; set; }
-    //private ExplorerView FileSystemExplorer { get; set; }
+    public RegenerateModal RegenerateModal { get; set; }
+    public AssetExplorer AssetExplorer { get; set; }
+    
+    public AssetExplorerView CurrentView { get; set; }
 
-    public string CurrentPath { get; set; }
-
-    private string Directory
-    {
-        get => _directory;
-        set
-        {
-            _directory = value;
-            CurrentPath = value;
-        }
-    }
-
-    public void CheckEnter(KeyboardEventArgs e) { }
+    public void CallStateHasChanged() => StateHasChanged();
 
     protected override void OnInitialized()
     {
-    //View = Context.GetEnum<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
-        Directory = AppState.GetCurrentAssetExplorerPath();
-
-        if (AppState.Node == null)
-        {
-            _timer = new Timer(1000);
-            _timer.Elapsed += (_, _) =>
-            {
-                if (AppState.Node != null)
-                {
-                    _timer.Stop();
-                    InvokeAsync(StateHasChanged);
-                }
-            };
-            _timer.Start();
-        }
-        else
-        {
-            var nodeId = Context.GetInt(StateKey.CurrentAssetNode);
-            if (nodeId > 0)
-            {
-                AppState.Node = Context.AssetExplorerNodes
-                    .FirstOrDefault(n => n.Id == nodeId);
-                CurrentPath = AppState.Node?.GetUri(Context);
-            }
-        }
-
-        UpdateCurrentPath();
-        StateHasChanged();
-    }
-
-    public void SetNode(AssetExplorerNode node)
-    {
-        if (node != null)
-        {
-            AppState.Node = Context.AssetExplorerNodes
-                .FirstOrDefault(n => n.Id == node.Id);
-            CurrentPath = node.GetUri(Context);
-            Context.SetInt(StateKey.CurrentAssetNode, node.Id);
-
-            StateHasChanged();
-        }
-    }
-
-    public void SetContextNode(AssetExplorerNode node)
-    {
-        ContextNode = node;
-        ContextItem = AssetExplorerItem.FromNode(node, Context);
-        StateHasChanged();
-    }
-
-    public void SetActiveDirectory(string path)
-    {
-        Directory = path;
-        StateHasChanged();
-    }
-
-    // public void SetSelectedItem(ExplorerItemRow item)
-    // {
-    //     if (item.Item.Type == ExplorerItemType.Directory)
-    //     {
-    //         SelectedDirectory?.SetSelected(false);
-    //         SelectedDirectory = item;
-    //         SelectedDirectory.SetSelected(true);
-    //     }
-    //     else
-    //     {
-    //         SelectedFile?.SetSelected(false);
-    //         SelectedFile = item;
-    //         SelectedFile.SetSelected(true);
-    //         SetSelectedItem(AssetExplorerItem.FromExplorerItem(item.Item));
-    //     }
-    //
-    //     StateHasChanged();
-    // }
-
-    public void SetSelectedItem(AssetExplorerItem item)
-    {
-        SelectedItem = item;
-        CurrentPath = $"{AppState.Node.GetUri(Context)}/{item.Name}";
-        StateHasChanged();
-    }
-
-    public void ClearSelectedItem()
-    {
-        SelectedItem = null;
-        CurrentPath = "data://";
-        StateHasChanged();
-    }
-
-    private void OnViewChanged(int view)
-    {
-        if (AppState.Is3DViewerOpen)
-        {
-            WpfService.Set3DViewportVisibility(false);
-        }
-
-        ClearSelectedItem();
-
-        View = view;
-        Context.SetEnum(StateKey.CurrentAssetExplorerView, view);
-
-        UpdateCurrentPath();
-        StateHasChanged();
-    }
-
-    private void UpdateCurrentPath()
-    {
-        if (View == 1)
-        {
-            CurrentPath = AppState.Node == null ? "data://" : AppState.Node.GetUri(Context);
-        }
-        else
-        {
-            CurrentPath = Directory;
-        }
-    }
-
-    public void SetLoading(bool state, string message = null)
-    {
-        LoadingMessage = L[message ?? "Exporting"];
-        IsLoading = state;
-        StateHasChanged();
-    }
-
-    public void CallStateHasChanged()
-    {
-        StateHasChanged();
+        CurrentView = Context.GetEnum<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
     }
 }

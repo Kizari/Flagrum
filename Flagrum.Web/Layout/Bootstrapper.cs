@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
+using Flagrum.Web.Features.AssetExplorer.Data;
 using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
@@ -27,15 +29,15 @@ public class Bootstrapper : ComponentBase
 
     [CascadingParameter] public MainLayout Parent { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        HandleEarcModThumbnails();
-        ConvertBackups();
-        await ScaleEarcModThumbnails();
-        await LoadBinmods();
-        LoadNodes();
-        Parent.IsReady = true;
-        Parent.CallStateHasChanged();
+        Parallel.Invoke(() => Task.Run(async () =>
+            {
+                HandleEarcModThumbnails();
+                await ScaleEarcModThumbnails();
+            }),
+            ConvertBackups,
+            () => Task.Run(async () => await LoadBinmods()));
     }
 
     private async Task ScaleEarcModThumbnails()
@@ -58,62 +60,45 @@ public class Bootstrapper : ComponentBase
         }
     }
 
-    private void LoadNodes()
-    {
-        if (!Context.AssetExplorerNodes.Any())
-        {
-            Task.Run(() =>
-            {
-                UriMapper.RegenerateMap();
-                OnNodesLoaded();
-                InvokeAsync(Parent.CallStateHasChanged);
-            });
-        }
-        else
-        {
-            OnNodesLoaded();
-        }
-    }
-
-    private void OnNodesLoaded()
-    {
-        // Set the root node
-        AppState.Node = Context.AssetExplorerNodes
-            .FirstOrDefault(n => n.Id == 1);
-
-        Task.Run(() =>
-        {
-            using var context = new FlagrumDbContext(Settings);
-
-            // Get all model nodes
-            var modelNodes = context.AssetExplorerNodes
-                .Where(n => n.Name.EndsWith(".gmdl"))
-                .ToList();
-
-            // Recursively populate parents for each node up the tree
-            foreach (var node in modelNodes)
-            {
-                node.TraverseDescending(context, n =>
-                {
-                    if (n.ParentId != null)
-                    {
-                        n.Parent = context.AssetExplorerNodes.FirstOrDefault(m => m.Id == n.ParentId);
-                        n.Parent.Children ??= new List<AssetExplorerNode>();
-                        n.Parent.Children.Add(n);
-                    }
-                });
-            }
-
-            // Get root node from arbitrary node
-            var rootNode = modelNodes[0];
-            while (rootNode.Parent != null)
-            {
-                rootNode = rootNode.Parent;
-            }
-
-            AppState.RootModelBrowserNode = rootNode;
-        });
-    }
+    // private void OnNodesLoaded()
+    // {
+    //     // Set the root node
+    //     AppState.Node = Context.AssetExplorerNodes
+    //         .FirstOrDefault(n => n.Id == 1);
+    //
+    //     Task.Run(() =>
+    //     {
+    //         using var context = new FlagrumDbContext(Settings);
+    //
+    //         // Get all model nodes
+    //         var modelNodes = context.AssetExplorerNodes
+    //             .Where(n => n.Name.EndsWith(".gmdl"))
+    //             .ToList();
+    //
+    //         // Recursively populate parents for each node up the tree
+    //         foreach (var node in modelNodes)
+    //         {
+    //             node.TraverseDescending(n =>
+    //             {
+    //                 if (n.ParentId != null)
+    //                 {
+    //                     n.Parent = context.AssetExplorerNodes.FirstOrDefault(m => m.Id == n.ParentId);
+    //                     ((AssetExplorerNode)n.Parent).ChildNodes ??= new List<AssetExplorerNode>();
+    //                     ((AssetExplorerNode)n.Parent).Children.Add(n);
+    //                 }
+    //             });
+    //         }
+    //
+    //         // Get root node from arbitrary node
+    //         var rootNode = modelNodes[0];
+    //         while (rootNode.Parent != null)
+    //         {
+    //             rootNode = (AssetExplorerNode)rootNode.Parent;
+    //         }
+    //
+    //         AppState.RootModelBrowserNode = rootNode;
+    //     });
+    // }
 
     private async Task LoadBinmods()
     {
@@ -249,7 +234,7 @@ public class Bootstrapper : ComponentBase
         var wwwrootIds = Directory.EnumerateFiles($@"{IOHelper.GetWebRoot()}\EarcMods")
             .Select(p => p.Split('\\').Last().Split('.').First())
             .ToList();
-        
+
         // Delete any thumbnails for mods that no longer exist
         foreach (var thumbnail in thumbnailPaths)
         {
@@ -259,7 +244,7 @@ public class Bootstrapper : ComponentBase
                 File.Delete(thumbnail);
             }
         }
-        
+
         // Clone any thumbnails that aren't in this folder yet
         foreach (var modId in modIds)
         {
@@ -273,7 +258,7 @@ public class Bootstrapper : ComponentBase
                 }
             }
         }
-        
+
         // Clone any thumbnails that exist in this folder, but not wwwroot
         foreach (var modId in modIds)
         {

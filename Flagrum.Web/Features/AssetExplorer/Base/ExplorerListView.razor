@@ -4,14 +4,13 @@
 @inject AppStateService AppState
 
 <div id="directoryView"
-     class="outline-none flex-grow flex-shrink overflow-auto pt-2 pb-4"
+     class="outline-none pt-2 pb-4"
      tabindex="0"
      @onkeydown="OnKeyDown"
      @onkeydown:preventDefault="true">
     <CascadingValue Value="this">
-        <Virtualize Items="Nodes" Context="node">
-            <ContextMenuTrigger MenuId="assetExplorerMenu">
-                @*@onmouseup="() => Parent.SetContextNode(node)"*@
+        <Virtualize Items="Children" ItemSize="28" Context="node">
+            <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => SetContextNode(node)">
                 <ExplorerRow Node="node"/>
             </ContextMenuTrigger>
         </Virtualize>

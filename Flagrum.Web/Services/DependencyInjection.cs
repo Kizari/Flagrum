@@ -8,12 +8,10 @@ public static class DependencyInjection
     public static IServiceCollection AddFlagrum(this IServiceCollection services)
     {
         services.AddLocalization();
-
         services.AddDbContext<FlagrumDbContext>();
         services.AddSingleton<SettingsService>();
         services.AddSingleton<UriMapper>();
         services.AddScoped<SteamWorkshopService>();
-        services.AddSingleton<AppStateService>();
         services.AddScoped<JSInterop>();
         services.AddScoped<BinmodBuilder>();
         services.AddScoped<BinmodTypeHelper>();
@@ -22,15 +20,7 @@ public static class DependencyInjection
         services.AddScoped<Modmeta>();
         services.AddScoped<EnvironmentPacker>();
         services.AddScoped<TerrainPacker>();
-
-        services.AddBlazorContextMenu(options =>
-        {
-            // options.ConfigureTemplate(defaultTemplate =>
-            // {
-            //     defaultTemplate.MenuCssClass = "context-menu";
-            //     defaultTemplate.MenuItemCssClass = "context-menu-item";
-            // });
-        });
+        services.AddBlazorContextMenu();
 
         return services;
     }

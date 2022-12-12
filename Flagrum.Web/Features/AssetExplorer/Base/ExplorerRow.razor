@@ -2,9 +2,10 @@
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 
-@*@(Parent.SelectedItem?.Uri == Node.GetUri(Context) || Parent.ContextNode == Node ? "bg-grey-700" : "")*@
-<div class="row py-1 px-4 transition-colors hover:bg-grey-700 select-none cursor-pointer"
+<div class="py-1 px-4 transition-colors hover:bg-grey-700 select-none cursor-pointer @(AssetExplorer.FileList?.CurrentNode.Path == Node.Path || AssetExplorer.ContextNode == Node ? "bg-grey-700" : "")"
      @onclick="() => OnClick(Node)">
-    <span class="material-icons text-sm">@AssetExplorerItem.GetIcon(Node.GetUri(Context))</span>
-    <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@AssetExplorerItem.GetDisplayName(Node.Name, AssetExplorerItem.GetType(Node.GetUri(Context)))</span>
+    <div class="row">
+        <span class="material-icons text-sm">@Node.Icon</span>
+        <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Node.DisplayName</span>
+    </div>
 </div>

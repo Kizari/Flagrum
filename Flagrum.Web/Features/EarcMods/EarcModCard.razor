@@ -96,6 +96,14 @@
 
     private async void ToggleMod(bool newState)
     {
+        if (Context.Settings.IsGameRunning())
+        {
+            Mod.IsActive = !newState; // Put the checkbox back into its original state
+            StateHasChanged();
+            Alert.Open("Error", "FFXV is Running", "Flagrum cannot enable or disable mods while the game is running. Please save and close down FFXV, then try again.", null);
+            return;
+        }
+        
         if (newState)
         {
             await Enable();

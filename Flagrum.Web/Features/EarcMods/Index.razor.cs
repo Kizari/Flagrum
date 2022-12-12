@@ -48,12 +48,12 @@ public partial class Index : ModComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        if (AppState.Node == null)
+        if (AppState.RootGameViewNode == null)
         {
             _timer = new Timer(1000);
             _timer.Elapsed += (_, _) =>
             {
-                if (AppState.Node != null)
+                if (AppState.RootGameViewNode != null)
                 {
                     _timer.Stop();
                     InvokeAsync(StateHasChanged);
@@ -157,6 +157,12 @@ public partial class Index : ModComponentBase
 
     private async Task Install()
     {
+        if (Context.Settings.IsGameRunning())
+        {
+            Alert.Open("Error", "FFXV is Running", "Flagrum cannot install mods while the game is running. Please save and close down FFXV, then try again.", null);
+            return;
+        }
+        
         await WpfService.OpenFileDialogAsync("Flagrum Mod|*.fmod;*.zip", async path => await InstallMod(path));
     }
 

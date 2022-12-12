@@ -198,13 +198,21 @@
                 await WpfService.OpenFileDialogAsync(filter, async file =>
                 {
                     Mod.AddReplacement(Context.GetArchiveRelativeLocationByUri(uri), uri, file);
-                    await InvokeAsync(StateHasChanged);
+                    await InvokeAsync(() =>
+                    {
+                        Modal.Close();
+                        StateHasChanged();
+                    });
                 });
                 break;
             }
             case EarcFileChangeType.Remove:
                 Mod.AddRemoval(Context.GetArchiveRelativeLocationByUri(uri), uri);
-                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(() =>
+                {
+                    Modal.Close();
+                    StateHasChanged();
+                });
                 break;
         }
 
@@ -226,6 +234,12 @@
 
     private async Task Save()
     {
+        if (Context.Settings.IsGameRunning())
+        {
+            Alert.Open("Error", "FFXV is Running", "Flagrum cannot apply mods while the game is running. Please save and close down FFXV, then try again.", null);
+            return;
+        }
+        
         LoadingText = "Saving Mod";
         IsLoading = true;
         StateHasChanged();

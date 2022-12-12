@@ -1,4 +1,5 @@
 ﻿@using Flagrum.Core.Utilities
+@using Flagrum.Web.Features.AssetExplorer.Data
 @using Flagrum.Web.Persistence.Entities
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
@@ -13,6 +14,9 @@
     </HeaderView>
     <BodyView>
         <div>
+            <div class="row mb-3">
+                <h5 class="text-accent1-200">Key Bindings</h5>
+            </div>
             <div class="row mb-3">
                 <label class="text-right pr-3" style="width: 190px">@Localizer["Rotate"]</label>
                 <select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
@@ -45,6 +49,15 @@
                     }
                 </select>
             </div>
+            <div class="row mb-3">
+                <h5 class="text-accent1-200">Texture Settings</h5>
+            </div>
+            <div class="row mb-8">
+                <label class="text-right pr-3">Texture Fidelity</label>
+                <EditForm Model="this">
+                    <EnumSelect TEnum="ModelViewerTextureFidelity" @bind-Value="TextureFidelity"/>
+                </EditForm>
+            </div>
             <Button Icon="save" Text=@AppLocalizer["Save"] OnClick="Save"/>
         </div>
     </BodyView>
@@ -53,7 +66,7 @@
 @code
 {
     [CascadingParameter]
-    public ModelPreviewV2 Parent { get; set; }
+    public ModelPreview Parent { get; set; }
 
     private AutosizeModal Modal { get; set; }
 
@@ -63,6 +76,7 @@
     private string PanMouseAction { get; set; }
     private List<string> ModifierKeys { get; set; } = new();
     private List<string> MouseActions { get; set; } = new();
+    private ModelViewerTextureFidelity TextureFidelity { get; set; }
 
     protected override void OnInitialized()
     {
@@ -76,6 +90,8 @@
         RotateMouseAction = Context.GetString(StateKey.ViewportRotateMouseAction);
         PanModifierKey = Context.GetString(StateKey.ViewportPanModifierKey);
         PanMouseAction = Context.GetString(StateKey.ViewportPanMouseAction);
+        var textureFidelity = Context.GetInt(StateKey.ViewportTextureFidelity);
+        TextureFidelity = textureFidelity == -1 ? ModelViewerTextureFidelity.Low : (ModelViewerTextureFidelity)textureFidelity;
 
         AppState.IsModalOpen = true;
         WpfService.Set3DViewportVisibility(false);
@@ -99,6 +115,7 @@
         Context.SetString(StateKey.ViewportRotateMouseAction, RotateMouseAction);
         Context.SetString(StateKey.ViewportPanModifierKey, PanModifierKey);
         Context.SetString(StateKey.ViewportPanMouseAction, PanMouseAction);
+        Context.SetInt(StateKey.ViewportTextureFidelity, (int)TextureFidelity);
 
         WpfService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
 

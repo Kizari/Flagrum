@@ -1,15 +1,22 @@
-﻿using Flagrum.Web.Persistence.Entities;
+﻿using Flagrum.Web.Features.AssetExplorer.Data;
 using Microsoft.AspNetCore.Components;
 
 namespace Flagrum.Web.Features.AssetExplorer.Base;
 
 public abstract partial class FileList
 {
-    protected RenderFragment FileListHeaderTemplate { get; set; }
+    [CascadingParameter(Name = "AssetExplorer")]
+    public AssetExplorer AssetExplorer { get; set; }
 
-    public void SetCurrentNode(AssetExplorerNode node)
+    public IAssetExplorerNode CurrentNode { get; set; }
+    public ExplorerTreeView ExplorerTreeView { get; set; }
+
+    protected abstract void PersistCurrentNode();
+
+    public void SetCurrentNode(IAssetExplorerNode node)
     {
-        AppState.Node = node;
-        StateHasChanged();
+        CurrentNode = node;
+        Parent.CallStateHasChanged();
+        PersistCurrentNode();
     }
 }

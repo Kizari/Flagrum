@@ -11,12 +11,12 @@
 
 @code
 {
-    private AssetExplorerItem _previousItem;
+    private IAssetExplorerNode _previousItem;
 
     private List<string> Lines { get; set; }
 
     [Parameter]
-    public AssetExplorerItem Item { get; set; }
+    public IAssetExplorerNode Item { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -25,7 +25,7 @@
             return;
         }
 
-        var bytes = Item.Data();
+        var bytes = Item.Data;
         Lines = Encoding.UTF8.GetString(bytes).Split('\n').ToList();
         StateHasChanged();
     }

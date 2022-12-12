@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Flagrum.Web.Persistence.Entities;
+﻿using Flagrum.Web.Features.AssetExplorer.Data;
 using Microsoft.AspNetCore.Components;
 
 namespace Flagrum.Web.Features.AssetExplorer.Base;
@@ -9,21 +8,28 @@ public partial class ExplorerRow
     [CascadingParameter(Name = "AssetExplorer")]
     public AssetExplorer AssetExplorer { get; set; }
 
-    [CascadingParameter] public ExplorerView Parent { get; set; }
+    [CascadingParameter] public ExplorerListView Parent { get; set; }
 
-    [Parameter] public AssetExplorerNode Node { get; set; }
+    [Parameter] public IAssetExplorerNode Node { get; set; }
 
-    private void OnClick(AssetExplorerNode node)
+    private void OnClick(IAssetExplorerNode node)
     {
-        AssetExplorer.AddressBar.SetCurrentPath(node.GetUri(Context));
-        
-        if (Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
+        AssetExplorer.AddressBar.SetCurrentPath(node.Path);
+
+        if (node.HasChildren)
         {
             AssetExplorer.FileList.SetCurrentNode(node);
         }
         else
         {
-            AssetExplorer.Preview.SetItem(node);
+            if (AssetExplorer.ItemSelectedOverride == null)
+            {
+                AssetExplorer.Preview.SetItem(node);
+            }
+            else
+            {
+                AssetExplorer.ItemSelectedOverride(node);
+            }
         }
     }
 }

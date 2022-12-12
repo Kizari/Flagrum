@@ -62,10 +62,10 @@
 
 @code
 {
-    private AssetExplorerItem _previousItem;
+    private IAssetExplorerNode _previousItem;
 
     [Parameter]
-    public AssetExplorerItem Item { get; set; }
+    public IAssetExplorerNode Item { get; set; }
 
     private string BaseMaterial { get; set; }
     private IEnumerable<(string Name, float[] Values)> MaterialInputs { get; set; }
@@ -81,7 +81,7 @@
             return;
         }
 
-        var reader = new MaterialReader(Item.Data());
+        var reader = new MaterialReader(Item.Data);
         var material = reader.Read();
         BaseMaterial = material.Interfaces[0].Name;
 

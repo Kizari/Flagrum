@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Flagrum.Web.Features.AssetExplorer.Data;
+using Flagrum.Web.Persistence;
 
 namespace Flagrum.Web.Services;
 
@@ -14,7 +16,7 @@ public interface IWpfService
     void Restart();
     void Resize3DViewport(int left, int top, int width, int height);
     void Set3DViewportVisibility(bool isVisible);
-    Task ChangeModel(string gmdlUri);
+    Task ChangeModel(byte[] gmdl, byte[] gpubin, AssetExplorerView view, string? inputPath);
 
     void Update3DViewportBindings(string rotateModifierKey, string rotateMouseAction, string panModifierKey,
         string panMouseAction);

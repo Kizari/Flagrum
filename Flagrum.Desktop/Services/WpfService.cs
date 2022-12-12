@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Flagrum.Web.Features.AssetExplorer.Data;
+using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.Win32;
@@ -111,9 +113,9 @@ public class WpfService : IWpfService
         _mainViewModel.IsViewportVisible = isVisible;
     }
 
-    public async Task ChangeModel(string gmdlUri)
+    public async Task ChangeModel(byte[] gmdlData, byte[] gpubinData, AssetExplorerView view, string? inputPath)
     {
-        await _mainViewModel.ViewportHelper.ChangeModel(gmdlUri);
+        await _mainViewModel.ViewportHelper.ChangeModel(gmdlData, gpubinData, view, inputPath);
     }
 
     public IEnumerable<string> GetModifierKeys()

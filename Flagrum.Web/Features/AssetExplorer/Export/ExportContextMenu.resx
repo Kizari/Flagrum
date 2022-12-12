@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
                 xmlns="">
         <xsd:element name="root" msdata:IsDataSet="true">
 
@@ -43,5 +44,8 @@
     </data>
     <data name="ExportAnimationClips" xml:space="preserve">
         <value>Export Animation Clips</value>
+    </data>
+    <data name="ConvertFolder" xml:space="preserve">
+        <value>Convert in Folder</value>
     </data>
 </root>

@@ -1,4 +1,6 @@
 ﻿@using Microsoft.EntityFrameworkCore.Internal
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Persistence.Entities
 @inject AppStateService AppState
 @inject UriMapper Mapper
 @inject FlagrumDbContext Context
@@ -35,7 +37,7 @@
     public MainLayout MainLayout { get; set; }
 
     [CascadingParameter]
-    public Index Parent { get; set; }
+    public IAssetExplorerParent Parent { get; set; }
 
     private AutosizeModal Modal { get; set; }
 
@@ -51,8 +53,12 @@
 
     private async Task OnClick()
     {
-        AppState.Node = null;
-    //Parent.ClearSelectedItem();
+        ((Index)Parent).AssetExplorer.FileList.SetCurrentNode(null);
+        ((Index)Parent).AssetExplorer.AddressBar.SetCurrentPath("data://");
+        Context.SetInt(StateKey.CurrentAssetNode, 1);
+        AppState.RootGameViewNode = null;
+        AppState.IsIndexing = true;
+        
         MainLayout.CallStateHasChanged();
         CloseModal();
 
@@ -60,10 +66,8 @@
         {
             Mapper.RegenerateMap();
             Context.GetDependencies().StateManager.ResetState();
-
-            AppState.Node = Context.AssetExplorerNodes
-                .FirstOrDefault(n => n.Id == 1);
-
+            AppState.LoadNodes();
+            AppState.IsIndexing = false;
             InvokeAsync(() => MainLayout.CallStateHasChanged());
         });
     }

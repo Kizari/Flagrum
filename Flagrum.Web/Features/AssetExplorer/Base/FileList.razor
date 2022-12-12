@@ -1,22 +1,59 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
 @inherits AssetExplorerComponent
 
-<div class="bg-grey-900 border-t border-b border-r border-dark-550 flex flex-col" style="flex: 0 0 315px;">
-    <div class="row border-b border-dark-550 px-4 py-3 bg-dark">
-        <strong class="font-display flex-grow">@AppState.Node.Name</strong>
-        <span class="material-icons select-none cursor-pointer" style="font-size: 0.9rem" @onclick="() => Parent.RegenerateModal?.Open()">settings</span>
-    </div>
-    @if (Parent.CurrentView == AssetExplorerView.FileSystem || AppState.Node != null)
+<div class="border-r border-dark-550 overflow-auto" style="flex: 0 0 315px; height: 100%;">
+    @if (CurrentNode != null)
     {
         <CascadingValue Value="Parent">
-            <ExplorerView Node="AppState.Node"/>
+            @if (AssetExplorer.CurrentLayout == FileListLayout.ListView)
+            {
+                <ExplorerListView Node="CurrentNode"/>
+            }
+            else
+            {
+                <div class="py-2">
+                    <ExplorerTreeView @ref="ExplorerTreeView"/>
+                </div>
+            }
         </CascadingValue>
     }
     else
     {
-        <span class="block py-1 px-3">
-            @Localizer["WaitFileIndexing"]<br/><br/>
-            <em>@Localizer["PleaseWait"]</em>
+        <span class="block p-3">
+            @if (AppState.IsIndexing)
+            {
+                @Localizer["WaitFileIndexing"]<br/>
+                <br/>
+                <em>@Localizer["PleaseWait"]</em>
+            }
+            else
+            {
+                <div class="row px-2 text-grey-400">
+                    <LoadingIndicator/>
+                    <span class="flex-grow">
+                        Loading Game View
+                    </span>
+                </div>
+            }
         </span>
     }
 </div>
+
+@if (AssetExplorer.CurrentLayout == FileListLayout.TreeView)
+{
+    <div class="border-r border-dark-550 overflow-auto" style="flex: 0 0 315px; height: 100%;">
+        @if (CurrentNode != null)
+        {
+            <CascadingValue Value="Parent">
+                <ExplorerListView Node="CurrentNode"/>
+            </CascadingValue>
+        }
+        else
+        {
+            <span class="block py-1 px-3">
+                @Localizer["WaitFileIndexing"]<br/><br/>
+                <em>@Localizer["PleaseWait"]</em>
+            </span>
+        }
+    </div>
+}

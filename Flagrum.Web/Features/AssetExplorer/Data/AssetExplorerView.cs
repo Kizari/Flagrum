@@ -5,3 +5,9 @@ public enum AssetExplorerView
     GameView,
     FileSystem
 }
+
+public enum FileListLayout
+{
+    ListView,
+    TreeView
+}

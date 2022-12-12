@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EFCore.BulkExtensions;
 using Flagrum.Core.Archive;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
@@ -30,8 +31,10 @@ public class UriMapper
     {
         _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.AssetExplorerNodes)};");
         _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.ArchiveLocations)};");
+        _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.AssetUris)};");
         _context.Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.AssetExplorerNodes)}';");
         _context.Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.ArchiveLocations)}';");
+        _context.Database.ExecuteSqlRaw($"DELETE FROM SQLITE_SEQUENCE WHERE name='{nameof(_context.AssetUris)}';");
         
         _assets = new ConcurrentDictionary<ArchiveLocation, IEnumerable<string>>();
         var assetUris = new Dictionary<string, AssetUri>();
@@ -72,7 +75,7 @@ public class UriMapper
                 var currentNode = root;
                 foreach (var token in tokens)
                 {
-                    var subdirectory = currentNode.Children
+                    var subdirectory = currentNode.ChildNodes
                         .FirstOrDefault(c => c.Name == token);
 
                     if (subdirectory == null)
@@ -83,7 +86,7 @@ public class UriMapper
                             Parent = currentNode
                         };
 
-                        currentNode.Children.Add(subdirectory);
+                        currentNode.ChildNodes.Add(subdirectory);
                     }
 
                     currentNode = subdirectory;

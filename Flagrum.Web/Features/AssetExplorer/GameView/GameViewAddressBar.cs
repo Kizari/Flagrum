@@ -1,31 +1,29 @@
 ﻿using System.Linq;
 using Flagrum.Web.Features.AssetExplorer.Base;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.EntityFrameworkCore;
+using Flagrum.Web.Features.AssetExplorer.Data;
+using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 
 namespace Flagrum.Web.Features.AssetExplorer.GameView;
 
 public class GameViewAddressBar : AddressBar
 {
+    protected override bool IsDisabled => AppState.RootGameViewNode == null;
+
     public override void NavigateToCurrentPath()
     {
-        var processedUri = CurrentPath.Trim().Replace("data://", "data:/");
-        if (processedUri[^1] == '/')
-        {
-            processedUri = processedUri[..^1];
-        }
-
+        var processedUri = CurrentPath.Trim().Replace("data://", "data:/").TrimEnd('/');
         var tokens = processedUri.Split('/')
             .Select(t => t.ToLower())
             .ToList();
 
         if (tokens[0] == "data:")
         {
-            var currentNode = Context.AssetExplorerNodes.Include(n => n.Children).First();
+            var currentNode = AppState.RootGameViewNode;
             for (var i = 1; i < tokens.Count; i++)
             {
-                currentNode = Context.AssetExplorerNodes.Include(n => n.Children)
-                    .FirstOrDefault(n => n.ParentId == currentNode.Id && n.Name == tokens[i]);
+                currentNode = (AssetExplorerNode)currentNode.Children.FirstOrDefault(n => n.Name == tokens[i]);
 
                 if (currentNode == null)
                 {
@@ -34,11 +32,19 @@ public class GameViewAddressBar : AddressBar
                 }
             }
 
-            if (!Context.AssetExplorerNodes.Any(n => n.Id == currentNode.Id && n.Children.Any()))
+            if (!currentNode.HasChildren)
             {
-                var parent = Context.AssetExplorerNodes.First(n => n.Id == currentNode.ParentId);
+                var parent = currentNode.Parent;
                 AssetExplorer.FileList.SetCurrentNode(parent);
-                AssetExplorer.Preview.SetItem(currentNode);
+
+                if (AssetExplorer.ItemSelectedOverride == null)
+                {
+                    AssetExplorer.Preview.SetItem(currentNode);
+                }
+                else
+                {
+                    AssetExplorer.ItemSelectedOverride(currentNode);
+                }
             }
             else
             {
@@ -49,10 +55,5 @@ public class GameViewAddressBar : AddressBar
         {
             Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
         }
-    }
-
-    protected override string GetPersistedPath()
-    {
-        return AppState.Node == null ? "data://" : AppState.Node.GetUri(Context);
     }
 }

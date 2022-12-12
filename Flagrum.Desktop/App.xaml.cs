@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +13,7 @@ using System.Windows.Input;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using Squirrel;
@@ -19,6 +22,8 @@ namespace Flagrum.Desktop;
 
 public partial class App
 {
+    public AppStateService AppState { get; set; }
+    
     public App()
     {
         // This is needed so Flagrum stacks with its pinned icon on the taskbar
@@ -52,6 +57,10 @@ public partial class App
         // Migrate the database if required
         using var context = new FlagrumDbContext();
         context.Database.MigrateAsync().Wait();
+        
+        // Start loading asset explorer nodes so the user won't be waiting too long
+        AppState = new AppStateService(new SettingsService());
+        AppState.LoadNodes();
 
         // Set default key bindings for 3D viewer
         if (!context.StatePairs.Any(p => p.Key == StateKey.ViewportRotateModifierKey))
@@ -68,7 +77,6 @@ public partial class App
 
         // Set culture based on stored language settings if any
         var cultureName = context.GetString(StateKey.Language);
-
         if (cultureName != null)
         {
             var culture = CultureInfo.GetCultureInfo(cultureName);
@@ -140,7 +148,7 @@ public partial class App
             fmodPath = e.Args[0];
         }
 
-        var window = new MainWindow(fmodPath);
+        var window = new MainWindow(AppState, fmodPath);
         window.Show();
     }
 }

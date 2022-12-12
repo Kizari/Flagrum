@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
-    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+                xmlns="">
         <xsd:element name="root" msdata:IsDataSet="true">
-            
+
         </xsd:element>
     </xsd:schema>
     <resheader name="resmimetype">
@@ -13,13 +14,17 @@
         <value>1.3</value>
     </resheader>
     <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
     </resheader>
     <data name="TextureFormat" xml:space="preserve">
-        <value>Texture Output Format</value>
+        <value>Texture Output Formats</value>
     </data>
     <data name="Recursion" xml:space="preserve">
         <value>Also export from subdirectories recursively</value>
@@ -29,5 +34,47 @@
     </data>
     <data name="ExportFolder" xml:space="preserve">
         <value>Export Folder</value>
+    </data>
+    <data name="ConvertFolder" xml:space="preserve">
+        <value>Convert in Folder</value>
+    </data>
+    <data name="QuickPresets" xml:space="preserve">
+        <value>Quick Presets</value>
+    </data>
+    <data name="ScriptFormat" xml:space="preserve">
+        <value>Script Output Formats</value>
+    </data>
+    <data name="AdditionalOptions" xml:space="preserve">
+        <value>Additional Export Options</value>
+    </data>
+    <data name="Textures" xml:space="preserve">
+        <value>Textures</value>
+    </data>
+    <data name="Scripts" xml:space="preserve">
+        <value>Scripts</value>
+    </data>
+    <data name="Models" xml:space="preserve">
+        <value>Models</value>
+    </data>
+    <data name="ExportRecursively" xml:space="preserve">
+        <value>Also export from subdirectories recursively</value>
+    </data>
+    <data name="ExportFormats" xml:space="preserve">
+        <value>Formats to Export</value>
+    </data>
+    <data name="AdditionalConversionOptions" xml:space="preserve">
+        <value>Additional Conversion Options</value>
+    </data>
+    <data name="ConvertRecursively" xml:space="preserve">
+        <value>Also convert in subdirectories recursively</value>
+    </data>
+    <data name="ConvertFormats" xml:space="preserve">
+        <value>Formats to Convert</value>
+    </data>
+    <data name="SelectAll" xml:space="preserve">
+        <value>Select All</value>
+    </data>
+    <data name="DeselectAll" xml:space="preserve">
+        <value>Deselect All</value>
     </data>
 </root>

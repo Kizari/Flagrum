@@ -10,19 +10,14 @@ public abstract partial class AddressBar
     [CascadingParameter(Name = "AssetExplorer")]
     public AssetExplorer AssetExplorer { get; set; }
 
-    protected string CurrentPath { get; set; }
+    public string CurrentPath { get; protected set; } = "data://";
 
     public abstract void NavigateToCurrentPath();
-    protected abstract string GetPersistedPath();
-
-    protected override void OnInitialized()
-    {
-        CurrentPath = AppState.Node?.GetUri(Context);
-    }
+    protected abstract bool IsDisabled { get; }
 
     private void CheckEnter(KeyboardEventArgs e)
     {
-        if (e.Code is "Enter" or "NumpadEnter")
+        if (e.Code is "Enter" or "NumpadEnter" && !IsDisabled)
         {
             NavigateToCurrentPath();
         }
@@ -36,10 +31,10 @@ public abstract partial class AddressBar
 
     private void Up()
     {
-        if (AppState.Node.Parent != null)
+        if (AssetExplorer.FileList.CurrentNode.Parent != null)
         {
-            AssetExplorer.FileList.SetCurrentNode(AppState.Node.Parent);
-            SetCurrentPath(AppState.Node.GetUri(Context));
+            AssetExplorer.FileList.SetCurrentNode(AssetExplorer.FileList.CurrentNode.Parent);
+            SetCurrentPath(AssetExplorer.FileList.CurrentNode.Path);
         }
     }
 
@@ -52,8 +47,6 @@ public abstract partial class AddressBar
 
         Parent.CurrentView = (AssetExplorerView)view;
         Context.SetEnum(StateKey.CurrentAssetExplorerView, view);
-
-        CurrentPath = GetPersistedPath();
         Parent.CallStateHasChanged();
     }
 }

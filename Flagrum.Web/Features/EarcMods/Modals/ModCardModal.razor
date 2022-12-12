@@ -1,9 +1,9 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using Index = Flagrum.Web.Features.EarcMods.Index
 @using Flagrum.Web.Persistence.Entities.ModManager
+@using Blazored.TextEditor
 @using Flagrum.Core.Utilities
 @using System.IO
-@using Blazored.TextEditor
 @inject IStringLocalizer<Editor> EditorLocalizer
 @inject IStringLocalizer<ModCardModal> Localizer
 @inject IStringLocalizer<Index> IndexLocalizer
@@ -28,6 +28,7 @@
                 <DataAnnotationsValidator/>
                 <img alt="Mod Thumbnail" class="relative rounded-t" style="display: block; width: 330px; height: 180px;" src="images/@(ImageName).png"/>
                 <div class="p-4 flex-grow flex flex-col">
+                    <small class="text-center mb-4">Recommended thumbnail size 326x170</small>
                     <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="@EditorLocalizer["ModName"]"/>
                     <ValidationMessage For="() => Mod.Name"/>
                     <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="@EditorLocalizer["Author"]" Class="my-3"/>
@@ -42,9 +43,10 @@
                     <Button Icon="save" Text=@EditorLocalizer["Save"] Type="submit"/>
                 </div>
             </EditForm>
+            @* style="padding-bottom: 102px;" *@
             <div class="bg-dark px-6 pt-6 flex-grow flex-shrink rte-container" style="padding-bottom: 102px;">
                 <h6 class="text-grey-300 mb-4">@Localizer["Readme"]</h6>
-                <div style="max-width: 646px;">
+                <div style="max-width: 646px; height: 100%;">
                     <BlazoredTextEditor @ref="Editor" Placeholder="@string.Empty">
                         <ToolbarContent>
                             <select class="ql-header">

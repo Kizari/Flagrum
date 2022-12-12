@@ -7,10 +7,10 @@
 
 @code
 {
-    private AssetExplorerItem _previousItem;
+    private IAssetExplorerNode _previousItem;
 
     [Parameter]
-    public AssetExplorerItem Item { get; set; }
+    public IAssetExplorerNode Item { get; set; }
 
     private string ImageName { get; set; } = "asset_preview.jpg";
 
@@ -22,7 +22,7 @@
 
     // Convert to jpeg for display
             var converter = new TextureConverter();
-            var jpegBytes = converter.BtexToJpg(Item.Data());
+            var jpegBytes = converter.BtexToJpg(Item.Data);
             File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\asset_preview.jpg", jpegBytes);
 
     // Jank to trick the UI into updating

@@ -69,6 +69,7 @@ public class MainViewModel : ObservableObject, IDisposable
     public string HostPage => IOHelper.GetWebRoot() + "/index.html";
     public ViewportHelper ViewportHelper { get; }
     public Viewport3DX Viewer { get; set; }
+    public AirspacePopup AirspacePopup { get; set; }
     public string? FmodPath { get; set; }
 
     public bool HasWebView2Runtime
@@ -80,25 +81,41 @@ public class MainViewModel : ObservableObject, IDisposable
     public int ViewportLeft
     {
         get => _viewportLeft;
-        set => SetValue(ref _viewportLeft, value);
+        set
+        {
+            SetValue(ref _viewportLeft, value);
+            AirspacePopup.HorizontalOffset = value;
+        }
     }
 
     public int ViewportTop
     {
         get => _viewportTop;
-        set => SetValue(ref _viewportTop, value);
+        set
+        {
+            SetValue(ref _viewportTop, value);
+            AirspacePopup.VerticalOffset = value;
+        }
     }
 
     public int ViewportWidth
     {
         get => _viewportWidth;
-        set => SetValue(ref _viewportWidth, value);
+        set
+        {
+            SetValue(ref _viewportWidth, value);
+            AirspacePopup.Width = value;
+        }
     }
 
     public int ViewportHeight
     {
         get => _viewportHeight;
-        set => SetValue(ref _viewportHeight, value);
+        set
+        {
+            SetValue(ref _viewportHeight, value);
+            AirspacePopup.Height = value;
+        }
     }
 
     public InputGesture ViewportRotateGesture

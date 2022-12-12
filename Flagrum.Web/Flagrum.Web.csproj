@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Blazored.TextEditor" Version="1.0.8" />
         <PackageReference Include="DirectXTexNet" Version="1.0.3" />
+        <PackageReference Include="EFCore.BulkExtensions" Version="6.6.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
@@ -170,14 +171,6 @@
         <EmbeddedResource Update="Features\AssetExplorer\Previews\MaterialPreview.ja-JP.resx">
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>MaterialPreview.ja-JP.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Features\AssetExplorer\Export\BatchExportModal.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>BatchExportModal.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Features\AssetExplorer\Export\BatchExportModal.ja-JP.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>BatchExportModal.ja-JP.Designer.cs</LastGenOutput>
         </EmbeddedResource>
         <EmbeddedResource Update="Features\AssetExplorer\Export\ExportFolderModal.resx">
           <Generator>ResXFileCodeGenerator</Generator>

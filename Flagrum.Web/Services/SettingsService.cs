@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Flagrum.Core.Utilities;
@@ -231,5 +232,22 @@ public class SettingsService
         {
             IsReady = GamePath != null && BinmodListPath != null && WorkshopPath != null;
         }
+    }
+
+    public bool IsGameRunning()
+    {
+        if (!string.IsNullOrWhiteSpace(GamePath))
+        {
+            var directory = Path.GetDirectoryName(GamePath);
+            var fileName = Path.GetFileNameWithoutExtension(GamePath);
+
+            if (directory != null && fileName != null)
+            {
+                return Process.GetProcessesByName(fileName)
+                    .Any(p => p.MainModule?.FileName?.StartsWith(directory, StringComparison.OrdinalIgnoreCase) == true);
+            }
+        }
+
+        return false;
     }
 }
