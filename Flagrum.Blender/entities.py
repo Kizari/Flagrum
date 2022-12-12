@@ -79,6 +79,20 @@ class BlenderMaterialData:
     Name: str
     UVScale: list[float]
     Textures: dict[str, str]
+    DetailUVScale: list[float]
+
+
+@dataclass(init=False)
+class MeshPart:
+    PartsId: int
+    StartIndex: int
+    IndexCount: int
+
+
+@dataclass(init=False)
+class PartsLayer:
+    Name: str
+    Faces: list[int]
 
 
 @dataclass(init=False)
@@ -92,14 +106,17 @@ class MeshData:
     WeightIndices: list[list[list[int]]]
     WeightValues: list[list[list[float]]]
     UVMaps: list[UVMap]
+    PartsLayers: list[PartsLayer]
     Material: MaterialData
     BlenderMaterial: BlenderMaterialData
+    MeshParts: list[MeshPart]
 
 
 @dataclass(init=False)
 class Gpubin:
     Meshes: list[MeshData]
     BoneTable: dict[int, str]
+    Parts: dict[int, str]
 
 
 class ArmatureData:

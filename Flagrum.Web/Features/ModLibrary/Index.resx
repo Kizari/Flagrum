@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="LocalMods" xml:space="preserve">
+        <value>Local Mods</value>
+    </data>
+    <data name="WorkshopMods" xml:space="preserve">
+        <value>Workshop Mods</value>
+    </data>
+    <data name="AllMods" xml:space="preserve">
+        <value>All Mods</value>
+    </data>
+    <data name="Outfits" xml:space="preserve">
+        <value>Outfits</value>
+    </data>
+    <data name="Weapons" xml:space="preserve">
+        <value>Weapons</value>
+    </data>
+    <data name="Replacements" xml:space="preserve">
+        <value>Replacements</value>
+    </data>
+    <data name="ComradesStyles" xml:space="preserve">
+        <value>Comrades Styles</value>
+    </data>
+    <data name="ComradesWeapons" xml:space="preserve">
+        <value>Comrades Weapons</value>
+    </data>
+    <data name="NewMod" xml:space="preserve">
+        <value>New Mod</value>
+    </data>
+    <data name="Browse" xml:space="preserve">
+        <value>Browse Workshop Mods</value>
+    </data>
+    <data name="BrowseDescription" xml:space="preserve">
+        <value>Only Flagrum mods will appear in results due to older modding tools not applying tags to listings</value>
+    </data>
+    <data name="AllFlagrumMods" xml:space="preserve">
+        <value>All Flagrum Mods</value>
+    </data>
+    <data name="OutfitMods" xml:space="preserve">
+        <value>Outfit Mods</value>
+    </data>
+    <data name="WeaponMods" xml:space="preserve">
+        <value>Weapon Mods</value>
+    </data>
+    <data name="ModelReplacements" xml:space="preserve">
+        <value>Model Replacements</value>
+    </data>
+    <data name="Noctis" xml:space="preserve">
+        <value>Noctis</value>
+    </data>
+    <data name="Prompto" xml:space="preserve">
+        <value>Prompto</value>
+    </data>
+    <data name="Ignis" xml:space="preserve">
+        <value>Ignis</value>
+    </data>
+    <data name="Gladiolus" xml:space="preserve">
+        <value>Gladiolus</value>
+    </data>
+    <data name="Sword" xml:space="preserve">
+        <value>Sword</value>
+    </data>
+    <data name="Large_Sword" xml:space="preserve">
+        <value>Greatsword</value>
+    </data>
+    <data name="Spear" xml:space="preserve">
+        <value>Spear</value>
+    </data>
+    <data name="Dagger" xml:space="preserve">
+        <value>Dagger</value>
+    </data>
+    <data name="Gun" xml:space="preserve">
+        <value>Gun</value>
+    </data>
+    <data name="Shield" xml:space="preserve">
+        <value>Shield</value>
+    </data>
+    <data name="Katana" xml:space="preserve">
+        <value>Katana</value>
+    </data>
+    <data name="Mace" xml:space="preserve">
+        <value>Mace</value>
+    </data>
+    <data name="Shuriken" xml:space="preserve">
+        <value>Shuriken</value>
+    </data>
+    <data name="Crossbow" xml:space="preserve">
+        <value>Crossbow</value>
+    </data>
+    <data name="Tops" xml:space="preserve">
+        <value>Tops</value>
+    </data>
+    <data name="Bottoms" xml:space="preserve">
+        <value>Bottoms</value>
+    </data>
+    <data name="Gloves" xml:space="preserve">
+        <value>Gloves</value>
+    </data>
+    <data name="Shoes" xml:space="preserve">
+        <value>Shoes</value>
+    </data>
+    <data name="Accessory" xml:space="preserve">
+        <value>Accessory</value>
+    </data>
+    <data name="Wear" xml:space="preserve">
+        <value>Wear</value>
+    </data>
+    <data name="Face" xml:space="preserve">
+        <value>Face</value>
+    </data>
+    <data name="Hair" xml:space="preserve">
+        <value>Hair</value>
+    </data>
+    <data name="Lunafrena" xml:space="preserve">
+        <value>Lunafreya</value>
+    </data>
+    <data name="Ardyn" xml:space="preserve">
+        <value>Ardyn</value>
+    </data>
+    <data name="Ravus" xml:space="preserve">
+        <value>Ravus</value>
+    </data>
+    <data name="Gentiana" xml:space="preserve">
+        <value>Gentiana</value>
+    </data>
+    <data name="Aranea" xml:space="preserve">
+        <value>Aranea</value>
+    </data>
+    <data name="Cid" xml:space="preserve">
+        <value>Cid</value>
+    </data>
+    <data name="Iris" xml:space="preserve">
+        <value>Iris</value>
+    </data>
+    <data name="Cor" xml:space="preserve">
+        <value>Cor</value>
+    </data>
+    <data name="Cidney" xml:space="preserve">
+        <value>Cidney</value>
+    </data>
+    <data name="NPC_MALE" xml:space="preserve">
+        <value>Male Adult NPCs</value>
+    </data>
+    <data name="NPC_MALE_CHILD" xml:space="preserve">
+        <value>Male Child NPCs</value>
+    </data>
+    <data name="NPC_FEMALE" xml:space="preserve">
+        <value>Female Adult NPCs</value>
+    </data>
+    <data name="NPC_FEMALE_CHILD" xml:space="preserve">
+        <value>Female Child NPCs</value>
+    </data>
+    <data name="LargeSword" xml:space="preserve">
+        <value>Greatsword</value>
+    </data>
+    <data name="Magitek_Noctis" xml:space="preserve">
+        <value>Magitek Suit (Noctis)</value>
+    </data>
+    <data name="Magitek_Prompto" xml:space="preserve">
+        <value>Magitek Suit (Prompto)</value>
+    </data>
+    <data name="Magitek_Ignis" xml:space="preserve">
+        <value>Magitek Suit (Ignis)</value>
+    </data>
+    <data name="Magitek_Gladiolus" xml:space="preserve">
+        <value>Magitek Suit (Gladiolus)</value>
+    </data>
+    <data name="Other" xml:space="preserve">
+        <value>Other</value>
+    </data>
+</root>

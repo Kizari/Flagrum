@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +57,29 @@ public static class AssetUriExtensions
         var location = context.Settings.GameDataDirectory + "\\" + earcRelativePath;
 
         return Unpacker.GetFileByLocation(location, uri);
+    }
+
+    public static IDictionary<string, byte[]> GetFilesByUri(this FlagrumDbContext context, IEnumerable<string> uris)
+    {
+        var items = new ConcurrentDictionary<string, byte[]>();
+
+        var uriPaths = uris.Select(u => context.AssetUris
+                .Where(a => a.Uri == u)
+                .Select(a => new {a.Uri, a.ArchiveLocation.Path})
+                .FirstOrDefault()!)
+            .ToList();
+
+        Parallel.ForEach(uriPaths.Select(up => up.Path).Distinct(), earcPath =>
+        {
+            var earcUris = uriPaths.Where(up => up.Path == earcPath).Select(up => up.Uri);
+            using var unpacker = new Unpacker(context.Settings.GameDataDirectory + "\\" + earcPath);
+            foreach (var uri in earcUris)
+            {
+                items.TryAdd(uri, unpacker.UnpackFileByQuery(uri, out _));
+            }
+        });
+
+        return items;
     }
 
     public static bool ArchiveExistsForUri(this FlagrumDbContext context, string uri)

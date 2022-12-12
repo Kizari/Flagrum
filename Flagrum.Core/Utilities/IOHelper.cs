@@ -15,9 +15,10 @@ public static class IOHelper
         return $"{GetExecutingDirectory()}\\wwwroot";
     }
 
-    public static void EnsureDirectoryExists(string directoryPath)
+    public static void EnsureDirectoryExists(string path)
     {
-        var directories = directoryPath.Split('\\');
+        path = path.Replace('/', '\\');
+        var directories = path.Split('\\');
         var currentPath = "";
         foreach (var directory in directories)
         {
@@ -43,10 +44,5 @@ public static class IOHelper
                 Directory.CreateDirectory(currentPath);
             }
         }
-    }
-
-    public static string UriToRelativePath(string uri)
-    {
-        return uri.Replace("data://", "").Replace("data:/", "").Replace('/', '\\');
     }
 }

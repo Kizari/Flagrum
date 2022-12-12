@@ -1,18 +1,16 @@
 from array import array
-from os.path import exists
 
 import bpy
-from bpy.types import Collection
+from bpy.types import Collection, IntAttribute
 from mathutils import Matrix, Vector
 
+from .generate_material import generate_material
 from .import_context import ImportContext
-from ..entities import MeshData, BlenderTextureData
+from ..entities import MeshData
 
 
-def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table,
+def generate_mesh(context: ImportContext, collection: Collection, mesh_data: MeshData, bone_table, parts,
                   use_correction_matrix: bool = True):
-    for key in bone_table:
-        print(str(key) + ": " + bone_table[key])
     # Matrix that corrects the axes from FBX coordinate system
     correction_matrix = Matrix([
         [1, 0, 0],
@@ -92,6 +90,31 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
     mesh_object = bpy.data.objects.new(mesh_data.Name, mesh)
     collection.objects.link(mesh_object)
 
+    # Add the parts system
+    if len(parts) > 0:
+        for parts_group in mesh_data.MeshParts:
+            parts_layer: IntAttribute = mesh.attributes.new(name=parts[str(parts_group.PartsId)], type='BOOLEAN',
+                                                            domain='FACE')
+
+            sequence = []
+            start_index = int(parts_group.StartIndex / 3)
+            index_count = int(parts_group.IndexCount / 3)
+            end_index = start_index + index_count
+            for i in range(len(mesh.polygons)):
+                sequence.append(start_index <= i < end_index)
+
+            parts_layer.data.foreach_set("value", sequence)
+
+            # new_group = mesh_object.flagrum_parts.parts_groups.add()
+            # new_group.name = parts[str(parts_group.PartsId)]
+            # for i in range(parts_group.StartIndex, parts_group.StartIndex + parts_group.IndexCount, 3):
+            #     matching_face = mesh.polygons[int(i / 3)]
+            #     for vertex_index in matching_face.vertices:
+            #         vertex = mesh.vertices[vertex_index]
+            #         new_group.vertices.append(vertex)
+            # new_vertex = new_group.vertices.add()
+            # new_vertex.vertex = vertex
+
     # Import custom normals
     mesh.update(calc_edges=True)
 
@@ -123,12 +146,7 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
                     if mesh_data.WeightValues[i][j][k] == 0:
                         continue
 
-                    try:
-                        bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
-                    except:
-                        print("No record found for bone " + str(mesh_data.WeightIndices[i][j][k]))
-                        continue
-                        
+                    bone_name = bone_table[str(mesh_data.WeightIndices[i][j][k])]
                     vertex_group = mesh_object.vertex_groups.get(bone_name)
 
                     if not vertex_group:
@@ -159,130 +177,7 @@ def generate_mesh(context: ImportContext, collection: Collection, mesh_data: Mes
     if mesh_data.BlenderMaterial.Hash in context.materials:
         material = context.materials[mesh_data.BlenderMaterial.Hash]
     else:
-        material = bpy.data.materials.new(name=mesh_data.BlenderMaterial.Name)
-
-        material.use_nodes = True
-        material.use_backface_culling = True
-        bsdf = material.node_tree.nodes["Principled BSDF"]
-        multiply = material.node_tree.nodes.new('ShaderNodeMixRGB')
-        multiply.blend_type = 'MULTIPLY'
-        multiply.inputs[0].default_value = 1.0
-        material.node_tree.links.new(bsdf.inputs['Base Color'], multiply.outputs['Color'])
-
-        needs_scaling = mesh_data.BlenderMaterial.UVScale is not None and (
-                mesh_data.BlenderMaterial.UVScale[0] != 1.0 or (
-                len(mesh_data.BlenderMaterial.UVScale) > 1 and mesh_data.BlenderMaterial.UVScale[1] != 1.0))
-
-        if needs_scaling:
-            map1 = material.node_tree.nodes.new('ShaderNodeUVMap')
-            map1.uv_map = "map1"
-            uv_scale = material.node_tree.nodes.new('ShaderNodeMapping')
-            uv_scale.inputs[3].default_value[0] = mesh_data.BlenderMaterial.UVScale[0]
-            uv_scale.inputs[3].default_value[1] = mesh_data.BlenderMaterial.UVScale[
-                len(mesh_data.BlenderMaterial.UVScale) - 1]
-            material.node_tree.links.new(uv_scale.inputs['Vector'], map1.outputs['UV'])
-
-        for t in mesh_data.BlenderMaterial.Textures:
-            texture_metadata: BlenderTextureData = t
-
-            # Skip this texture if it doesn't exist in the file system
-            if texture_metadata.Path is None or not exists(texture_metadata.Path):
-                continue
-
-            texture = material.node_tree.nodes.new('ShaderNodeTexImage')
-            texture.image = bpy.data.images.load(
-                texture_metadata.Path,
-                check_existing=True)
-
-            if needs_scaling:
-                material.node_tree.links.new(texture.inputs['Vector'], uv_scale.outputs['Vector'])
-
-            texture_slot = texture_metadata.Slot.upper()
-
-            if "BASECOLOR0" in texture_slot:
-                material.node_tree.links.new(multiply.inputs['Color1'], texture.outputs['Color'])
-                if texture_metadata.Name.endswith("_ba") or texture_metadata.Name.endswith("_ba_$h"):
-                    material.node_tree.links.new(bsdf.inputs['Alpha'], texture.outputs['Alpha'])
-                    material.blend_method = 'CLIP'
-            elif "NORMAL0" in texture_slot or "NRT0" in texture_slot:
-                texture.image.colorspace_settings.name = 'Non-Color'
-                norm_map = material.node_tree.nodes.new('ShaderNodeNormalMap')
-                material.node_tree.links.new(bsdf.inputs['Normal'], norm_map.outputs['Normal'])
-                if texture_metadata.Name.endswith("_nrt") or texture_metadata.Name.endswith(
-                        "_nrt_$h"):
-                    rgb = material.node_tree.nodes.new('ShaderNodeRGB')
-                    rgb.outputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
-                    invert = material.node_tree.nodes.new('ShaderNodeInvert')
-                    separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-                    combine_rgb = material.node_tree.nodes.new('ShaderNodeCombineRGB')
-                    material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-                    material.node_tree.links.new(combine_rgb.inputs['R'], separate_rgb.outputs['R'])
-                    material.node_tree.links.new(combine_rgb.inputs['G'], separate_rgb.outputs['G'])
-                    material.node_tree.links.new(norm_map.inputs['Color'], combine_rgb.outputs['Image'])
-                    material.node_tree.links.new(invert.inputs['Color'], texture.outputs['Alpha'])
-                    material.node_tree.links.new(bsdf.inputs['Transmission'], invert.outputs['Color'])
-                    material.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb.outputs['B'])
-                    material.node_tree.links.new(combine_rgb.inputs['B'], rgb.outputs['Color'])
-                elif texture_metadata.Name.endswith("_nro") or texture_metadata.Name.endswith(
-                        "_nro_$h"):
-                    rgb = material.node_tree.nodes.new('ShaderNodeRGB')
-                    rgb.outputs[0].default_value = (1.0, 1.0, 1.0, 1.0)
-                    separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-                    combine_rgb = material.node_tree.nodes.new('ShaderNodeCombineRGB')
-                    material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-                    material.node_tree.links.new(combine_rgb.inputs['R'], separate_rgb.outputs['R'])
-                    material.node_tree.links.new(combine_rgb.inputs['G'], separate_rgb.outputs['G'])
-                    material.node_tree.links.new(norm_map.inputs['Color'], combine_rgb.outputs['Image'])
-                    material.node_tree.links.new(multiply.inputs['Color2'], texture.outputs['Alpha'])
-                    material.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb.outputs['B'])
-                    material.node_tree.links.new(combine_rgb.inputs['B'], rgb.outputs['Color'])
-                else:
-                    separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-                    combine_rgb = material.node_tree.nodes.new('ShaderNodeCombineRGB')
-                    less_than = material.node_tree.nodes.new('ShaderNodeMath')
-                    less_than.operation = 'LESS_THAN'
-                    less_than.inputs[1].default_value = 0.01
-                    maximum = material.node_tree.nodes.new('ShaderNodeMath')
-                    maximum.operation = 'MAXIMUM'
-                    material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-                    material.node_tree.links.new(combine_rgb.inputs['R'], separate_rgb.outputs['R'])
-                    material.node_tree.links.new(combine_rgb.inputs['G'], separate_rgb.outputs['G'])
-                    material.node_tree.links.new(norm_map.inputs['Color'], combine_rgb.outputs['Image'])
-                    material.node_tree.links.new(less_than.inputs[0], separate_rgb.outputs['B'])
-                    material.node_tree.links.new(maximum.inputs[0], separate_rgb.outputs['B'])
-                    material.node_tree.links.new(maximum.inputs[1], less_than.outputs['Value'])
-                    material.node_tree.links.new(combine_rgb.inputs['B'], maximum.outputs['Value'])
-            elif "MRS0" in texture_slot:
-                texture.image.colorspace_settings.name = 'Non-Color'
-                separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-                material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-                material.node_tree.links.new(bsdf.inputs['Metallic'], separate_rgb.outputs['R'])
-                material.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb.outputs['G'])
-                material.node_tree.links.new(bsdf.inputs['Specular'], separate_rgb.outputs['B'])
-            elif "MRO_MIX0" in texture_slot:
-                texture.image.colorspace_settings.name = 'Non-Color'
-                separate_rgb = material.node_tree.nodes.new('ShaderNodeSeparateRGB')
-                material.node_tree.links.new(separate_rgb.inputs['Image'], texture.outputs['Color'])
-                material.node_tree.links.new(multiply.inputs['Color2'], separate_rgb.outputs['B'])
-                material.node_tree.links.new(bsdf.inputs['Metallic'], separate_rgb.outputs['R'])
-                material.node_tree.links.new(bsdf.inputs['Roughness'], separate_rgb.outputs['G'])
-            elif "EMISSIVECOLOR0" in texture_slot or "EMISSIVE0" in texture_slot:
-                if not texture_metadata.Path.upper().endswith("WHITE.TGA"):
-                    material.node_tree.links.new(bsdf.inputs['Emission'], texture.outputs['Color'])
-            elif "TRANSPARENCY0" in texture_slot or "OPACITYMASK0" in texture_slot:
-                texture.image.colorspace_settings.name = 'Non-Color'
-                material.node_tree.links.new(bsdf.inputs['Alpha'], texture.outputs['Color'])
-                material.blend_method = 'CLIP'
-            elif "OCCLUSION0" in texture_slot:
-                texture.image.colorspace_settings.name = 'Non-Color'
-                material.node_tree.links.new(multiply.inputs['Color2'], texture.outputs['Color'])
-                if len(mesh_data.UVMaps) > 1:
-                    uv_map = material.node_tree.nodes.new('ShaderNodeUVMap')
-                    uv_map.uv_map = "mapLM"
-                    material.node_tree.links.new(texture.inputs['Vector'], uv_map.outputs['UV'])
-            else:
-                context.texture_slots[texture_slot] = True
-
+        material = generate_material(context, mesh_data)
         context.materials[mesh_data.BlenderMaterial.Hash] = material
 
     mesh_object.data.materials.append(material)

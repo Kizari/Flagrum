@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="NoFileSelected" xml:space="preserve">
+        <value>No File Selected</value>
+    </data>
+    <data name="GameView" xml:space="preserve">
+        <value>Game View</value>
+    </data>
+    <data name="FileSystem" xml:space="preserve">
+        <value>File System</value>
+    </data>
+    <data name="BatchExport" xml:space="preserve">
+        <value>Batch Export</value>
+    </data>
+    <data name="WaitFileIndexing" xml:space="preserve">
+        <value>Game View will become available once Flagrum has finished indexing the game files to allow for an improved browsing experience, searching, and filtering of all game files (even those in archives).</value>
+    </data>
+    <data name="PleaseWait" xml:space="preserve">
+        <value>This process may take several minutes depending on your system hardware.</value>
+    </data>
+    <data name="Exporting" xml:space="preserve">
+        <value>Exporting</value>
+    </data>
+</root>

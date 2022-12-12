@@ -57,12 +57,14 @@ public class ArchiveFile
         Flags = GetDefaultBinmodFlags();
     }
 
-    public ArchiveFile(string uri, string relativePath, uint size, ArchiveFileFlag flags, byte localizationType,
+    public ArchiveFile(string uri, string relativePath, uint size, uint processedSize, ArchiveFileFlag flags,
+        byte localizationType,
         byte locale, ushort key)
     {
         RelativePath = relativePath;
         Uri = uri;
         Size = size;
+        ProcessedSize = processedSize;
         Flags = flags;
         LocalizationType = localizationType;
         Locale = locale;
@@ -98,13 +100,50 @@ public class ArchiveFile
     public bool IsDataEncrypted { get; set; }
     public bool IsDataCompressed { get; set; }
 
+    public static byte[] GetProcessedData(string uri, ArchiveFileFlag flags, byte[] data, ushort key,
+        bool isProtectedArchive, out ArchiveFile file)
+    {
+        if (key == 0 && isProtectedArchive)
+        {
+            var hashCode = uri.GetHashCode();
+            key = (ushort)((hashCode >> 16) ^ hashCode);
+            if (key == 0)
+            {
+                key = 57005;
+            }
+        }
+
+        if (!flags.HasFlag(ArchiveFileFlag.Compressed) && !flags.HasFlag(ArchiveFileFlag.Encrypted))
+        {
+            key = 0;
+        }
+
+        file = new ArchiveFile
+        {
+            Flags = flags,
+            Key = key
+        };
+
+        file.SetRawData(data);
+        return file.GetDataForExport();
+    }
+
+    public static byte[] GetUnprocessedData(ArchiveFileFlag flags, uint originalSize, ushort key, byte[] data)
+    {
+        var file = new ArchiveFile
+        {
+            Flags = flags,
+            Key = key
+        };
+
+        file.SetProcessedData(originalSize, data);
+        return file.GetReadableData();
+    }
+
     public byte[] GetReadableData()
     {
-        return GetReadableData(_buffer);
-    }
-    
-    public byte[] GetReadableData(byte[] buffer)
-    {
+        var buffer = _buffer;
+        
         if (Key > 0)
         {
             var partialKey = Key * KeyMultiplier + KeyAdditive;

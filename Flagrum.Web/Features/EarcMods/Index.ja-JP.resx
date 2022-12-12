@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="ActiveMods" xml:space="preserve">
+        <value>アクティブMOD</value>
+    </data>
+    <data name="CreateMod" xml:space="preserve">
+        <value>新しいMOD</value>
+    </data>
+    <data name="DisabledMods" xml:space="preserve">
+        <value>無効化されたMOD</value>
+    </data>
+    <data name="NoActiveMods" xml:space="preserve">
+        <value>表示するアクティブなEARCのMODはありません</value>
+    </data>
+    <data name="NoDisabledMods" xml:space="preserve">
+        <value>無効化されたEARCのMODが存在しない</value>
+    </data>
+    <data name="NoMods" xml:space="preserve">
+        <value>EARCのMODは存在しない</value>
+    </data>
+    <data name="ConflictsDetected" xml:space="preserve">
+        <value>コンフリクトが検出された</value>
+    </data>
+    <data name="DuplicateEarcsDetected" xml:space="preserve">
+        <value>同じEARCが1つ以上検出された場合</value>
+    </data>
+    <data name="ChooseConflict" xml:space="preserve">
+        <value>以下の選択肢から、どちらを残すかお選びください。</value>
+    </data>
+    <data name="DisplayText" xml:space="preserve">
+        <value>MODマネージャーはファイルのインデックス作成中に使用できなくなる</value>
+    </data>
+    <data name="SubText" xml:space="preserve">
+        <value>ファイルのインデックス作成が完了するまでお待ちください</value>
+    </data>
+    <data name="InstallingMod" xml:space="preserve">
+        <value>MODのインストール</value>
+    </data>
+    <data name="Error" xml:space="preserve">
+        <value>エラー</value>
+    </data>
+    <data name="InvalidModPack" xml:space="preserve">
+        <value>無効なMODパック</value>
+    </data>
+    <data name="InvalidModPackDescription" xml:space="preserve">
+        <value>このZIPの中に互換性のあるMODデータが見つかりませんでした。MOD作者オリジナルのインストール方法をご参照ください。</value>
+    </data>
+    <data name="IncompatibleModPack" xml:space="preserve">
+        <value>非互換のMODパック</value>
+    </data>
+    <data name="IncompatibleNewFilesDescription" xml:space="preserve">
+        <value>このZIPに含まれる1つ以上のMODは、ゲームに新しいファイルを追加します。フラーグルムは現在、新しいファイルの追加をサポートしていませんが、将来のアップデートで対応する予定です。それまでの間は、MOD作者のオリジナルのインストール方法を参照してください。</value>
+    </data>
+    <data name="IncompatibleNewEarcDescription" xml:space="preserve">
+        <value>このMODパックの中に、ゲームファイルには表示されないEARCが見つかりました。フラーグルムは現在、新しいEARCの追加をサポートしていませんが、将来のアップデートで対応する予定です。それまでの間は、MOD作者のオリジナルのインストール方法を参照してください。</value>
+    </data>
+    <data name="ErrorDataCompare" xml:space="preserve">
+        <value>データの比較ができない</value>
+    </data>
+    <data name="ErrorDataCompareDescription" xml:space="preserve">
+        <value>このMODはフラーグルムで作成されたものではなく、現在お使いのシステムでアクティブなMODによって変更されているファイルの変更を含むため、インストールを完了するためにはMODを一時的に無効化する必要があります。&lt;br/&gt;&lt;br/&gt;以下のMODを無効にしてから、再度お試しください。&lt;br/&gt;&lt;br/&gt;</value>
+    </data>
+    <data name="Conflicts" xml:space="preserve">
+        <value>以下のMODはこのMODと競合しています。</value>
+    </data>
+    <data name="Warning" xml:space="preserve">
+        <value>警告</value>
+    </data>
+    <data name="DisableNow" xml:space="preserve">
+        <value>今すぐ上記のMODを無効化しますか？</value>
+    </data>
+    <data name="Confirm" xml:space="preserve">
+        <value>確認</value>
+    </data>
+    <data name="DisablingMod" xml:space="preserve">
+        <value>MODの無効化</value>
+    </data>
+    <data name="EnablingMod" xml:space="preserve">
+        <value>MODの有効化</value>
+    </data>
+    <data name="ExportingModPack" xml:space="preserve">
+        <value>MODパックの書き出し</value>
+    </data>
+    <data name="CategoryAll" xml:space="preserve">
+        <value>すべてのMOD</value>
+    </data>
+    <data name="CategoryCheat" xml:space="preserve">
+        <value>チート</value>
+    </data>
+    <data name="CategoryContent" xml:space="preserve">
+        <value>コンテンツ</value>
+    </data>
+    <data name="CategoryFix" xml:space="preserve">
+        <value>修正</value>
+    </data>
+    <data name="CategoryGameplay" xml:space="preserve">
+        <value>ゲームプレイ</value>
+    </data>
+    <data name="CategoryLighthearted" xml:space="preserve">
+        <value>軽快</value>
+    </data>
+    <data name="CategoryOther" xml:space="preserve">
+        <value>その他</value>
+    </data>
+    <data name="CategoryQualityOfLife" xml:space="preserve">
+        <value>クオリティ・オブ・ライフ</value>
+    </data>
+    <data name="CategoryReplacement" xml:space="preserve">
+        <value>置き換え</value>
+    </data>
+    <data name="CategoryRework" xml:space="preserve">
+        <value>リワーク</value>
+    </data>
+    <data name="Filter" xml:space="preserve">
+        <value>フィルター：</value>
+    </data>
+    <data name="InstallFromZip" xml:space="preserve">
+        <value>MODのインストール</value>
+    </data>
+    <data name="ModReadme" xml:space="preserve">
+        <value>MOD READMEのご案内</value>
+    </data>
+</root>

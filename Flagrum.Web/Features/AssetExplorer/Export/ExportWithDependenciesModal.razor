@@ -7,19 +7,22 @@
 @using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
 @using Flagrum.Core.Archive
 @using System.Text
+@using Flagrum.Web.Features.AssetExplorer.Base
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
+@inject IStringLocalizer<ExportWithDependenciesModal> L
+@inject AppStateService AppState
 
 <Modal @ref="Modal">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Export With Dependencies</span>
-        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+        <span class="text-grey-300 flex-grow">@L["ExportWithDependencies"]</span>
+        <span class="material-icons cursor-pointer" @onclick="Close">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
             <div class="row">
-                <label style="width: 240px">Texture Output Format</label>
+                <label style="width: 250px">@L["TextureFormat"]</label>
                 <select @bind="Extension" class="input bg-dark-550 w-full">
                     <option>PNG</option>
                     <option>TGA</option>
@@ -29,21 +32,21 @@
             </div>
             <div class="row mt-6">
                 <Checkbox IsChecked="@IncludeHighTextures" OnChange="v => { IncludeHighTextures = v; StateHasChanged(); }"/>
-                <span class="inline-block ml-2">Include high resolution textures</span>
+                <span class="inline-block ml-2">@L["IncludeHighTextures"]</span>
             </div>
             <div class="row mt-6 mb-10">
                 <Checkbox IsChecked="@IncludeCommonTextures" OnChange="v => { IncludeCommonTextures = v; StateHasChanged(); }"/>
-                <span class="inline-block ml-2">Include shared textures</span>
+                <span class="inline-block ml-2">@L["IncludeSharedTextures"]</span>
             </div>
-            <Button Text="Export" Icon="file_download" OnClickAsync="Export"/>
+            <Button Text="@L["Export"]" Icon="file_download" OnClickAsync="Export"/>
         </div>
     </BodyView>
 </Modal>
 
 @code
 {
-    [CascadingParameter]
-    public Index Parent { get; set; }
+    [CascadingParameter(Name = "AssetExplorer")]
+    public AssetExplorer Parent { get; set; }
 
     private Modal Modal { get; set; }
     private string Extension { get; set; } = "PNG";
@@ -52,12 +55,25 @@
 
     public void Open()
     {
+        AppState.IsModalOpen = true;
+        WpfService.Set3DViewportVisibility(false);
         Modal.Open();
+    }
+
+    private void Close()
+    {
+        Modal.Close();
+        AppState.IsModalOpen = false;
+        
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 
     private async Task Export()
     {
-        var item = Parent.ContextItem;
+        var item = Parent.ContextNode;
         var defaultName = item.Name + ".gfxbin";
         const string filter = "Game Model|*.gmdl.gfxbin";
 
@@ -66,7 +82,7 @@
             InvokeAsync(() =>
             {
                 Parent.SetLoading(true, "Exporting");
-                Modal.Close();
+                Close();
             });
 
     // For some reason this ends up with multiple copies of the extension for some people
@@ -74,7 +90,7 @@
             path = path.Replace(".gmdl.gfxbin", "");
             path += ".gmdl.gfxbin";
 
-            var gfxbin = item.Data();
+            var gfxbin = item.Data;
             var reader = new BinaryReader(gfxbin);
             var header = new GfxbinHeader();
             header.Read(reader);
@@ -105,7 +121,11 @@
                     }
 
                     var textureData = Context.GetFileByUri(texture.Path);
-                    textures.Add(texture.Path, ConvertTexture(textureData));
+
+                    if (textureData.Length > 0)
+                    {
+                        textures.Add(texture.Path, ConvertTexture(textureData));
+                    }
                 }
 
                 if (IncludeHighTextures && !string.IsNullOrWhiteSpace(material.HighTexturePackAsset))
@@ -228,7 +248,11 @@
                 }
 
                 var textureData = Context.GetFileByUri(highTexture);
-                textures.Add(highTexture, ConvertTexture(textureData));
+
+                if (textureData.Length > 0)
+                {
+                    textures.Add(highTexture, ConvertTexture(textureData));
+                }
             }
 
             return highTexturePack;

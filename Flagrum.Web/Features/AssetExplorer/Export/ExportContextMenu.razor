@@ -3,26 +3,31 @@
 @using Flagrum.Web.Features.AssetExplorer.Data
 @using System.IO
 @using System.Text
-@using Flagrum.Core.Ebex.Xmb2
 @using Flagrum.Core.Animation
+@using Flagrum.Core.Ebex.Xmb2
+@using Flagrum.Web.Features.AssetExplorer.Base
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
 @inject EnvironmentPacker EnvironmentPacker
 @inject TerrainPacker TerrainPacker
+@inject IStringLocalizer<ExportContextMenu> Localizer
+@inject AppStateService AppState
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
              OverrideDefaultListCssClass="p-0"
-             OnHiding="() => {Parent.ContextNode = null; Parent.CallStateHasChanged();}">
-    @if (Parent.ContextItem.Type == ExplorerItemType.Directory)
+             OnAppearing="OnAppearing"
+             OnHiding="OnHiding"
+             @ref="ContextMenu">
+    @if (AssetExplorer.ContextNode?.Type == ExplorerItemType.Directory)
     {
         <Item OnClick="ExportFolder"
               OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
             <div class="row">
                 <span class="material-icons mr-3" style="font-size: 0.9rem">drive_file_move</span>
-                <span>Export Folder</span>
+                <span>@(Parent.CurrentView == AssetExplorerView.GameView ? Localizer["ExportFolder"] : Localizer["ConvertFolder"])</span>
             </div>
         </Item>
     }
@@ -32,53 +37,52 @@
               OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
             <div class="row">
                 <span class="material-icons mr-3" style="font-size: 0.9rem">open_in_new</span>
-                <span>Export File</span>
+                <span>@Localizer["ExportFile"]</span>
             </div>
         </Item>
 
-        if (Parent.ContextItem.Type == ExplorerItemType.Model)
+        switch (AssetExplorer.ContextNode?.Type)
         {
-            <Item OnClick="ExportWithDependenciesModal.Open"
-                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
-                <div class="row">
-                    <span class="material-icons mr-3" style="font-size: 0.9rem">share</span>
-                    <span>Export With Dependencies</span>
-                </div>
-            </Item>
-        }
-        else if (Parent.ContextItem.Type == ExplorerItemType.Xml)
-        {
-            <Item OnClick="ExportXml"
-                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
-                <div class="row">
-                    <span class="material-icons mr-3" style="font-size: 0.9rem">code</span>
-                    <span>Export as XML</span>
-                </div>
-            </Item>
-            <Item OnClick="ExportEnvironment"
-                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
-                <div class="row">
-                    <span class="material-icons mr-3" style="font-size: 0.9rem">public</span>
-                    <span>Export as Environment</span>
-                </div>
-            </Item>
-            <Item OnClick="ExportTerrain"
-                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
-                <div class="row">
-                    <span class="material-icons mr-3" style="font-size: 0.9rem">grass</span>
-                    <span>Export as Terrain</span>
-                </div>
-            </Item>
-        }
-        else if (Parent.ContextItem.Type == ExplorerItemType.AnimationPackage)
-        {
-            <Item OnClick="ExportAnimationClips"
-                  OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
-                <div class="row">
-                    <span class="material-icons mr-3" style="font-size: 0.9rem">widgets</span>
-                    <span>Export Animation Clips</span>
-                </div>
-            </Item>
+            case ExplorerItemType.Model:
+                if (Parent.CurrentView == AssetExplorerView.GameView)
+                {
+                    <Item OnClick="@ExportWithDependenciesModal.Open"
+                          OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                        <div class="row">
+                            <span class="material-icons mr-3" style="font-size: 0.9rem">share</span>
+                            <span>@Localizer["ExportWithDependencies"]</span>
+                        </div>
+                    </Item>
+                }
+                break;
+            case ExplorerItemType.Xml:
+                if (Parent.CurrentView == AssetExplorerView.GameView)
+                {
+                    <Item OnClick="@ExportEnvironment"
+                          OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                        <div class="row">
+                            <span class="material-icons mr-3" style="font-size: 0.9rem">public</span>
+                            <span>@Localizer["ExportAsEnvironment"]</span>
+                        </div>
+                    </Item>
+                    <Item OnClick="@ExportTerrain"
+                          OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                        <div class="row">
+                            <span class="material-icons mr-3" style="font-size: 0.9rem">grass</span>
+                            <span>@Localizer["ExportAsTerrain"]</span>
+                        </div>
+                    </Item>
+                }
+                break;
+            case ExplorerItemType.AnimationPackage:
+                <Item OnClick="@ExportAnimationClips"
+                      OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+                    <div class="row">
+                        <span class="material-icons mr-3" style="font-size: 0.9rem">widgets</span>
+                        <span>@Localizer["ExportAnimationClips"]</span>
+                    </div>
+                </Item>
+                break;
         }
     }
 </ContextMenu>
@@ -88,27 +92,38 @@
 
 @code
 {
+    [CascadingParameter(Name = "AssetExplorer")]
+    public AssetExplorer AssetExplorer { get; set; }
+    
     [CascadingParameter]
-    public Index Parent { get; set; }
+    public IAssetExplorerParent Parent { get; set; }
 
+    private ContextMenu ContextMenu { get; set; }
     private ExportWithDependenciesModal ExportWithDependenciesModal { get; set; }
     private ExportFolderModal ExportFolderModal { get; set; }
 
+    public void ExportCurrentFolder()
+    {
+        ExportFolderModal.SetContextNode(AssetExplorer.FileList.CurrentNode);
+        ExportFolderModal.Open();
+    }
+    
     private void ExportFolder()
     {
-        ExportFolderModal.SetContextNode(Parent.ContextNode);
+        ExportFolderModal.SetContextNode(AssetExplorer.ContextNode);
         ExportFolderModal.Open();
     }
 
     private async Task ExportSingle()
     {
-        var item = Parent.ContextItem;
+        var item = AssetExplorer.ContextNode;
 
         var defaultName = item.Type switch
         {
             ExplorerItemType.Material => item.Name + ".gfxbin",
             ExplorerItemType.Model => item.Name + ".gfxbin",
             ExplorerItemType.Texture => item.Name[..item.Name.LastIndexOf('.')] + ".png",
+            ExplorerItemType.Xml => item.Name[..item.Name.LastIndexOf('.')] + ".xml",
             _ => item.Name
             };
 
@@ -117,6 +132,7 @@
             ExplorerItemType.Material => "Game Material|*.gmtl.gfxbin",
             ExplorerItemType.Model => "Game Model|*.gmdl.gfxbin",
             ExplorerItemType.Texture => "PNG Image|*.png|TGA Image|*.tga|DDS Image|*.dds|BTEX Image|*.btex",
+            ExplorerItemType.Xml => "eXtensible Markup Language|*.xml|Ebony XML (XMB2)|*.exml",
             _ => $"Unknown File|*.{item.Name.Split('.').Last()}"
             };
 
@@ -124,56 +140,59 @@
         {
             byte[] data;
 
-            if (item.Type == ExplorerItemType.Texture)
+            switch (item.Type)
             {
-                var extension = path.Split('.').Last();
-                var converter = new TextureConverter();
-                data = extension switch
+                case ExplorerItemType.Texture:
                 {
-                    "png" => converter.BtexToPng(item.Data()),
-                    "tga" => converter.BtexToTga(item.Data()),
-                    "dds" => converter.BtexToDds(item.Data()),
-                    _ => item.Data()
-                    };
-            }
-            else
-            {
-                data = item.Data();
+                    var extension = path.Split('.').Last();
+                    var converter = new TextureConverter();
+                    data = extension switch
+                    {
+                        "png" => converter.BtexToPng(item.Data),
+                        "tga" => converter.BtexToTga(item.Data),
+                        "dds" => converter.BtexToDds(item.Data),
+                        _ => item.Data
+                        };
+                    break;
+                }
+                case ExplorerItemType.Xml:
+                {
+                    var extension = path.Split('.').Last();
+                    if (extension == "xml")
+                    {
+                        var builder = new StringBuilder();
+                        Xmb2Document.Dump(item.Data, builder);
+                        data = Encoding.UTF8.GetBytes(builder.ToString());
+                    }
+                    else
+                    {
+                        data = item.Data;
+                    }
+                    break;
+                }
+                default:
+                    data = item.Data;
+                    break;
             }
 
             File.WriteAllBytes(path, data);
         });
     }
 
-    private async Task ExportXml()
-    {
-        var item = Parent.ContextItem;
-        var defaultName = item.Name[..item.Name.LastIndexOf('.')] + ".xml";
-        var filter = "XML File|*.xml";
-
-        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, path =>
-        {
-            var xmb2 = item.Data();
-            var builder = new StringBuilder();
-            Xmb2Document.Dump(xmb2, builder);
-            File.WriteAllText(path, builder.ToString());
-        });
-    }
-
     private async Task ExportEnvironment()
     {
-        var item = Parent.ContextItem;
+        var item = AssetExplorer.ContextItem;
         const string filter = "Flagrum Environment Data|*.fed";
 
         await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
         {
-            await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
+            await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
 
-            await Task.Run(() => { EnvironmentPacker.Pack(item.Uri, path); });
+            await Task.Run(() => { EnvironmentPacker.Pack(item.Path, path); });
 
             await InvokeAsync(() =>
             {
-                Parent.SetLoading(false);
+                AssetExplorer.SetLoading(false);
                 WpfService.ShowWindowsNotification("Environment Export Complete");
             });
         });
@@ -181,31 +200,50 @@
 
     private async Task ExportTerrain()
     {
-        var item = Parent.ContextItem;
+        var item = AssetExplorer.ContextItem;
         const string filter = "Flagrum Terrain Data|*.ftd";
 
         await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".ftd", filter, async path =>
         {
-            await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
-            await Task.Run(() => { TerrainPacker.Pack(item.Uri, path); });
-            await InvokeAsync(() => Parent.SetLoading(false));
+            await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
+            await Task.Run(() => { TerrainPacker.Pack(item.Path, path); });
+            await InvokeAsync(() => AssetExplorer.SetLoading(false));
         });
     }
 
     private async Task ExportAnimationClips()
     {
-        var item = Parent.ContextItem;
+        var item = AssetExplorer.ContextItem;
         await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             async folderPath =>
             {
-                await InvokeAsync(() => Parent.SetLoading(true, "Exporting"));
-                var data = Context.GetFileByUri(item.Uri);
+                await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
+                var data = Context.GetFileByUri(item.Path);
                 var package = AnimationPackage.FromData(data);
                 foreach (var animation in package.Items)
                 {
                     await File.WriteAllBytesAsync($@"{folderPath}\{package.Items.IndexOf(animation)}.ani", animation.Ani);
                 }
-                await InvokeAsync(() => Parent.SetLoading(false));
+                await InvokeAsync(() => AssetExplorer.SetLoading(false));
             });
+    }
+
+    private void OnAppearing()
+    {
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(false);
+        }
+    }
+
+    private void OnHiding()
+    {
+        AssetExplorer.ContextNode = null; 
+        AssetExplorer.CallStateHasChanged();
+
+        if (AppState.Is3DViewerOpen && !AppState.IsModalOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 }

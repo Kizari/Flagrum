@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="ModName" xml:space="preserve">
+        <value>Mod Name</value>
+    </data>
+    <data name="Author" xml:space="preserve">
+        <value>Author</value>
+    </data>
+    <data name="Description" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="NewEarcMod" xml:space="preserve">
+        <value>New EARC Mod</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Save</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="ReplaceAsset" xml:space="preserve">
+        <value>Replace Asset</value>
+    </data>
+    <data name="RemoveAsset" xml:space="preserve">
+        <value>Remove Asset</value>
+    </data>
+    <data name="NoFileChangesSet" xml:space="preserve">
+        <value>No file changes set</value>
+    </data>
+    <data name="ChangeImage" xml:space="preserve">
+        <value>Change Image</value>
+    </data>
+    <data name="Delete" xml:space="preserve">
+        <value>Delete</value>
+    </data>
+    <data name="EditEarcMod" xml:space="preserve">
+        <value>Edit EARC Mod</value>
+    </data>
+    <data name="FilesToChange" xml:space="preserve">
+        <value>Files to Change</value>
+    </data>
+    <data name="Replace" xml:space="preserve">
+        <value>Replace</value>
+    </data>
+    <data name="With" xml:space="preserve">
+        <value>With</value>
+    </data>
+    <data name="Remove" xml:space="preserve">
+        <value>Remove</value>
+    </data>
+    <data name="NameRequired" xml:space="preserve">
+        <value>The name field must not be empty</value>
+    </data>
+    <data name="AuthorRequired" xml:space="preserve">
+        <value>The author field must not be empty</value>
+    </data>
+    <data name="DescriptionRequired" xml:space="preserve">
+        <value>The description field must not be empty</value>
+    </data>
+    <data name="BuildList" xml:space="preserve">
+        <value>Build List</value>
+    </data>
+    <data name="AddFile" xml:space="preserve">
+        <value>Add File</value>
+    </data>
+    <data name="AddReference" xml:space="preserve">
+        <value>Reference</value>
+    </data>
+    <data name="ClearCache" xml:space="preserve">
+        <value>Clear Cache</value>
+    </data>
+</root>

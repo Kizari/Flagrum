@@ -1,10 +1,10 @@
 ﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50" style="background-color: rgba(0, 0, 0, 0.6)">
-    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="max-width: 90%; max-height: 90%">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto" style="min-width: @MinWidth; max-width: @MaxWidth; max-height: 90vh">
         <div class="rounded-t-lg bg-grey-700 p-3 row">
             @HeaderView
         </div>
-        <div class="@(FooterView == null ? "rounded-b-lg" : "") p-@Padding flex flex-row items-center scrollbar-light"
-             style="max-height: 90vh; overflow-y: auto; overflow-x: hidden">
+        <div class="@(FooterView == null ? "rounded-b-lg" : "") p-@Padding scrollbar-light"
+             style="max-height: calc(90vh - 60px); overflow-y: auto; overflow-x: hidden">
             @BodyView
         </div>
         @if (FooterView != null)
@@ -35,6 +35,12 @@
 
     [Parameter]
     public int Padding { get; set; } = 6;
+
+    [Parameter]
+    public string MaxWidth { get; set; } = "90%";
+
+    [Parameter]
+    public string MinWidth { get; set; } = "0"; 
 
     private string Display { get; set; } = "hidden";
     private string Opacity { get; set; } = "opacity-0";

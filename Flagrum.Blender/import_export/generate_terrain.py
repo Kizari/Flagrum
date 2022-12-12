@@ -146,6 +146,7 @@ def generate_terrain(context: TerrainImportContext, data: list[TerrainMetadata])
         if context.use_high_materials:
             mask_path = context.directory + "\\" + context.filename_without_extension + "_terrain_textures\\" + tile.Name + "\\merged_mask_map.tga"
             if exists(mask_path):
+                material.cycles.displacement_method = 'DISPLACEMENT'
                 _setup_texture_splatting(context, material, bsdf, tile.Name)
             else:
                 _setup_basic_shader(context, material, bsdf, tile.Name)

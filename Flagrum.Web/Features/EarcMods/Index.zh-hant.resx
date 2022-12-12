@@ -1,0 +1,138 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="ActiveMods" xml:space="preserve">
+        <value>已啟用的MOD</value>
+    </data>
+    <data name="ChooseConflict" xml:space="preserve">
+        <value>請在下面選擇您想保留的內容：</value>
+    </data>
+    <data name="Confirm" xml:space="preserve">
+        <value>確認</value>
+    </data>
+    <data name="Conflicts" xml:space="preserve">
+        <value>此模組與下列模組衝突</value>
+    </data>
+    <data name="ConflictsDetected" xml:space="preserve">
+        <value>檢測到的衝突</value>
+    </data>
+    <data name="CreateMod" xml:space="preserve">
+        <value>新建MOD</value>
+    </data>
+    <data name="DisabledMods" xml:space="preserve">
+        <value>已禁用的MOD</value>
+    </data>
+    <data name="DisableNow" xml:space="preserve">
+        <value>是否現在禁用以上模組？</value>
+    </data>
+    <data name="DisablingMod" xml:space="preserve">
+        <value>正在禁用模組</value>
+    </data>
+    <data name="DisplayText" xml:space="preserve">
+        <value>MOD管理器不可在索引檔的同時使用</value>
+    </data>
+    <data name="DuplicateEarcsDetected" xml:space="preserve">
+        <value>檢測到一個或多個相同的EARC</value>
+    </data>
+    <data name="EnablingMod" xml:space="preserve">
+        <value>正在啟用MOD</value>
+    </data>
+    <data name="Error" xml:space="preserve">
+        <value>錯誤</value>
+    </data>
+    <data name="ErrorDataCompare" xml:space="preserve">
+        <value>無法進行資料比較</value>
+    </data>
+    <data name="ErrorDataCompareDescription" xml:space="preserve">
+        <value>由於該MOD並非由Flagrum創建且會改動當前系統上已啟用的MOD所修改的檔，&lt;br/&gt;&lt;br/&gt;請關閉該MOD後重試。:&lt;br/&gt;&lt;br/&gt;</value>
+    </data>
+    <data name="ExportingModPack" xml:space="preserve">
+        <value>正在匯出MOD包</value>
+    </data>
+    <data name="IncompatibleModPack" xml:space="preserve">
+        <value>不相容的MOD包</value>
+    </data>
+    <data name="IncompatibleNewEarcDescription" xml:space="preserve">
+        <value>該MOD包中有一個本地遊戲檔中不包含的無法被修改的EARC。Flagrum目前暫不支持在遊戲中添加新的EARC，但在未來的更新中會增加此功能。在此期間，請參考MOD作者的原始安裝說明。</value>
+    </data>
+    <data name="IncompatibleNewFilesDescription" xml:space="preserve">
+        <value>該ZIP檔中的一個或多個模組在遊戲中添加了新檔。Flagrum目前暫不支援添加新檔，但在未來的更新中會增加此功能。在此期間，請參考MOD作者的原始安裝說明。</value>
+    </data>
+    <data name="InstallingMod" xml:space="preserve">
+        <value>正在安裝MOD</value>
+    </data>
+    <data name="InvalidModPack" xml:space="preserve">
+        <value>無效的MOD包</value>
+    </data>
+    <data name="InvalidModPackDescription" xml:space="preserve">
+        <value>無法在該ZIP中找到相容的MOD資料。請遵從MOD作者的原始安裝說明。</value>
+    </data>
+    <data name="NoActiveMods" xml:space="preserve">
+        <value>無法找到已啟用EARC MOD</value>
+    </data>
+    <data name="NoDisabledMods" xml:space="preserve">
+        <value>無法找到已禁用EARC MOD</value>
+    </data>
+    <data name="NoMods" xml:space="preserve">
+        <value>未找到EARC MOD文件</value>
+    </data>
+    <data name="SubText" xml:space="preserve">
+        <value>請等待檔索引編制的完成</value>
+    </data>
+    <data name="Warning" xml:space="preserve">
+        <value>警告</value>
+    </data>
+    <data name="CategoryAll" xml:space="preserve">
+        <value>全部MOD</value>
+    </data>
+    <data name="CategoryCheat" xml:space="preserve">
+        <value>作弊</value>
+    </data>
+    <data name="CategoryContent" xml:space="preserve">
+        <value>內容</value>
+    </data>
+    <data name="CategoryFix" xml:space="preserve">
+        <value>修復</value>
+    </data>
+    <data name="CategoryGameplay" xml:space="preserve">
+        <value>變更模式</value>
+    </data>
+    <data name="CategoryLighthearted" xml:space="preserve">
+        <value>愉快</value>
+    </data>
+    <data name="CategoryOther" xml:space="preserve">
+        <value>其他</value>
+    </data>
+    <data name="CategoryQualityOfLife" xml:space="preserve">
+        <value>體驗改善</value>
+    </data>
+    <data name="CategoryReplacement" xml:space="preserve">
+        <value>替換</value>
+    </data>
+    <data name="CategoryRework" xml:space="preserve">
+        <value>重塑</value>
+    </data>
+    <data name="Filter" xml:space="preserve">
+        <value>濾鏡：</value>
+    </data>
+    <data name="InstallFromZip" xml:space="preserve">
+        <value>安裝MOD</value>
+    </data>
+    <data name="ModReadme" xml:space="preserve">
+        <value>MOD自述文件</value>
+    </data>
+</root>

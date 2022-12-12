@@ -19,7 +19,8 @@ else
            readonly="@IsReadOnly"
            placeholder="@Placeholder"
            @bind-value="@CurrentValueAsString"
-           @bind-value:event="oninput"/>
+           @bind-value:event="oninput"
+           @onkeyup="KeyUp"/>
 }
 
 @code
@@ -45,6 +46,9 @@ else
 
     [Parameter]
     public string Class { get; set; }
+    
+    [Parameter]
+    public Action<KeyboardEventArgs> OnKeyUp { get; set; }
 
     private string Style => Size switch
     {
@@ -59,5 +63,10 @@ else
         result = value;
         validationErrorMessage = null;
         return true;
+    }
+
+    private void KeyUp(KeyboardEventArgs e)
+    {
+        OnKeyUp?.Invoke(e);
     }
 }

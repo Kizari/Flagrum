@@ -2,87 +2,116 @@
 @page "/earc/editor/{ModId}"
 @using Microsoft.EntityFrameworkCore
 @using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Persistence.Entities.ModManager
 @using Flagrum.Web.Features.EarcMods.Modals
-@using Flagrum.Core.Utilities
 @using System.IO
+@using System.Diagnostics
+@inherits ModComponentBase
 
 @inject NavigationManager Navigation
 @inject IWpfService WpfService
-@inject FlagrumDbContext Context
 @inject ILogger<Editor> Logger
+@inject IStringLocalizer<Editor> Localizer
+@inject SettingsService Settings
 
 <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
-    <EditForm Model="Mod" OnValidSubmit="OnSubmit" class="h-full w-full">
-        <DataAnnotationsValidator/>
-        <div class="p-6 flex flex-row h-full">
-
-            <div class="mr-6 h-full" style="flex: 0 0 330px;">
-                <div class="bg-grey-800 rounded shadow-md h-full flex flex-col">
-                    <div class="relative rounded-t" style="width: 330px; height: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(ImageName).png')"></div>
-                    <div class="p-4 flex-grow flex flex-col">
-                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name" Placeholder="Mod Name"/>
-                        <ValidationMessage For="() => Mod.Name"/>
-                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author" Placeholder="Author" Class="mt-3"/>
-                        <ValidationMessage For="() => Mod.Author"/>
-                        <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description" Placeholder="Description" Class="mt-3 flex-grow"/>
-                        <ValidationMessage For="() => Mod.Description"/>
-                    </div>
-                    <div class="px-4 pb-4 flex flex-row">
-                        <Button Icon="image" Text="Change Image" CssClass="mr-3" OnClickAsync="SelectImage"/>
-                        <Button Icon="delete_forever" Text="Delete" CssClass="mr-3" OnClickAsync="Delete"/>
-                    </div>
-                </div>
+    <div class="p-6 flex flex-row h-full">
+        <div class="flex-grow h-full flex flex-col">
+            <div class="box p-6 mb-6 flex flex-row items-center">
+                <h4 class="text-grey-200 flex-grow">@Mod.Name</h4>
+                <Button Icon="save" Text="@Localizer["Save"]" CssClass="mr-3" OnClickAsync="Save"/>
+                @if (ModId != null && Mod.HasAnyCachedFiles)
+                {
+                    <Button Icon="folder_off" Text="@Localizer["ClearCache"]" OnClick="ClearCache" CssClass="mr-3"/>
+                }
+                <Button Icon="delete_forever" Text="@Localizer["Delete"]" OnClick="Delete" CssClass="bg-error hover:bg-error mr-3"/>
+                <Button Icon="cancel" Text="@Localizer["Cancel"]" OnClick="@(() => Navigation.NavigateTo("/"))"/>
             </div>
-
-            <div class="flex-grow h-full flex flex-col">
-                <div class="box p-6 mb-6 flex flex-row items-center">
-                    <h4 class="text-grey-200 flex-grow">@(ModId == null ? "New" : "Edit") EARC Mod</h4>
-                    <Button Icon="save" Text="Save" Type="submit" CssClass="mr-3"/>
-                    <Button Icon="cancel" Text="Cancel" OnClick="@(() => Navigation.NavigateTo("/"))"/>
-                </div>
-                <div class="box flex flex-row items-center p-6 border-b border-dark-600">
-                    <h5 class="text-grey-200 flex-grow">Files to Change</h5>
-                    <Button Icon="folder" Text="Replace Asset" CssClass="mr-3" OnClick="OpenReplaceModal"/>
-                    <Button Icon="block" Text="Remove Asset" OnClick="OpenRemoveModal"/>
-                </div>
-                <div class="flex-grow box px-6 pt-2 pb-6 overflow-auto">
-                    @if (Mod.Earcs.Any())
+            <div class="box flex flex-row items-center p-6 border-b border-black">
+                <h5 class="text-grey-200 flex-grow">@Localizer["BuildList"]</h5>
+                <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
+                <Button Icon="block" Text="@Localizer["RemoveAsset"]" OnClick="OpenRemoveModal"/>
+            </div>
+            <div class="flex-grow box overflow-auto">
+                @if (Mod.Earcs.Any(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
+                {
+                    foreach (var earc in Mod.Earcs.Where(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
                     {
-                        foreach (var earc in Mod.Earcs)
+                        <div class="row border-b border-black px-4 py-3">
+                            <span class="material-icons mr-3 cursor-pointer select-none"
+                                  @onclick="() => { earc.IsExpanded = !earc.IsExpanded; StateHasChanged(); }">
+                                @(earc.IsExpanded ? "expand_more" : "chevron_right")
+                            </span>
+                            <h5 class="text-grey-300">@earc.EarcRelativePath</h5>
+                            <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchRelativePath(earc.EarcRelativePath)">
+                                open_in_new
+                            </span>
+                        </div>
+
+                        if (earc.IsExpanded)
                         {
-                            <h5 class="text-grey-300 mt-4">@earc.EarcRelativePath</h5>
-                            foreach (var replacement in earc.Replacements)
+                            if (earc.Files.Count < 1)
                             {
-                                <div class="flex flex-row pt-2">
-                                    <div class="text-right mx-4" style="flex: 0 0 80px;">
-                                        @if (replacement.Type == EarcChangeType.Replace)
+                                <div class="px-12 py-4 border-b border-black">
+                                    @Localizer["NoFileChangesSet"]
+                                </div>
+                            }
+
+                            foreach (var replacement in earc.Files.Where(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
+                            {
+                                <div class="flex flex-row px-4 py-2 border-b border-black">
+                                    <div class="text-right mx-4" style="flex: 0 0 120px;">
+                                        @switch (replacement.Type)
                                         {
-                                            <strong>Replace:</strong><br/>
-                                            <strong>With:</strong>
-                                        }
-                                        else
-                                        {
-                                            <strong>Remove:</strong>
+                                            case EarcFileChangeType.Replace:
+                                                <strong>@Localizer["Replace"]:</strong>
+                                                <br/>
+                                                <strong>@Localizer["With"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.Remove:
+                                                <strong>@Localizer["Remove"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.AddReference:
+                                                <strong>@Localizer["AddReference"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.Add:
+                                                <strong>@Localizer["AddFile"]:</strong>
+                                                <br/>
+                                                <strong>@Localizer["From"]:</strong>
+                                                break;
+                                            case EarcFileChangeType.AddToTextureArray:
+                                                <strong>Add To:</strong>
+                                                <br/>
+                                                <strong>@Localizer["From"]:</strong>
+                                                break;
                                         }
                                     </div>
                                     <div style="flex: 1 1 auto;">
-                                        @if (replacement.Type == EarcChangeType.Replace)
+                                        @switch (replacement.Type)
                                         {
-                                            <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                                <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
-                                                <div>/@replacement.Uri.Split('/').Last()</div>
-                                            </div><br/>
-                                            <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                                <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
-                                                <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
-                                                <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
-                                                <div>/@replacement.Uri.Split('/').Last()</div>
-                                            </div>
+                                            case EarcFileChangeType.Replace:
+                                            case EarcFileChangeType.Add:
+                                            case EarcFileChangeType.AddToTextureArray:
+                                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                    <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                                    <div>/@replacement.Uri.Split('/').Last()</div>
+                                                </div>
+                                                <br/>
+                                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                    <div>@string.Join('\\', replacement.ReplacementFilePath.Split('\\')[..^1])</div>
+                                                    <div>\@replacement.ReplacementFilePath.Split('\\').Last()</div>
+                                                    <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5" @onclick="() => LaunchAbsolutePath(replacement.ReplacementFilePath)">
+                                                        open_in_new
+                                                    </span>
+                                                </div>
+                                                break;
+                                            case EarcFileChangeType.Remove:
+                                            case EarcFileChangeType.AddReference:
+                                                <div class="truncate-middle" style="max-width: calc(100vw - 820px)">
+                                                    <div>@string.Join('/', replacement.Uri.Split('/')[..^1])</div>
+                                                    <div>/@replacement.Uri.Split('/').Last()</div>
+                                                </div>
+                                                break;
                                         }
                                     </div>
                                     <div class="ml-8">
@@ -92,17 +121,18 @@
                             }
                         }
                     }
-                    else
-                    {
-                        <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
-                            No file changes set
-                        </div>
-                    }
-                </div>
-            </div>
+                }
 
+                @if (!Mod.Earcs.Any())
+                {
+                    <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4 mx-4">
+                        @Localizer["NoFileChangesSet"]
+                    </div>
+                }
+            </div>
         </div>
-    </EditForm>
+
+    </div>
 </LoadingView>
 
 <CascadingValue Value="this">
@@ -117,191 +147,193 @@
     [Parameter]
     public string ModId { get; set; }
 
-    private EarcMod Mod { get; set; } = new();
-
     private bool IsLoading { get; set; }
     private string LoadingText { get; set; }
     private UriSelectModal Modal { get; set; }
     private AlertModal Alert { get; set; }
-    private PromptModal Prompt { get; set; }
-    private string ImageName { get; set; } = "current_earc_preview";
-    private EarcChangeType ModalType { get; set; }
+    private EarcFileChangeType ModalType { get; set; }
+    private bool HasChanged { get; set; }
 
     protected override void OnInitialized()
     {
-        var currentPreviewPath = $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png";
+        var modId = Convert.ToInt32(ModId);
+        Mod = Context.EarcMods
+            .Include(e => e.Earcs)
+            .ThenInclude(e => e.Files)
+            .Include(m => m.LooseFiles)
+            .Where(m => m.Id == modId)
+            .AsNoTracking()
+            .ToList()
+            .FirstOrDefault()!;
 
-        if (ModId == null)
-        {
-            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
-            File.Copy(defaultPreviewPath, currentPreviewPath, true);
-        }
-        else
-        {
-            var modId = Convert.ToInt32(ModId);
-            Mod = Context.EarcMods
-                .Include(e => e.Earcs)
-                .ThenInclude(e => e.Replacements)
-                .Where(m => m.Id == modId)
-                .AsNoTracking()
-                .ToList()
-                .FirstOrDefault()!;
-
-            var file = $@"{IOHelper.GetWebRoot()}\EarcMods\{Mod.Id}.png";
-            if (File.Exists(file))
-            {
-                File.Copy(file, currentPreviewPath, true);
-            }
-            else
-            {
-                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
-                File.Copy(defaultPreviewPath, currentPreviewPath, true);
-            }
-        }
+        StateHasChanged();
     }
 
     private void OpenReplaceModal()
     {
-        ModalType = EarcChangeType.Replace;
+        ModalType = EarcFileChangeType.Replace;
         Modal.Open();
     }
 
     private void OpenRemoveModal()
     {
-        ModalType = EarcChangeType.Remove;
+        ModalType = EarcFileChangeType.Remove;
         Modal.Open();
     }
 
     private async Task OnFileSelected(string uri)
     {
-        if (Mod.Earcs.Any(e => e.Replacements.Any(r => r.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase))))
+        if (Mod.Earcs.Any(e => e.Files.Any(r => r.Uri.Equals(uri, StringComparison.OrdinalIgnoreCase))))
         {
             Alert.Open("Warning", "Invalid Action", "You cannot alter the same file twice.", null);
             return;
         }
 
-        if (ModalType == EarcChangeType.Replace)
+        const string filter = "All Files|*.*";
+
+        switch (ModalType)
         {
-            const string filter = "All Files|*.*";
-            await WpfService.OpenFileDialogAsync(filter, async file =>
+            case EarcFileChangeType.Replace:
             {
-                Mod.AddReplacement(Context.GetArchiveRelativeLocationByUri(uri), uri, file);
-                await InvokeAsync(StateHasChanged);
-            });
+                await WpfService.OpenFileDialogAsync(filter, async file =>
+                {
+                    Mod.AddReplacement(Context.GetArchiveRelativeLocationByUri(uri), uri, file);
+                    await InvokeAsync(() =>
+                    {
+                        Modal.Close();
+                        StateHasChanged();
+                    });
+                });
+                break;
+            }
+            case EarcFileChangeType.Remove:
+                Mod.AddRemoval(Context.GetArchiveRelativeLocationByUri(uri), uri);
+                await InvokeAsync(() =>
+                {
+                    Modal.Close();
+                    StateHasChanged();
+                });
+                break;
         }
-        else
-        {
-            Mod.AddRemoval(Context.GetArchiveRelativeLocationByUri(uri), uri);
-            await InvokeAsync(StateHasChanged);
-        }
+
+        HasChanged = true;
     }
 
-    private void RemoveReplacement(EarcModEarc earc, EarcModReplacement replacement)
+    private void RemoveReplacement(EarcModEarc earc, EarcModFile file)
     {
-        earc.Replacements.Remove(replacement);
+        earc.Files.Remove(file);
 
-        if (earc.Replacements.Count == 0)
+        if (earc.Files.Count == 0)
         {
             Mod.Earcs.Remove(earc);
         }
 
+        HasChanged = true;
         StateHasChanged();
     }
 
-    private async Task SelectImage()
+    private async Task Save()
     {
-        await WpfService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
-            async path =>
-            {
-                File.Copy(path, $@"{IOHelper.GetWebRoot()}\images\current_earc_preview.png", true);
-    // This jank is required or the UI won't update the image if the value hasn't changed
-                ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
-                await InvokeAsync(StateHasChanged);
-            });
-    }
-
-    private async Task OnSubmit()
-    {
-        var deadFiles = Mod.Earcs.SelectMany(e => e.Replacements
-            .Where(r => !File.Exists(r.ReplacementFilePath)))
-            .Select(r => r.ReplacementFilePath)
-            .ToList();
-
-        if (deadFiles.Any())
+        if (Context.Settings.IsGameRunning())
         {
-            var message = deadFiles.Aggregate("The mod could not be built as the following files were missing:<ul>",
-                (current, file) => current + $"<li>{file}</li>");
-            Alert.Open("Error", "Missing Files", message + "</ul>", null);
+            Alert.Open("Error", "FFXV is Running", "Flagrum cannot apply mods while the game is running. Please save and close down FFXV, then try again.", null);
             return;
         }
-
+        
         LoadingText = "Saving Mod";
         IsLoading = true;
         StateHasChanged();
 
-        await Task.Run(async () => await CheckConflicts(
-            async () =>
-            {
-                await Mod.Save(Context, Logger);
-                Navigation.NavigateTo("/");
-            }));
-    }
-
-    private async Task Delete()
-    {
-        LoadingText = "Deleting Mod";
-        IsLoading = true;
-        StateHasChanged();
-
-        await Task.Run(async () => await Mod.Delete(Context));
-        Navigation.NavigateTo("/");
-    }
-
-    private async Task CheckConflicts(Func<Task> onContinue)
-    {
-        var uris = Mod.Earcs
-            .SelectMany(e => e.Replacements.Select(r => r.Uri))
-            .ToList();
-
-        var conflicts = Context.EarcMods
-            .Where(m => m.IsActive
-                        && m.Id != Mod.Id
-                        && m.Earcs.Any(e => e.Replacements
-                            .Any(r => uris.Contains(r.Uri))))
-            .Select(m => new {m.Id, m.Name})
-            .ToList();
-
-        if (conflicts.Any())
+        if (HasChanged || Mod.HaveFilesChanged)
         {
-            var message = conflicts.Aggregate("The following mod(s) conflict with this one:<br/><br/>",
-                (previous, mod) => previous + $"<strong>{mod.Name}</strong><br/>");
-            Prompt.Title = "Warning";
-            Prompt.Heading = "Conflicts Detected";
-            Prompt.Subtext = message + "<br/>Would you like to disable the above mod(s) now?";
-            Prompt.OnYes = async () =>
+            var deadFiles = Mod.Earcs.SelectMany(e => e.Files
+                .Where(r => r.Type is EarcFileChangeType.Replace or EarcFileChangeType.Add or EarcFileChangeType.AddToTextureArray
+                            && !File.Exists(r.ReplacementFilePath)))
+                .Select(r => r.ReplacementFilePath)
+                .ToList();
+
+            if (deadFiles.Any())
             {
-                foreach (var mod in conflicts)
-                {
-                    var match = Context.EarcMods
-                        .Include(m => m.Earcs)
-                        .ThenInclude(e => e.Replacements)
-                        .Where(m => m.Id == mod.Id)
-                        .AsNoTracking()
-                        .ToList()
-                        .FirstOrDefault()!;
-
-                    await match.Disable(Context);
-                }
-
-                await onContinue();
-            };
-
-            await InvokeAsync(Prompt.Open);
+                var message = deadFiles.Aggregate("The mod could not be built as the following files were missing:<ul class='mt-4'>",
+                    (current, file) => current + $"<li>{file}</li>");
+                Alert.Open("Error", "Missing Files", message + "</ul>", null, 400, 300, true);
+                IsLoading = false;
+                StateHasChanged();
+            }
+            else
+            {
+                await Task.Run(async () => await CheckConflicts(Mod,
+                    async () =>
+                    {
+                        await Mod.Save(Context, Logger, HasChanged);
+                        Navigation.NavigateTo("/");
+                    },
+                    async () =>
+                    {
+                        await Mod.SaveNoBuild(Context, HasChanged);
+                        Navigation.NavigateTo("/");
+                    }));
+            }
         }
         else
         {
-            await onContinue();
+            if (Mod.IsActive)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                await Task.Run(async () => await CheckConflicts(Mod,
+                    async () =>
+                    {
+                        await Mod.Enable(Context, Logger);
+                        Navigation.NavigateTo("/");
+                    },
+                    () =>
+                    {
+                        Navigation.NavigateTo("/");
+                        return Task.CompletedTask;
+                    }));
+            }
         }
+    }
+
+    private void Delete()
+    {
+        Prompt.Title = "Delete Mod";
+        Prompt.Heading = "Are you sure?";
+        Prompt.Subtext = "This action cannot be undone!";
+        Prompt.YesText = "Delete";
+        Prompt.NoText = "Cancel";
+        Prompt.OnNo = null;
+        Prompt.OnYes = async () => await InvokeAsync(async () =>
+        {
+            LoadingText = "Deleting Mod";
+            IsLoading = true;
+            StateHasChanged();
+
+            await Task.Run(async () => await Mod.Delete(Context));
+            Navigation.NavigateTo("/");
+        });
+
+        Prompt.Open();
+    }
+
+    private void ClearCache()
+    {
+        Mod.ClearCachedFiles();
+        Alert.Open("Success", "Cache Cleared", "The cached build files for this mod have been cleared.", null, 300, 200);
+        StateHasChanged();
+    }
+
+    private void LaunchRelativePath(string relativePath)
+    {
+        var uri = $@"{Settings.GameDataDirectory}\{relativePath[..relativePath.LastIndexOf('\\')]}";
+        Process.Start(new ProcessStartInfo(uri) {UseShellExecute = true});
+    }
+
+    private void LaunchAbsolutePath(string path)
+    {
+        Process.Start(new ProcessStartInfo(path) {UseShellExecute = true});
     }
 }

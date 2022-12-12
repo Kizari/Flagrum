@@ -1,7 +1,11 @@
 ﻿@page "/settings"
+@using Flagrum.Web.Persistence.Entities
 
 @inject SettingsService Settings
 @inject IWpfService WpfService
+@inject IStringLocalizer<SettingsPage> Localizer
+@inject FlagrumDbContext Context
+@inject IJSRuntime JSRuntime
 
 <div class="p-6">
 
@@ -9,42 +13,50 @@
     {
         <div class="bg-error mb-6 p-4">
             <span class="text-white">
-                Flagrum was unable to automatically detect the location of your game files.
-                Please ensure Final Fantasy XV is installed on your computer then set the paths below.
+                @Localizer["PathAutodetectFailed"]
             </span>
         </div>
     }
 
     <EditForm Model="Data">
+
+        <div class="box p-4 mb-6 row">
+            <span class="mr-3" style="flex: 0 0 200px">@Localizer["Language"]</span>
+            <select class="input bg-dark-550 flex-grow" style="max-width: 500px;" @bind="CurrentCulture">
+                <option value="en-GB">@GetLanguageString("English")</option>
+                <option value="ja-JP">@GetLanguageString("Japanese")</option>
+                <option value="zh-Hans">@GetLanguageString("Chinese (Simplified)")</option>
+                <option value="zh-Hant">@GetLanguageString("Chinese (Traditional)")</option>
+            </select>
+        </div>
+
         <div class="box p-4 mb-6">
             <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">Final Fantasy XV Path</span>
+                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["GamePath"]</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
+                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
             </div>
-            <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\ffxv_s.exe</small>
+            <small class="text-grey-600">@Localizer["DefaultGamePath"]</small>
         </div>
 
         <div class="box p-4 mb-6">
             <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">Binmod List Path</span>
+                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["BinmodPath"]</span>
                 <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
+                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
             </div>
-            <small class="text-grey-600">Default C:\Users\[USERNAME]\Documents\My Games\FINAL FANTASY XV\Steam\[STEAM_USER_ID]\mod\binmod.list</small>
+            <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
         </div>
 
-        <div class="box p-4 mb-2">
-            <div class="row mb-3">
-                <span class="mr-3" style="width: 250px;">Workshop ACF Path</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.WorkshopPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="Browse" CssClass="ml-4" OnClickAsync="WorkshopPathClicked"/>
-            </div>
-            <small class="text-grey-600">Default C:\Program Files (x86)\Steam\steamapps\workshop\appworkshop_637650.acf</small>
-        </div>
     </EditForm>
 
 </div>
+
+<PromptModal @ref="RestartPrompt"
+             Title=@Localizer["RestartRequired"]
+             Heading=@Localizer["RestartRequired"]
+             Subtext=@Localizer["RestartPrompt"]
+             OnYes="RestartApplication"/>
 
 @code
 {
@@ -54,13 +66,87 @@
     [Parameter]
     public bool Warn { get; set; }
 
+    private string _currentCulture;
+    
     private SettingsData Data { get; } = new();
+    private PromptModal RestartPrompt { get; set; }
+    private LanguageTable LanguageTable { get; set; } = new();
+
+    private string CurrentCulture
+    {
+        get => _currentCulture;
+        set
+        {
+            if (_currentCulture != value)
+            {
+                _currentCulture = value;
+                OnLanguageChanged(_currentCulture);
+            }
+        }
+    }
 
     protected override void OnInitialized()
     {
         Data.GamePath = Settings.GamePath;
         Data.WorkshopPath = Settings.WorkshopPath;
         Data.BinmodListPath = Settings.BinmodListPath;
+
+        var supportedExtraCultures = new List<CultureInfo>
+        {
+            new("ja-JP"),
+            new("zh-Hans"),
+            new("zh-Hant")
+        };
+
+        foreach (var culture in supportedExtraCultures)
+        {
+            var closestCulture = GetClosestCulture(culture);
+            if (closestCulture != null)
+            {
+                _currentCulture = closestCulture;
+                break;
+            }
+        }
+
+        _currentCulture ??= "en-GB";
+    }
+
+    private string GetClosestCulture(CultureInfo culture)
+    {
+        var cultureToMatch = CultureInfo.CurrentCulture;
+
+        do
+        {
+            if (cultureToMatch.Name == culture.Name)
+            {
+                return culture.Name;
+            }
+
+            cultureToMatch = cultureToMatch.Parent;
+        } while (cultureToMatch.Parent.Name != cultureToMatch.Name);
+
+        return null;
+    }
+
+    private string GetLanguageString(string language)
+    {
+        var currentCultureString = Localizer[language];
+        var nativeCultureString = LanguageTable[language];
+
+        return currentCultureString == nativeCultureString 
+            ? nativeCultureString 
+            : $"{currentCultureString} ({nativeCultureString})";
+    }
+
+    private void OnLanguageChanged(string language)
+    {
+        Context.SetString(StateKey.Language, language ?? "en-GB");
+        RestartPrompt.Open();
+    }
+
+    private void RestartApplication()
+    {
+        WpfService.Restart();
     }
 
     private async Task GamePathClicked()
@@ -84,19 +170,6 @@
             {
                 Data.BinmodListPath = path;
                 Settings.SetBinmodListPath(path);
-                InvokeAsync(StateHasChanged);
-                InvokeAsync(Layout.CallStateHasChanged);
-            });
-    }
-
-    private async Task WorkshopPathClicked()
-    {
-        await WpfService.OpenFileDialogAsync(
-            "Workshop Manifest (*.acf)|*.acf",
-            path =>
-            {
-                Data.WorkshopPath = path;
-                Settings.SetWorkshopPath(path);
                 InvokeAsync(StateHasChanged);
                 InvokeAsync(Layout.CallStateHasChanged);
             });

@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="About" xml:space="preserve">
+        <value>フラーグルムについて</value>
+    </data>
+    <data name="AboutSubtext" xml:space="preserve">
+        <value>フラーグルムは、FF15用のオールインワンMODスイートです。</value>
+    </data>
+    <data name="Accessible" xml:space="preserve">
+        <value>FF15の改造をより身近に、より時間をかけずに行えるようにする。</value>
+    </data>
+    <data name="Continue" xml:space="preserve">
+        <value>新しいツールを追加し、さらにどんな改造が可能かを追求し続けます。</value>
+    </data>
+    <data name="Contributors" xml:space="preserve">
+        <value>投稿者</value>
+    </data>
+    <data name="CoreDevelopment" xml:space="preserve">
+        <value>コア開発</value>
+    </data>
+    <data name="Credits" xml:space="preserve">
+        <value>クレジット</value>
+    </data>
+    <data name="ExinerisDiscord" xml:space="preserve">
+        <value>EXINERIS Discord</value>
+    </data>
+    <data name="Fix" xml:space="preserve">
+        <value>従来のMODツールの顕著な問題点を修正</value>
+    </data>
+    <data name="Foundation" xml:space="preserve">
+        <value>品質基盤を構築し、MODツールの継続的な開発の前例とする</value>
+    </data>
+    <data name="Further" xml:space="preserve">
+        <value>その他、さまざまな可能性をさらにサポート</value>
+    </data>
+    <data name="Goals" xml:space="preserve">
+        <value>フラーグルムの目標は次の通りです。</value>
+    </data>
+    <data name="Join" xml:space="preserve">
+        <value>参加する</value>
+    </data>
+    <data name="JoinSubtext1" xml:space="preserve">
+        <value>MODツールの開発にご協力いただける方は、DiscordのKizari#0755までご連絡いただくか、</value>
+    </data>
+    <data name="JoinSubtext2" xml:space="preserve">
+        <value>サーバーにご参加ください。</value>
+    </data>
+    <data name="LevelEditor" xml:space="preserve">
+        <value>FF15レベルエディターの制作</value>
+    </data>
+    <data name="NodeEditor" xml:space="preserve">
+        <value>exml用ビジュアルエディタツールの作成</value>
+    </data>
+    <data name="Roadmap" xml:space="preserve">
+        <value>ロードマップ</value>
+    </data>
+    <data name="RoadmapSubtext" xml:space="preserve">
+        <value>以下は、MODツールの長期計画です。</value>
+    </data>
+    <data name="Streamline" xml:space="preserve">
+        <value>既存のMODプロセスの改善と合理化</value>
+    </data>
+    <data name="Updates" xml:space="preserve">
+        <value>フラーグルムの継続的なアップデートとメンテナンス</value>
+    </data>
+    <data name="SupportSubtext" xml:space="preserve">
+        <value>これらのツールの開発には、膨大な時間と労力がかかっています。フラーグルムや他のMODツールプロジェクトの継続的な開発を支援したい場合は、寄付を検討してください。</value>
+    </data>
+    <data name="Support" xml:space="preserve">
+        <value>サポートミー</value>
+    </data>
+    <data name="AsteriskAmpersand" xml:space="preserve">
+        <value>アステリスクアームペルサンヅ</value>
+    </data>
+    <data name="ImpatientTraveler" xml:space="preserve">
+        <value>イムパシンテテラヴレル</value>
+    </data>
+    <data name="KatelynnKittaly" xml:space="preserve">
+        <value>カテリンキタレ</value>
+    </data>
+    <data name="Kizari" xml:space="preserve">
+        <value>キザリ</value>
+    </data>
+    <data name="Rinual" xml:space="preserve">
+        <value>リヌアル</value>
+    </data>
+    <data name="Sai" xml:space="preserve">
+        <value>サイ</value>
+    </data>
+    <data name="BMC" xml:space="preserve">
+        <value>私にコーヒーを買って</value>
+    </data>
+    <data name="Ko-Fi" xml:space="preserve">
+        <value>Ko-Fiで寄付をする</value>
+    </data>
+    <data name="PayPal" xml:space="preserve">
+        <value>PayPalで寄付する</value>
+    </data>
+</root>

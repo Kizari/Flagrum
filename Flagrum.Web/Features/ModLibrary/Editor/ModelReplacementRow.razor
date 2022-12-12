@@ -2,6 +2,7 @@
 @using Flagrum.Web.Persistence.Entities
 @inject FlagrumDbContext Context
 @inject NavigationManager Navigation
+@inject IStringLocalizer<ModelReplacementRow> Localizer
 
 <div class="box mt-2 p-3 row hover:bg-dark-550 cursor-pointer" @onclick="OnSelect">
     <span class="material-icons cursor-pointer @(Preset.IsFavourite ? "text-accent1-200" : "")"
@@ -37,12 +38,12 @@
 
 <AutosizeModal @ref="InformationModal" Width="800" Height="480">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Preset Information</span>
+        <span class="text-grey-300 flex-grow">@Localizer["PresetInformation"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => InformationModal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
         <div style="max-height: 80vh">
-            <strong>This preset will replace the following models:</strong>
+            <strong>@Localizer["PresetReplace"]</strong>
             <ul class="list-disc ml-6 mt-2">
                 @foreach (var path in Preset.Paths)
                 {

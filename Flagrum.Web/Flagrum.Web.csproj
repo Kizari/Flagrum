@@ -1,21 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-
+    
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <DebugType>embedded</DebugType>
+        <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Blazor.Extensions.Canvas" Version="1.1.1" />
+        <PackageReference Include="Blazored.TextEditor" Version="1.0.8" />
         <PackageReference Include="DirectXTexNet" Version="1.0.3" />
-        <PackageReference Include="EFCore.BulkExtensions" Version="6.5.0" />
+        <PackageReference Include="EFCore.BulkExtensions" Version="6.6.2" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7" />
         <PackageReference Include="Scriban" Version="5.0.0" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
@@ -58,17 +60,240 @@
 
 
     <ItemGroup>
-      <None Update="Features\Information\Markup\About.html">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Features\Information\Markup\Roadmap.html">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="Features\Information\Markup\About.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 
     <ItemGroup>
-      <Folder Include="Services\Vendor" />
+        <Folder Include="Services\Vendor" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <EmbeddedResource Update="Layout\MainMenu.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>MainMenu.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Layout\MainMenu.ja-JP.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>MainMenu.jp.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Layout\MainMenu.zh-hant.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>MainMenu.hk.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Index.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Index.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Index.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Index.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Index.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Index.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Export\ExportContextMenu.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ExportContextMenu.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Export\ExportContextMenu.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ExportContextMenu.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Editor.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Editor.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Editor.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Editor.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Modals\UriSelectModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>UriSelectModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Modals\UriSelectModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>UriSelectModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\DisplayNameResource.resx">
+          <Generator>PublicResXFileCodeGenerator</Generator>
+          <LastGenOutput>DisplayNameResource.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\DisplayNameResource.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>DisplayNameResource.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\ErrorMessageResource.resx">
+          <Generator>PublicResXFileCodeGenerator</Generator>
+          <LastGenOutput>ErrorMessageResource.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\ErrorMessageResource.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ErrorMessageResource.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\RegenerateModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>RegenerateModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\RegenerateModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>RegenerateModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Settings\SettingsPage.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>SettingsPage.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Settings\SettingsPage.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>SettingsPage.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Previews\MaterialPreview.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>MaterialPreview.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Previews\MaterialPreview.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>MaterialPreview.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Export\ExportFolderModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ExportFolderModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Export\ExportFolderModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ExportFolderModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Export\ExportWithDependenciesModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ExportWithDependenciesModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Export\ExportWithDependenciesModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ExportWithDependenciesModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Components\NewCard.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>NewCard.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Components\NewCard.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>NewCard.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\Index.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\Index.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Index.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelReplacements.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelReplacements.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelReplacements.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelReplacements.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelReplacement.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelReplacement.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelReplacement.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelReplacement.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="App.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>App.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="App.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>App.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelBrowserModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelBrowserModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelBrowserModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelBrowserModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelReplacementRow.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelReplacementRow.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\ModLibrary\Editor\ModelReplacementRow.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelReplacementRow.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Information\About.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>About.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Information\About.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>About.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Layout\PatchNotes.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>PatchNotes.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Layout\PatchNotes.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>PatchNotes.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Previews\ModelPreviewSettingsModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelPreviewSettingsModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Previews\ModelPreviewSettingsModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModelPreviewSettingsModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\EarcMods\Modals\ModCardModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ModCardModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Base\Preview.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Preview.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\AssetExplorer\Base\Preview.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Preview.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Compile Update="Resources\DisplayNameResource.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>DisplayNameResource.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\ErrorMessageResource.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>ErrorMessageResource.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

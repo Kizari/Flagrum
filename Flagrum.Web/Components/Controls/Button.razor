@@ -1,5 +1,5 @@
 ﻿<button type="@Type"
-        class="@(IsDisabled ? "bg-grey-800 text-grey-400" : "bg-accent2-900 text-grey-100 hover:bg-accent2-700") pl-1 pr-1.5 pt-1 pb-0.5 inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer transition-colors select-none @CssClass"
+        class="@(IsDisabled ? "bg-grey-800 text-grey-400" : BgColor + " " + BgHover + " " + ForegroundColor) pl-1 pr-1.5 pt-1 pb-0.5 inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer transition-colors select-none @CssClass"
         @onclick="HandleClick">
     <div>
         <span class="material-icons-outlined text-sm">@Icon</span>
@@ -11,6 +11,10 @@
 
 @code
 {
+    private string BgColor => Variant ? "bg-accent1-200" : "bg-accent2-900";
+    private string BgHover => Variant ? "hover:bg-accent1-100" : "hover:bg-accent2-700";
+    private string ForegroundColor => Variant ? "text-grey-900" : "text-grey-100";
+    
     [Parameter]
     public string Icon { get; set; }
 
@@ -31,6 +35,9 @@
 
     [Parameter]
     public string Type { get; set; } = "button";
+    
+    [Parameter]
+    public bool Variant { get; set; }
 
     private async Task HandleClick()
     {

@@ -348,7 +348,7 @@ public class TerrainPacker
         });
     }
 
-    private IEnumerable<HebImageDataBase> HebToImages(HebHeader heb, IEnumerable<HebImageType> allowTypes = null)
+    public IEnumerable<HebImageDataBase> HebToImages(HebHeader heb, IEnumerable<HebImageType> allowTypes = null)
     {
         const float magic = 0.000015259022f;
         allowTypes ??= Enum.GetValues<HebImageType>();

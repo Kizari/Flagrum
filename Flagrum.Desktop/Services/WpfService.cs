@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using Flagrum.Web.Features.AssetExplorer.Data;
+using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Microsoft.Win32;
@@ -9,11 +14,13 @@ namespace Flagrum.Desktop.Services;
 
 public class WpfService : IWpfService
 {
+    private readonly MainViewModel _mainViewModel;
     private readonly MainWindow _window;
 
     public WpfService(MainWindow window)
     {
         _window = window;
+        _mainViewModel = (MainViewModel)window.DataContext;
     }
 
     public async Task OpenFileDialogAsync(string filter, Action<string> onFileSelected)
@@ -73,5 +80,61 @@ public class WpfService : IWpfService
         new ToastContentBuilder()
             .AddText(message)
             .Show();
+    }
+
+    public void Restart()
+    {
+        Application.Current.Shutdown(0);
+        System.Windows.Forms.Application.Restart();
+    }
+
+    public void Resize3DViewport(int left, int top, int width, int height)
+    {
+        _mainViewModel.ViewportLeft = left;
+        _mainViewModel.ViewportTop = top;
+        _mainViewModel.ViewportWidth = width;
+        _mainViewModel.ViewportHeight = height;
+    }
+
+    public void Update3DViewportBindings(string rotateModifierKey, string rotateMouseAction, string panModifierKey,
+        string panMouseAction)
+    {
+        _mainViewModel.ViewportRotateGesture = new MouseGesture(
+            Enum.Parse<MouseAction>(rotateMouseAction),
+            Enum.Parse<ModifierKeys>(rotateModifierKey));
+
+        _mainViewModel.ViewportPanGesture = new MouseGesture(
+            Enum.Parse<MouseAction>(panMouseAction),
+            Enum.Parse<ModifierKeys>(panModifierKey));
+    }
+
+    public void Set3DViewportVisibility(bool isVisible)
+    {
+        _mainViewModel.IsViewportVisible = isVisible;
+    }
+
+    public async Task ChangeModel(byte[] gmdlData, byte[] gpubinData, AssetExplorerView view, string? inputPath)
+    {
+        await _mainViewModel.ViewportHelper.ChangeModel(gmdlData, gpubinData, view, inputPath);
+    }
+
+    public IEnumerable<string> GetModifierKeys()
+    {
+        return Enum.GetNames<ModifierKeys>();
+    }
+
+    public IEnumerable<string> GetMouseActions()
+    {
+        return Enum.GetNames<MouseAction>();
+    }
+
+    public string? GetFmodPath()
+    {
+        return _mainViewModel.FmodPath;
+    }
+
+    public void ClearFmodPath()
+    {
+        _mainViewModel.FmodPath = null;
     }
 }

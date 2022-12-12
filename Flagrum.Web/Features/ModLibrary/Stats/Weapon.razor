@@ -1,13 +1,15 @@
 ﻿@using Index = Flagrum.Web.Features.ModLibrary.Editor.Index
 @using Flagrum.Web.Features.ModLibrary.Data
 @using Flagrum.Core.Archive
+@inject IStringLocalizer<Index> Localizer
+
 <div class="box mt-6">
     <EditForm Model="Stats">
         <div class="p-4">
             <table class="w-full right-align-all-labels">
                 <tr>
                     <td>
-                        <label>MOD TITLE</label>
+                        <label>@Localizer["ModTitle"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.WorkshopTitle"/>
@@ -15,7 +17,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>MOD DESCRIPTION</label>
+                        <label>@Localizer["ModDescription"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
@@ -23,7 +25,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>GEAR MENU TITLE</label>
+                        <label>@Localizer["GearMenuTitle"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuTitle"/>
@@ -31,7 +33,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>GEAR MENU DESCRIPTION</label>
+                        <label>@Localizer["GearMenuDescription"]</label>
                     </td>
                     <td colspan="7" class="pl-4">
                         <Textbox Rows="3" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuDescription"/>
@@ -39,25 +41,25 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>MAX HP</label>
+                        <label>@Localizer["MaxHP"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.MaxHp].Value"/>
                     </td>
                     <td>
-                        <label>MAX MP</label>
+                        <label>@Localizer["MaxMP"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.MaxMp].Value"/>
                     </td>
                     <td>
-                        <label>ATTACK</label>
+                        <label>@Localizer["Attack"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.Attack].Value"/>
                     </td>
                     <td>
-                        <label>BALLISTIC RES %</label>
+                        <label>@Localizer["BallisticRes"]</label>
                     </td>
                     <td>
                         <NumberBox Max="100" @bind-Value="Stats[Stat.Ballistic].Value"/>
@@ -65,25 +67,25 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>STRENGTH</label>
+                        <label>@Localizer["Strength"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.Strength].Value"/>
                     </td>
                     <td>
-                        <label>VITALITY</label>
+                        <label>@Localizer["Vitality"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.Vitality].Value"/>
                     </td>
                     <td>
-                        <label>FIRE RES %</label>
+                        <label>@Localizer["FireRes"]</label>
                     </td>
                     <td>
                         <NumberBox Max="100" @bind-Value="Stats[Stat.Fire].Value"/>
                     </td>
                     <td>
-                        <label>ICE RES %</label>
+                        <label>@Localizer["IceRes"]</label>
                     </td>
                     <td>
                         <NumberBox Max="100" @bind-Value="Stats[Stat.Ice].Value"/>
@@ -91,25 +93,25 @@
                 </tr>
                 <tr>
                     <td>
-                        <label>MAGIC</label>
+                        <label>@Localizer["Magic"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.Magic].Value"/>
                     </td>
                     <td>
-                        <label>SPIRIT</label>
+                        <label>@Localizer["Spirit"]</label>
                     </td>
                     <td>
                         <NumberBox @bind-Value="Stats[Stat.Spirit].Value"/>
                     </td>
                     <td>
-                        <label>THUNDER RES %</label>
+                        <label>@Localizer["ThunderRes"]</label>
                     </td>
                     <td>
                         <NumberBox Max="100" @bind-Value="Stats[Stat.Thunder].Value"/>
                     </td>
                     <td>
-                        <label>DARK RES %</label>
+                        <label>@Localizer["DarkRes"]</label>
                     </td>
                     <td>
                         <NumberBox Max="100" @bind-Value="Stats[Stat.Dark].Value"/>

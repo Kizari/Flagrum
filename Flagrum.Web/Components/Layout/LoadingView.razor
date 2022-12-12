@@ -1,4 +1,4 @@
-﻿<div class="h-full self-center pr-2 @(IsLoading ? "row" : "hidden")">
+﻿<div id="@Id" class="h-full self-center pr-2 @(IsLoading ? "row" : "hidden")">
     <div class="flex flex-col items-center">
         <div class="continuous-3"></div>
         <span class="block text-accent1-200 font-display font-bold mt-4 mr-2">@Text</span>
@@ -21,4 +21,7 @@
 
     [Parameter]
     public string CssClass { get; set; }
+
+    [Parameter]
+    public string Id { get; set; }
 }

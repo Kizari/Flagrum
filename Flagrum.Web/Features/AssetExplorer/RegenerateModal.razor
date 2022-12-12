@@ -1,64 +1,84 @@
-﻿@using Microsoft.EntityFrameworkCore
-@using Microsoft.EntityFrameworkCore.Internal
+﻿@using Microsoft.EntityFrameworkCore.Internal
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Persistence.Entities
 @inject AppStateService AppState
 @inject UriMapper Mapper
 @inject FlagrumDbContext Context
+@inject IStringLocalizer<RegenerateModal> L
+@inject IWpfService WpfService
 
-<Modal @ref="Modal">
+<AutosizeModal @ref="Modal" MaxWidth="420px">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Rebuild File Index</span>
-        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+        <span class="text-grey-300 flex-grow">@L["Title"]</span>
+        <span class="material-icons cursor-pointer" @onclick="CloseModal">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full">
             <span class="block mb-6">
-                If your game files have lost sync with Flagrum's file index (such as if you have added extra
-                content to the game or installed mods from other sources), you can regenerate the file index
-                to repair the Asset Explorer's Game View. This may take several minutes to complete.
+                @L["Description"]
             </span>
             @if (Context.EarcMods.Any(m => m.IsActive))
             {
                 <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
-                    You cannot regenerate the file index while you have active EARC mods. Please disable all active
-                    mods in the Mod Manager and try again.
+                    @L["ActiveModsWarning"]
                 </div>
             }
             else
             {
-                <Button Icon="refresh" Text="Regenerate Index" OnClickAsync="OnClick" />
+                <Button Icon="refresh" Text="@L["RegenerateIndex"]" OnClickAsync="OnClick"/>
             }
         </div>
     </BodyView>
-</Modal>
+</AutosizeModal>
 
 @code
 {
     [CascadingParameter]
     public MainLayout MainLayout { get; set; }
-    
-    [CascadingParameter]
-    public Index Parent { get; set; }
-    
-    private Modal Modal { get; set; }
 
-    public void Open() => Modal.Open();
+    [CascadingParameter]
+    public IAssetExplorerParent Parent { get; set; }
+
+    private AutosizeModal Modal { get; set; }
+
+    public void Open()
+    {
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(false);
+        }
+
+        Modal.Open();
+    }
 
     private async Task OnClick()
     {
-        AppState.Node = null;
-        Parent.ClearSelectedItem();
-        MainLayout.CallStateHasChanged();
-        Modal.Close();
+        ((Index)Parent).AssetExplorer.FileList.SetCurrentNode(null);
+        ((Index)Parent).AssetExplorer.AddressBar.SetCurrentPath("data://");
+        Context.SetInt(StateKey.CurrentAssetNode, 1);
+        AppState.RootGameViewNode = null;
+        AppState.IsIndexing = true;
         
+        MainLayout.CallStateHasChanged();
+        CloseModal();
+
         await Task.Run(() =>
         {
             Mapper.RegenerateMap();
             Context.GetDependencies().StateManager.ResetState();
-            
-            AppState.Node = Context.AssetExplorerNodes
-                .FirstOrDefault(n => n.Id == 1);
-
+            AppState.LoadNodes();
+            AppState.IsIndexing = false;
             InvokeAsync(() => MainLayout.CallStateHasChanged());
         });
+    }
+
+    private void CloseModal()
+    {
+        Modal.Close();
+
+        if (AppState.Is3DViewerOpen)
+        {
+            WpfService.Set3DViewportVisibility(true);
+        }
     }
 }

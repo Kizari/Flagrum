@@ -9,6 +9,7 @@ using Flagrum.Web.Components.Modals;
 using Flagrum.Web.Features.ModLibrary.Data;
 using Flagrum.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Web.Features.ModLibrary.Editor;
@@ -26,6 +27,7 @@ public partial class Index : ComponentBase
     [Inject] private ModelReplacementPresets ReplacementPresets { get; set; }
     [Inject] private BinmodBuilder BinmodBuilder { get; set; }
     [Inject] private Modmeta Modmeta { get; set; }
+    [Inject] private IStringLocalizer<ModLibrary.Index> ParentLocalizer { get; set; }
 
     public Binmod Mod { get; set; }
     public int StatsTotal { get; set; }
@@ -48,7 +50,7 @@ public partial class Index : ComponentBase
     protected override void OnInitialized()
     {
         BuildContext = new BuildContext(Logger, StateHasChanged);
-        ModTypes = Enum.GetValues<BinmodType>().ToDictionary(t => (int)t, BinmodTypeHelper.GetDisplayName);
+        ModTypes = Enum.GetValues<BinmodType>().ToDictionary(t => (int)t, t => L[t.ToString()].Value);
 
         Mod = AppState.ActiveMod?.Clone();
 
@@ -61,7 +63,8 @@ public partial class Index : ComponentBase
             InitializeExistingMod();
         }
 
-        ModTargets = BinmodTypeHelper.GetTargets(Mod.Type);
+        ModTargets = BinmodTypeHelper.GetTargets(Mod.Type)
+            .ToDictionary(kvp => kvp.Key, kvp => ParentLocalizer[kvp.Value].Value);
 
         if (NavigationParameter != null)
         {
@@ -219,12 +222,12 @@ public partial class Index : ComponentBase
 
         if (BuildContext.Flags.HasFlag(BuildContextFlags.NeedsBuild))
         {
-            SetLoading("Building Mod");
+            SetLoading(L["BuildingMod"]);
             BuildAsync();
         }
         else
         {
-            SetLoading("Saving");
+            SetLoading(L["Saving"]);
             SaveAsync();
         }
     }
@@ -317,7 +320,8 @@ public partial class Index : ComponentBase
 
     private void ModTypeChanged(int newType)
     {
-        ModTargets = BinmodTypeHelper.GetTargets(newType);
+        ModTargets = BinmodTypeHelper.GetTargets(newType)
+            .ToDictionary(kvp => kvp.Key, kvp => ParentLocalizer[kvp.Value].Value);
         Mod.Target = -1;
         StateHasChanged();
     }

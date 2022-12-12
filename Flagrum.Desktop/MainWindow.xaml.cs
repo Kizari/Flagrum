@@ -1,4 +1,4 @@
-// Hot-Reload
+﻿// Hot-Reload
 
 using System;
 using System.ComponentModel;
@@ -6,16 +6,15 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using Flagrum.Desktop.Architecture;
 using Flagrum.Desktop.Services;
-using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
+using HelixToolkit.Wpf.SharpDX;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -26,35 +25,18 @@ using Squirrel;
 namespace Flagrum.Desktop;
 
 /// <summary>
-///     Interaction logic for MainWindow.xaml
+/// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, INotifyPropertyChanged
+public partial class MainWindow : INotifyPropertyChanged
 {
-    private readonly string flagrumDirectory;
-    private readonly string logFile;
-    
-    public string HostPageUri { get; } = "wwwroot/index.html";
-
-    private bool _hasWebView2Runtime;
-
-    public bool HasWebView2Runtime
-    {
-        get => _hasWebView2Runtime;
-        set
-        {
-            _hasWebView2Runtime = value;
-            OnPropertyChanged(nameof(HasWebView2Runtime));
-        }
-    }
-    
-    public MainWindow()
+    public MainWindow(AppStateService appStateService, string? fmodPath)
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
         var bounds = screen.Bounds;
         var width = 1680;
         var height = 1024;
 
-        if (width > (bounds.Width * 0.95) || height > (bounds.Height * 0.9))
+        if (width > bounds.Width * 0.95 || height > bounds.Height * 0.9)
         {
             width = (int)(bounds.Width * 0.95);
             height = (int)(bounds.Height * 0.9);
@@ -76,13 +58,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             Height = height;
         }
 
-        flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
+        var flagrumDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum";
         if (!Directory.Exists(flagrumDirectory))
         {
             Directory.CreateDirectory(flagrumDirectory);
         }
 
-        logFile = $"{flagrumDirectory}\\Log.txt";
+        var logFile = $"{flagrumDirectory}\\Log.txt";
 
         if (File.Exists(logFile))
         {
@@ -90,21 +72,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         File.Create(logFile);
-        
-        
+
+        InitializeComponent();
+        Closed += (_, _) => { (DataContext as IDisposable)?.Dispose(); };
+
+        ((MainViewModel)DataContext).FmodPath = fmodPath;
+
         try
         {
             CoreWebView2Environment.GetAvailableBrowserVersionString();
-            HasWebView2Runtime = true;
+            ((MainViewModel)DataContext).HasWebView2Runtime = true;
         }
         catch (WebView2RuntimeNotFoundException e)
         {
             InstallWebView2Runtime();
         }
-        
-        // Migrate the database
-        using var context = new FlagrumDbContext();
-        context.Database.MigrateAsync().Wait();
 
         var services = new ServiceCollection();
 
@@ -118,14 +100,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             builder.Services.Configure(configure);
         });
 
-        services.AddScoped<IWpfService, WpfService>(services => new WpfService(this));
+        services.AddScoped<IWpfService, WpfService>(_ => new WpfService(this));
+        services.AddSingleton(_ => appStateService);
         services.AddBlazorWebView();
-        
+
         services.AddFlagrum();
         Resources.Add("services", services.BuildServiceProvider());
-
-        InitializeComponent();
     }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private async void InstallWebView2Runtime()
     {
@@ -139,7 +122,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var process = new Process {StartInfo = start};
         process.Start();
         await process.WaitForExitAsync();
-        await Dispatcher.InvokeAsync(() => HasWebView2Runtime = true);
+        await Dispatcher.InvokeAsync(() => ((MainViewModel)DataContext).HasWebView2Runtime = true);
     }
 
     private void Minimize_Click(object sender, RoutedEventArgs e)
@@ -168,13 +151,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         webView.WebView.DefaultBackgroundColor = ColorTranslator.FromHtml("#181512");
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
     protected override void OnInitialized(EventArgs e)
     {
         base.OnInitialized(e);
@@ -188,10 +164,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                     await manager.UpdateApp();
                 }
             }
-            catch
-            {
-                
-            }
+            catch { }
         });
+    }
+
+    private void Viewer_OnInitialized(object? sender, EventArgs e)
+    {
+        ((MainViewModel)DataContext).Viewer = (Viewport3DX)sender;
+    }
+
+    private void AirspacePopup_OnInitialized(object? sender, EventArgs e)
+    {
+        ((MainViewModel)DataContext).AirspacePopup = (AirspacePopup)sender;
     }
 }

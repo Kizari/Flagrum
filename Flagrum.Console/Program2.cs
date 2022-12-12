@@ -20,60 +20,6 @@
 // {
 //     public static void Main(string[] args)
 //     {
-//         // using var context = new FlagrumDbContext(new SettingsService());
-//         // var data = context.GetFileByUri("data://environment/common/props/co_pr_GSobj4/models/co_pr_GSobj4_objC.gmdl");
-//         // var data2 = context.GetFileByUri("data://environment/common/props/co_pr_GSobj4/models/co_pr_GSobj4_objC.gpubin");
-//         // var model = new ModelReader(data, data2).Read();
-//         // bool x = true;
-//
-//         // // File path to the PKA you want to edit
-//         // const string pkaFile = @"C:\Somewhere\base_move.pka";
-//         //
-//         // // File path where you want to save the modified PKA
-//         // const string outputPath = @"C:\Somewhere\base_move_modified.pka";
-//         //
-//         // // Load the PKA into memory
-//         // var data = File.ReadAllBytes(pkaFile);
-//         // var pack = AnimationPackage.FromData(data);
-//         //
-//         // // Swap out the animation(s)
-//         // pack.ReplaceAnimation(0, @"C:\Somewhere\new_animation_0.ani");
-//         // pack.ReplaceAnimation(1, @"C:\Somewhere\new_animation_1.ani");
-//         // pack.ReplaceAnimation(2, @"C:\Somewhere\new_animation_2.ani");
-//         //
-//         // // Repack the PKA
-//         // var outputData = AnimationPackage.ToData(pack);
-//         // File.WriteAllBytes(outputPath, outputData);
-//
-//         // using var context = new FlagrumDbContext(new SettingsService());
-//         // var data = context.GetFileByUri("data://character/nh/nh00/anim/pack/base_move.pka");
-//         // var pack = AnimationPackage.FromData(data);
-//         // var bytes = AnimationPackage.ToData(pack);
-//         // File.WriteAllBytes(@"C:\Modding\HebTest\base_move_test.pka", bytes);
-//         // //var material = new MaterialReader(data).Read();
-//         // bool x = true;
-//
-//         // using var context = new FlagrumDbContext(new SettingsService());
-//         // var data = context.GetFileByUri("data://environment/world/sourceimages/terrainarraytex_displacement/terrainarraytex_00_h.png");
-//         // data = BtexConverter.BtexToDds(data);
-//         // File.WriteAllBytes(@"C:\Modding\HebTest\test.dds", data);
-//         //
-//         // var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
-//         // var pointer = pinnedData.AddrOfPinnedObject();
-//         //
-//         // var image = TexHelper.Instance.LoadFromDDSMemory(pointer, ((byte[])data).Length, DDS_FLAGS.NONE);
-//         //
-//         // pinnedData.Free();
-//         //
-//         // for (var i = 0; i < 10000; i++)
-//         // {
-//         //     var result = image.Decompress(i, DXGI_FORMAT.R8G8B8A8_UNORM);
-//         //     using var stream = new MemoryStream();
-//         //     using var ddsStream =
-//         //         result.SaveToWICMemory(0, WIC_FLAGS.FORCE_SRGB, TexHelper.Instance.GetWICCodec(WICCodecs.PNG));
-//         //     ddsStream.CopyTo(stream);
-//         //     File.WriteAllBytes($@"C:\Modding\HebTest\terrain\{i}.png", stream.ToArray());
-//         // }
 //
 //
 //         // var results = context.AssetUris

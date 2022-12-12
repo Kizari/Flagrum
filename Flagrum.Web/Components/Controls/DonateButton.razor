@@ -1,0 +1,57 @@
+﻿@using System.Diagnostics
+@using System.IO
+@using System.Text
+
+<div class="bg-accent2-900 rounded-md p-2 cursor-pointer select-none row" @onclick="OnClick">
+    <img alt="@Alt" src="@ImageUrl" style="width: auto; height: 28px;" />
+    <span class="text-white font-display font-bold ml-3">@Text</span>
+</div>
+
+@code
+{
+    [Parameter] public string Alt { get; set; }
+    [Parameter] public string ImageUrl { get; set; }
+    [Parameter] public string Text { get; set; }
+    [Parameter] public string Url { get; set; }
+    [Parameter] public bool PayPal { get; set; }
+
+    private async Task OnClick()
+    {
+        if (PayPal)
+        {
+            var file = Path.GetTempFileName() + ".html";
+
+            await using (var stream = new FileStream(file, FileMode.Create))
+            {
+                await using (var writer = new StreamWriter(stream, Encoding.UTF8))
+                {
+                    await writer.WriteLineAsync("<body onload=\"goToLink()\">");
+                    await writer.WriteLineAsync("<form id=\"form\" action=\"https://www.paypal.com/donate\" method=\"post\">");
+                    await writer.WriteLineAsync("    <input type=\"hidden\" name=\"business\" value=\"GMWBY6FGMMCCA\"/>");
+                    await writer.WriteLineAsync("    <input type=\"hidden\" name=\"no_recurring\" value=\"0\"/>");
+                    await writer.WriteLineAsync("    <input type=\"hidden\" name=\"item_name\" value=\"Creating next generation modding tools for Final Fantasy XV and providing comprehensive guides for users of all skill levels.\"/>");
+                    await writer.WriteLineAsync("    <input type=\"hidden\" name=\"currency_code\" value=\"NZD\"/>");
+                    await writer.WriteLineAsync("</form>");
+                    await writer.WriteLineAsync("<script> function goToLink() { document.getElementById(\"form\").submit(); } </script>");
+                    await writer.WriteLineAsync("</body>");
+                }
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = file,
+                UseShellExecute = true
+            });
+
+            await Task.Delay(1500);
+            File.Delete(file);
+        }
+        else
+        {
+            Process.Start(new ProcessStartInfo(Url)
+            {
+                UseShellExecute = true
+            });
+        }
+    }
+}

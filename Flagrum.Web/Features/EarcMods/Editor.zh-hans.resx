@@ -1,0 +1,81 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="Author" xml:space="preserve">
+        <value>作者</value>
+    </data>
+    <data name="AuthorRequired" xml:space="preserve">
+        <value>必填项目不能为空</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>取消</value>
+    </data>
+    <data name="ChangeImage" xml:space="preserve">
+        <value>变更图片</value>
+    </data>
+    <data name="Delete" xml:space="preserve">
+        <value>删除</value>
+    </data>
+    <data name="Description" xml:space="preserve">
+        <value>描述</value>
+    </data>
+    <data name="DescriptionRequired" xml:space="preserve">
+        <value>必填项目不能为空</value>
+    </data>
+    <data name="EditEarcMod" xml:space="preserve">
+        <value>编辑EARC MOD</value>
+    </data>
+    <data name="FilesToChange" xml:space="preserve">
+        <value>更改文件</value>
+    </data>
+    <data name="ModName" xml:space="preserve">
+        <value>MOD名称</value>
+    </data>
+    <data name="NameRequired" xml:space="preserve">
+        <value>必填项目不能为空</value>
+    </data>
+    <data name="NewEarcMod" xml:space="preserve">
+        <value>新EARC MOD</value>
+    </data>
+    <data name="NoFileChangesSet" xml:space="preserve">
+        <value>暂无文件更改项</value>
+    </data>
+    <data name="Remove" xml:space="preserve">
+        <value>移除</value>
+    </data>
+    <data name="RemoveAsset" xml:space="preserve">
+        <value>移除资产</value>
+    </data>
+    <data name="Replace" xml:space="preserve">
+        <value>替换</value>
+    </data>
+    <data name="ReplaceAsset" xml:space="preserve">
+        <value>替换资产</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>保存</value>
+    </data>
+    <data name="With" xml:space="preserve">
+        <value>为</value>
+    </data>
+    <data name="BuildList" xml:space="preserve">
+        <value>构建列表</value>
+    </data>
+    <data name="ClearCache" xml:space="preserve">
+        <value>清除缓存</value>
+    </data>
+</root>

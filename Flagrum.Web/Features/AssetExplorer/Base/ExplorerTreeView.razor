@@ -1,0 +1,71 @@
+﻿@using Flagrum.Web.Features.AssetExplorer.Data
+@inject JSInterop Interop
+
+<CascadingValue Value="this">
+    <Virtualize Items="RootNode.Children" ItemSize="28" Context="node">
+        <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => AssetExplorer.ContextNode = node">
+            <ExplorerTreeRow Node="node" Indent="2"/>
+        </ContextMenuTrigger>
+    </Virtualize>
+</CascadingValue>
+
+@code
+{
+    [CascadingParameter]
+    public IAssetExplorerParent Parent { get; set; }
+
+    [CascadingParameter(Name = "AssetExplorer")]
+    public AssetExplorer AssetExplorer { get; set; }
+
+    public IAssetExplorerNode RootNode { get; set; }
+
+    private string _currentNodeId;
+
+    protected override void OnInitialized()
+    {
+        var current = AssetExplorer.FileList.CurrentNode;
+        var root = current.GetRoot();
+        root.SetChildrenDirectoriesOnly();
+        RootNode = root;
+
+        if (AssetExplorer.AddressBar.CurrentPath.Trim() is not "data://" or "")
+        {
+            var tokens = AssetExplorer.AddressBar.CurrentPath
+                .Replace("data://", "")
+                .Split('\\', '/');
+
+            if (Parent.CurrentView == AssetExplorerView.FileSystem && tokens.Length > 0)
+            {
+                tokens[0] = $"Local Disk ({tokens[0]})";
+            }
+
+            var currentNode = RootNode;
+            foreach (var token in tokens)
+            {
+                currentNode.IsExpanded = true;
+                currentNode = currentNode.Children.First(n => n.Name == token);
+            }
+
+            _currentNodeId = currentNode.ElementId;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _currentNodeId != null)
+        {
+            while (true)
+            {
+                try
+                {
+                    await Interop.ScrollToElement(_currentNodeId);
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(100);
+                }
+            }
+        }
+    }
+}

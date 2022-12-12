@@ -47,11 +47,6 @@ public class JSInterop
         await _jsRuntime.InvokeVoidAsync("interop.setBackgroundImage", uuid);
     }
 
-    public async Task InitialiseBmcButton(string id)
-    {
-        await _jsRuntime.InvokeVoidAsync("interop.initialiseBmcButton", id);
-    }
-
     public async Task ApplyHtmlToElement(string id, string html, object reference)
     {
         await _jsRuntime.InvokeVoidAsync("interop.applyHtmlToElement", id, html, reference);
@@ -65,5 +60,30 @@ public class JSInterop
     public ValueTask SetFocusToElement(string id)
     {
         return _jsRuntime.InvokeVoidAsync("interop.setFocusToElement", id);
+    }
+
+    public ValueTask<double> GetElementLeftOffset(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementLeftOffset", id);
+    }
+
+    public ValueTask<double> GetElementTopOffset(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementTopOffset", id);
+    }
+
+    public ValueTask<double> GetElementWidth(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementWidth", id);
+    }
+
+    public ValueTask<double> GetElementHeight(string id)
+    {
+        return _jsRuntime.InvokeAsync<double>("interop.getElementHeight", id);
+    }
+
+    public async Task ObserveElementResize(object reference, string elementId)
+    {
+        await _jsRuntime.InvokeVoidAsync("interop.observeElementResize", reference, elementId);
     }
 }

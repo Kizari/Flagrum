@@ -1,70 +1,39 @@
 ﻿@using Flagrum.Web.Persistence.Entities
 @using System.Timers
+@using Flagrum.Web.Features.AssetExplorer
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Features.AssetExplorer.GameView
+
+@implements Flagrum.Web.Features.AssetExplorer.Base.IAssetExplorerParent
+
 @inject AppStateService AppState
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
+@inject IStringLocalizer<UriSelectModal> Localizer
 
-<Modal @ref="Modal" Padding="0" Width="9999" Height="9999">
+<Modal @ref="Modal" Padding="0" Width="9999" Height="9999" BackgroundClass="bg-grey-900">
     <HeaderView>
-        <span class="text-grey-300 flex-grow">Browse Game Assets</span>
+        <span class="text-grey-300 flex-grow">@Localizer["BrowseGameAssets"]</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
     <BodyView>
-
-        @if (AppState.Node != null)
-        {
-            <div class="w-full h-full flex flex-col">
-                <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-grey-900">
-                    <span class="material-icons cursor-pointer block mr-3 ml-1 select-none" @onclick="() => SetNode(AppState.Node.Parent)">arrow_upward</span>
-                    <div class="flex-grow">
-                        <EditForm Model="new object()">
-                            <Textbox IsReadOnly="true" @bind-Value="CurrentUri" Size="Textbox.Variant.Stretch"/>
-                        </EditForm>
-                    </div>
-                </div>
-
-                <div class="flex flex-row">
-                    <div class="bg-grey-900 border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
-                        <div class="row">
-                            <strong class="font-display flex-grow">@AppState.Node.Name</strong>
-                        </div>
-                    </div>
-                    <div class="flex-grow bg-grey-900 border-t border-b border-dark-550 row py-2 px-3">
-                        <strong class="flex-grow font-display">No File Selected</strong>
-                    </div>
-                </div>
-
-                <div class="flex flex-row" style="flex: 1 1 auto; align-items: stretch; overflow: hidden">
-                    <div class="border-r border-dark-550 overflow-auto py-2" style="flex: 0 0 315px; height: 100%;">
-                        <CascadingValue Value="this">
-                            @{
-                                using var context = new FlagrumDbContext(Settings);
-                                foreach (var node in context.AssetExplorerNodes
-                                    .Where(n => n.ParentId == AppState.Node.Id)
-                                    .OrderByDescending(n => n.Children.Any())
-                                    .ThenBy(n => n.Name)
-                                    .ToList())
-                                {
-                                    <UriSelectModalRow Node="node"/>
-                                }
-                            }
-                        </CascadingValue>
-                    </div>
-                    <div class="flex flex-col bg-dark-600 overflow-y-auto" style="flex: 1 1 auto; height: 100%">
-
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="text-center">
-                <span class="m-6">The asset browser cannot be used until file indexing is complete. Please wait or try again shortly.</span>
-            </div>
-        }
-
+        <div class="w-full h-full flex flex-col">
+            <CascadingValue Value="this">
+                <AssetExplorer @ref="AssetExplorer" ItemSelectedOverride="OnItemSelected">
+                    <AddressBarTemplate>
+                        <GameViewAddressBar @ref="AssetExplorer.AddressBar"/>
+                    </AddressBarTemplate>
+                    <FileListTemplate>
+                        <GameViewFileList @ref="AssetExplorer.FileList"/>
+                    </FileListTemplate>
+                </AssetExplorer>
+            </CascadingValue>
+        </div>
     </BodyView>
 </Modal>
+
+<AlertModal @ref="Alert" />
 
 @code
 {
@@ -73,61 +42,20 @@
 
     [Parameter]
     public Func<string, Task> OnFileSelected { get; set; }
-
-    private Timer _timer;
+    
+    public AssetExplorerView CurrentView { get; set; }
 
     private Modal Modal { get; set; }
-    private string CurrentUri { get; set; }
+    private AssetExplorer AssetExplorer { get; set; }
+    public AlertModal Alert { get; set; }
+    public RegenerateModal RegenerateModal { get; set; }
 
-    protected override void OnInitialized()
+    private void OnItemSelected(IAssetExplorerNode node)
     {
-        if (AppState.Node == null)
-        {
-            _timer = new Timer(1000);
-            _timer.Elapsed += (_, _) =>
-            {
-                if (AppState.Node != null)
-                {
-                    _timer.Stop();
-                    InvokeAsync(StateHasChanged);
-                }
-            };
-            _timer.Start();
-        }
-        else
-        {
-            var nodeId = Context.GetInt(StateKey.CurrentAssetNode);
-            if (nodeId > 0)
-            {
-                AppState.Node = Context.AssetExplorerNodes
-                    .FirstOrDefault(n => n.Id == nodeId);
-                CurrentUri = AppState.Node?.GetUri(Context);
-            }
-        }
+        OnFileSelected(node.Path);
     }
 
-    public void SetNode(AssetExplorerNode node)
-    {
-        if (node != null)
-        {
-            if (Context.AssetExplorerNodes.Any(n => n.ParentId == node.Id))
-            {
-                AppState.Node = Context.AssetExplorerNodes
-                    .FirstOrDefault(n => n.Id == node.Id);
-                CurrentUri = node.GetUri(Context);
-                Context.SetInt(StateKey.CurrentAssetNode, node.Id);
-                StateHasChanged();
-            }
-            else
-            {
-                OnFileSelected(node.GetUri(Context));
-                Modal.Close();
-            }
-        }
-    }
-
-    public void Open()
-    {
-        Modal.Open();
-    }
+    public void Open() => Modal.Open();
+    public void Close() => Modal.Close();
+    public void CallStateHasChanged() => StateHasChanged();
 }
