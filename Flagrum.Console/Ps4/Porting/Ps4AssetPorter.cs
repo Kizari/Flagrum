@@ -413,7 +413,7 @@ public class Ps4AssetPorter
         }
         else
         {
-            if (uri.EndsWith(".tif") || uri.EndsWith(".dds") || uri.EndsWith(".png") || uri.EndsWith(".btex"))
+            if (uri.EndsWith(".tif") || uri.EndsWith(".dds") || uri.EndsWith(".png") || uri.EndsWith(".btex") || uri.EndsWith(".exr"))
             {
                 var btex = Btex.FromData(data);
                 using var stream = new MemoryStream();

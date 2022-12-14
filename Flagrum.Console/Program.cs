@@ -5,36 +5,73 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Flagrum.Console.Ps4;
+using Flagrum.Console.Ps4.Festivals;
 using Flagrum.Console.Ps4.Porting;
+using Flagrum.Console.Scripts.Desktop;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.Animation;
+using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
-using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
-using Flagrum.Desktop.Services;
+using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
-var directory = @"C:\Modding\Chocomog\Testing\Materials";
-var uri = "data://character/nh/nh00/model_010/materials/nh00_010_basic_00_mat.gmtl";
-using var context = Ps4Utilities.NewContext();
-var data = Ps4Utilities.GetFileByUri(context, uri);
+// var context = Ps4Utilities.NewContext();
+// var file = Ps4Utilities.GetArchiveFileByUri(context, "data://character/pr/pr81/pr81.amdl");
+// return;
+//
+// var hash = Cryptography.HashFileUri64("data://character/pr/pr81/pr81.amdl");
+// Console.WriteLine(File.Exists(@$"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg"));
+// return;
 
-File.WriteAllBytes($@"{directory}\nh00_010_basic_00_mat.gmtl.gfxbin", data);
+// ModScripts.CheckModForDuplicates(284);
+// return;
 
-var material = new MaterialReader(data).Read();
-var builder = new StringBuilder();
-foreach (var shader in material.Header.Dependencies.Where(d => d.Path.EndsWith(".sb")))
-{
-    data = Ps4Utilities.GetFileByUri(context, shader.Path);
-    File.WriteAllBytes($@"{directory}\{shader.Path.Split('/').Last()}", data);
-    builder.AppendLine(shader.Path);
-}
+// foreach (var file in Directory.EnumerateFiles(@"C:\Modding\Chocomog\Staging\Fragments"))
+// {
+//     var fragment = new FmodFragment();
+//     fragment.Read(file);
+//
+//     if (!fragment.Flags.HasFlag(ArchiveFileFlag.Autoload))
+//     {
+//         fragment.Flags |= ArchiveFileFlag.Autoload;
+//         fragment.Write(file);
+//     }
+// }
+//
+// return;
 
-File.WriteAllText($@"{directory}\shaders.txt", builder.ToString());
-
+new Ps4EbexFragmentGenerator().Run();
+new Ps4AssetFragmentGenerator().Run();
+new MogfestModBuilder().Run();
 return;
+
+//new Ps4Indexer().RegenerateMap();
+//return;
+//new Ps4Porter().Run();
+//return;
+
+// var directory = @"C:\Modding\Chocomog\Testing\Materials";
+// var uri = "data://character/nh/nh00/model_010/materials/nh00_010_basic_00_mat.gmtl";
+// using var context = Ps4Utilities.NewContext();
+// var data = Ps4Utilities.GetFileByUri(context, uri);
+//
+// File.WriteAllBytes($@"{directory}\nh00_010_basic_00_mat.gmtl.gfxbin", data);
+//
+// var material = new MaterialReader(data).Read();
+// var builder = new StringBuilder();
+// foreach (var shader in material.Header.Dependencies.Where(d => d.Path.EndsWith(".sb")))
+// {
+//     data = Ps4Utilities.GetFileByUri(context, shader.Path);
+//     File.WriteAllBytes($@"{directory}\{shader.Path.Split('/').Last()}", data);
+//     builder.AppendLine(shader.Path);
+// }
+//
+// File.WriteAllText($@"{directory}\shaders.txt", builder.ToString());
+//
+// return;
 //
 // if (uri.EndsWith(".ebex") || uri.EndsWith(".prefab"))
 // {
@@ -62,9 +99,9 @@ return;
 // new Ps4Indexer().RegenerateMap();
 // return;
 
-var packer = new Ps4EnvironmentPacker(new ConsoleLogger<Program>("Logger", () => new ConsoleLoggerConfiguration()), new SettingsService());
-packer.Pack("data://level/dlc_ex/feather/area_duscae_feather.ebex", @"C:\Users\Kieran\Desktop\ACFest\area_duscae_feather.fed");
-return;
+//var packer = new Ps4EnvironmentPacker(new ConsoleLogger<Program>("Logger", () => new ConsoleLoggerConfiguration()), new SettingsService());
+//packer.Pack("data://level/dlc_ex/feather/area_duscae_feather.ebex", @"C:\Users\Kieran\Desktop\ACFest\area_duscae_feather.fed");
+//return;
 
 //Console.WriteLine(Cryptography.HashFileUri64("data://environment/dungeon/d04/sourceimages/d04_ar_factoryfencea_net_n.tif"));
 //return;
@@ -94,8 +131,8 @@ return;
 
 //new Ps4EarcPorter().ReferenceTest();
 //return;
-new Ps4Porter().Run();
-return;
+//new Ps4Porter().Run();
+//return;
 
 // new FileFinder().FindByQuery(file => file.Uri == "data://data/ai/interactions/town/alt_mog/system/autoexternal.ebex@",
 //     (earc, file) => System.Console.WriteLine(earc + " - " + file.Uri),
@@ -105,7 +142,6 @@ return;
 //FileFinder.FindStringInAllFiles("uw05_100_hair01_mog.ebex");
 //FileFinder.FindStringInExml("SequenceActionCheckPhotoCount");
 //FileFinder.FindBytesInAllFiles(BitConverter.GetBytes((uint)17109819));
-return;
 
 // using var context = Ps4Utilities.NewContext();
 // var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");

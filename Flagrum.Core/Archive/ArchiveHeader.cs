@@ -6,6 +6,7 @@ namespace Flagrum.Core.Archive;
 [Flags]
 public enum ArchiveHeaderFlags
 {
+    None = 0,
     HasLooseData = 1,
     HasLocaleData = 2,
     DebugArchive = 4,

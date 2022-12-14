@@ -15,24 +15,22 @@ public class Packer
 
     private readonly Logger _logger;
 
-    public List<ArchiveFile> Files => _files;
+    public ConcurrentCollection<ArchiveFile> Files { get; private set; }
 
     public Packer()
     {
         _logger = new DeadConsoleLogger();
         Header = new ArchiveHeader();
-        _files = new List<ArchiveFile>();
+        Files = new ConcurrentCollection<ArchiveFile>();
     }
 
     private Packer(ArchiveHeader header, List<ArchiveFile> files) : this()
     {
         Header = header;
-        _files = files;
+        Files = new ConcurrentCollection<ArchiveFile>(files);
     }
 
-    public ConcurrentCollection<ArchiveFile> Files { get; private set; }
-
-    public bool IsProtectedArchive => _header.IsProtectedArchive;
+    public bool IsProtectedArchive => Header.IsProtectedArchive;
 
     public ArchiveHeader Header { get; }
 
@@ -43,7 +41,7 @@ public class Packer
 
     public void SetFlags(ArchiveHeaderFlags flags)
     {
-        _header.Flags = flags;
+        Header.Flags = flags;
     }
 
     public bool HasFile(string uri)
@@ -96,22 +94,6 @@ public class Packer
         Files.Add(file);
     }
 
-    public void AddCompressedFile(string uri, byte[] data, bool autoload = false)
-    {
-        var file = new ArchiveFile(uri)
-        {
-            Flags = ArchiveFileFlag.Compressed
-        };
-
-        if (autoload)
-        {
-            file.Flags |= ArchiveFileFlag.Autoload;
-        }
-
-        file.SetRawData(data);
-        _files.Add(file);
-    }
-
     public void AddFile(byte[] data, string uri)
     {
         var file = new ArchiveFile(uri);
@@ -138,20 +120,7 @@ public class Packer
         var file = new ArchiveFile(uri);
         file.SetRawData(data);
         file.Flags = ArchiveFileFlag.Autoload;
-        _files.Add(file);
-    }
-
-    public void AddReference(string uri, bool autoload)
-    {
-        var file = new ArchiveFile(uri);
-        file.Flags = ArchiveFileFlag.Reference;
-
-        if (autoload)
-        {
-            file.Flags |= ArchiveFileFlag.Autoload;
-        }
-
-        _files.Add(file);
+        Files.Add(file);
     }
 
     public void UpdateFile(string query, byte[] data)
@@ -235,7 +204,7 @@ public class Packer
             .ThenBy(f => f.UriHash));
 
         Header.UriListOffset = ArchiveHeader.Size +
-                               Serialization.GetAlignment((uint)_files.Count * ArchiveFile.HeaderSize,
+                               Serialization.GetAlignment((uint)Files.Count * ArchiveFile.HeaderSize,
                                    PointerSize);
 
         var endOfUriList = SerializeUriList(out var uriListStream);
@@ -279,7 +248,7 @@ public class Packer
 
         stream.Write(ArchiveHeader.DefaultTag);
         stream.Write(BitConverter.GetBytes(Header.Version));
-        stream.Write(BitConverter.GetBytes((uint)_files.Count));
+        stream.Write(BitConverter.GetBytes((uint)Files.Count));
         stream.Write(BitConverter.GetBytes(BlockSize));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.Size));
         stream.Write(BitConverter.GetBytes(Header.UriListOffset));
@@ -300,7 +269,7 @@ public class Packer
 
         stream.Write(ArchiveHeader.DefaultTag);
         stream.Write(BitConverter.GetBytes(Header.Version));
-        stream.Write(BitConverter.GetBytes((uint)_files.Count));
+        stream.Write(BitConverter.GetBytes((uint)Files.Count));
         stream.Write(BitConverter.GetBytes(BlockSize));
         stream.Write(BitConverter.GetBytes(ArchiveHeader.Size));
         stream.Write(BitConverter.GetBytes(Header.UriListOffset));

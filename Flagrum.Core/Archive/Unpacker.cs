@@ -170,29 +170,6 @@ public class Unpacker : IDisposable
             file.SetRawData(buffer);
         }
     }
-    
-    public byte[] GetReadableDataWithoutCaching(ArchiveFile file)
-    {
-        byte[] buffer;
-
-        lock (_lock)
-        {
-            _stream.Seek((long)file.DataOffset, SeekOrigin.Begin);
-            buffer = new byte[file.ProcessedSize];
-            _stream.Read(buffer, 0, (int)file.ProcessedSize);
-        }
-        
-        if (file.Flags.HasFlag(ArchiveFileFlag.Compressed))
-        {
-            file.IsDataCompressed = true;
-        }
-        else if (file.Flags.HasFlag(ArchiveFileFlag.Encrypted))
-        {
-            file.IsDataEncrypted = true;
-        }
-
-        return file.GetReadableData(buffer);
-    }
 
     private IEnumerable<ArchiveFile> ReadFileHeaders()
     {

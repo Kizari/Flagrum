@@ -20,7 +20,7 @@ public class Ps4EarcPorter
     private readonly List<string> _modifiedEarcs = new();
     private readonly SettingsService _pcSettings = new();
     private readonly ConcurrentDictionary<string, string> _existingAssets = new();
-    private readonly Dictionary<string, bool> _dependencies = new();
+    private readonly ConcurrentDictionary<string, bool> _dependencies = new();
     private readonly object _packerLock = new();
 
     public void RunSingleEarc()
@@ -62,7 +62,7 @@ public class Ps4EarcPorter
                 return;
             }
             
-            _dependencies.Add(ebex.Uri, true);
+            _dependencies.TryAdd(ebex.Uri, true);
         }
         
         using var context = Ps4Utilities.NewContext();
@@ -250,7 +250,7 @@ public class Ps4EarcPorter
                 return;
             }
             
-            _dependencies.Add(ebex.Uri, true);
+            _dependencies.TryAdd(ebex.Uri, true);
         }
         
         using var context = Ps4Utilities.NewContext();

@@ -114,41 +114,41 @@ public class FileFinder
         }
     }
 
-    public void UnpackEverything()
-    {
-        System.Console.WriteLine("Unpacking started...");
-        var watch = Stopwatch.StartNew();
+    // public void UnpackEverything()
+    // {
+    //     System.Console.WriteLine("Unpacking started...");
+    //     var watch = Stopwatch.StartNew();
+    //
+    //     var startDirectory = DataDirectory;
+    //     Parallel.ForEach(Directory.EnumerateDirectories(startDirectory), UnpackRecursively);
+    //
+    //     watch.Stop();
+    //     System.Console.WriteLine($"Unpacking finished after {watch.ElapsedMilliseconds} milliseconds.");
+    // }
 
-        var startDirectory = DataDirectory;
-        Parallel.ForEach(Directory.EnumerateDirectories(startDirectory), UnpackRecursively);
-
-        watch.Stop();
-        System.Console.WriteLine($"Unpacking finished after {watch.ElapsedMilliseconds} milliseconds.");
-    }
-
-    private void UnpackRecursively(string directory)
-    {
-        foreach (var earc in Directory.EnumerateFiles(directory, "*.earc"))
-        {
-            var unpacker = new Unpacker(earc);
-            Parallel.ForEach(unpacker.Files.Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference)), file =>
-            {
-                var outPath = @"E:\PS4_Extract\" + file.RelativePath.Replace('/', '\\');
-                try
-                {
-                    IOHelper.EnsureDirectoriesExistForFilePath(outPath);
-                    var data = unpacker.GetReadableDataWithoutCaching(file);
-                    File.WriteAllBytes(outPath, data);
-                    _doneFiles.Add(outPath, true);
-                }
-                catch { }
-            });
-
-            unpacker.Dispose();
-        }
-
-        Parallel.ForEach(Directory.EnumerateDirectories(directory), UnpackRecursively);
-    }
+    // private void UnpackRecursively(string directory)
+    // {
+    //     foreach (var earc in Directory.EnumerateFiles(directory, "*.earc"))
+    //     {
+    //         var unpacker = new Unpacker(earc);
+    //         Parallel.ForEach(unpacker.Files.Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference)), file =>
+    //         {
+    //             var outPath = @"E:\PS4_Extract\" + file.RelativePath.Replace('/', '\\');
+    //             try
+    //             {
+    //                 IOHelper.EnsureDirectoriesExistForFilePath(outPath);
+    //                 var data = unpacker.GetReadableDataWithoutCaching(file);
+    //                 File.WriteAllBytes(outPath, data);
+    //                 _doneFiles.Add(outPath, true);
+    //             }
+    //             catch { }
+    //         });
+    //
+    //         unpacker.Dispose();
+    //     }
+    //
+    //     Parallel.ForEach(Directory.EnumerateDirectories(directory), UnpackRecursively);
+    // }
 
     public void FindByQuery(Func<ArchiveFile, bool> condition, Action<string, ArchiveFile> onMatch,
         bool unpackMatchedFiles)

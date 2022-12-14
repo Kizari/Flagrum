@@ -45,4 +45,9 @@ public static class IOHelper
             }
         }
     }
+    
+    public static string UriToRelativePath(string uri)
+    {
+        return uri.Replace("data://", "").Replace("data:/", "").Replace('/', '\\');
+    }
 }

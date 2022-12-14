@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Ebex.Xmb2;
@@ -96,8 +97,9 @@ public class Ps4DependencyTreeBuilder
                 });
             }
         }
-        
-        var root = Xmb2Document.GetRootElement(xmb2);
+
+        using var stream = new MemoryStream(xmb2);
+        var root = Xmb2Document.GetRootElement(stream);
         var objects = root.GetElementByName("objects");
         var elements = objects.GetElements();
 

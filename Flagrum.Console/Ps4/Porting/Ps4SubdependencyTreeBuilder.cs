@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -28,7 +29,8 @@ public class Ps4SubdependencyTreeBuilder
         {
             using var context = Ps4Utilities.NewContext();
             var xmb2 = Ps4Utilities.GetFileByUri(context, dependency.Uri);
-            var root = Xmb2Document.GetRootElement(xmb2);
+            using var stream = new MemoryStream(xmb2);
+            var root = Xmb2Document.GetRootElement(stream);
             var objects = root.GetElementByName("objects");
             var elements = objects.GetElements();
     

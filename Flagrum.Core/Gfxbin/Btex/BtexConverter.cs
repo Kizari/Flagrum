@@ -275,18 +275,20 @@ public static class BtexConverter
         uint width = btexHeader.Width;
         uint height = btexHeader.Height;
 
+        var mips = new List<BtexMipMap>();
         for (var i = 0; i < btexHeader.MipMapCount; i++)
         {
-            btexHeader.MipMaps.Add(new BtexMipMap
+            mips.Add(new BtexMipMap
             {
-                Offset = i == 0 ? 0 : btexHeader.MipMaps[i - 1].Offset + btexHeader.MipMaps[i - 1].Size,
+                Offset = i == 0 ? 0 : mips[i - 1].Offset + mips[i - 1].Size,
                 Size = (uint)(Math.Max(GetBlockSize(original.ImageData.Format) * 4, CalculatePitch(width, TextureType.BaseColor) * height))
             });
 
             width /= 2;
             height /= 2;
         }
-
+        
+        btexHeader.MipMaps.Add(mips);
         var btex = WriteBtex(btexHeader);
 
         var sedbHeader = new SedbBtexHeader

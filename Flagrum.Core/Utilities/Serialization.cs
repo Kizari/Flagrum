@@ -98,20 +98,6 @@ public static class Serialization
         }
     }
     
-    public static void Align(this BinaryWriter writer, int blockSize, byte paddingByte)
-    {
-        var size = Align((uint)writer.BaseStream.Position, (uint)blockSize);
-        if (size == blockSize)
-        {
-            return;
-        }
-        
-        for (var i = 0; i < size; i++)
-        {
-            writer.Write(paddingByte);
-        }
-    }
-    
     public static void Align(this BinaryReader reader, int blockSize)
     {
         var size = Align((uint)reader.BaseStream.Position, (uint)blockSize);

@@ -17,19 +17,16 @@ namespace Flagrum.Web.Services;
 public class UriMapper
 {
     private readonly FlagrumDbContext _context;
-    private readonly ILogger<UriMapper> _logger;
     private readonly SettingsService _settings;
     private ConcurrentDictionary<ArchiveLocation, IEnumerable<string>> _assets;
     private bool _usePs4Mode;
 
     public UriMapper(
         FlagrumDbContext context,
-        SettingsService settings,
-        ILogger<UriMapper> logger)
+        SettingsService settings)
     {
         _context = context;
         _settings = settings;
-        _logger = logger;
     }
 
     public void UsePs4Mode()
@@ -40,8 +37,6 @@ public class UriMapper
     public void RegenerateMap()
     {
         var start = DateTime.Now;
-
-        _logger.LogInformation("Regenerating file index...");
 
         _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.AssetExplorerNodes)};");
         _context.Database.ExecuteSqlRaw($"DELETE FROM {nameof(_context.ArchiveLocations)};");
@@ -54,12 +49,8 @@ public class UriMapper
         var assetUris = new Dictionary<string, AssetUri>();
         var allUris = new Dictionary<string, ArchiveLocation>();
 
-        start = _logger.LogTimeSince("Cleared tables", start);
-
         MapDirectory(_settings.GameDataDirectory);
         Parallel.ForEach(Directory.EnumerateDirectories(_settings.GameDataDirectory), GenerateMapRecursively);
-
-        start = _logger.LogTimeSince("Mapped directories", start);
 
         var root = new AssetExplorerNode
         {
@@ -112,8 +103,6 @@ public class UriMapper
             }
         }
 
-        start = _logger.LogTimeSince("Built node tree", start);
-
         foreach (var (uri, archiveLocation) in allUris)
         {
             if (!assetUris.ContainsKey(uri))
@@ -126,16 +115,9 @@ public class UriMapper
             }
         }
 
-        start = _logger.LogTimeSince("Added missing nodes", start);
-
         _context.Add(root);
-        start = _logger.LogTimeSince("Added root node to DB", start);
-
         _context.AddRange(assetUris.Select(kvp => kvp.Value));
-        start = _logger.LogTimeSince("Added URIs to DB", start);
-
         _context.SaveChanges();
-        _logger.LogTimeSince("Saved results to DB", start);
     }
 
     private void GenerateMapRecursively(string directory)

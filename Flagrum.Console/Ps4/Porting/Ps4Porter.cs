@@ -34,8 +34,8 @@ public class Ps4Porter
         //FileFinder.FindStringInExml("uc/common/anim/pack/altissia_newyear2017.pka");
         //return;
 
-        OutputFileByUri("data://level/dlc_ex/feather/area_duscae/group_lestallum_feather.ebex");
-        return;
+        //OutputFileByUri("data://level/dlc_ex/feather/area_duscae/group_lestallum_feather.ebex");
+        //return;
 
         //new Ps4MaterialGenerator().BuildMaterialMap();
         //return;
@@ -48,11 +48,11 @@ public class Ps4Porter
         //RunWithTimer("ebex earc cleanup", ResetEbexEarcs);
         //RunWithTimer("asset earc cleanup", ResetAssetEarcs);
 
-        //RunWithTimer("earc porter", new Ps4EarcPorter().RunSingleEarc);
-        //RunWithTimer("asset porter", new Ps4AssetPorter().Run);
+        RunWithTimer("earc porter", new Ps4EarcPorter().Run);
+        RunWithTimer("asset porter", new Ps4AssetPorter().Run);
 
-        //RunWithTimer("weird earc fixer", FixWeirdEarcsSingle);
-        //RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
+        RunWithTimer("weird earc fixer", FixWeirdEarcs);
+        RunWithTimer("audio inserter", new Ps4PostRunAudioPorter().AddConvertedSoundsToMainEarc);
         //AddNaviStuffToMainEarc();
 
         // var names = new ConcurrentDictionary<string, bool>();
@@ -209,54 +209,54 @@ public class Ps4Porter
         // return;
     }
 
-    private void BuildModFromFolder()
-    {
-        using var context = new FlagrumDbContext(_pcSettings);
-        var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json");
-        var hashTable = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json)!;
-
-        var mod = new EarcMod
-        {
-            Name = "PS4 Event Bins",
-            Author = "Kizari",
-            Description = "Test",
-            IsActive = false
-        };
-
-        foreach (var (hash, uri) in hashTable)
-        {
-            var earcPath = context.AssetUris
-                .Where(a => a.Uri == uri)
-                .Select(a => a.ArchiveLocation.Path)
-                .FirstOrDefault();
-
-            if (earcPath == null)
-            {
-                continue;
-            }
-
-            var earc = mod.Earcs.FirstOrDefault(e => e.EarcRelativePath == earcPath);
-            if (earc == null)
-            {
-                earc = new EarcModEarc
-                {
-                    EarcRelativePath = earcPath
-                };
-
-                mod.Earcs.Add(earc);
-            }
-
-            earc.Replacements.Add(new EarcModReplacement
-            {
-                Uri = uri,
-                ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\BinsDump\{hash}",
-                Type = EarcChangeType.Replace
-            });
-        }
-
-        context.Add(mod);
-        context.SaveChanges();
-    }
+    // private void BuildModFromFolder()
+    // {
+    //     using var context = new FlagrumDbContext(_pcSettings);
+    //     var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json");
+    //     var hashTable = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json)!;
+    //
+    //     var mod = new EarcMod
+    //     {
+    //         Name = "PS4 Event Bins",
+    //         Author = "Kizari",
+    //         Description = "Test",
+    //         IsActive = false
+    //     };
+    //
+    //     foreach (var (hash, uri) in hashTable)
+    //     {
+    //         var earcPath = context.AssetUris
+    //             .Where(a => a.Uri == uri)
+    //             .Select(a => a.ArchiveLocation.Path)
+    //             .FirstOrDefault();
+    //
+    //         if (earcPath == null)
+    //         {
+    //             continue;
+    //         }
+    //
+    //         var earc = mod.Earcs.FirstOrDefault(e => e.EarcRelativePath == earcPath);
+    //         if (earc == null)
+    //         {
+    //             earc = new EarcModEarc
+    //             {
+    //                 EarcRelativePath = earcPath
+    //             };
+    //
+    //             mod.Earcs.Add(earc);
+    //         }
+    //
+    //         earc.Replacements.Add(new EarcModReplacement
+    //         {
+    //             Uri = uri,
+    //             ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\BinsDump\{hash}",
+    //             Type = EarcChangeType.Replace
+    //         });
+    //     }
+    //
+    //     context.Add(mod);
+    //     context.SaveChanges();
+    // }
 
     private static void DumpBins()
     {
