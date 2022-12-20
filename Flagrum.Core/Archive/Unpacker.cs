@@ -250,6 +250,14 @@ public class Unpacker : IDisposable
         using var unpacker = new Unpacker(earcLocation);
         return unpacker.UnpackReadableByUri(fileQuery);
     }
+    
+    public static ArchiveFile GetArchiveFileByLocation(string earcLocation, string uri)
+    {
+        using var unpacker = new Unpacker(earcLocation);
+        var file = unpacker.Files.First(f => f.Uri == uri);
+        unpacker.ReadFileData(file);
+        return file;
+    }
 
     private byte ReadByte()
     {

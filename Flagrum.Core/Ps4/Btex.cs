@@ -201,7 +201,7 @@ public class GnfHeader
 
 public class Btex
 {
-    private Btex()
+    static Btex()
     {
         FormatMap.Add(DxgiFormat.BC6H_UF16, BtexFormat.BC6H_UF16);
         FormatMap.Add(DxgiFormat.BC1_UNORM, BtexFormat.BC1_UNORM);
@@ -214,7 +214,7 @@ public class Btex
         FormatMap.Add(DxgiFormat.B8G8R8A8_UNORM, BtexFormat.B8G8R8A8_UNORM);
     }
 
-    private FallbackMap<DxgiFormat, BtexFormat> FormatMap { get; } = new(DxgiFormat.BC1_UNORM, BtexFormat.BC1_UNORM);
+    private static FallbackMap<DxgiFormat, BtexFormat> FormatMap { get; } = new(DxgiFormat.BC1_UNORM, BtexFormat.BC1_UNORM);
 
     public SedbHeader SedbHeader { get; set; } = new();
     public BtexHeader BtexHeader { get; set; } = new();
@@ -222,6 +222,7 @@ public class Btex
     public GnfHeader GnfHeader { get; set; } = new();
     public byte[] DdsData { get; set; }
     public Bitmap Bitmap { get; set; }
+    public ImageBinary ImageBinary { get; set; }
 
     public static Btex FromData(byte[] data)
     {
@@ -370,8 +371,25 @@ public class Btex
         }
 
         imageBinary.InputPixelFormat |= PixelDataFormat.PixelOrderingTiled3DS;
-        imageBinary.AddInputPixels(btex.DdsData);
+
+        if (btex.ImageData.ArrayCount > 1)
+        {
+            var imageSize = (btex.GnfHeader.Pitch * imageBinary.Height) / 2;
+            var start = 0u;
+            for (var i = 0; i < btex.ImageData.ArrayCount; i++)
+            {
+                var currentImage = btex.DdsData[(int)start..(int)(start + imageSize)];
+                imageBinary.AddInputPixels(currentImage);
+                start += (uint)imageSize;
+            }
+        }
+        else
+        {
+            imageBinary.AddInputPixels(btex.DdsData);
+        }
+
         btex.Bitmap = imageBinary.GetBitmap();
+        btex.ImageBinary = imageBinary;
 
         return btex;
     }

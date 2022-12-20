@@ -274,6 +274,7 @@ public static class BtexConverter
 
         uint width = btexHeader.Width;
         uint height = btexHeader.Height;
+        var format = FormatMap[original.ImageData.Format];
 
         var mips = new List<BtexMipMap>();
         for (var i = 0; i < btexHeader.MipMapCount; i++)
@@ -281,7 +282,7 @@ public static class BtexConverter
             mips.Add(new BtexMipMap
             {
                 Offset = i == 0 ? 0 : mips[i - 1].Offset + mips[i - 1].Size,
-                Size = (uint)(Math.Max(GetBlockSize(original.ImageData.Format) * 4, CalculatePitch(width, TextureType.BaseColor) * height))
+                Size = (uint)(Math.Max(GetBlockSize(format), CalculatePitch(width, format) * height))
             });
 
             width /= 2;
@@ -462,15 +463,15 @@ public static class BtexConverter
         };
     }
 
-    private static int GetBlockSize(BtexFormat format)
-    {
-        return format switch
-        {
-            BtexFormat.BC6H_UF16 or BtexFormat.BC1_UNORM or BtexFormat.BC2_UNORM or BtexFormat.BC3_UNORM
-                or BtexFormat.BC4_UNORM or BtexFormat.BC5_UNORM or BtexFormat.BC7_UNORM => 2,
-            _ => 4
-        };
-    }
+    // private static int GetBlockSize(BtexFormat format)
+    // {
+    //     return format switch
+    //     {
+    //         BtexFormat.BC6H_UF16 or BtexFormat.BC1_UNORM or BtexFormat.BC2_UNORM or BtexFormat.BC3_UNORM
+    //             or BtexFormat.BC4_UNORM or BtexFormat.BC5_UNORM or BtexFormat.BC7_UNORM => 2,
+    //         _ => 4
+    //     };
+    // }
 
     private static int GetBlockSize(DxgiFormat format)
     {
@@ -483,7 +484,9 @@ public static class BtexConverter
             DxgiFormat.BC5_UNORM or DxgiFormat.BC5_SNORM or DxgiFormat.BC5_TYPELESS => 16,
             DxgiFormat.BC6H_UF16 or DxgiFormat.BC6H_SF16 or DxgiFormat.BC6H_TYPELESS => 16,
             DxgiFormat.BC7_UNORM or DxgiFormat.BC7_UNORM_SRGB or DxgiFormat.BC7_TYPELESS => 16,
-            _ => 16 // This may come back to bite me in the ass :)))))
+            DxgiFormat.R8G8B8A8_UNORM or DxgiFormat.B8G8R8A8_UNORM => 16,
+            _ => throw new Exception("Unsupported pixel format")
+            //_ => 16 // This may come back to bite me in the ass :)))))
         };
     }
 

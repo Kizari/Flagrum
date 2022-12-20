@@ -1,22 +1,105 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Flagrum.Console.Ps4;
-using Flagrum.Console.Ps4.Festivals;
+using Flagrum.Console.Ps4.Mogfest;
+using Flagrum.Console.Ps4.Mogfest.Utilities;
 using Flagrum.Console.Ps4.Porting;
 using Flagrum.Console.Scripts.Desktop;
 using Flagrum.Console.Utilities;
+using Flagrum.Core.AI;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
+using Flagrum.Core.Gfxbin.Btex;
+using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Ps4;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+
+// new FileFinder().FindByQuery(
+//     file => (file.Uri.EndsWith(".tif") || file.Uri.EndsWith(".btex") || file.Uri.EndsWith(".dds") || file.Uri.EndsWith(".exr") || file.Uri.EndsWith(".png")) && !file.Flags.HasFlag(ArchiveFileFlag.Reference),
+//     (_, file) =>
+//     {
+//         var data = file.GetReadableData();
+//         var header = BtexConverter.ReadBtexHeader(data[128..]);
+//         if (header.ArraySize > 1)
+//         {
+//             Console.WriteLine(header.ArraySize + ": " + file.Uri);
+//         }
+//     },
+//     true);
+// return;
+
+// new FileFinder().FindByQuery(
+//     file => file.Uri.EndsWith(".gmtl"),
+//     (_, file) =>
+//     {
+//         var material = new MaterialReader(file.GetReadableData()).Read();
+//         if (material.Textures.Any(t => t.Path.Contains("000_00_b.tif")))
+//         {
+//             System.Console.WriteLine($"{material.Interfaces[0].Name}: {file.Uri}");
+//         }
+//     },
+//     true);
+// return;
+// using var context = new FlagrumDbContext(new SettingsService());
+// var mod = context.EarcMods
+//     .Include(m => m.Earcs)
+//     .ThenInclude(e => e.Files)
+//     .First(m => m.Id == 284);
+//
+// foreach (var file in mod.Earcs.SelectMany(e => e.Files))
+// {
+//     if (!File.Exists(file.ReplacementFilePath) && file.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace)
+//     {
+//         context.Remove(file);
+//     }
+// }
+//
+// context.SaveChanges();
+// return;
+
+// new MogfestMaterialGenerator().DumpMaterialsByMatch(new[]
+// {
+//     "data://character/pr/pr56/model_002/materials/al_pr_mog01_flag_a.gmtl",
+//     "data://environment/altissia/props/al_pr_mogcho1/materials/mogco_flag01.gmtl",
+//     "data://character/pr/pr82/model_000/materials/pr82_000_backscatter_foliage_00_mat.gmtl",
+//     "data://character/pr/pr82/model_001/materials/pr82_001_backscatter_foliage_00_mat.gmtl"
+// });
+//
+// return;
+
+// return;
+// var data = MogfestUtilities.GetFileByUri("data://character/ds/ds30/sourceimages/ds30_000_00_b.tif");
+// var btex = Btex.FromData(data);
+// for (var i = 0; i < btex.ImageData.ArrayCount; i++)
+// {
+//     var bitmap = btex.ImageBinary.GetBitmap(i, 0);
+//     bitmap.Save($@"C:\Modding\Chocomog\Testing\BtexArray\Source\{i}.png", ImageFormat.Png);
+// }
+
+new MogfestMaterialReplacer().Revert();
+//new MogfestModBuilder().Run();
+//Ps4Unpacker.Run();
+//Ps4Porter.BuildModFromFolder();
+//MogfestModBuilder.AlterFragments();
+//Ps4Porter.DumpNoctisAnimations();
+//Ps4Porter.OutputFileByUri("data://character/ds/ds30/sourceimages/ds30_000_00_b_$h.tif");
+//FileFinder.FindBytesInAllFiles(BitConverter.GetBytes(17109315u));
+//ModScripts.DeleteFromModWhere(284, 291, file => file.Uri.EndsWith(".aiia") || file.Uri.EndsWith(".aiia.xml") || file.Uri.EndsWith(".aiia.dbg"));
+//ModScripts.RemoveFilesThatExistInOther(285, 284);
+//ModScripts.RemoveFilesThatExistInOther(286, 284);
+return;
 
 // var context = Ps4Utilities.NewContext();
 // var file = Ps4Utilities.GetArchiveFileByUri(context, "data://character/pr/pr81/pr81.amdl");

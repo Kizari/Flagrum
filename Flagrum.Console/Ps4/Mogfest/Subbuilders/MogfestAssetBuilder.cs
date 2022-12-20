@@ -1,30 +1,39 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Flagrum.Console.Ps4.Mogfest.Utilities;
 using Flagrum.Console.Ps4.Porting;
 using Flagrum.Core.Archive;
+using Flagrum.Core.Gfxbin.Gmtl;
+using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace Flagrum.Console.Ps4.Festivals;
+namespace Flagrum.Console.Ps4.Mogfest.Subbuilders;
 
 public class MogfestAssetBuilder
 {
     private const string StagingDirectory = @"C:\Modding\Chocomog\Staging";
 
+    private readonly SettingsService _pcSettings = new();
+    private EarcMod _mod;
+    private EarcModEarc _rootEarc;
+    private readonly ConcurrentDictionary<string, string> _shaderLocations = new();
+
     public static string[] Extensions => new[]
     {
         ".anmgph"
     };
-    
-    private readonly SettingsService _pcSettings = new();
-    private EarcMod _mod;
 
     public void Run()
     {
@@ -45,6 +54,7 @@ public class MogfestAssetBuilder
         assets.AddRange(usAnis);
 
         var earc = _mod.Earcs.First(e => e.EarcRelativePath == @"level\dlc_ex\mog\area_ravettrice_mog.earc");
+        _rootEarc = earc;
         foreach (var asset in assets.Where(a => Extensions.Any(a.EndsWith)))
         {
             if (!earc.Files.Any(f => f.Uri == asset))
@@ -66,7 +76,7 @@ public class MogfestAssetBuilder
 
         assets = assets.Where(a => !Extensions.Any(a.EndsWith))
             .ToList();
-        
+
         var earcs = new Dictionary<string, List<string>>();
         foreach (var uri in assets)
         {
@@ -111,45 +121,79 @@ public class MogfestAssetBuilder
             {
                 if (uri.EndsWith(".htpk"))
                 {
-                    var htpkFolder = uri[..uri.LastIndexOf('/')];
-                    var sourceimagesFolder = htpkFolder[..htpkFolder.LastIndexOf('/')] + "/sourceimages";
-
-                    if (earcs.ContainsKey(sourceimagesFolder))
+                    var materialUri = uri.Replace("_$h.htpk", ".gmtl");
+                    var materialData = MogfestUtilities.GetFileByUri(materialUri);
+                    var material = new MaterialReader(materialData).Read();
+                    var textureDependencies = material.Header.Dependencies
+                        .Where(d => d.Path.EndsWith(".tif")
+                                    || d.Path.EndsWith(".exr")
+                                    || d.Path.EndsWith(".dds")
+                                    || d.Path.EndsWith(".png")
+                                    || d.Path.EndsWith(".btex"))
+                        .Select(p => p.Path)
+                        .ToList();
+                    
+                    var htpkPath = IOHelper.UriToRelativePath(uri).Replace(".htpk", ".earc");
+                    var htpkEarc = new EarcModEarc
                     {
-                        var htpkPath = IOHelper.UriToRelativePath(uri).Replace(".htpk", ".earc");
+                        EarcRelativePath = htpkPath,
+                        Type = File.Exists($@"{_pcSettings.GameDataDirectory}\{htpkPath}") ? EarcChangeType.Change : EarcChangeType.Create,
+                        Flags = ArchiveHeaderFlags.None
+                    };
 
-                        var htpkEarc = new EarcModEarc
+                    using var innerContext = new FlagrumDbContext(_pcSettings);
+                    foreach (var texture in textureDependencies)
+                    {
+                        var relativePath = innerContext.GetArchiveRelativeLocationByUri(texture);
+
+                        if (relativePath == "UNKNOWN")
                         {
-                            EarcRelativePath = htpkPath,
-                            Type = EarcChangeType.Create,
-                            Flags = ArchiveHeaderFlags.None
-                        };
+                            var htpkFolder = texture[..texture.LastIndexOf('/')];
+                            relativePath = htpkFolder.Replace("data://", "").Replace('/', '\\') + "\\autoexternal.earc";
+                        }
+                        
+                        var referenceUri = "data://" + relativePath.Replace('\\', '/').Replace(".earc", ".ebex@");
 
-                        var htpkReference = new EarcModFile
+                        if (!htpkEarc.Files.Any(f => f.Uri == referenceUri))
                         {
-                            Uri = $"{sourceimagesFolder}/autoexternal.ebex@",
-                            Type = EarcFileChangeType.AddReference,
-                            Flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Reference
-                        };
+                            var htpkReference = new EarcModFile
+                            {
+                                //Uri = $"{sourceimagesFolder}/autoexternal.ebex@",
+                                Uri = referenceUri,
+                                Type = EarcFileChangeType.AddReference,
+                                Flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Reference
+                            };
 
-                        var htpkUri = uri.Replace(".htpk", ".autoext");
-                        var htpkFragmentPath =
-                            $@"{StagingDirectory}\Fragments\{Cryptography.HashFileUri64(htpkUri)}.ffg";
-                        var htpkFragment = new FmodFragment();
-                        htpkFragment.Read(htpkFragmentPath);
-
-                        var htpkFile = new EarcModFile
-                        {
-                            Uri = htpkUri,
-                            ReplacementFilePath = htpkFragmentPath,
-                            Type = EarcFileChangeType.Add,
-                            Flags = htpkFragment.Flags
-                        };
-
-                        htpkEarc.Files.Add(htpkReference);
-                        htpkEarc.Files.Add(htpkFile);
-                        _mod.Earcs.Add(htpkEarc);
+                            htpkEarc.Files.Add(htpkReference);
+                        }
                     }
+
+                    var htpkUri = uri.Replace(".htpk", ".autoext");
+                    var htpkFragmentPath =
+                        $@"{StagingDirectory}\Fragments\{Cryptography.HashFileUri64(htpkUri)}.ffg";
+                    var htpkData = Encoding.UTF8.GetBytes(string.Join(' ', textureDependencies.Select(t => t.Insert(t.LastIndexOf('.'), "_$h"))) + (char)0x00);
+                    var htpkFragment = new FmodFragment
+                    {
+                        OriginalSize = (uint)htpkData.Length,
+                        ProcessedSize = (uint)htpkData.Length,
+                        Flags = ArchiveFileFlag.Autoload,
+                        Key = 0,
+                        RelativePath = htpkUri.Replace("data://", ""),
+                        Data = htpkData
+                    };
+                    
+                    htpkFragment.Write(htpkFragmentPath);
+
+                    var htpkFile = new EarcModFile
+                    {
+                        Uri = htpkUri,
+                        ReplacementFilePath = htpkFragmentPath,
+                        Type = EarcFileChangeType.Add,
+                        Flags = htpkFragment.Flags
+                    };
+                    
+                    htpkEarc.Files.Add(htpkFile);
+                    _mod.Earcs.Add(htpkEarc);
                 }
                 else
                 {
@@ -240,6 +284,56 @@ public class MogfestAssetBuilder
                 };
 
                 earc.Files.Add(highFile);
+            }
+        }
+        else if (uri.EndsWith(".gmtl"))
+        {
+            using var pcContext = new FlagrumDbContext(_pcSettings);
+            var fragment = new FmodFragment();
+            fragment.Read(@$"{StagingDirectory}\Fragments\{Cryptography.HashFileUri64(uri)}.ffg");
+            var materialData = fragment.Data;
+            var material = new MaterialReader(materialData).Read();
+            foreach (var shader in material.Header.Dependencies
+                         .Where(d => d.Path.EndsWith(".sb")))
+            {
+                // if (!_shaderLocations.TryGetValue(shader.Path, out var location))
+                // {
+                //     var relativeLocation = pcContext.GetArchiveRelativeLocationByUri(shader.Path);
+                //     if (relativeLocation == "UNKNOWN")
+                //     {
+                //         throw new Exception("I can't believe you've done this.");
+                //     }
+                //     
+                //     location = "data://" + relativeLocation.Replace('\\', '/').Replace(".earc", ".ebex@");
+                //     _shaderLocations[shader.Path] = location;
+                // }
+                //
+                // if (!_rootEarc.Files.Any(f => f.Uri == location))
+                // {
+                //     _rootEarc.Files.Add(new EarcModFile
+                //     {
+                //         Uri = location,
+                //         Type = EarcFileChangeType.AddReference,
+                //         Flags = ArchiveFileFlag.Autoload | ArchiveFileFlag.Reference
+                //     });
+                // }
+                
+                var shaderPath = $@"{StagingDirectory}\Fragments\{Cryptography.HashFileUri64(shader.Path)}.ffg";
+                if (!File.Exists(shaderPath))
+                {
+                    continue;
+                }
+                // var shaderFragment = new FmodFragment();
+                // shaderFragment.Read(shaderPath);
+                var shaderFile = new EarcModFile
+                {
+                    Uri = shader.Path,
+                    ReplacementFilePath = shaderPath,
+                    Type = EarcFileChangeType.Add,
+                    Flags = ArchiveFileFlag.Compressed
+                };
+                
+                earc.Files.Add(shaderFile);
             }
         }
         else if (uri.EndsWith(".swf"))

@@ -58,6 +58,23 @@ public static class AssetUriExtensions
 
         return Unpacker.GetFileByLocation(location, uri);
     }
+    
+    public static ArchiveFile GetArchiveFileByUri(this FlagrumDbContext context, string uri)
+    {
+        uri = uri.ToLower();
+        var earcRelativePath = context.AssetUris
+            .Where(a => a.Uri == uri)
+            .Select(a => a.ArchiveLocation.Path)
+            .FirstOrDefault();
+
+        if (earcRelativePath == null)
+        {
+            return null;
+        }
+
+        var location = context.Settings.GameDataDirectory + "\\" + earcRelativePath;
+        return Unpacker.GetArchiveFileByLocation(location, uri);
+    }
 
     public static IDictionary<string, byte[]> GetFilesByUri(this FlagrumDbContext context, IEnumerable<string> uris)
     {

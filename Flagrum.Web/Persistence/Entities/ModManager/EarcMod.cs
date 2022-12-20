@@ -595,7 +595,7 @@ public class EarcMod
                             if (file.Type == EarcFileChangeType.Add)
                             {
                                 packer.AddProcessedFile(file.Uri, fragment.Flags, fragment.Data,
-                                    fragment.OriginalSize, fragment.Key);
+                                    fragment.OriginalSize, fragment.Key, fragment.RelativePath);
                             }
                             else if (file.Type == EarcFileChangeType.AddToTextureArray)
                             {

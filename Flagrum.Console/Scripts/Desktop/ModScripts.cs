@@ -296,4 +296,82 @@ public static class ModScripts
             }
         }
     }
+
+    public static void DeleteFromModWhere(int sourceModId, int targetModId, Func<EarcModFile, bool> predicate)
+    {
+        using var context = new FlagrumDbContext(new SettingsService());
+        var source = context.EarcMods
+            .Include(m => m.LooseFiles)
+            .Include(m => m.Earcs)
+            .ThenInclude(e => e.Files)
+            .AsNoTracking()
+            .Where(m => m.Id == sourceModId)
+            .ToList()
+            .First();
+
+        var target = context.EarcMods.Find(targetModId);
+
+        foreach (var earc in source.Earcs)
+        {
+            var files = earc.Files.Where(predicate);
+            if (files.Any())
+            {
+                var newEarc = new EarcModEarc
+                {
+                    EarcRelativePath = earc.EarcRelativePath,
+                    Type = EarcChangeType.Change
+                };
+                
+                target.Earcs.Add(newEarc);
+                
+                foreach (var file in files)
+                {
+                    file.Id = 0;
+                    file.Flags = ArchiveFileFlag.None;
+                    file.Type = EarcFileChangeType.Remove;
+                    file.EarcModEarc = null;
+                    file.FileLastModified = 0;
+                    file.ReplacementFilePath = null;
+                    file.EarcModEarcId = 0;
+                    newEarc.Files.Add(file);
+                }
+            }
+        }
+
+        context.SaveChanges();
+    }
+
+    /// <summary>
+    /// Removes files from the source mod that exist in the target mod
+    /// </summary>
+    public static void RemoveFilesThatExistInOther(int sourceId, int targetId)
+    {
+        using var context = new FlagrumDbContext(new SettingsService());
+        var targetMod = context.EarcMods
+            .Include(m => m.LooseFiles)
+            .Include(m => m.Earcs)
+            .ThenInclude(e => e.Files)
+            .AsNoTracking()
+            .Where(m => m.Id == targetId)
+            .ToList()
+            .First();
+
+        var sourceMod = context.EarcMods
+            .Include(m => m.Earcs)
+            .ThenInclude(m => m.Files)
+            .First(m => m.Id == sourceId);
+
+        foreach (var earc in sourceMod.Earcs)
+        {
+            foreach (var file in earc.Files)
+            {
+                if (targetMod.Earcs.Any(e => e.Files.Any(f => f.Uri == file.Uri)))
+                {
+                    context.Remove(file);
+                }
+            }
+        }
+
+        context.SaveChanges();
+    }
 }

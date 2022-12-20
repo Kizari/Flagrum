@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Flagrum.Console.Ps4.Mogfest.DependencyTree;
+using Flagrum.Console.Ps4.Mogfest.Subbuilders;
+using Flagrum.Console.Ps4.Mogfest.Utilities;
 using Flagrum.Console.Ps4.Porting;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
@@ -12,7 +15,7 @@ using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace Flagrum.Console.Ps4.Festivals;
+namespace Flagrum.Console.Ps4.Mogfest;
 
 public class MogfestModBuilder
 {
@@ -22,12 +25,52 @@ public class MogfestModBuilder
 
     public void Run()
     {
+        // Before this can run, also need to:
+        // * Have a copy of the festival PS4 data
+        // * Update paths in the various builders and utilities to point to the correct mogfest data
+        // * Point the Ps4Utilities to the PS4 copy of Flagrum
+        // * Index the release build of FFXV on the PS4 copy of Flagrum
+        // * Index the debug build on the PC copy of Flagrum
+        // * Run Ps4AudioPorter to get the porter audio files ready for the build
+
+        // Prepare the files and file index
+        // RunWithTimer("PS4 indexer", new Ps4Indexer().RegenerateMap);
+        // RunWithTimer("PS4 unpacker", Ps4Unpacker.Run);
+
+        // Build dependency tree
+        // RunWithTimer("dependency tree generator", new DependencyTreeGenerator().Run);
+        // RunWithTimer("subdependency tree generator", new SubdependencyTreeGenerator().Run);
+        // RunWithTimer("model dependency tree generator", new ModelDependencyTreeGenerator().Run);
+        // RunWithTimer("material dependency tree generator", new MaterialDependencyTreeGenerator().Run);
+
+        // Build exml fmod fragments
+        // RunWithTimer("ebex fragment builder", new Ps4EbexFragmentGenerator().Run);
+
+        // Generate material maps
+        // RunWithTimer("vertex layout map generator", new MogfestMaterialGenerator().BuildVertexLayoutMapForFinalAssets);
+        // RunWithTimer("material map generator", new MogfestMaterialGenerator().BuildMaterialMap);
+        // RunWithTimer("stubborn material map generator", new MogfestMaterialGenerator().FindStubbornMatches);
+
+        // Build fmod fragments for all non-exml assets
+        // RunWithTimer("asset fragment builder", new Ps4AssetFragmentGenerator().Run);
+
+        // Regenerate the build list for the Flagrum mod (need to create a mod first and add the ID to these methods)
         RunWithTimer("earc builder", new MogfestEarcBuilder().Run);
         RunWithTimer("asset builder", new MogfestAssetBuilder().Run);
+
+        // Pack navmesh stuff in
         RunWithTimer("weird earc fixer", FixWeirdEarcs);
+
+        // Pack all diffed sounds into root earc
         RunWithTimer("sound asset adder", AddConvertedSoundsToMainEarc);
+
+        // Fix earc flags on anmgph files
         RunWithTimer("extension flag fixer", ChangeFlagsOnExtensionExceptions);
-        RunWithTimer("fragment compresser", CompressFragments);
+
+        // Compress data in fmod fragments where it's relevant to do so
+        // RunWithTimer("fragment compresser", CompressFragments);
+
+        // Remove duplicate sound files
         RunWithTimer("duplicate destroyer", RemoveDuplicateSoundFiles);
     }
 
@@ -49,12 +92,12 @@ public class MogfestModBuilder
             .Include(m => m.Earcs)
             .ThenInclude(e => e.Files)
             .First(m => m.Id == 284);
-        
+
         var allFiles = mod.Earcs
             .SelectMany(e => e.Files.Select(f => new {e.EarcRelativePath, f.Uri, f.Flags}))
             .Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))
             .ToList();
-        
+
         foreach (var file in allFiles)
         {
             if (allFiles.Count(f => f.Uri == file.Uri) > 1)
@@ -64,7 +107,7 @@ public class MogfestModBuilder
                     earcs = new List<string>();
                     results.Add(file.Uri, earcs);
                 }
-                
+
                 earcs.Add(file.EarcRelativePath);
             }
         }
@@ -77,6 +120,10 @@ public class MogfestModBuilder
                 var earc = mod.Earcs.First(e => e.EarcRelativePath == match);
                 var file = earc.Files.First(f => f.Uri == uri);
                 earc.Files.Remove(file);
+                if (!earc.Files.Any())
+                {
+                    mod.Earcs.Remove(earc);
+                }
             }
             else
             {
@@ -84,6 +131,10 @@ public class MogfestModBuilder
                 var earc = mod.Earcs.First(e => e.EarcRelativePath == match);
                 var file = earc.Files.First(f => f.Uri == uri);
                 earc.Files.Remove(file);
+                if (!earc.Files.Any())
+                {
+                    mod.Earcs.Remove(earc);
+                }
             }
         }
 
@@ -97,13 +148,18 @@ public class MogfestModBuilder
             .Include(m => m.Earcs)
             .ThenInclude(e => e.Files)
             .First(m => m.Id == 284);
-        
+
         foreach (var file in mod.Earcs.SelectMany(e => e.Files)
                      .Where(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
-                        && f.ReplacementFilePath.EndsWith(".ffg")))
+                                 && f.ReplacementFilePath.EndsWith(".ffg")))
         {
             var hash = Cryptography.HashFileUri64(file.Uri);
-            
+            if (!File.Exists($@"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg"))
+            {
+                System.Console.WriteLine(file.Uri);
+                continue;
+            }
+
             var fragment = new FmodFragment();
             fragment.Read($@"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg");
 
@@ -121,7 +177,34 @@ public class MogfestModBuilder
                 fragment.Flags = archiveFile.Flags;
                 fragment.Key = archiveFile.Key;
                 fragment.Data = processedData;
-                
+
+                fragment.Write($@"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg");
+            }
+        }
+    }
+
+    public static void AlterFragments()
+    {
+        using var context = new FlagrumDbContext(new SettingsService());
+        var mod = context.EarcMods
+            .Include(m => m.Earcs)
+            .ThenInclude(e => e.Files)
+            .First(m => m.Id == 284);
+
+        foreach (var file in mod.Earcs.SelectMany(e => e.Files)
+                     .Where(f => f.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace
+                                 && f.ReplacementFilePath.EndsWith(".ffg")
+                                 && (f.Uri.EndsWith(".aiia") || f.Uri.EndsWith(".aiia.dbg") ||
+                                     f.Uri.EndsWith(".aiia.xml"))))
+        {
+            var hash = Cryptography.HashFileUri64(file.Uri);
+
+            var fragment = new FmodFragment();
+            fragment.Read($@"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg");
+
+            if (fragment.Flags.HasFlag(ArchiveFileFlag.Autoload))
+            {
+                fragment.Flags &= ~ArchiveFileFlag.Autoload;
                 fragment.Write($@"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg");
             }
         }
@@ -244,6 +327,22 @@ public class MogfestModBuilder
         }
 
         pcContext.SaveChanges();
+
+        var textureHash = Cryptography.HashFileUri64("data://character/ds/ds30/sourceimages/ds30_000_00_b.tif");
+        var texturePath = $@"{StagingDirectory}\Fragments\{textureHash}.ffg";
+        var textureFragment = new FmodFragment();
+        textureFragment.Read(texturePath);
+        textureFragment.Data = File.ReadAllBytes(@"C:\Modding\Chocomog\Testing\BtexArray\out.btex");
+        textureFragment.Flags &= ~ArchiveFileFlag.Compressed;
+        textureFragment.Write(texturePath);
+        
+        textureHash = Cryptography.HashFileUri64("data://character/ds/ds30/sourceimages/ds30_000_00_b_$h.tif");
+        texturePath = $@"{StagingDirectory}\Fragments\{textureHash}.ffg";
+        textureFragment = new FmodFragment();
+        textureFragment.Read(texturePath);
+        textureFragment.Data = File.ReadAllBytes(@"C:\Modding\Chocomog\Testing\BtexArray\High\out.btex");
+        textureFragment.Flags &= ~ArchiveFileFlag.Compressed;
+        textureFragment.Write(texturePath);
     }
 
     private string EnsureFragmentExistsForUri(FlagrumDbContext context, string uri, ArchiveFileFlag flags)
@@ -258,7 +357,7 @@ public class MogfestModBuilder
             {
                 return null;
             }
-            
+
             var fragment = new FmodFragment
             {
                 OriginalSize = file.Size,
@@ -274,7 +373,7 @@ public class MogfestModBuilder
 
         return path;
     }
-    
+
     private string EnsureFragmentExistsForUri(string filePath, string uri, ArchiveFileFlag flags)
     {
         var hash = Cryptography.HashFileUri64(uri);
@@ -298,12 +397,12 @@ public class MogfestModBuilder
 
         return path;
     }
-    
+
     public void AddConvertedSoundsToMainEarc()
     {
         using var ps4Context = Ps4Utilities.NewContext();
         using var pcContext = new FlagrumDbContext(new SettingsService());
-        
+
         var mod = pcContext.EarcMods
             .Include(m => m.Earcs)
             .First(m => m.Id == 284);
@@ -330,7 +429,7 @@ public class MogfestModBuilder
             if (File.Exists(fileName))
             {
                 var saxPath = EnsureFragmentExistsForUri(fileName, uri, ArchiveFileFlag.Autoload);
-                
+
                 earc.Files.Add(new EarcModFile
                 {
                     Uri = uri,
@@ -338,17 +437,17 @@ public class MogfestModBuilder
                     Type = EarcFileChangeType.Add,
                     Flags = ArchiveFileFlag.Autoload
                 });
-                
+
                 var lsd = uri.Insert(uri.LastIndexOf('/'), "/lsd").Replace(".sax", ".lsd").Replace(".max", ".lsd");
                 var lsdPath = EnsureFragmentExistsForUri(ps4Context, lsd, ArchiveFileFlag.Autoload);
                 if (lsdPath == null)
                 {
                     continue;
                 }
-                
+
                 var lsdFragment = new FmodFragment();
                 lsdFragment.Read(lsdPath);
-                
+
                 earc.Files.Add(new EarcModFile
                 {
                     Uri = lsd,

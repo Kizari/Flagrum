@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
@@ -22,16 +21,21 @@ namespace Flagrum.Console.Ps4.Porting;
 public class Ps4AssetFragmentGenerator
 {
     private const string StagingDirectory = @"C:\Modding\Chocomog\Staging";
-    
-    private readonly SettingsService _settings = new();
-    private readonly ConcurrentBag<string> _ps4Uris = new();
-    
+
     private readonly SettingsService _pcSettings = new();
     private readonly SettingsService _releaseSettings = new() {GamePath = Ps4PorterConfiguration.ReleaseGamePath};
+    private readonly object _shaderLock = new();
     private ConcurrentDictionary<string, string> _materialMap;
+    private ConcurrentDictionary<string, ArchiveFile> _shaderMap = new();
+    private ConcurrentDictionary<string, bool> _shadersToIgnore = new();
 
     public void Run()
     {
+        using var pcContext = new FlagrumDbContext(_pcSettings);
+        _shadersToIgnore = new ConcurrentDictionary<string, bool>(pcContext.AssetUris
+            .Where(a => a.ArchiveLocation.Path == @"shader\shadergen\autoexternal.earc")
+            .ToDictionary(a => a.Uri, a => true));
+        
         using var context = Ps4Utilities.NewContext();
         var json = File.ReadAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json");
         var assets = JsonConvert.DeserializeObject<List<string>>(json)!;
@@ -45,12 +49,12 @@ public class Ps4AssetFragmentGenerator
         {
             _materialMap[uri1] = uri2;
         }
-        
+
         var usAnis = assets
             .Where(a => a.EndsWith(".ani") && a.Contains("/jp/"))
             .Select(a => a.Replace("/jp/", "/us/"))
             .ToList();
-        
+
         assets.AddRange(usAnis);
 
         var earcs = new Dictionary<string, List<string>>();
@@ -75,87 +79,63 @@ public class Ps4AssetFragmentGenerator
             {
                 if (uri.EndsWith(".htpk"))
                 {
-                    var htpkFolder = uri[..uri.LastIndexOf('/')];
-                    var sourceimagesFolder = htpkFolder[..htpkFolder.LastIndexOf('/')] + "/sourceimages";
-
-                    if (earcs.ContainsKey(sourceimagesFolder))
-                    {
-                        var htpk = Encoding.UTF8.GetBytes(string.Join(' ', earcs[sourceimagesFolder]));
-                        var fragment = new FmodFragment
-                        {
-                            OriginalSize = (uint)htpk.Length,
-                            ProcessedSize = (uint)htpk.Length,
-                            Flags = ArchiveFileFlag.None,
-                            Key = 0,
-                            RelativePath = uri.Replace("data://", "").Replace('/', '\\'),
-                            Data = htpk
-                        };
-
-                        var hash = Cryptography.HashFileUri64(uri.Replace(".htpk", ".autoext"));
-                        fragment.Write($@"{StagingDirectory}\Fragments\{hash}.ffg");
-                    }
+                    // var htpkFolder = uri[..uri.LastIndexOf('/')];
+                    // var sourceimagesFolder = htpkFolder[..htpkFolder.LastIndexOf('/')] + "/sourceimages";
+                    //
+                    // if (earcs.ContainsKey(sourceimagesFolder))
+                    // {
+                    //     var htpk = Encoding.UTF8.GetBytes(string.Join(' ',
+                    //         earcs[sourceimagesFolder].Select(u => u.Insert(u.LastIndexOf('.'), "_$h"))) + (char)0x00);
+                    //
+                    //     var fragment = new FmodFragment
+                    //     {
+                    //         OriginalSize = (uint)htpk.Length,
+                    //         ProcessedSize = (uint)htpk.Length,
+                    //         Flags = ArchiveFileFlag.Autoload,
+                    //         Key = 0,
+                    //         RelativePath = uri.Replace("data://", ""),
+                    //         Data = htpk
+                    //     };
+                    //
+                    //     var hash = Cryptography.HashFileUri64(uri.Replace(".htpk", ".autoext"));
+                    //     fragment.Write($@"{StagingDirectory}\Fragments\{hash}.ffg");
+                    // }
                 }
                 else
                 {
-                    foreach (var (finalUri, data, isReference) in GetConvertedAssets(uri))
+                    foreach (var (finalUri, data) in GetConvertedAssets(uri))
                     {
-                        if (isReference)
+                        var hash = Cryptography.HashFileUri64(finalUri);
+                        var path = $@"{StagingDirectory}\Fragments\{hash}.ffg";
+
+                        if (finalUri.EndsWith(".sb"))
                         {
-                            if (data != null)
+                            lock (_shaderLock)
                             {
-                                // var directPath = uri.Replace("data://", "").Replace('/', '\\');
-                                // if (!uri.EndsWith(".bk2"))
-                                // {
-                                //     directPath = directPath.Insert(directPath.LastIndexOf('.'), ".win");
-                                //     directPath = directPath[..^1] + 'b'; // Change sax/max to sab/mab
-                                // }
-                                //
-                                // directPath = Ps4PorterConfiguration.OutputDirectory + '\\' + directPath;
-                                // IOHelper.EnsureDirectoriesExistForFilePath(directPath);
-                                // File.WriteAllBytes(directPath, data);
+                                if (!File.Exists(path))
+                                {
+                                    data.Write(path);
+                                }
                             }
                         }
                         else
                         {
-                            var hash = Cryptography.HashFileUri64(finalUri);
-                            data.Write($@"{StagingDirectory}\Fragments\{hash}.ffg");
+                            data.Write(path);
                         }
                     }
                 }
             }
         });
     }
-    
-    private IEnumerable<(string Uri, FmodFragment Data, bool IsReference)> GetConvertedAssets(string uri)
+
+    private IEnumerable<(string Uri, FmodFragment Data)> GetConvertedAssets(string uri)
     {
-        byte[] data;
         FmodFragment fragment = null;
         var isReference = false;
         using var context = Ps4Utilities.NewContext();
         ArchiveFile file = null;
 
-        if (uri.EndsWith(".sax") || uri.EndsWith(".max") || uri.EndsWith(".bk2"))
-        {
-            if (!context.Ps4AssetUris.Any(a => a.Uri == uri))
-            {
-                isReference = true;
-            }
-
-            if (uri.EndsWith(".bk2"))
-            {
-                var path = Ps4PorterConfiguration.GameDirectory + @"\CUSA01633-patch_115\CUSA01633-patch\" +
-                           uri.Replace("data://", "").Replace('/', '\\');
-                data = File.Exists(path) ? File.ReadAllBytes(path) : Array.Empty<byte>();
-            }
-            else
-            {
-                var extension = uri.Split('.').Last().Replace('x', 'b');
-                var path =
-                    $@"{Ps4PorterConfiguration.StagingDirectory}\Audio\Output\{Cryptography.HashFileUri64(uri)}.orb.{extension}";
-                data = File.Exists(path) ? File.ReadAllBytes(path) : Array.Empty<byte>();
-            }
-        }
-        else
+        if (!(uri.EndsWith(".sax") || uri.EndsWith(".max") || uri.EndsWith(".bk2")))
         {
             file = Ps4Utilities.GetArchiveFileByUri(context, uri);
         }
@@ -166,7 +146,8 @@ public class Ps4AssetFragmentGenerator
         }
         else
         {
-            if (uri.EndsWith(".tif") || uri.EndsWith(".dds") || uri.EndsWith(".png") || uri.EndsWith(".btex") || uri.EndsWith(".exr"))
+            if (uri.EndsWith(".tif") || uri.EndsWith(".dds") || uri.EndsWith(".png") || uri.EndsWith(".btex") ||
+                uri.EndsWith(".exr"))
             {
                 var btex = Btex.FromData(file.GetReadableData());
                 using var stream = new MemoryStream();
@@ -206,8 +187,8 @@ public class Ps4AssetFragmentGenerator
                         RelativePath = highFile.RelativePath,
                         Data = highDataProcessed
                     };
-                    
-                    yield return (highTextureUri, highFragment, isReference);
+
+                    yield return (highTextureUri, highFragment);
                 }
             }
 
@@ -216,20 +197,35 @@ public class Ps4AssetFragmentGenerator
                 var originalMaterial = new MaterialReader(file.GetReadableData()).Read();
 
                 using var pcContext = new FlagrumDbContext(_releaseSettings, Ps4Constants.DatabasePath);
-                using var debugContext = new FlagrumDbContext(_pcSettings);
                 var materialData = pcContext.GetFileByUri(_materialMap[uri]);
                 var material = new MaterialReader(materialData).Read();
-                
-                // foreach (var shader in material.Header.Dependencies
-                //              .Where(d => d.Path.EndsWith(".sb")))
-                // {
-                //     var relativePath = debugContext.GetArchiveRelativeLocationByUri(shader.Path);
-                //     if (relativePath != @"shader\shadergen\autoexternal.earc")
-                //     {
-                //         var shaderData = pcContext.GetFileByUri(shader.Path);
-                //         yield return (shader.Path, shaderData, false);
-                //     }
-                // }
+
+                foreach (var shader in material.Header.Dependencies
+                             .Where(d => d.Path.EndsWith(".sb")))
+                {
+                    if (_shadersToIgnore.ContainsKey(shader.Path))
+                    {
+                        continue;
+                    }
+                    
+                    if (!_shaderMap.TryGetValue(shader.Path, out var shaderFile))
+                    {
+                        shaderFile = pcContext.GetArchiveFileByUri(shader.Path);
+                        _shaderMap[shader.Path] = shaderFile;
+                    }
+                    
+                    var shaderFragment = new FmodFragment
+                    {
+                        OriginalSize = shaderFile.Size,
+                        ProcessedSize = shaderFile.ProcessedSize,
+                        Flags = shaderFile.Flags,
+                        Key = shaderFile.Key,
+                        RelativePath = shaderFile.RelativePath,
+                        Data = shaderFile.GetRawData()
+                    };
+                    
+                    yield return (shader.Path, shaderFragment);
+                }
 
                 material.HighTexturePackAsset = originalMaterial.HighTexturePackAsset;
                 material.Name = originalMaterial.Name;
@@ -253,7 +249,8 @@ public class Ps4AssetFragmentGenerator
                     {
                         texture.Path = "data://shader/defaulttextures/black.tif";
                         texture.PathHash = Cryptography.Hash32("data://shader/defaulttextures/black.tif");
-                        texture.ResourceFileHash = Cryptography.HashFileUri64("data://shader/defaulttextures/black.tif");
+                        texture.ResourceFileHash =
+                            Cryptography.HashFileUri64("data://shader/defaulttextures/black.tif");
                     }
                     else
                     {
@@ -262,19 +259,6 @@ public class Ps4AssetFragmentGenerator
                         texture.ResourceFileHash = match.ResourceFileHash;
                     }
                 }
-                
-                // foreach (var texture in originalMaterial.Textures.Where(t => !t.Path.EndsWith(".sb")))
-                // {
-                //     var match = material.Textures.FirstOrDefault(t => t.ShaderGenName == texture.ShaderGenName);
-                //     if (match == null)
-                //     {
-                //         continue;
-                //     }
-                //
-                //     match.Path = texture.Path;
-                //     match.PathHash = texture.PathHash;
-                //     match.ResourceFileHash = texture.ResourceFileHash;
-                // }
 
                 material.RegenerateDependencyTable();
 
@@ -323,8 +307,8 @@ public class Ps4AssetFragmentGenerator
                         RelativePath = listb.RelativePath,
                         Data = listb.GetRawData()
                     };
-                    
-                    yield return (listbUri, listbFragment, false);
+
+                    yield return (listbUri, listbFragment);
                 }
 
                 var folder = uri[..uri.LastIndexOf('/')];
@@ -349,8 +333,8 @@ public class Ps4AssetFragmentGenerator
                         RelativePath = swf.RelativePath,
                         Data = processedSwf
                     };
-                    
-                    yield return (swfUri, swfFragment, isReference);
+
+                    yield return (swfUri, swfFragment);
                 }
             }
 
@@ -363,36 +347,8 @@ public class Ps4AssetFragmentGenerator
                 RelativePath = file.RelativePath,
                 Data = file.GetRawData()
             };
-            
-            yield return (uri, fragment, isReference);
-        }
-    }
-    
-    private List<string> GetUris()
-    {
-        using var context = new FlagrumDbContext(_settings);
-        var releaseUris = context.AssetUris.Select(u => u.Uri).ToList();
-        GenerateMapRecursively(@"C:\Modding\Chocomog\Final Fantasy XV - RAW PS4\datas");
-        return _ps4Uris.Except(releaseUris).ToList();
-    }
-    
-    private void GenerateMapRecursively(string directory)
-    {
-        MapDirectory(directory);
-        Parallel.ForEach(Directory.EnumerateDirectories(directory), GenerateMapRecursively);
-    }
 
-    private void MapDirectory(string directory)
-    {
-        foreach (var file in Directory.EnumerateFiles(directory, "*.earc"))
-        {
-            using var unpacker = new Unpacker(file);
-            foreach (var item in unpacker.Files
-                         .Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference))
-                         .Select(f => f.Uri))
-            {
-                _ps4Uris.Add(item);
-            }
+            yield return (uri, fragment);
         }
     }
 }

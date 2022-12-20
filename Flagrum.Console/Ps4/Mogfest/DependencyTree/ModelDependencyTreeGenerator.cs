@@ -4,19 +4,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Flagrum.Console.Ps4.Mogfest.Utilities;
-using Flagrum.Core.AI;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Gfxbin.Serialization;
 using Flagrum.Core.Vfx;
-using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 
-namespace Flagrum.Console.Ps4.Porting;
+namespace Flagrum.Console.Ps4.Mogfest.DependencyTree;
 
-public class Ps4ModelDependencyTreeBuilder
+public class ModelDependencyTreeGenerator
 {
     private readonly List<FestivalSubdependencyFestivalModelDependency> _links = new();
     private readonly object _lock = new();
@@ -32,7 +30,7 @@ public class Ps4ModelDependencyTreeBuilder
 
         foreach (var dependency in context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".vlink")))
         {
-            var data = Ps4Utilities.GetFileByUri(context, dependency.Uri);
+            var data = MogfestUtilities.GetFileByUri(dependency.Uri);
             if (data.Length == 0)
             {
                 continue;
@@ -44,14 +42,14 @@ public class Ps4ModelDependencyTreeBuilder
 
         foreach (var dependency in context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".anmgph")))
         {
-            var data = Ps4Utilities.GetFileByUri(context, dependency.Uri);
+            var data = MogfestUtilities.GetFileByUri(dependency.Uri);
             if (data.Length == 0)
             {
                 continue;
             }
 
             var results = new Dictionary<string, byte[]>();
-            ReadAnimationGraphRecursively(context, dependency.Uri, data, results);
+            ReadAnimationGraphRecursively(dependency.Uri, data, results);
 
             foreach (var (anmgphUri, anmgphData) in results)
             {
@@ -59,7 +57,7 @@ public class Ps4ModelDependencyTreeBuilder
                 {
                     continue;
                 }
-                
+
                 AddSubdependency(anmgphUri, dependency);
             }
         }
@@ -70,8 +68,7 @@ public class Ps4ModelDependencyTreeBuilder
 
         Parallel.ForEach(context.FestivalSubdependencies.Where(s => s.Uri.EndsWith(".vfx")), vfx =>
         {
-            using var innerContext = Ps4Utilities.NewContext();
-            var data = Ps4Utilities.GetFileByUri(innerContext, vfx.Uri);
+            var data = MogfestUtilities.GetFileByUri(vfx.Uri);
             if (data.Length == 0)
             {
                 return;
@@ -90,8 +87,7 @@ public class Ps4ModelDependencyTreeBuilder
 
         Parallel.ForEach(context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".gmdl")), dependency =>
         {
-            using var innerContext = Ps4Utilities.NewContext();
-            var data = Ps4Utilities.GetFileByUri(innerContext, dependency.Uri);
+            var data = MogfestUtilities.GetFileByUri(dependency.Uri);
 
             if (data.Length == 0)
             {
@@ -105,25 +101,6 @@ public class Ps4ModelDependencyTreeBuilder
             {
                 AddModelDependency(subdependency.Path, dependency);
             }
-            // var gpubin = Ps4Utilities.GetFileByUri(innerContext, dependency.Uri.Replace(".gmdl", ".gpubin"));
-            // var model = new ModelReader(data, gpubin).Read();
-            // foreach (var subdependency in model.Header.Dependencies)
-            // {
-            //     if (subdependency.Path.EndsWith(".gmtl"))
-            //     {
-            //         var hash = ulong.Parse(subdependency.PathHash);
-            //         var mesh = model.MeshObjects
-            //             .Select(mo => mo.Meshes
-            //                 .FirstOrDefault(m => m.DefaultMaterialHash == hash))
-            //             .FirstOrDefault();
-            //         
-            //         AddDependency(subdependency.Path, dependency, mesh?.VertexLayoutType ?? VertexLayoutType.NULL);
-            //     }
-            //     else if (subdependency.PathHash != "asset_uri" && subdependency.PathHash != "ref")
-            //     {
-            //         AddDependency(subdependency.Path, dependency);
-            //     }
-            // }
         });
 
         context.FestivalSubdependencyFestivalModelDependency.AddRange(_links);
@@ -132,8 +109,7 @@ public class Ps4ModelDependencyTreeBuilder
 
         Parallel.ForEach(context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".gmtl")), dependency =>
         {
-            using var innerContext = Ps4Utilities.NewContext();
-            var data = Ps4Utilities.GetFileByUri(innerContext, dependency.Uri);
+            var data = MogfestUtilities.GetFileByUri(dependency.Uri);
 
             if (data.Length == 0)
             {
@@ -159,38 +135,18 @@ public class Ps4ModelDependencyTreeBuilder
         context.SaveChanges();
     }
 
-    public void DumpDependenciesToConsole()
-    {
-        using var context = Ps4Utilities.NewContext();
-        var results = new Dictionary<string, byte[]>();
-
-        foreach (var animGraph in context.FestivalSubdependencies.Where(s => s.Uri.EndsWith(".anmgph")))
-        {
-            var data = Ps4Utilities.GetFileByUri(context, animGraph.Uri);
-            ReadAnimationGraphRecursively(context, animGraph.Uri, data, results);
-        }
-
-        foreach (var (uri, data) in results)
-        {
-            if (!uri.EndsWith(".anmgph"))
-            {
-                System.Console.WriteLine(uri);
-            }
-        }
-    }
-
-    private void ReadAnimationGraphRecursively(FlagrumDbContext ps4Context, string uri, byte[] data, Dictionary<string, byte[]> results)
+    private void ReadAnimationGraphRecursively(string uri, byte[] data, Dictionary<string, byte[]> results)
     {
         if (results.TryAdd(uri, data))
         {
             foreach (var dependency in AnimationGraph.GetDependencies(data))
             {
-                var innerData = Ps4Utilities.GetFileByUri(ps4Context, dependency);
-                ReadAnimationGraphRecursively(ps4Context, dependency, innerData, results);
+                var innerData = MogfestUtilities.GetFileByUri(dependency);
+                ReadAnimationGraphRecursively(dependency, innerData, results);
             }
         }
     }
-    
+
     private void AddSubdependency(string uri, FestivalSubdependency subdependency)
     {
         using var context = Ps4Utilities.NewContext();

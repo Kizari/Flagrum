@@ -13,15 +13,16 @@ using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
-namespace Flagrum.Console.Ps4.Festivals;
+namespace Flagrum.Console.Ps4.Mogfest.Subbuilders;
 
 public class MogfestEarcBuilder
 {
     private const string StagingDirectory = @"C:\Modding\Chocomog\Staging";
 
     private readonly ConcurrentDictionary<string, bool> _assets = new();
-    private readonly Dictionary<string, bool> _dependencies = new();
+    private readonly ConcurrentDictionary<string, bool> _dependencies = new();
     private readonly ConcurrentDictionary<string, string> _existingAssets = new();
     private readonly SettingsService _pcSettings = new();
     private EarcMod _mod;
@@ -58,6 +59,15 @@ public class MogfestEarcBuilder
             context.FestivalDependencies.First(d => d.Uri == "data://level/dlc_ex/mog/area_ravettrice_mog.ebex"));
 
         pcContext.SaveChanges();
+
+        var assets = _assets
+            .Where(kvp => !pcContext.AssetUris
+                .Any(a => a.Uri == kvp.Key))
+            .Select(kvp => kvp.Key)
+            .ToList();
+
+        var json = JsonConvert.SerializeObject(assets, Formatting.Indented);
+        File.WriteAllText(@$"{Ps4PorterConfiguration.StagingDirectory}\assets.json", json);
     }
 
     private void CreateEarcRecursively(FestivalDependency ebex)
@@ -69,7 +79,7 @@ public class MogfestEarcBuilder
                 return;
             }
 
-            _dependencies.Add(ebex.Uri, true);
+            _dependencies.TryAdd(ebex.Uri, true);
         }
 
         using var context = Ps4Utilities.NewContext();
@@ -85,9 +95,9 @@ public class MogfestEarcBuilder
         var outputPath = $@"{Ps4PorterConfiguration.OutputDirectory}\{relativePath}";
         if (File.Exists(outputPath))
         {
-            System.Console.WriteLine($"[E] File already exists: {outputPath}");
+            throw new Exception($"[E] File already exists: {outputPath}");
         }
-
+        
         var earc = new EarcModEarc
         {
             EarcRelativePath = relativePath,
@@ -210,7 +220,8 @@ public class MogfestEarcBuilder
                 {
                     Uri = uri,
                     Type = EarcFileChangeType.AddReference,
-                    Flags = uri.EndsWith(".htpk") ? ArchiveFileFlag.Reference
+                    Flags = uri.EndsWith(".htpk")
+                        ? ArchiveFileFlag.Reference
                         : ArchiveFileFlag.Autoload | ArchiveFileFlag.Reference
                 });
             }

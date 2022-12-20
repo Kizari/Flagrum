@@ -24,8 +24,8 @@ public class FileData
 
 public class FileFinder
 {
-    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV (Release)\datas";
     private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
+    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
     //private const string DataDirectory =
     //    @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV (Release)\datas";
 

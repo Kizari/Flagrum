@@ -8,7 +8,7 @@ using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
-using Flagrum.Web.Persistence.Entities;
+using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;
 using Newtonsoft.Json;
 
@@ -209,54 +209,90 @@ public class Ps4Porter
         // return;
     }
 
-    // private void BuildModFromFolder()
-    // {
-    //     using var context = new FlagrumDbContext(_pcSettings);
-    //     var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\BinsDump\hashTable.json");
-    //     var hashTable = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json)!;
-    //
-    //     var mod = new EarcMod
-    //     {
-    //         Name = "PS4 Event Bins",
-    //         Author = "Kizari",
-    //         Description = "Test",
-    //         IsActive = false
-    //     };
-    //
-    //     foreach (var (hash, uri) in hashTable)
-    //     {
-    //         var earcPath = context.AssetUris
-    //             .Where(a => a.Uri == uri)
-    //             .Select(a => a.ArchiveLocation.Path)
-    //             .FirstOrDefault();
-    //
-    //         if (earcPath == null)
-    //         {
-    //             continue;
-    //         }
-    //
-    //         var earc = mod.Earcs.FirstOrDefault(e => e.EarcRelativePath == earcPath);
-    //         if (earc == null)
-    //         {
-    //             earc = new EarcModEarc
-    //             {
-    //                 EarcRelativePath = earcPath
-    //             };
-    //
-    //             mod.Earcs.Add(earc);
-    //         }
-    //
-    //         earc.Replacements.Add(new EarcModReplacement
-    //         {
-    //             Uri = uri,
-    //             ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\BinsDump\{hash}",
-    //             Type = EarcChangeType.Replace
-    //         });
-    //     }
-    //
-    //     context.Add(mod);
-    //     context.SaveChanges();
-    // }
+    public static void BuildModFromFolder()
+    {
+        using var context = new FlagrumDbContext(new SettingsService());
+        //var json = File.ReadAllText(@"C:\Modding\Chocomog\Testing\AnimationDump\hashTable.json");
+        //var hashTable = JsonConvert.DeserializeObject<Dictionary<ulong, string>>(json)!;
+
+        var hashTable = context.AssetUris
+            .Select(a => new
+            {
+                a.Uri,
+                a.ArchiveLocation.Path
+            })
+            .ToList()
+            .ToDictionary(a => Cryptography.HashFileUri64(a.Uri), a => new {a.Uri, a.Path});
+
+        var mod = new EarcMod
+        {
+            Name = "Noctis PS4 Anims (Release)",
+            Author = "Kizari",
+            Description = "Test",
+            IsActive = false
+        };
+
+        foreach (var file in Directory.EnumerateFiles(@"C:\Modding\Chocomog\Testing\AnimationDump"))
+        {
+            var hash = ulong.Parse(file.Split('\\').Last());
+            if (!hashTable.TryGetValue(hash, out var info))
+            {
+                continue;
+            }
+
+            var earc = mod.Earcs.FirstOrDefault(e => e.EarcRelativePath == info.Path);
+            if (earc == null)
+            {
+                earc = new EarcModEarc
+                {
+                    EarcRelativePath = info.Path
+                };
+
+                mod.Earcs.Add(earc);
+            }
+
+            earc.Files.Add(new EarcModFile
+            {
+                Uri = info.Uri,
+                ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\AnimationDump\{hash}",
+                Type = EarcFileChangeType.Replace
+            });
+        }
+
+        // foreach (var (hash, uri) in hashTable)
+        // {
+        //     var earcPath = context.AssetUris
+        //         .Where(a => a.Uri == uri)
+        //         .Select(a => a.ArchiveLocation.Path)
+        //         .FirstOrDefault();
+        //
+        //     if (earcPath == null)
+        //     {
+        //         continue;
+        //     }
+        //
+        //     var earc = mod.Earcs.FirstOrDefault(e => e.EarcRelativePath == earcPath);
+        //     if (earc == null)
+        //     {
+        //         earc = new EarcModEarc
+        //         {
+        //             EarcRelativePath = earcPath
+        //         };
+        //
+        //         mod.Earcs.Add(earc);
+        //     }
+        //
+        //     earc.Replacements.Add(new EarcModReplacement
+        //     {
+        //         Uri = uri,
+        //         ReplacementFilePath = @$"C:\Modding\Chocomog\Testing\BinsDump\{hash}",
+        //         Type = EarcChangeType.Replace
+        //     });
+        // }
+
+        context.Add(mod);
+        context.SaveChanges();
+    }
 
     private static void DumpBins()
     {
@@ -276,25 +312,26 @@ public class Ps4Porter
             JsonConvert.SerializeObject(hashTable));
     }
 
-    private static void DumpNoctisAnimations()
+    public static void DumpNoctisAnimations()
     {
         var hashTable = new Dictionary<ulong, string>();
 
         using var context = Ps4Utilities.NewContext();
         foreach (var asset in context.Ps4AssetUris.Where(a =>
-                     a.Uri.Contains("/nh00/") && a.Uri.EndsWith(".amdl")))
+                     a.Uri.Contains("/uw/") && a.Uri.EndsWith(".ani")))
         {
             var hash = Cryptography.HashFileUri64(asset.Uri);
             hashTable.Add(hash, asset.Uri);
 
             var data = Ps4Utilities.GetFileByUri(context, asset.Uri);
-            File.WriteAllBytes(@$"C:\Modding\Chocomog\Testing\AnimationDump\{hash}", AnimationModel.ToPC(data));
+            File.WriteAllBytes(@$"C:\Modding\Chocomog\Testing\uw\{hash}",
+                data); //AnimationModel.ToPC(data));
         }
 
         //File.WriteAllText(@"C:\Modding\Chocomog\Testing\AnimationDump\hashTable.json", JsonConvert.SerializeObject(hashTable));
     }
 
-    private static void OutputFileByUri(string uri)
+    public static void OutputFileByUri(string uri)
     {
         using var context = Ps4Utilities.NewContext();
         var data = Ps4Utilities.GetFileByUri(context, uri);
