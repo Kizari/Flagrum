@@ -8,7 +8,14 @@
     }
     <div class="flex-grow pr-3">
         <EditForm Model="this">
-            <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter" IsReadOnly="IsDisabled" onClick="this.select();"/>
+            @if (AddressBarSelect)
+            {
+                <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter" IsReadOnly="IsDisabled" onClick="this.select();"/>
+            }
+            else
+            {
+                <Textbox @bind-Value="CurrentPath" Size="Textbox.Variant.Stretch" OnKeyUp="CheckEnter" IsReadOnly="IsDisabled"/>
+            }
         </EditForm>
     </div>
     @if (AssetExplorer.ItemSelectedOverride == null)

@@ -37,7 +37,6 @@
             throw new ArgumentOutOfRangeException();
     }
     
-    <RegenerateModal @ref="RegenerateModal"/>
 </CascadingValue>
 
 <AlertModal @ref="Alert" />
@@ -45,7 +44,6 @@
 @code 
 {
     public AlertModal Alert { get; set; }
-    public RegenerateModal RegenerateModal { get; set; }
     public AssetExplorer AssetExplorer { get; set; }
     
     public AssetExplorerView CurrentView { get; set; }

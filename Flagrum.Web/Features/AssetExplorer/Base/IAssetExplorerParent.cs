@@ -7,6 +7,5 @@ public interface IAssetExplorerParent
 {
     AssetExplorerView CurrentView { get; set; }
     AlertModal Alert { get; set; }
-    RegenerateModal RegenerateModal { get; set; }
     void CallStateHasChanged();
 }

@@ -46,7 +46,7 @@
             case ExplorerItemType.Model:
                 if (Parent.CurrentView == AssetExplorerView.GameView)
                 {
-                    <Item OnClick="@ExportWithDependenciesModal.Open"
+                    <Item OnClick="() => ExportWithDependenciesModal.Open(AssetExplorer.ContextNode)"
                           OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
                         <div class="row">
                             <span class="material-icons mr-3" style="font-size: 0.9rem">share</span>
@@ -181,7 +181,7 @@
 
     private async Task ExportEnvironment()
     {
-        var item = AssetExplorer.ContextItem;
+        var item = AssetExplorer.ContextNode;
         const string filter = "Flagrum Environment Data|*.fed";
 
         await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
@@ -200,7 +200,7 @@
 
     private async Task ExportTerrain()
     {
-        var item = AssetExplorer.ContextItem;
+        var item = AssetExplorer.ContextNode;
         const string filter = "Flagrum Terrain Data|*.ftd";
 
         await WpfService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".ftd", filter, async path =>
@@ -213,7 +213,7 @@
 
     private async Task ExportAnimationClips()
     {
-        var item = AssetExplorer.ContextItem;
+        var item = AssetExplorer.ContextNode;
         await WpfService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             async folderPath =>
             {

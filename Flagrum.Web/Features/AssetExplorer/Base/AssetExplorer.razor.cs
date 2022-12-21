@@ -19,7 +19,6 @@ public partial class AssetExplorer
     public ExportContextMenu ExportContextMenu { get; set; }
 
     public IAssetExplorerNode ContextNode { get; set; }
-    public IAssetExplorerNode ContextItem { get; set; }
     public FileListLayout CurrentLayout { get; set; }
 
     protected bool IsLoading { get; set; }

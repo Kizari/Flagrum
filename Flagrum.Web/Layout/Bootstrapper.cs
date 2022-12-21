@@ -31,13 +31,10 @@ public class Bootstrapper : ComponentBase
 
     protected override void OnInitialized()
     {
-        Parallel.Invoke(() => Task.Run(async () =>
-            {
-                HandleEarcModThumbnails();
-                await ScaleEarcModThumbnails();
-            }),
-            ConvertBackups,
-            () => Task.Run(async () => await LoadBinmods()));
+        HandleEarcModThumbnails();
+        ScaleEarcModThumbnails();
+        ConvertBackups();
+        Task.Run(async () => await LoadBinmods());
     }
 
     private async Task ScaleEarcModThumbnails()

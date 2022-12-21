@@ -7,7 +7,9 @@
 @using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
 @using Flagrum.Core.Archive
 @using System.Text
+@using Flagrum.Core.Utilities
 @using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Features.AssetExplorer.Data
 @inject IWpfService WpfService
 @inject SettingsService Settings
 @inject FlagrumDbContext Context
@@ -52,9 +54,11 @@
     private string Extension { get; set; } = "PNG";
     private bool IncludeHighTextures { get; set; } = true;
     private bool IncludeCommonTextures { get; set; }
+    private IAssetExplorerNode ContextNode { get; set; }
 
-    public void Open()
+    public void Open(IAssetExplorerNode contextNode)
     {
+        ContextNode = contextNode;
         AppState.IsModalOpen = true;
         WpfService.Set3DViewportVisibility(false);
         Modal.Open();
@@ -73,7 +77,7 @@
 
     private async Task Export()
     {
-        var item = Parent.ContextNode;
+        var item = ContextNode;
         var defaultName = item.Name + ".gfxbin";
         const string filter = "Game Model|*.gmdl.gfxbin";
 
@@ -155,30 +159,17 @@
             var texturesDirectory = $"{root}\\sourceimages";
             var highImagesDirectory = $"{root}\\highimages";
 
-            if (!Directory.Exists(materialsDirectory))
-            {
-                Directory.CreateDirectory(materialsDirectory);
-            }
-
-            if (!Directory.Exists(texturesDirectory))
-            {
-                Directory.CreateDirectory(texturesDirectory);
-            }
-
-            if (!Directory.Exists(highImagesDirectory))
-            {
-                Directory.CreateDirectory(highImagesDirectory);
-            }
-
             foreach (var (uri, data) in materials)
             {
                 var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}.gfxbin";
+                IOHelper.EnsureDirectoriesExistForFilePath(materialPath);
                 File.WriteAllBytes(materialPath, data);
             }
 
             foreach (var (uri, data) in highMaterials)
             {
                 var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}";
+                IOHelper.EnsureDirectoriesExistForFilePath(materialPath);
                 File.WriteAllBytes(materialPath, data);
             }
 
@@ -187,6 +178,7 @@
                 var fileName = uri.Split('/').Last();
                 fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
                 var texturePath = $"{texturesDirectory}\\{fileName}";
+                IOHelper.EnsureDirectoriesExistForFilePath(texturePath);
                 File.WriteAllBytes(texturePath, data);
             }
 
@@ -195,6 +187,7 @@
                 var fileName = uri.Split('/').Last();
                 fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
                 var texturePath = $"{highImagesDirectory}\\{fileName}";
+                IOHelper.EnsureDirectoriesExistForFilePath(texturePath);
                 File.WriteAllBytes(texturePath, data);
             }
 

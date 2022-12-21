@@ -236,11 +236,10 @@
         AssetExplorer.SetLoading(true, "Exporting");
 
         var files = new Dictionary<string, ConcurrentBag<string>>();
+        var paths = AppState.PathMap;
 
         if (ExportContext.Recursive)
         {
-            var paths = AppState.PathMap;
-
             void Traverse(IAssetExplorerNode node, Action<IAssetExplorerNode> visitor)
             {
                 visitor(node);
@@ -286,7 +285,7 @@
             {
                 if (!node.HasChildren)
                 {
-                    var location = ((AssetExplorerNode)node).GetLocation();
+                    var location = paths[Cryptography.HashFileUri64(node.Path)];
                     if (!files.TryGetValue(location, out var uris))
                     {
                         uris = new ConcurrentBag<string> {node.Path};

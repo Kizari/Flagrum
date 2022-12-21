@@ -54,7 +54,7 @@ public abstract class IAssetExplorerNode
                     //     _ => extension
                     // };
 
-                    return Name[..Name.LastIndexOf('.')] + '.' + map[extension];
+                    return Name.Replace(extension, "") + map[extension];
                     //return Name[..Name.LastIndexOf('.')] + trueExtension;
                 }
             }

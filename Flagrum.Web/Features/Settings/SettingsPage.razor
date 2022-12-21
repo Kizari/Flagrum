@@ -47,6 +47,22 @@
             </div>
             <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
         </div>
+        
+        @if (!Warn)
+        {
+            <div class="box p-6 mb-6">
+                <div class="row mb-6">
+                    <h4 class="text-grey-300 flex-grow">Asset Explorer Settings</h4>
+                    <Button Icon="cached" Text="Regenerate File Index" OnClick="() => RegenerateModal?.Open()" />
+                </div>
+                <div class="row">
+                    <Checkbox IsChecked="AddressBarToggle" OnChange="t => ToggleAddressBar(t)" />
+                    <span class="ml-3">Select all text when address bar is clicked</span>
+                </div>
+            </div>
+            
+            <RegenerateModal @ref="RegenerateModal"/>
+        }
 
     </EditForm>
 
@@ -71,6 +87,8 @@
     private SettingsData Data { get; } = new();
     private PromptModal RestartPrompt { get; set; }
     private LanguageTable LanguageTable { get; set; } = new();
+    private RegenerateModal RegenerateModal { get; set; }
+    private bool AddressBarToggle { get; set; }
 
     private string CurrentCulture
     {
@@ -90,6 +108,7 @@
         Data.GamePath = Settings.GamePath;
         Data.WorkshopPath = Settings.WorkshopPath;
         Data.BinmodListPath = Settings.BinmodListPath;
+        AddressBarToggle = Context.GetBool(StateKey.AssetExplorerAddressBarSelect);
 
         var supportedExtraCultures = new List<CultureInfo>
         {
@@ -109,6 +128,12 @@
         }
 
         _currentCulture ??= "en-GB";
+    }
+
+    private void ToggleAddressBar(bool newState)
+    {
+        AddressBarToggle = newState;
+        Context.SetBool(StateKey.AssetExplorerAddressBarSelect, newState);
     }
 
     private string GetClosestCulture(CultureInfo culture)

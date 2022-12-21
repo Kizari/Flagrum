@@ -148,14 +148,6 @@
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>ErrorMessageResource.ja-JP.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-        <EmbeddedResource Update="Features\AssetExplorer\RegenerateModal.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>RegenerateModal.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Features\AssetExplorer\RegenerateModal.ja-JP.resx">
-          <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>RegenerateModal.ja-JP.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
         <EmbeddedResource Update="Features\Settings\SettingsPage.resx">
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>SettingsPage.Designer.cs</LastGenOutput>
@@ -279,6 +271,14 @@
         <EmbeddedResource Update="Features\AssetExplorer\Base\Preview.resx">
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>Preview.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Settings\RegenerateModal.ja-JP.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>RegenerateModal.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Settings\RegenerateModal.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>RegenerateModal.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
 

@@ -16,9 +16,8 @@
                     {
                         if (FileList?.CurrentNode?.Name == "data://")
                         {
-                            <span class="material-icons select-none cursor-pointer mr-3" style="font-size: 1rem" @onclick="ExportContextMenu.ExportCurrentFolder">drive_file_move</span>
+                            <span class="material-icons select-none cursor-pointer mr-6" style="font-size: 1rem" @onclick="ExportContextMenu.ExportCurrentFolder">drive_file_move</span>
                         }
-                        <span class="material-icons select-none cursor-pointer mr-6" style="font-size: 1rem" @onclick="() => Parent.RegenerateModal?.Open()">settings</span>
                     }
                     <span class="material-icons select-none cursor-pointer mr-3 @(CurrentLayout == FileListLayout.ListView ? "text-accent1-100" : "text-grey-500")" style="font-size: 1rem" @onclick="() => SetCurrentLayout(FileListLayout.ListView)">list</span>
                     <span class="material-icons select-none cursor-pointer @(CurrentLayout == FileListLayout.TreeView ? "text-accent1-100" : "text-grey-500")" style="font-size: 1rem" @onclick="() => SetCurrentLayout(FileListLayout.TreeView)">account_tree</span>

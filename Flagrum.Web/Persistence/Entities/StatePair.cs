@@ -23,7 +23,8 @@ public enum StateKey
     HasMigratedBackups,
     CurrentAssetExplorerView,
     CurrentAssetExplorerLayout,
-    ViewportTextureFidelity
+    ViewportTextureFidelity,
+    AssetExplorerAddressBarSelect
 }
 
 public class StatePair

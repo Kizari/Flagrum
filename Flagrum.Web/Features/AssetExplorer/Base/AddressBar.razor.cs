@@ -11,9 +11,15 @@ public abstract partial class AddressBar
     public AssetExplorer AssetExplorer { get; set; }
 
     public string CurrentPath { get; protected set; } = "data://";
+    private bool AddressBarSelect { get; set; }
 
     public abstract void NavigateToCurrentPath();
     protected abstract bool IsDisabled { get; }
+
+    protected override void OnInitialized()
+    {
+        AddressBarSelect = Context.GetBool(StateKey.AssetExplorerAddressBarSelect);
+    }
 
     private void CheckEnter(KeyboardEventArgs e)
     {

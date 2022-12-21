@@ -36,9 +36,6 @@
     [CascadingParameter]
     public MainLayout MainLayout { get; set; }
 
-    [CascadingParameter]
-    public IAssetExplorerParent Parent { get; set; }
-
     private AutosizeModal Modal { get; set; }
 
     public void Open()
@@ -53,8 +50,6 @@
 
     private async Task OnClick()
     {
-        ((Index)Parent).AssetExplorer.FileList.SetCurrentNode(null);
-        ((Index)Parent).AssetExplorer.AddressBar.SetCurrentPath("data://");
         Context.SetInt(StateKey.CurrentAssetNode, 1);
         AppState.RootGameViewNode = null;
         AppState.IsIndexing = true;
