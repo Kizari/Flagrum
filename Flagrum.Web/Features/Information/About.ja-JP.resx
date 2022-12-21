@@ -114,4 +114,7 @@
     <data name="PayPal" xml:space="preserve">
         <value>PayPalで寄付する</value>
     </data>
+    <data name="Chisa" xml:space="preserve">
+        <value>チサ</value>
+    </data>
 </root>

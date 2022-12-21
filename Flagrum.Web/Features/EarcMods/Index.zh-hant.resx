@@ -127,7 +127,7 @@
         <value>重塑</value>
     </data>
     <data name="Filter" xml:space="preserve">
-        <value>濾鏡：</value>
+        <value>過濾器：</value>
     </data>
     <data name="InstallFromZip" xml:space="preserve">
         <value>安裝MOD</value>

@@ -8,7 +8,8 @@
            readonly="@IsReadOnly"
             placeholder="@Placeholder"
            @bind-value="@CurrentValueAsString"
-           @bind-value:event="oninput">
+           @bind-value:event="oninput"
+            @attributes="AdditionalAttributes">
     </textarea>
 }
 else
@@ -20,7 +21,8 @@ else
            placeholder="@Placeholder"
            @bind-value="@CurrentValueAsString"
            @bind-value:event="oninput"
-           @onkeyup="KeyUp"/>
+           @onkeyup="KeyUp"
+           @attributes="AdditionalAttributes"/>
 }
 
 @code

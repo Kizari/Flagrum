@@ -114,4 +114,7 @@
     <data name="PayPal" xml:space="preserve">
         <value>Donate via PayPal</value>
     </data>
+    <data name="Chisa" xml:space="preserve">
+        <value>Chisa</value>
+    </data>
 </root>

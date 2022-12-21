@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using Flagrum.Core.Archive;
 using Flagrum.Web.Persistence.Entities;
 
 namespace Flagrum.Web.Features.AssetExplorer.Data;
@@ -38,18 +39,23 @@ public abstract class IAssetExplorerNode
                 }
                 else
                 {
-                    var extension = Name[Name.LastIndexOf('.')..].ToLower();
-                    var trueExtension = extension switch
-                    {
-                        ".tif" or ".tga" or ".png" or ".dds" or ".exr" => ".btex",
-                        ".gmtl" => ".gmtl.gfxbin",
-                        ".gmdl" => ".gmdl.gfxbin",
-                        ".prefab" or ".ebex" => ".exml",
-                        ".autoext" => ".txt",
-                        _ => extension
-                    };
+                    var map = new RelativeExtensionMap();
+                    var tokens = Name.Split('.');
+                    var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
+                    
+                    // var extension = Name[Name.LastIndexOf('.')..].ToLower();
+                    // var trueExtension = extension switch
+                    // {
+                    //     ".tif" or ".tga" or ".png" or ".dds" or ".exr" => ".btex",
+                    //     ".gmtl" => ".gmtl.gfxbin",
+                    //     ".gmdl" => ".gmdl.gfxbin",
+                    //     ".prefab" or ".ebex" => ".exml",
+                    //     ".autoext" => ".txt",
+                    //     _ => extension
+                    // };
 
-                    return Name[..Name.LastIndexOf('.')] + trueExtension;
+                    return Name[..Name.LastIndexOf('.')] + '.' + map[extension];
+                    //return Name[..Name.LastIndexOf('.')] + trueExtension;
                 }
             }
 
@@ -119,13 +125,5 @@ public abstract class IAssetExplorerNode
     public IAssetExplorerNode GetRoot()
     {
         return Parent == null ? this : Parent.GetRoot();
-    }
-
-    public void SetChildrenDirectoriesOnly()
-    {
-        if (this is AssetExplorerNode node)
-        {
-            node.ChildNodes = node.Children.Where(n => n.HasChildren).Cast<AssetExplorerNode>().ToList();
-        }
     }
 }

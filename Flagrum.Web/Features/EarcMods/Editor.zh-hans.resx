@@ -78,4 +78,10 @@
     <data name="ClearCache" xml:space="preserve">
         <value>清除缓存</value>
     </data>
+    <data name="AddFile" xml:space="preserve">
+        <value>添加新文件</value>
+    </data>
+    <data name="AddReference" xml:space="preserve">
+        <value>参照</value>
+    </data>
 </root>

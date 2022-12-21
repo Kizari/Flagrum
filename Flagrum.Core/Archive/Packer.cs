@@ -64,12 +64,19 @@ public class Packer
         Files.Add(file);
     }
 
-    public void AddProcessedFile(string uri, ArchiveFileFlag flags, byte[] data, uint size, ushort key)
+    public void AddProcessedFile(string uri, ArchiveFileFlag flags, byte[] data, uint size, ushort key, string relativePathOverride)
     {
-        var file = new ArchiveFile(uri);
-        file.Flags = flags;
-        file.Size = size;
-        file.Key = key;
+        if (string.IsNullOrWhiteSpace(relativePathOverride))
+        {
+            relativePathOverride = null;
+        }
+        
+        var file = new ArchiveFile(uri, relativePathOverride)
+        {
+            Flags = flags,
+            Size = size,
+            Key = key
+        };
 
         if (data != null)
         {

@@ -111,4 +111,7 @@
     <data name="Updates" xml:space="preserve">
         <value>对Flagrum的持续更新和维护</value>
     </data>
+    <data name="Chisa" xml:space="preserve">
+        <value>Chisa</value>
+    </data>
 </root>

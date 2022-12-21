@@ -73,7 +73,7 @@
                         <Checkbox IsChecked="@ExportContext.Recursive" OnChange="v => { ExportContext.Recursive = v; StateHasChanged(); }"/>
                         <span class="inline-block ml-2">@(Parent.CurrentView == AssetExplorerView.GameView ? Localizer["Recursion"] : Localizer["ConvertRecursively"])</span>
                     </div>
-                    <Button Text="@Localizer["Export"]" Icon="file_download" OnClickAsync="Export"/>
+                    <Button Text="@Localizer[Parent.CurrentView == AssetExplorerView.GameView ? "Export" : "Convert"]" Icon="file_download" OnClickAsync="Export"/>
                 </div>
                 @if (Parent.CurrentView == AssetExplorerView.GameView)
                 {

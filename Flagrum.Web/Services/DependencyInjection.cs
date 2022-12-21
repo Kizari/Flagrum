@@ -8,7 +8,7 @@ public static class DependencyInjection
     public static IServiceCollection AddFlagrum(this IServiceCollection services)
     {
         services.AddLocalization();
-        services.AddDbContext<FlagrumDbContext>();
+        services.AddDbContext<FlagrumDbContext>(ServiceLifetime.Transient);
         services.AddSingleton<SettingsService>();
         services.AddSingleton<UriMapper>();
         services.AddScoped<SteamWorkshopService>();

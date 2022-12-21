@@ -10,7 +10,7 @@
      @onkeydown:preventDefault="true">
     <CascadingValue Value="this">
         <Virtualize Items="Children" ItemSize="28" Context="node">
-            <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => SetContextNode(node)">
+            <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="e => ContextMenuMouseUp(e, node)">
                 <ExplorerRow Node="node"/>
             </ContextMenuTrigger>
         </Virtualize>

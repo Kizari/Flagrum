@@ -113,19 +113,19 @@ public class ViewportHelper
                     for (var j = 0; j < 3; j++)
                     {
                         var index = (int)mesh.FaceIndices[i, j];
-
+                
                         if (index < mesh.VertexCount)
                         {
                             triangle.Add(index);
                         }
                     }
-
+                
                     if (triangle.Count == 3)
                     {
                         faceIndices.AddRange(triangle);
                     }
                 }
-
+                
                 var textureCoordinates = mesh.UVMaps.Count > 0
                     ? mesh.UVMaps[0].UVs.Select(uv => new Vector2((float)uv.U, (float)uv.V)).ToList()
                     : mesh.VertexPositions.Select(uv => new Vector2(0f, 0f)).ToList();
@@ -215,7 +215,7 @@ public class ViewportHelper
                                 {
                                     if (normal is {Length: > 0})
                                     {
-                                        var tag = Encoding.UTF8.GetString(diffuse[..8]);
+                                        var tag = Encoding.UTF8.GetString(normal[..8]);
 
                                         if (tag == "SEDBbtex")
                                         {
@@ -228,8 +228,15 @@ public class ViewportHelper
                                     }
                                 });
 
-                            material.AlbedoMap = albedoMap;
-                            material.NormalMap = normalMap;
+                            if (albedoMap != null)
+                            {
+                                material.AlbedoMap = albedoMap;
+                            }
+
+                            if (normalMap != null)
+                            {
+                                material.NormalMap = normalMap;
+                            }
                         }
                     }
 

@@ -22,7 +22,7 @@
         <value>Flagrum has been updated to Version {0}!</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>This update adds support for players without the 4K texture pack DLC, and several bug fixes.</value>
+        <value>The Asset Explorer has been reworked, many quality of life features have been introduced, and many bugs have been fixed.</value>
     </data>
     <data name="ViewFullChangelog" xml:space="preserve">
         <value>View Full Changelog</value>

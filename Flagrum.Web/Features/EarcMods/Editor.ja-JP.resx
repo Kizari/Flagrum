@@ -87,4 +87,10 @@
     <data name="ClearCache" xml:space="preserve">
         <value>キャッシュをクリアする</value>
     </data>
+    <data name="AddFile" xml:space="preserve">
+        <value>ファイル追加</value>
+    </data>
+    <data name="AddReference" xml:space="preserve">
+        <value>参考</value>
+    </data>
 </root>

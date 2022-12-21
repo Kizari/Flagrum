@@ -27,7 +27,15 @@ public class GameViewAddressBar : AddressBar
 
                 if (currentNode == null)
                 {
-                    Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
+                    if (AppState.Is3DViewerOpen)
+                    {
+                        WpfService.Set3DViewportVisibility(false);
+                    }
+                    
+                    Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", () =>
+                    {
+                        WpfService.Set3DViewportVisibility(true);
+                    });
                     return;
                 }
             }
@@ -53,7 +61,15 @@ public class GameViewAddressBar : AddressBar
         }
         else
         {
-            Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", null);
+            if (AppState.Is3DViewerOpen)
+            {
+                WpfService.Set3DViewportVisibility(false);
+            }
+            
+            Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", () =>
+            {
+                WpfService.Set3DViewportVisibility(true);
+            });
         }
     }
 }

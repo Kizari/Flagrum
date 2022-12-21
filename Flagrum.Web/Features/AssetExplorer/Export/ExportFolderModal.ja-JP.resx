@@ -30,4 +30,49 @@
     <data name="ExportFolder" xml:space="preserve">
         <value>エクスポートフォルダ</value>
     </data>
+    <data name="AdditionalConversionOptions" xml:space="preserve">
+        <value>変換オプションの追加</value>
+    </data>
+    <data name="AdditionalOptions" xml:space="preserve">
+        <value>書き出しオプションの追加</value>
+    </data>
+    <data name="ConvertFolder" xml:space="preserve">
+        <value>フォルダで変換する</value>
+    </data>
+    <data name="ConvertFormats" xml:space="preserve">
+        <value>変換するフォーマット</value>
+    </data>
+    <data name="ConvertRecursively" xml:space="preserve">
+        <value>サブディレクトリ内も再帰的に変換</value>
+    </data>
+    <data name="DeselectAll" xml:space="preserve">
+        <value>すべて選択解除</value>
+    </data>
+    <data name="ExportFormats" xml:space="preserve">
+        <value>エクスポートするフォーマット</value>
+    </data>
+    <data name="ExportRecursively" xml:space="preserve">
+        <value>サブディレクトリからのエクスポートを再帰的に行う</value>
+    </data>
+    <data name="Models" xml:space="preserve">
+        <value>モデル</value>
+    </data>
+    <data name="QuickPresets" xml:space="preserve">
+        <value>クイックプリセット</value>
+    </data>
+    <data name="ScriptFormat" xml:space="preserve">
+        <value>exmlの出力フォーマット</value>
+    </data>
+    <data name="Scripts" xml:space="preserve">
+        <value>スクリプト</value>
+    </data>
+    <data name="SelectAll" xml:space="preserve">
+        <value>すべて選択</value>
+    </data>
+    <data name="Textures" xml:space="preserve">
+        <value>テクスチャ</value>
+    </data>
+    <data name="Convert" xml:space="preserve">
+        <value>コンバート</value>
+    </data>
 </root>

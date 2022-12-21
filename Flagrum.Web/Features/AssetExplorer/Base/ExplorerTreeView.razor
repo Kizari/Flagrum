@@ -2,8 +2,8 @@
 @inject JSInterop Interop
 
 <CascadingValue Value="this">
-    <Virtualize Items="RootNode.Children" ItemSize="28" Context="node">
-        <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="() => AssetExplorer.ContextNode = node">
+    <Virtualize Items="RootNode.Children.Where(n => n.Type == ExplorerItemType.Directory).ToList()" ItemSize="28" Context="node">
+        <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="e => ContextMenuMouseUp(e, node)">
             <ExplorerTreeRow Node="node" Indent="2"/>
         </ContextMenuTrigger>
     </Virtualize>
@@ -25,7 +25,6 @@
     {
         var current = AssetExplorer.FileList.CurrentNode;
         var root = current.GetRoot();
-        root.SetChildrenDirectoriesOnly();
         RootNode = root;
 
         if (AssetExplorer.AddressBar.CurrentPath.Trim() is not "data://" or "")
@@ -66,6 +65,14 @@
                     await Task.Delay(100);
                 }
             }
+        }
+    }
+    
+    private void ContextMenuMouseUp(MouseEventArgs e, IAssetExplorerNode node)
+    {
+        if (e.Button == 2)
+        {
+            AssetExplorer.ContextNode = node;
         }
     }
 }

@@ -44,4 +44,7 @@
     <data name="ExportWithDependencies" xml:space="preserve">
         <value>依存関係を含むエクスポート</value>
     </data>
+    <data name="ConvertFolder" xml:space="preserve">
+        <value>フォルダで変換する</value>
+    </data>
 </root>

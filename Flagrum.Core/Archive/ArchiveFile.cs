@@ -32,10 +32,17 @@ public class ArchiveFile
 
     public ArchiveFile() { }
 
-    public ArchiveFile(string uri)
+    public ArchiveFile(string uri, string relativePathOverride = null)
     {
-        RelativePath = uri.Replace("data://", "");
-        FixRelativePath();
+        if (relativePathOverride == null)
+        {
+            RelativePath = uri.Replace("data://", "");
+            FixRelativePath();
+        }
+        else
+        {
+            RelativePath = relativePathOverride;
+        }
 
         var newUri = uri
             .Replace(".gmdl.gfxbin", ".gmdl")

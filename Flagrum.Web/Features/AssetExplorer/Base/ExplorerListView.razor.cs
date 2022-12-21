@@ -41,58 +41,45 @@ public partial class ExplorerListView
 
     private void ShiftNode(bool up)
     {
-        // var currentNode = Parent.FileList.CurrentNode;
-        // if (currentNode != null)
-        // {
-        //     var children = currentNode.Parent.Children.ToList();
-        //     var index = children.IndexOf(currentNode);
-        //     if (up)
-        //     {
-        //         index--;
-        //         if (index >= 0)
-        //         {
-        //             Parent.FileList.SetCurrentNode(children[index]);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         index++;
-        //         if (index < children.Count)
-        //         {
-        //             Parent.FileList.SetCurrentNode(children[index]);
-        //         }
-        //     }
-        // }
-        // var currentNode = Nodes.FirstOrDefault(n => n.GetUri(Context) == Parent.SelectedItem?.Uri);
-        // if (currentNode == null && Nodes.Any())
-        // {
-        //     currentNode = up ? Nodes[Nodes.Count > 1 ? 1 : 0] : Nodes[0];
-        // }
-        //
-        // if (currentNode != null)
-        // {
-        //     var index = Nodes.IndexOf(currentNode);
-        //     if (up)
-        //     {
-        //         index--;
-        //         if (index >= 0)
-        //         {
-        //             Parent.SetSelectedItem(AssetExplorerItem.FromNode(Nodes[index], Context));
-        //         }
-        //     }
-        //     else
-        //     {
-        //         index++;
-        //         if (index < Nodes.Count)
-        //         {
-        //             Parent.SetSelectedItem(AssetExplorerItem.FromNode(Nodes[index], Context));
-        //         }
-        //     }
-        // }
+        var currentItem = Parent.Preview.Item;
+        if (currentItem != null)
+        {
+            var currentNode = currentItem.Parent;
+            var children = currentNode.Children.ToList();
+            var index = children.IndexOf(currentItem);
+            if (up)
+            {
+                index--;
+                if (index >= 0)
+                {
+                    var item = children[index];
+                    Parent.AddressBar.SetCurrentPath(item.Path);
+                    Parent.Preview.SetItem(item);
+                }
+            }
+            else
+            {
+                index++;
+                if (index < children.Count)
+                {
+                    var item = children[index];
+                    Parent.AddressBar.SetCurrentPath(item.Path);
+                    Parent.Preview.SetItem(item);
+                }
+            }
+        }
     }
 
     private void SetContextNode(IAssetExplorerNode node)
     {
         Parent.ContextNode = node;
+    }
+
+    private void ContextMenuMouseUp(MouseEventArgs e, IAssetExplorerNode node)
+    {
+        if (e.Button == 2)
+        {
+            SetContextNode(node);
+        }
     }
 }

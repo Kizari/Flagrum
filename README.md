@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Flagrum" src="Images/Readme/logo.png" /><br/>
+    <img alt="Flagrum" src="Images/Readme/splash_github.svg" width=500" /><br/>
     &nbsp;
 </p>
 
@@ -77,11 +77,13 @@ If you want to support the ongoing development of Flagrum and my other XV projec
 <br/>
 <h3 align="center">Contributors</h3>
 <p align="center">
-ImpatientTraveler<br/>
-Sai<br/>
+Rinual<br/>
 AsteriskAmpersand<br/>
+ImpatientTraveler<br/>
 Katelynn Kittaly<br/>
-Rinual
+Chisa<br/>
+Sai<br/>
+
 </p>
 <br/>
 <h3 align="center">Special Thanks</h3>

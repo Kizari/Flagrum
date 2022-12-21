@@ -125,8 +125,9 @@ public partial class App
 
     private void SetFileTypeAssociation()
     {
-        var flagrumPath = $"{IOHelper.GetExecutingDirectory()}\\Flagrum.exe \"%1\"";
-        if (Registry.GetValue("HKEY_CLASSES_ROOT\\Flagrum", string.Empty, string.Empty) == null)
+        var flagrumPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum\\Flagrum.exe \"%1\"";
+        //var flagrumPath = $"{IOHelper.GetExecutingDirectory()}\\Flagrum.exe \"%1\"";
+        if ((string)Registry.GetValue("HKEY_CURRENT_USER\\Software\\Classes\\.fmod", "", "Flagrum")! != flagrumPath)
         {
             Registry.SetValue("HKEY_CURRENT_USER\\Software\\Classes\\Flagrum", "", "FMOD");
             Registry.SetValue("HKEY_CURRENT_USER\\Software\\Classes\\Flagrum", "FriendlyTypeName", "Flagrum Mod");

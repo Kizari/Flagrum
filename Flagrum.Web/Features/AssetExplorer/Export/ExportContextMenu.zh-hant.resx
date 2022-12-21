@@ -36,4 +36,7 @@
     <data name="ExportWithDependencies" xml:space="preserve">
         <value>匯出檔及相關素材檔</value>
     </data>
+    <data name="ConvertFolder" xml:space="preserve">
+        <value>轉換資料夾</value>
+    </data>
 </root>

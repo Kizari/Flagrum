@@ -52,11 +52,11 @@
                             <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="50" />
                         </Grid.ColumnDefinitions>
-                        <Image Source="/flagrum-titlebar.png" Grid.Column="0" Margin="15, 0, 0, 0" />
+                        <Image Source="/flagrum-titlebar.png" Grid.Column="0" Margin="5, 0, 0, 3" Width="20" Height="20" />
                         <Label Grid.Column="1" Content="{x:Static resources:Localisation.WindowTitle}"
                                Foreground="#E7E5E4" FontSize="14"
                                VerticalAlignment="Center"
-                               Padding="10, 5, 15, 8" />
+                               Padding="0, 5, 15, 8" />
                         <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"
                                 Content="&#xE949;" FontFamily="Segoe MDL2 Assets" FontSize="10"
                                 BorderBrush="Transparent"

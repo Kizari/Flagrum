@@ -2,7 +2,8 @@
 @inject FlagrumDbContext Context
 @inject SettingsService Settings
 
-<div class="py-1 px-4 transition-colors hover:bg-grey-700 select-none cursor-pointer @(AssetExplorer.FileList?.CurrentNode.Path == Node.Path || AssetExplorer.ContextNode == Node ? "bg-grey-700" : "")"
+@*AssetExplorer.FileList?.CurrentNode.Path == Node.Path*@
+<div class="py-1 px-4 transition-colors hover:bg-grey-700 select-none cursor-pointer @(AssetExplorer.AddressBar?.CurrentPath == Node.Path || AssetExplorer.ContextNode == Node ? "bg-grey-700" : "")"
      @onclick="() => OnClick(Node)">
     <div class="row">
         <span class="material-icons text-sm">@Node.Icon</span>

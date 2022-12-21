@@ -6,6 +6,7 @@
 @using Flagrum.Web.Features.EarcMods.Modals
 @using System.IO
 @using System.Diagnostics
+@using System.Timers
 @inherits ModComponentBase
 
 @inject NavigationManager Navigation
@@ -32,11 +33,21 @@
                 <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
                 <Button Icon="block" Text="@Localizer["RemoveAsset"]" OnClick="OpenRemoveModal"/>
             </div>
+            <div class="box flex flex-row items-center px-4 py-2 border-b border-black">
+                <span class="material-icons text-accent1-200 mr-3">filter_alt</span>
+                <EditForm Model="this" class="flex-grow">
+                    <Textbox @bind-Value="FilterQuery" Size="Textbox.Variant.Stretch" />
+                </EditForm>
+            </div>
             <div class="flex-grow box overflow-auto">
                 @if (Mod.Earcs.Any(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
                 {
-                    foreach (var earc in Mod.Earcs.Where(e => e.Type == EarcChangeType.Change && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)))
-                    {
+                    <Virtualize Items="Mod.Earcs.Where(e => e.Type == EarcChangeType.Change
+                              && (FilterQuery == null 
+                                  || e.EarcRelativePath.Contains(FilterQuery, StringComparison.OrdinalIgnoreCase)
+                                  || e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace && f.Uri.Contains(FilterQuery, StringComparison.OrdinalIgnoreCase)))
+                              && e.Files.Any(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace)).ToList()"
+                                Context="earc">
                         <div class="row border-b border-black px-4 py-3">
                             <span class="material-icons mr-3 cursor-pointer select-none"
                                   @onclick="() => { earc.IsExpanded = !earc.IsExpanded; StateHasChanged(); }">
@@ -47,8 +58,8 @@
                                 open_in_new
                             </span>
                         </div>
-
-                        if (earc.IsExpanded)
+                        
+                        @if (earc.IsExpanded)
                         {
                             if (earc.Files.Count < 1)
                             {
@@ -56,10 +67,10 @@
                                     @Localizer["NoFileChangesSet"]
                                 </div>
                             }
-
-                            foreach (var replacement in earc.Files.Where(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace))
-                            {
-                                <div class="flex flex-row px-4 py-2 border-b border-black">
+                        
+                            <Virtualize Items="earc.Files.Where(f => f.Type is EarcFileChangeType.Remove or EarcFileChangeType.Replace
+                                && (FilterQuery == null || f.Uri.Contains(FilterQuery, StringComparison.OrdinalIgnoreCase))).ToList()" Context="replacement">
+                                <div class="flex flex-row items-center px-4 py-2 border-b border-black">
                                     <div class="text-right mx-4" style="flex: 0 0 120px;">
                                         @switch (replacement.Type)
                                         {
@@ -115,12 +126,16 @@
                                         }
                                     </div>
                                     <div class="ml-8">
+                                        @if (replacement.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace or EarcFileChangeType.AddToTextureArray)
+                                        {
+                                            <span class="material-icons text-accent1-200 cursor-pointer mr-3" @onclick="() => UpdateReplacementPath(replacement)">edit</span>
+                                        }
                                         <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
                                     </div>
                                 </div>
-                            }
+                            </Virtualize>
                         }
-                    }
+                    </Virtualize>
                 }
 
                 @if (!Mod.Earcs.Any())
@@ -144,6 +159,8 @@
 
 @code
 {
+    private readonly Timer _timer = new(300);
+    
     [Parameter]
     public string ModId { get; set; }
 
@@ -154,18 +171,45 @@
     private EarcFileChangeType ModalType { get; set; }
     private bool HasChanged { get; set; }
 
-    protected override void OnInitialized()
+    private string _filterQuery;
+    private string FilterQuery
     {
-        var modId = Convert.ToInt32(ModId);
-        Mod = Context.EarcMods
-            .Include(e => e.Earcs)
-            .ThenInclude(e => e.Files)
-            .Include(m => m.LooseFiles)
-            .Where(m => m.Id == modId)
-            .AsNoTracking()
-            .ToList()
-            .FirstOrDefault()!;
+        get => _filterQuery;
+        set
+        {
+            _timer.Stop();
+            _filterQuery = value;
+            _timer.Start();
+        }
+    }
 
+    protected override async Task OnInitializedAsync()
+    {
+        _timer.Elapsed += (_, _) =>
+        {
+            InvokeAsync(StateHasChanged);
+            _timer.Stop();
+        };
+        
+        Mod = new EarcMod();
+        IsLoading = true;
+        LoadingText = "Loading Build List";
+        StateHasChanged();
+
+        await Task.Run(() =>
+        {
+            var modId = Convert.ToInt32(ModId);
+            Mod = Context.EarcMods
+                .Include(e => e.Earcs)
+                .ThenInclude(e => e.Files)
+                .Include(m => m.LooseFiles)
+                .Where(m => m.Id == modId)
+                .AsNoTracking()
+                .ToList()
+                .FirstOrDefault()!;
+        });
+
+        IsLoading = false;
         StateHasChanged();
     }
 
@@ -230,6 +274,17 @@
 
         HasChanged = true;
         StateHasChanged();
+    }
+    
+    private async Task UpdateReplacementPath(EarcModFile file)
+    {
+        const string filter = "All Files|*.*";
+        await WpfService.OpenFileDialogAsync(filter, path =>
+        {
+            file.ReplacementFilePath = path;
+            HasChanged = true;
+            InvokeAsync(StateHasChanged);
+        });
     }
 
     private async Task Save()

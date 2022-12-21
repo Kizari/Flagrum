@@ -25,6 +25,6 @@
         <value>查看完整的更新日志</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>这次更新增加了对没有4K纹理包DLC的玩家的支持，并修正了几个错误.</value>
+        <value>重制了资源管理器，加入更多提升游戏体验的功能并修复了已知BUG。</value>
     </data>
 </root>

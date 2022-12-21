@@ -77,4 +77,7 @@
     <data name="DeselectAll" xml:space="preserve">
         <value>Deselect All</value>
     </data>
+    <data name="Convert" xml:space="preserve">
+        <value>Convert</value>
+    </data>
 </root>
