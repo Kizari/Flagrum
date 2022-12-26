@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
@@ -9,6 +10,7 @@ using Flagrum.Console.Ps4;
 using Flagrum.Console.Ps4.Mogfest;
 using Flagrum.Console.Ps4.Mogfest.Utilities;
 using Flagrum.Console.Ps4.Porting;
+using Flagrum.Console.Ps4.Scripts;
 using Flagrum.Console.Scripts.Desktop;
 using Flagrum.Console.Utilities;
 using Flagrum.Core.AI;
@@ -19,12 +21,87 @@ using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Ps4;
 using Flagrum.Core.Utilities;
+using Flagrum.Core.Vfx;
 using Flagrum.Web.Features.EarcMods.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+
+//Ps4VfxDependencyMapper.Map();
+//return;
+// GenerateDiff();
+// return;
+
+new MogfestMaterialReplacer().Run();
+return;
+//
+// var uri = MogfestUtilities.UriToFilePath("data://effects/Materials/vfx_e846e31d7bc14657e4d6de85e0a30993.gmtl");
+// File.Copy(uri, uri + ".gfxbin");
+// return;
+
+VfxScripts.GetSuitableSampleMaterial("data://effects/character/pr/pr41/pr41_020/vfx/pr41_020_gun_bullet.vfx");
+//var vfx = MogfestUtilities.GetFileByUri("data://effects/character/mf/mf16/000/vfx/mf16_000_petri_cannon_bullet.vfx");
+// var vfx = MogfestUtilities.GetFileByUri("data://effects/character/pr/pr41/pr41_020/vfx/pr41_020_gun_bullet.vfx");
+
+//FileFinder.FindStringInExml("altissia_newyear2017.pka");
+// FileFinder.FindBytesInAllFiles(Encoding.UTF8.GetBytes("uc/common/anim/pack/altissia_newyear2017.pka"));
+// return;
+
+//var pcMaterial = new MaterialReader(@"C:\Users\Kieran\Desktop\Models2\ma10\model_000\materials\luminyshader1.gmtl.gfxbin").Read();
+//var ps4Material = new MaterialReader(@"F:\FFXV\Builds\Festivals_Data\Unpacked\character\ma\ma10\model_000\materials\luminyshader1.gmtl.gfxbin").Read();
+
+// var mod = new EarcMod
+// {
+//     Name = "PS4 Shader Test",
+//     Author = "Kizari",
+//     Description = "Test",
+//     IsFavourite = true,
+//     Earcs = new List<EarcModEarc>
+//     {
+//         new()
+//         {
+//             EarcRelativePath = @"character\nh\nh00\model_010\materials\autoexternal.earc",
+//             Files = new List<EarcModFile>
+//             {
+//                 new()
+//                 {
+//                     Uri = "data://character/nh/nh00/model_010/materials/nh00_010_basic_00_mat.gmtl",
+//                     ReplacementFilePath = @"F:\FFXV\Builds\Festivals_Data\Unpacked\character\nh\nh00\model_010\materials\nh00_010_basic_00_mat.gmtl"
+//                 }
+//             },
+//             IsExpanded = false
+//         }
+//     }
+// };
+//
+// var material =
+//     new MaterialReader(
+//             @"F:\FFXV\Builds\Festivals_Data\Unpacked\character\nh\nh00\model_010\materials\nh00_010_basic_00_mat.gmtl")
+//         .Read();
+//
+// foreach (var dependency in material.Header.Dependencies)
+// {
+//     if (dependency.Path.EndsWith(".sb"))
+//     {
+//         var data = MogfestUtilities.GetFileByUri(dependency.Path);
+//         File.WriteAllBytes($@"C:\Modding\Chocomog\Testing\MaterialTest\{dependency.Path.Split('/').Last()}", data);
+//         mod.Earcs.First().Files.Add(new EarcModFile
+//         {
+//             Uri = dependency.Path,
+//             ReplacementFilePath = $@"C:\Modding\Chocomog\Testing\MaterialTest\{dependency.Path.Split('/').Last()}",
+//             Type = EarcFileChangeType.Add,
+//             Flags = ArchiveFileFlag.Compressed
+//         });
+//     }
+// }
+//
+// using var context = new FlagrumDbContext(new SettingsService());
+// context.Add(mod);
+// context.SaveChanges();
+//
+// return;
 
 // new FileFinder().FindByQuery(
 //     file => (file.Uri.EndsWith(".tif") || file.Uri.EndsWith(".btex") || file.Uri.EndsWith(".dds") || file.Uri.EndsWith(".exr") || file.Uri.EndsWith(".png")) && !file.Flags.HasFlag(ArchiveFileFlag.Reference),
@@ -71,10 +148,10 @@ using Newtonsoft.Json;
 
 // new MogfestMaterialGenerator().DumpMaterialsByMatch(new[]
 // {
-//     "data://character/pr/pr56/model_002/materials/al_pr_mog01_flag_a.gmtl",
-//     "data://environment/altissia/props/al_pr_mogcho1/materials/mogco_flag01.gmtl",
-//     "data://character/pr/pr82/model_000/materials/pr82_000_backscatter_foliage_00_mat.gmtl",
-//     "data://character/pr/pr82/model_001/materials/pr82_001_backscatter_foliage_00_mat.gmtl"
+//     "data://character/pr/pr56/model_002/materials/al_pr_mog01_flag_b.gmtl",
+//     // "data://environment/altissia/props/al_pr_mogcho1/materials/mogco_flag01.gmtl",
+//     // "data://character/pr/pr82/model_000/materials/pr82_000_backscatter_foliage_00_mat.gmtl",
+//     // "data://character/pr/pr82/model_001/materials/pr82_001_backscatter_foliage_00_mat.gmtl"
 // });
 //
 // return;
@@ -88,8 +165,8 @@ using Newtonsoft.Json;
 //     bitmap.Save($@"C:\Modding\Chocomog\Testing\BtexArray\Source\{i}.png", ImageFormat.Png);
 // }
 
-new MogfestMaterialReplacer().Revert();
-//new MogfestModBuilder().Run();
+
+new MogfestModBuilder().Run();
 //Ps4Unpacker.Run();
 //Ps4Porter.BuildModFromFolder();
 //MogfestModBuilder.AlterFragments();

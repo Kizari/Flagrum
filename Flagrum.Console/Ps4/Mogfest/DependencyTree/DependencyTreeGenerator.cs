@@ -144,6 +144,22 @@ public class DependencyTreeGenerator
                 }
             }
             
+            if (element.GetAttributeByName("type").GetTextValue() == "Black.AI.Ambient.AmbientPopulationEntryEntity")
+            {
+                var archeType = subElements.FirstOrDefault(s => s.Name == "id_");
+                if (archeType != null)
+                {
+                    var archeTypeId = archeType.GetAttributeByName("fixid").ToUInt();
+                    if (archeTypeId > 0)
+                    {
+                        if (_archetypeMap.TryGetValue(archeTypeId, out var archetypeUri))
+                        {
+                            AddUri(archetypeUri, uri, current);
+                        }
+                    }
+                }
+            }
+            
             var aiiaXmls = subElements
                 .Where(e => e.Name == "interactionFile_")
                 .Select(p => p.GetTextValue());

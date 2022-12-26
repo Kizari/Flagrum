@@ -58,7 +58,7 @@ public class MogfestMaterialReplacer
             .ToDictionary(a => a.Uri, a => true));
         
         // Load the material overrides
-        var json = File.ReadAllText($@"C:\Modding\Chocomog\Staging\material_overrides.json");
+        var json = File.ReadAllText($@"C:\Modding\Chocomog\Testing\vfx_map.json");
         var map = JsonConvert.DeserializeObject<Dictionary<string, string>>(json)!;
         
         // Get the mogfest mod
@@ -80,7 +80,7 @@ public class MogfestMaterialReplacer
         // Process each material
         foreach (var (ps4, sample) in map)
         {
-            var hash = Cryptography.HashFileUri64(ps4);
+            var hash = Cryptography.HashFileUri64(ps4.ToLower());
             var fragmentPath = $@"C:\Modding\Chocomog\Staging\Fragments\{hash}.ffg";
             var backupPath = $@"C:\Modding\Chocomog\Staging\Fragments\{hash}.backup";
 
@@ -89,7 +89,7 @@ public class MogfestMaterialReplacer
                 File.Copy(fragmentPath, backupPath);
             }
 
-            var newFragment = BuildMaterial(ps4, sample);
+            var newFragment = BuildMaterial(ps4.ToLower(), sample.ToLower());
             newFragment.Write(fragmentPath);
         }
         

@@ -38,21 +38,21 @@ public class MogfestModBuilder
         // RunWithTimer("PS4 unpacker", Ps4Unpacker.Run);
 
         // Build dependency tree
-        // RunWithTimer("dependency tree generator", new DependencyTreeGenerator().Run);
-        // RunWithTimer("subdependency tree generator", new SubdependencyTreeGenerator().Run);
-        // RunWithTimer("model dependency tree generator", new ModelDependencyTreeGenerator().Run);
-        // RunWithTimer("material dependency tree generator", new MaterialDependencyTreeGenerator().Run);
+        RunWithTimer("dependency tree generator", new DependencyTreeGenerator().Run);
+        RunWithTimer("subdependency tree generator", new SubdependencyTreeGenerator().Run);
+        RunWithTimer("model dependency tree generator", new ModelDependencyTreeGenerator().Run);
+        RunWithTimer("material dependency tree generator", new MaterialDependencyTreeGenerator().Run);
 
         // Build exml fmod fragments
-        // RunWithTimer("ebex fragment builder", new Ps4EbexFragmentGenerator().Run);
+        RunWithTimer("ebex fragment builder", new Ps4EbexFragmentGenerator().Run);
 
         // Generate material maps
-        // RunWithTimer("vertex layout map generator", new MogfestMaterialGenerator().BuildVertexLayoutMapForFinalAssets);
-        // RunWithTimer("material map generator", new MogfestMaterialGenerator().BuildMaterialMap);
-        // RunWithTimer("stubborn material map generator", new MogfestMaterialGenerator().FindStubbornMatches);
+        RunWithTimer("vertex layout map generator", new MogfestMaterialGenerator().BuildVertexLayoutMapForFinalAssets);
+        RunWithTimer("material map generator", new MogfestMaterialGenerator().BuildMaterialMap);
+        RunWithTimer("stubborn material map generator", new MogfestMaterialGenerator().FindStubbornMatches);
 
         // Build fmod fragments for all non-exml assets
-        // RunWithTimer("asset fragment builder", new Ps4AssetFragmentGenerator().Run);
+        RunWithTimer("asset fragment builder", new Ps4AssetFragmentGenerator().Run);
 
         // Regenerate the build list for the Flagrum mod (need to create a mod first and add the ID to these methods)
         RunWithTimer("earc builder", new MogfestEarcBuilder().Run);

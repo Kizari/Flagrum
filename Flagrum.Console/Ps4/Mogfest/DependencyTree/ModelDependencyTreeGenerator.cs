@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Flagrum.Console.Ps4.Mogfest.Utilities;
+using Flagrum.Core.AI;
 using Flagrum.Core.Animation;
 using Flagrum.Core.Gfxbin.Data;
 using Flagrum.Core.Gfxbin.Gmdl.Components;
@@ -38,6 +39,20 @@ public class ModelDependencyTreeGenerator
 
             var uri = Vlink.GetVfxUriFromData(data);
             AddSubdependency(uri, dependency);
+        }
+
+        foreach (var dependency in context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".aiia.xml")))
+        {
+            var data = MogfestUtilities.GetFileByUri(dependency.Uri);
+            if (data.Length == 0)
+            {
+                continue;
+            }
+
+            foreach (var pkaUri in AiiaRef.GetDependencies(data).Where(d => d.EndsWith(".pka")))
+            {
+                AddSubdependency(pkaUri, dependency);
+            }
         }
 
         foreach (var dependency in context.FestivalSubdependencies.Where(d => d.Uri.EndsWith(".anmgph")))
