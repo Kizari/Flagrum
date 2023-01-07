@@ -1,59 +1,119 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using Flagrum.Web.Persistence.Entities.ModManager
 @using System.IO
-@using Flagrum.Web.Features.EarcMods.Data
 @using Flagrum.Core.Utilities
+@using Flagrum.Web.Features.EarcMods.Data
 @inherits ModComponentBase
 
 @inject NavigationManager Navigation
 @inject IWpfService WpfService
 @inject ILogger<EarcModCard> Logger
 
-<div class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform"
-     style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
-     @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Id}"))">
-    <div class="relative rounded-t" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png?@Timestamp')">
-        <span style="position:absolute;top:5px;left:5px;font-size: 2rem;" class="material-icons cursor-pointer @(Mod.IsFavourite ? "text-accent1-200" : "")"
-              @onclick="OnFavourite"
-              @onclick:stopPropagation="true">
-            @(Mod.IsFavourite ? "star" : "star_border")
-        </span>
-        <Checkbox CssStyle="position:absolute;top:5px;right:5px;"
-                  IsChecked="@Mod.IsActive"
-                  OnChange="ToggleMod"/>
-        <div class="absolute bottom-2 left-2 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
-             @onclick="Export"
-             @onclick:stopPropagation="true"
-             style="width: 38px; height: 38px; padding: 5px;">
-            <span class="material-icons select-none">file_download</span>
-        </div>
-        @if (!string.IsNullOrWhiteSpace(Mod.Readme) && Mod.Readme.Trim() != "<p><br></p>")
-        {
-            <div class="absolute bottom-2 right-2 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
-                 @onclick="ShowReadme"
-                 @onclick:stopPropagation="true"
-                 style="width: 38px; height: 38px; padding: 5px;">
-                <span class="material-icons select-none">description</span>
+<div class="flip-card mx-4 mt-8" style="background-color: transparent; width: 326px; height: 372px; perspective: 1000px;">
+    <div class="flip-card-inner" style="position: relative; width: 100%; height: 100%; transition: transform 0.4s; transform-style: preserve-3d; @(IsBackShowing ? "transform: rotateY(-180deg);" : "")">
+        <div class="bg-grey-800 rounded shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform flex flex-col"
+             style="width: 100%; height: 100%; position: absolute; backface-visibility: hidden;"
+             @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Id}"))">
+            <div class="relative rounded-t flex-shrink-0" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('EarcMods/@(Mod.Id).png?@Timestamp')">
+                @* <div class="absolute top-1.5 left-1.5 border-1 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none" *@
+                @*      @onclick="FlipCard" *@
+                @*      @onclick:stopPropagation="true" *@
+                @*      style="width: 24px; height: 24px; padding-left: 4px;"> *@
+                @*     <span class="material-icons select-none text-sm">360</span> *@
+                @* </div> *@
+                @* <span style="position:absolute;top:5px;left:5px;font-size: 1.5rem;-webkit-text-stroke-width:1px;-webkit-text-stroke-color:black;@(Mod.IsFavourite ? "" : "transform:rotate(90deg);")"  *@
+                @*       class="material-icons cursor-pointer @(Mod.IsFavourite ? "text-accent1-200" : "text-grey-500")" *@
+                @*       @onclick="OnFavourite" *@
+                @*       @onclick:stopPropagation="true"> *@
+                @*     push_pin *@
+                @* </span> *@
+                <Checkbox CssStyle="position:absolute;top:5px;right:5px;"
+                          IsChecked="@Mod.IsActive"
+                          OnChange="ToggleMod"/>
+                @if (!string.IsNullOrWhiteSpace(Mod.Readme) && Mod.Readme.Trim() != "<p><br></p>")
+                {
+                    <div class="absolute bottom-2 right-2 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
+                         @onclick="ShowReadme"
+                         @onclick:stopPropagation="true"
+                         style="width: 38px; height: 38px; padding: 5px;">
+                        <span class="material-icons select-none">description</span>
+                    </div>
+                }
+                <ContextMenuTrigger MenuId="earcContextMenu"
+                                    Data="this"
+                                    MouseButtonTrigger="MouseButtonTrigger.Left">
+                    <div class="absolute bottom-2 left-2 border-2 border-grey-500 text-grey-300 bg-dark-600 opacity-75 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
+                         @onclick:stopPropagation="true"
+                         style="width: 38px; height: 38px; padding: 5px;">
+                        <span class="material-icons select-none">more_horiz</span>
+                    </div>
+                </ContextMenuTrigger>
             </div>
-        }
-    </div>
-    <div class="p-4">
-        <div class="row mb-2">
-            <strong class="block text-grey-200 flex-grow font-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">@Mod.Name</strong>
-            <span class="material-icons ml-3 text-accent1-200 cursor-pointer hover:text-white"
-                  style="font-size: 0.95rem;"
-                  @onclick="() => Parent.ShowModCardModal(Mod.Id)"
-                  @onclick:stopPropagation="true">
-                edit
-            </span>
+            <div class="p-4 flex-grow relative">
+                <div class="row mb-2">
+                    <strong class="block text-grey-200 flex-grow font-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">@Mod.Name</strong>
+                    @* <span class="material-icons ml-3 text-accent1-200 cursor-pointer hover:text-white" *@
+                    @*       style="font-size: 0.95rem;" *@
+                    @*       @onclick="() => Parent.ShowModCardModal(Mod.Id)" *@
+                    @*       @onclick:stopPropagation="true"> *@
+                    @*     edit *@
+                    @* </span> *@
+                    @* <span class="material-icons ml-3 text-accent1-200 cursor-pointer hover:text-white" *@
+                    @*       style="font-size: 1.2rem;" *@
+                    @*       @onclick="FlipCard" *@
+                    @*       @onclick:stopPropagation="true"> *@
+                    @*     cached *@
+                    @* </span> *@
+                    @if (Mod.IsFavourite)
+                    {
+                        <span class="material-icons" style="font-size: 0.95rem; transform: rotate(45deg);">push_pin</span>
+                    }
+                </div>
+                <div class="block text-grey-200 flex-grow mb-2 flex flex-row items-center">
+                    <span class="material-icons text-grey-200 mr-2">person</span>
+                    <span class="flex-grow">@Mod.Author</span>
+                </div>
+                <div class="flex flex-row">
+                    <span class="text-sm">
+                        @(Mod.Description.Length > 171 ? Mod.Description[..170] + "..." : Mod.Description)
+                    </span>
+                </div>
+            </div>
+            <span class="material-icons pointer text-accent1-200 absolute bottom-3 right-3 hover:text-white" @onclick="FlipCard" @onclick:stopPropagation="true">360</span>
         </div>
-        <div class="block text-grey-200 flex-grow mb-2 flex flex-row items-center">
-            <span class="material-icons text-grey-200 mr-2">person</span>
-            <span class="flex-grow">@Mod.Author</span>
+
+        <div class="bg-grey-800 rounded shadow-lg cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform flex flex-col relative"
+             style="width: 100%; height: 100%; position: absolute; backface-visibility: hidden; transform: rotateY(180deg);">
+            <div class="flex flex-col p-3 bg-grey-700 text-center relative rounded-t">
+                <small class="font-display text-white">@Mod.Name Add-ons</small>
+            </div>
+            <div class="flex-grow overflow-y-auto scrollbar-light py-1.5">
+                @if (Mod.Addons.Count > 0)
+                {
+                    foreach (var addon in Mod.Addons)
+                    {
+                        <div class="row px-4 py-1.5">
+                            <div class="rounded-full mr-4" style="width: 50px; height: 50px; background-image: url('/EarcMods/@(addon.Id).png'); background-position: center; background-size: cover; background-repeat: no-repeat;"></div>
+                            <h6 class="text-grey-200 flex-grow">@addon.Name</h6>
+                            <Checkbox IsChecked="true"/>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center px-4 py-3">
+                        <strong>This mod does not have any add-ons installed.</strong>
+                    </div>
+                }
+            </div>
+            <div class="row px-4 my-3">
+                <div class="rounded-full bg-dark border-2 border-grey-600 mr-4" style="width: 50px; height: 50px; padding-left: 7px; padding-top: 7px;">
+                    <span class="material-icons text-grey-600" style="font-size: 2rem;">add</span>
+                </div>
+                <h6 class="text-grey-200 flex-grow">Create Add-on</h6>
+            </div>
+            <span class="material-icons pointer text-accent1-200 absolute bottom-3 right-3 hover:text-white" @onclick="FlipCard" @onclick:stopPropagation="true">360</span>
         </div>
-        <span class="text-sm">
-            @(Mod.Description.Length > 171 ? Mod.Description[..170] + "..." : Mod.Description)
-        </span>
     </div>
 </div>
 
@@ -63,6 +123,7 @@
 {
     private AlertModal Alert { get; set; }
     private long Timestamp { get; set; }
+    private bool IsBackShowing { get; set; }
 
     [CascadingParameter]
     public Index Parent { get; set; }
@@ -85,7 +146,7 @@
         }
     }
 
-    private void OnFavourite()
+    public void OnFavourite()
     {
         var mod = Context.EarcMods.FirstOrDefault(e => e.Id == Mod.Id)!;
         mod.IsFavourite = !mod.IsFavourite;
@@ -103,7 +164,7 @@
             Alert.Open("Error", "FFXV is Running", "Flagrum cannot enable or disable mods while the game is running. Please save and close down FFXV, then try again.", null);
             return;
         }
-        
+
         if (newState)
         {
             await Enable();
@@ -157,7 +218,7 @@
         await InvokeAsync(() => Parent.SetLoading(false));
     }
 
-    private async Task Export()
+    public async Task Export()
     {
         var earcMod = Context.EarcMods
             .Include(m => m.Earcs)
@@ -218,5 +279,15 @@
     private void ShowReadme()
     {
         Parent.ShowReadme(Mod.Readme);
+    }
+
+    private void FlipCard()
+    {
+        Mod.Addons = Context.EarcMods
+            .Where(m => m.PrerequisiteId == Mod.Id)
+            .AsNoTracking()
+            .ToList();
+
+        IsBackShowing = !IsBackShowing;
     }
 }

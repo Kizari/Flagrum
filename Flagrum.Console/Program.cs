@@ -1,14 +1,6 @@
-﻿using System.IO;
-using System.Linq;
-using System.Text;
-using Flagrum.Console.Scripts.Archive;
-using Flagrum.Console.Scripts.Terrain;
-using Flagrum.Console.Utilities;
-using Flagrum.Core.Ebex.Xmb2;
-using Flagrum.Core.Gfxbin.Btex;
-using Flagrum.Web.Persistence;
-using Flagrum.Web.Services;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Flagrum.Console.Scripts.Terrain;
+
+HeightMapScripts.BuildMinimap();
 
 //IndexingScripts.DumpUniqueRelativeExtensions();
 

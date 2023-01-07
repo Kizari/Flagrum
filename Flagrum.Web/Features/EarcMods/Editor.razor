@@ -198,7 +198,7 @@
 
         await Task.Run(() =>
         {
-            var modId = Convert.ToInt32(ModId);
+            var modId = ModId;
             Mod = Context.EarcMods
                 .Include(e => e.Earcs)
                 .ThenInclude(e => e.Files)

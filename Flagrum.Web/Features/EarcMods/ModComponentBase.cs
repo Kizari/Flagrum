@@ -20,7 +20,7 @@ public class ModComponentBase : ComponentBase
 
     public PromptModal Prompt { get; set; }
 
-    protected Task CheckConflicts(int modId, Func<Task> onYes, Func<Task> onNo = null)
+    protected Task CheckConflicts(string modId, Func<Task> onYes, Func<Task> onNo = null)
     {
         var mod = Context.EarcMods
             .Include(m => m.Earcs)

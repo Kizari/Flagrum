@@ -4,7 +4,7 @@ public class EarcModLooseFile
 {
     public int Id { get; set; }
 
-    public int EarcModId { get; set; }
+    public string EarcModId { get; set; }
     public EarcMod EarcMod { get; set; }
 
     public string RelativePath { get; set; }

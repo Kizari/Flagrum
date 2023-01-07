@@ -94,8 +94,7 @@ public partial class MainWindow : INotifyPropertyChanged
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, ConsoleLoggerProvider>());
             LoggerProviderOptions.RegisterProviderOptions<ConsoleLoggerConfiguration, ConsoleLoggerProvider>(
                 builder.Services);
-            Action<ConsoleLoggerConfiguration> configure = c => { };
-            builder.Services.Configure(configure);
+            builder.Services.Configure((ConsoleLoggerConfiguration _) => {});
         });
 
         services.AddScoped<IWpfService, WpfService>(_ => new WpfService(this));

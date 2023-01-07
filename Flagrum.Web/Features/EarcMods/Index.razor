@@ -48,14 +48,13 @@
                 <DropdownButtonItem Text="@Localizer["CategoryOther"]" OnClick="() => { SetCategory((int)ModCategory.Other); return Task.CompletedTask; }"/>
             </DropdownButton>
             <div class="flex-grow"></div>
-            <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(0))"/>
+            <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(null))"/>
             <Button Icon="upload" Text=@Localizer["InstallFromZip"] OnClickAsync="Install"/>
         </div>
     }
     <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
         @{
-            using var context = new FlagrumDbContext(new SettingsService());
-            var items = context.EarcMods
+            var items = Context.EarcMods
                 .Where(Filter)
                 .AsNoTracking()
                 .OrderByDescending(m => m.IsFavourite)
@@ -151,3 +150,33 @@
     <ModCardModal @ref="ModCardModal"/>
 
 </CascadingValue>
+
+<ContextMenu Id="earcContextMenu"
+             OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
+             OverrideDefaultListCssClass="p-0"
+             @ref="ContextMenu">
+    <Item OnClick="@(() => ShowModCardModal(((EarcModCard)ContextMenu.Data).Mod.Id))" OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+        <div class="row">
+            <span class="material-icons mr-3" style="font-size: 0.9rem">edit</span>
+            <span>Edit Mod Card</span>
+        </div>
+    </Item>
+    <Item OnClick="@(() => ((EarcModCard)ContextMenu.Data).OnFavourite())" OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+        <div class="row">
+            <span class="material-icons mr-3" style="font-size: 0.9rem">push_pin</span>
+            <span>@(((EarcModCard)ContextMenu.Data).Mod.IsFavourite ? "Unpin Mod" : "Pin Mod")</span>
+        </div>
+    </Item>
+    <Item OnClick="@(() => ((EarcModCard)ContextMenu.Data).Export())" OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+        <div class="row">
+            <span class="material-icons mr-3" style="font-size: 0.9rem">download</span>
+            <span>Export Mod</span>
+        </div>
+    </Item>
+    @* <Item OnClick="@(() => ((EarcModCard)ContextMenu.Data).Export())" OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors"> *@
+    @*     <div class="row"> *@
+    @*         <span class="material-icons mr-3" style="font-size: 0.9rem">save</span> *@
+    @*         <span>Save as Project</span> *@
+    @*     </div> *@
+    @* </Item> *@
+</ContextMenu>
