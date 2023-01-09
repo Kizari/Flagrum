@@ -8,6 +8,12 @@
 <p align="center">Join us over at the <a href="https://discord.gg/7cNNwwJKsJ">EXINERIS Discord</a> for discussion and collaboration!</p>
 
 ---
+[![Release](https://img.shields.io/github/release/Kizari/Flagrum.svg?style=flat&maxAge=3600)](https://github.com/Kizari/Flagrum/releases)
+[![Downloads](https://img.shields.io/github/downloads/Kizari/Flagrum/setup.exe.svg?style=flat&logo=github)](https://github.com/Kizari/Flagrum/releases/latest)
+[![Support Me](https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white)](#support-the-continued-development-of-ffxv-tools)
+[![Chat on Discord](https://img.shields.io/badge/discord-EXINERIS-8D96F6.svg?style=flat&logo=discord&logoColor=white)](https://discord.gg/7cNNwwJKsJ)
+[![Follow on Twitter](https://img.shields.io/badge/twitter-%40KizariXV-blue.svg?style=flat&logo=twitter&logoColor=white)](https://twitter.com/KizariXV)
+[![Reddit](https://img.shields.io/badge/reddit-%2Fr%2FFlagrum-orange?logo=reddit&logoColor=white)](https://www.reddit.com/r/Flagrum/)  
 &nbsp;
 
 <h1 align="center">Asset Management</h1>
