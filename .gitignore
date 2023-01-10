@@ -358,3 +358,6 @@ Steamworks.NET.dll
 
 # Item ID Fixer project which is of little importance
 ItemIdFixer/
+
+# Flagrum.Unity as these files have no need to be persisted yet
+Flagrum.Unity/

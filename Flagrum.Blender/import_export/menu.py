@@ -13,6 +13,7 @@ from .generate_armature import generate_armature
 from .generate_mesh import generate_mesh
 from .generate_terrain import generate_terrain
 from .import_context import ImportContext
+from .import_lik import import_lik_from_file
 from .interop import Interop
 from .pack_mesh import pack_mesh
 from .read_armature_data import import_armature_data
@@ -47,6 +48,22 @@ class ImportOperator(Operator, ImportHelper):
                           bone_table=mesh_data.BoneTable.__dict__,
                           parts=mesh_data.Parts.__dict__)
 
+        return {'FINISHED'}
+
+
+class ImportLikOperator(Operator, ImportHelper):
+    """Imports data from a Luminous IK file"""
+    bl_idname = "flagrum.lik_import"
+    bl_label = "Import Luminous IK (.lik)"
+    filename_ext = ".lik"
+
+    filter_glob: StringProperty(
+        default="*.lik",
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context):
+        import_lik_from_file(self.filepath)
         return {'FINISHED'}
 
 
@@ -267,3 +284,4 @@ class FlagrumImportMenu(Menu):
         layout.operator(ImportOperator.bl_idname)
         layout.operator(ImportEnvironmentOperator.bl_idname)
         layout.operator(ImportTerrainOperator.bl_idname)
+        layout.operator(ImportLikOperator.bl_idname)

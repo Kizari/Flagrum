@@ -6,7 +6,7 @@ from bpy.utils import register_class, unregister_class
 from . import addon_updater_ops
 from .globals import FlagrumGlobals
 from .import_export.menu import ImportOperator, ExportOperator, ImportEnvironmentOperator, FlagrumImportMenu, \
-    ImportTerrainOperator
+    ImportTerrainOperator, ImportLikOperator
 from .panel.cleanup_panel import CleanupPanel, DeleteUnusedBonesOperator, DeleteUnusedVGroupsOperator, \
     NormaliseWeightsOperator
 from .panel.material_data import MaterialSettings, FlagrumMaterialProperty, FlagrumMaterialPropertyCollection
@@ -78,6 +78,7 @@ classes = (
     ExportOperator,
     ImportEnvironmentOperator,
     ImportTerrainOperator,
+    ImportLikOperator,
     FlagrumImportMenu,
     FlagrumMaterialProperty,
     FlagrumMaterialPropertyCollection,

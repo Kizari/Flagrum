@@ -1,0 +1,85 @@
+syntax = "proto2";
+
+enum IKJointType {
+    JOINT_TYPE_BALL_AND_SOCKET = 0;
+    JOINT_TYPE_X_AXIS_ROTATION = 1;
+    JOINT_TYPE_Y_AXIS_ROTATION = 2;
+    JOINT_TYPE_Z_AXIS_ROTATION = 3;
+    JOINT_TYPE_MINUS_Z_AXIS_ROTATION = 4;
+}
+
+enum IKPartType {
+    RIGHT_LEG_ID = 0;
+    LEFT_LEG_ID = 1;
+    RIGHT_ARM_ID = 2;
+    LEFT_ARM_ID = 3;
+    SPINE_ID = 4;
+    NECK_ID = 5;
+    HEAD_ID = 6;
+    ROOT_ID = 7;
+    TAIL_ID = 8;
+    RIGHT_WING_ID = 9;
+    LEFT_WING_ID = 10;
+    RIGHT_FORELEG_ID = 11;
+    LEFT_FORELEG_ID = 12;
+    RIGHT_HIND_LEG_ID = 13;
+    LEFT_HIND_LEG_ID = 14;
+    EYE_ID = 15;
+    OTHER_LIMB_ID = 101;
+}
+
+message IKRig {
+    repeated IKJoint joints = 1;
+    repeated IKPart parts = 2;
+    repeated IKDepthLayer jointLayers = 3;
+    optional uint32 rootJoint = 4;
+    repeated IKLookingElement lookingElements = 5;
+}
+
+message IKJoint {
+    optional IKJointType type = 1;
+    optional int32 modelBoneId = 2;
+    optional string modelBoneName = 3;
+    repeated int32 nonIKChildrenIds = 4;
+    optional int32 parent = 5;
+    repeated uint32 children = 6;
+    repeated string nonIKChildren = 7;
+    optional float unknown = 8;
+    optional IKFrame bindPose = 9;
+}
+
+message IKFrame {
+    optional IKVector3 position = 1;
+    optional IKQuaternion rotation = 2;
+}
+
+message IKVector3 {
+    optional float x = 1;
+    optional float y = 2;
+    optional float z = 3;
+}
+
+message IKQuaternion {
+    optional float x = 1;
+    optional float y = 2;
+    optional float z = 3;
+    optional float w = 4;
+}
+
+message IKPart {
+    optional IKPartType type = 1;
+}
+
+message IKDepthLayer {
+    repeated uint32 joints = 1;
+}
+
+message IKLookingElement {
+    optional IKJointFrame head = 1;
+    repeated IKJointFrame eyes = 2;
+}
+
+message IKJointFrame {
+    optional IKFrame frame = 1;
+    optional uint32 joint = 2;
+}

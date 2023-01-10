@@ -81,6 +81,25 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ClCompile Include="google\protobuf\internal\api_implementation.cc" />
+      <ClCompile Include="google\protobuf\internal\python_protobuf.cc" />
+      <ClCompile Include="google\protobuf\pyext\descriptor.cc" />
+      <ClCompile Include="google\protobuf\pyext\descriptor_containers.cc" />
+      <ClCompile Include="google\protobuf\pyext\descriptor_database.cc" />
+      <ClCompile Include="google\protobuf\pyext\descriptor_pool.cc" />
+      <ClCompile Include="google\protobuf\pyext\extension_dict.cc" />
+      <ClCompile Include="google\protobuf\pyext\field.cc" />
+      <ClCompile Include="google\protobuf\pyext\map_container.cc" />
+      <ClCompile Include="google\protobuf\pyext\message.cc" />
+      <ClCompile Include="google\protobuf\pyext\message_factory.cc" />
+      <ClCompile Include="google\protobuf\pyext\message_module.cc" />
+      <ClCompile Include="google\protobuf\pyext\repeated_composite_container.cc" />
+      <ClCompile Include="google\protobuf\pyext\repeated_scalar_container.cc" />
+      <ClCompile Include="google\protobuf\pyext\unknown_fields.cc" />
+      <ClCompile Include="google\protobuf\pyext\unknown_field_set.cc" />
+    </ItemGroup>
+
     <PropertyGroup>
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
         <PythonScriptsDir>$([System.IO.Path]::GetDirectoryName($(PublishDir)))</PythonScriptsDir>
