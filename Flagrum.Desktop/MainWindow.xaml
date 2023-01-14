@@ -52,7 +52,8 @@
                             <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="50" />
                         </Grid.ColumnDefinitions>
-                        <Image Source="/flagrum-titlebar.png" Grid.Column="0" Margin="5, 0, 0, 3" Width="20" Height="20" />
+                        <Image Source="/flagrum-titlebar.png" Grid.Column="0" Margin="5, 0, 0, 3" Width="20"
+                               Height="20" />
                         <Label Grid.Column="1" Content="{x:Static resources:Localisation.WindowTitle}"
                                Foreground="#E7E5E4" FontSize="14"
                                VerticalAlignment="Center"
@@ -184,12 +185,13 @@
                                                 ParentWindow="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                                 IsOpen="{Binding IsViewportVisible}"
                                                 AllowsTransparency="True"
-                                                Placement="Relative"
+                                                Placement="Custom"
                                                 HorizontalOffset="{Binding ViewportLeft}"
                                                 VerticalOffset="{Binding ViewportTop}"
                                                 Width="{Binding ViewportWidth}"
                                                 Height="{Binding ViewportHeight}"
-                                                Initialized="AirspacePopup_OnInitialized">
+                                                Initialized="AirspacePopup_OnInitialized"
+                                                CustomPopupPlacementCallback="AirspacePopup_OnPopupPlaced">
                         <!-- <architecture:AirspacePopup Grid.Row="1"  -->
                         <!--     PlacementTarget="{Binding ElementName=MainContentPresenter}" -->
                         <!--                             FollowPlacementTarget="True" -->

@@ -9,7 +9,7 @@ class ToggleEmissionOperator(Operator):
 
     def execute(self, context):
         for material in bpy.data.materials:
-            if material.node_tree is not None:
+            if material.node_tree is not None and "Principled BSDF" in material.node_tree.nodes:
                 bsdf = material.node_tree.nodes["Principled BSDF"]
                 emission_link = None
                 for link in material.node_tree.links:

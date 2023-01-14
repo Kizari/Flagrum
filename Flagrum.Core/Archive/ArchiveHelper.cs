@@ -3,6 +3,33 @@ using Flagrum.Core.Gfxbin.Gmdl;
 
 namespace Flagrum.Core.Archive;
 
+public static class UriHelper
+{
+    private static readonly RelativeExtensionMap _relativeExtensionMap = new();
+
+    public static string GetTrueExtensionFromFileName(string fileName)
+    {
+        var tokens = fileName.Split('.');
+        var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
+        return _relativeExtensionMap[extension];
+    }
+
+    public static string ReplaceFileNameExtensionWithTrueExtension(string fileName)
+    {
+        var tokens = fileName.Split('.');
+        var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
+        var trueExtension = _relativeExtensionMap[extension];
+        return fileName.Replace(extension, trueExtension);
+    }
+
+    public static string RemoveExtensionFromFileName(string fileName)
+    {
+        var tokens = fileName.Split('.');
+        var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
+        return fileName.Replace("." + extension, "");
+    }
+}
+
 public class UriExtensionMap
 {
     private readonly Dictionary<string, string[]> _map = new()

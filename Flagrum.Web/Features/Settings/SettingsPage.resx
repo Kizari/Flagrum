@@ -69,4 +69,13 @@
     <data name="Chinese (Traditional)" xml:space="preserve">
         <value>Chinese (Traditional)</value>
     </data>
+    <data name="AssetExplorerSettings" xml:space="preserve">
+        <value>Asset Explorer Settings</value>
+    </data>
+    <data name="SelectAllAddressBar" xml:space="preserve">
+        <value>Select all text when address bar is clicked</value>
+    </data>
+    <data name="RegenerateFileIndex" xml:space="preserve">
+        <value>Regenerate File Index</value>
+    </data>
 </root>

@@ -69,4 +69,13 @@
     <data name="Chinese (Traditional)" xml:space="preserve">
         <value>繁体字中国語</value>
     </data>
+    <data name="AssetExplorerSettings" xml:space="preserve">
+        <value>アセットエクスプローラーの設定</value>
+    </data>
+    <data name="SelectAllAddressBar" xml:space="preserve">
+        <value>アドレスバーがクリックされたときに、すべてのテキストを選択する</value>
+    </data>
+    <data name="RegenerateFileIndex" xml:space="preserve">
+        <value>ファイルインデックスの再生成</value>
+    </data>
 </root>

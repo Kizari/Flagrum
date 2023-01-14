@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using Flagrum.Desktop.Architecture;
@@ -19,6 +20,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Web.WebView2.Core;
 using Squirrel;
+using Point = System.Windows.Point;
+using Size = System.Windows.Size;
 
 namespace Flagrum.Desktop;
 
@@ -174,5 +177,24 @@ public partial class MainWindow : INotifyPropertyChanged
     private void AirspacePopup_OnInitialized(object? sender, EventArgs e)
     {
         ((MainViewModel)DataContext).AirspacePopup = (AirspacePopup)sender;
+    }
+
+    private CustomPopupPlacement[] AirspacePopup_OnPopupPlaced(Size popupSize, Size targetSize, Point point)
+    {
+        // point = PointToScreen(point);
+        // var window = PointToScreen(new Point(Left, Top));
+        //
+        // point.X = window.X + point.X;
+        // point.Y = window.Y + point.Y;
+
+        point = new Point(0, 0);
+        //point = PointFromScreen(point);
+
+        //this.Poin
+
+        return new[]
+        {
+            new CustomPopupPlacement(point, PopupPrimaryAxis.Horizontal)
+        };
     }
 }

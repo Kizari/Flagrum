@@ -52,12 +52,12 @@
         {
             <div class="box p-6 mb-6">
                 <div class="row mb-6">
-                    <h4 class="text-grey-300 flex-grow">Asset Explorer Settings</h4>
-                    <Button Icon="cached" Text="Regenerate File Index" OnClick="() => RegenerateModal?.Open()" />
+                    <h4 class="text-grey-300 flex-grow">@Localizer["AssetExplorerSettings"]</h4>
+                    <Button Icon="cached" Text="@Localizer["RegenerateFileIndex"]" OnClick="() => RegenerateModal?.Open()" />
                 </div>
                 <div class="row">
                     <Checkbox IsChecked="AddressBarToggle" OnChange="t => ToggleAddressBar(t)" />
-                    <span class="ml-3">Select all text when address bar is clicked</span>
+                    <span class="ml-3">@Localizer["SelectAllAddressBar"]</span>
                 </div>
             </div>
             

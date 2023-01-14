@@ -18,7 +18,7 @@ def generate_material(context: ImportContext, mesh_data: MeshData) -> Material:
 
     needs_scaling = mesh_data.BlenderMaterial.UVScale is not None and (
             mesh_data.BlenderMaterial.UVScale[0] != 1.0 or (
-                len(mesh_data.BlenderMaterial.UVScale) > 1 and mesh_data.BlenderMaterial.UVScale[1] != 1.0))
+            len(mesh_data.BlenderMaterial.UVScale) > 1 and mesh_data.BlenderMaterial.UVScale[1] != 1.0))
 
     if needs_scaling:
         map1 = material.node_tree.nodes.new('ShaderNodeUVMap')
@@ -191,7 +191,8 @@ def generate_material(context: ImportContext, mesh_data: MeshData) -> Material:
             map1.uv_map = "map1"
             uv_scale = material.node_tree.nodes.new('ShaderNodeMapping')
 
-            if mesh_data.BlenderMaterial.DetailUVScale is not None:
+            if hasattr(mesh_data.BlenderMaterial,
+                       "DetailUVScale") and mesh_data.BlenderMaterial.DetailUVScale is not None:
                 uv_scale.inputs[3].default_value[0] = mesh_data.BlenderMaterial.DetailUVScale[0]
                 uv_scale.inputs[3].default_value[1] = mesh_data.BlenderMaterial.DetailUVScale[
                     len(mesh_data.BlenderMaterial.DetailUVScale) - 1]

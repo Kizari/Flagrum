@@ -5,27 +5,6 @@ namespace Flagrum.Web.Features.AssetExplorer.Data;
 
 public static class AssetExplorerItem
 {
-    public static string GetDisplayName(string name, ExplorerItemType type)
-    {
-        if (type == ExplorerItemType.Directory || name.StartsWith("CRAF"))
-        {
-            return name;
-        }
-
-        var extension = name[name.LastIndexOf('.')..].ToLower();
-        var trueExtension = extension switch
-        {
-            ".tif" or ".tga" or ".png" or ".dds" or ".exr" => ".btex",
-            ".gmtl" => ".gmtl.gfxbin",
-            ".gmdl" => ".gmdl.gfxbin",
-            ".prefab" or ".ebex" => ".exml",
-            ".autoext" => ".txt",
-            _ => extension
-        };
-
-        return name[..name.LastIndexOf('.')] + trueExtension;
-    }
-
     public static ExplorerItemType GetType(string uri)
     {
         var fileName = uri.Split('/').Last();

@@ -60,4 +60,13 @@
     <data name="Chinese (Traditional)" xml:space="preserve">
         <value>繁体中文</value>
     </data>
+    <data name="AssetExplorerSettings" xml:space="preserve">
+        <value>资产资源管理器设置</value>
+    </data>
+    <data name="SelectAllAddressBar" xml:space="preserve">
+        <value>点击地址栏时选择所有文本</value>
+    </data>
+    <data name="RegenerateFileIndex" xml:space="preserve">
+        <value>重建游戏文件索引</value>
+    </data>
 </root>

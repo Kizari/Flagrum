@@ -243,23 +243,16 @@
             void Traverse(IAssetExplorerNode node, Action<IAssetExplorerNode> visitor)
             {
                 visitor(node);
-
                 Parallel.ForEach(((AssetExplorerNode)node).ChildNodes, child => { Traverse(child, visitor); });
             }
 
-            var map = new RelativeExtensionMap();
             Traverse(ContextNode, nodeBase =>
             {
                 var node = (AssetExplorerNode)nodeBase;
 
                 if (!node.ChildNodes.Any())
                 {
-    // Convert to true extension
-                    var tokens = node.Name.Split('.');
-                    var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
-                    extension = map[extension];
-
-                    if (ExportContext.ExportFormats[extension])
+                    if (ExportContext.ExportFormats[UriHelper.GetTrueExtensionFromFileName(node.Name)])
                     {
                         var uri = node.Path;
                         var location = paths[Cryptography.HashFileUri64(uri)];
@@ -285,15 +278,18 @@
             {
                 if (!node.HasChildren)
                 {
-                    var location = paths[Cryptography.HashFileUri64(node.Path)];
-                    if (!files.TryGetValue(location, out var uris))
+                    if (ExportContext.ExportFormats[UriHelper.GetTrueExtensionFromFileName(node.Name)])
                     {
-                        uris = new ConcurrentBag<string> {node.Path};
-                        files.TryAdd(location, uris);
-                    }
-                    else
-                    {
-                        uris.Add(node.Path);
+                        var location = paths[Cryptography.HashFileUri64(node.Path)];
+                        if (!files.TryGetValue(location, out var uris))
+                        {
+                            uris = new ConcurrentBag<string> {node.Path};
+                            files.TryAdd(location, uris);
+                        }
+                        else
+                        {
+                            uris.Add(node.Path);
+                        }
                     }
                 }
             }
@@ -348,44 +344,55 @@
                         }
                     }
 
-                    var absolutePath = currentDirectory + "\\" + AssetExplorerItem.GetDisplayName(split.Last(), type);
+                    var absolutePath = currentDirectory + "\\" + UriHelper.ReplaceFileNameExtensionWithTrueExtension(split.Last());
 
-                    if (type == ExplorerItemType.Texture)
+                    switch (type)
                     {
-                        foreach (var (extension, _) in ExportContext.TextureFormats.Where(f => f.Value))
+                        case ExplorerItemType.Texture:
                         {
-                            var finalAbsolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + extension.ToLower();
-                            texturesToProcess.Add(() =>
+                            foreach (var (extension, _) in ExportContext.TextureFormats.Where(f => f.Value))
                             {
-                                var textureData = extension switch
+                                var finalAbsolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + extension.ToLower();
+                                texturesToProcess.Add(() =>
                                 {
-                                    "png" => converter.BtexToPng(data),
-                                    "tga" => converter.BtexToTga(data),
-                                    "dds" => converter.BtexToDds(data),
+                                    var textureData = extension switch
+                                    {
+                                        "png" => converter.BtexToPng(data),
+                                        "tga" => converter.BtexToTga(data),
+                                        "dds" => converter.BtexToDds(data),
+                                        _ => data
+                                        };
+
+                                    File.WriteAllBytes(finalAbsolutePath, textureData);
+                                });
+                            }
+                            break;
+                        }
+                        case ExplorerItemType.Xml:
+                        {
+                            foreach (var (extension, _) in ExportContext.ScriptFormats.Where(f => f.Value))
+                            {
+                                absolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + extension.ToLower();
+                                var scriptData = extension switch
+                                {
+                                    "xml" => Xmb2Document.ToXml(data),
                                     _ => data
                                     };
 
-                                File.WriteAllBytes(finalAbsolutePath, textureData);
-                            });
+                                File.WriteAllBytes(absolutePath, scriptData);
+                            }
+                            break;
                         }
-                    }
-                    else if (type == ExplorerItemType.Xml)
-                    {
-                        foreach (var (extension, _) in ExportContext.ScriptFormats.Where(f => f.Value))
-                        {
-                            absolutePath = absolutePath[..absolutePath.LastIndexOf('.')] + "." + extension.ToLower();
-                            var scriptData = extension switch
-                            {
-                                "xml" => Xmb2Document.ToXml(data),
-                                _ => data
-                                };
-
-                            File.WriteAllBytes(absolutePath, scriptData);
-                        }
-                    }
-                    else
-                    {
-                        File.WriteAllBytes(absolutePath, data);
+                        case ExplorerItemType.Unspecified:
+                        case ExplorerItemType.Unsupported:
+                        case ExplorerItemType.Directory:
+                        case ExplorerItemType.Material:
+                        case ExplorerItemType.Model:
+                        case ExplorerItemType.Text:
+                        case ExplorerItemType.AnimationPackage:
+                        default:
+                            File.WriteAllBytes(absolutePath, data);
+                            break;
                     }
                 }
             });

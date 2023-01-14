@@ -25,6 +25,6 @@
         <value>查看完整的更新日志</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>重制了资源管理器，加入更多提升游戏体验的功能并修复了已知BUG。</value>
+        <value>改进了稳定性和错误修复。</value>
     </data>
 </root>

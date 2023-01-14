@@ -42,20 +42,7 @@ public abstract class IAssetExplorerNode
                     var map = new RelativeExtensionMap();
                     var tokens = Name.Split('.');
                     var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
-                    
-                    // var extension = Name[Name.LastIndexOf('.')..].ToLower();
-                    // var trueExtension = extension switch
-                    // {
-                    //     ".tif" or ".tga" or ".png" or ".dds" or ".exr" => ".btex",
-                    //     ".gmtl" => ".gmtl.gfxbin",
-                    //     ".gmdl" => ".gmdl.gfxbin",
-                    //     ".prefab" or ".ebex" => ".exml",
-                    //     ".autoext" => ".txt",
-                    //     _ => extension
-                    // };
-
                     return Name.Replace(extension, "") + map[extension];
-                    //return Name[..Name.LastIndexOf('.')] + trueExtension;
                 }
             }
 

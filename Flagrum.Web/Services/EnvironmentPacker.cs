@@ -17,7 +17,6 @@ using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Gfxbin.Gmtl.Data;
 using Flagrum.Web.Persistence;
-using Flagrum.Web.Persistence.Entities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vector3 = System.Numerics.Vector3;
@@ -44,11 +43,11 @@ public class EnvironmentPacker
     private readonly SettingsService _settings;
 
     private readonly ConcurrentDictionary<string, bool> _textures = new();
-
-    // private readonly ConcurrentDictionary<string, bool> _lowLodPrefabs = new();
     private readonly ConcurrentDictionary<string, bool> _unreadClassTypes = new();
 
     private string _modelsDirectory;
+    private ConcurrentDictionary<string, bool> _processedScripts = new();
+    private ConcurrentDictionary<string, string> _scriptLocations;
     private string _texturesDirectory;
 
     public EnvironmentPacker(
@@ -86,14 +85,17 @@ public class EnvironmentPacker
         // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
         using var outerContext = new FlagrumDbContext(_settings);
 
-        GetPathsRecursively(uri, outerContext.GetFileByUri(uri),
+        // Preload the script locations to prevent spam calling the DB
+        _scriptLocations = new ConcurrentDictionary<string, string>(outerContext.AssetUris
+            .Select(a => new {a.Uri, a.ArchiveLocation.Path})
+            .ToDictionary(a => a.Uri, a => a.Path));
+
+        // Recurse through the scripts
+        GetPathsRecursively(uri, GetFileByUri(uri),
             null,
             null,
             1.0f,
             new List<float[]>());
-
-        // _models = new ConcurrentBag<EnvironmentModelMetadata>(_models.Where(m => !_lowLodPrefabs
-        //     .Any(p => p.Key.Contains(m.PrefabName, StringComparison.OrdinalIgnoreCase))));
 
         var models = _models.DistinctBy(m => m.Path).ToList();
 
@@ -111,8 +113,7 @@ public class EnvironmentPacker
         // an access violation exception because we can't clear the memory quickly enough
         foreach (var (uri2, _) in _textures)
         {
-            using var context = new FlagrumDbContext(_settings);
-            var btexData = context.GetFileByUri(uri2);
+            var btexData = GetFileByUri(uri2);
             var converter = new TextureConverter();
             var pngData = converter.BtexToTga(btexData);
             var fileName = uri2.Split('/').Last();
@@ -144,11 +145,9 @@ public class EnvironmentPacker
 
     private void PackModel(string uri, string directory, int index)
     {
-        using var context = new FlagrumDbContext(_settings);
-
-        var gfxbin = context.GetFileByUri(uri);
+        var gfxbin = GetFileByUri(uri);
         var gpubinUri = uri.Replace(".gmdl", ".gpubin");
-        var gpubin = context.GetFileByUri(gpubinUri);
+        var gpubin = GetFileByUri(gpubinUri);
 
         if (gfxbin.Length < 1 || gpubin.Length < 1)
         {
@@ -178,12 +177,11 @@ public class EnvironmentPacker
                 .Where(m => m.LodNear == 0)
                 .Select(m =>
                 {
-                    using var innerContext = new FlagrumDbContext(_settings);
                     var materialUri = model.Header.Dependencies
                         .FirstOrDefault(d => d.PathHash == m.DefaultMaterialHash.ToString())
                         !.Path;
 
-                    var materialData = innerContext.GetFileByUri(materialUri);
+                    var materialData = GetFileByUri(materialUri);
                     Material material;
                     try
                     {
@@ -287,7 +285,6 @@ public class EnvironmentPacker
         {
             var highTexturePackUri = material.HighTexturePackAsset.Replace(".htpk", ".autoext");
 
-            using var context = new FlagrumDbContext(_settings);
             for (var i = 0; i < 2; i++)
             {
                 // Check for 4K pack for this material, will be handled by the following code if not present
@@ -297,9 +294,9 @@ public class EnvironmentPacker
                 }
 
                 byte[] highTexturePack = null;
-                if (context.ArchiveExistsForUri(highTexturePackUri))
+                if (_scriptLocations.ContainsKey(highTexturePackUri))
                 {
-                    highTexturePack = context.GetFileByUri(highTexturePackUri);
+                    highTexturePack = GetFileByUri(highTexturePackUri);
                 }
                 else
                 {
@@ -344,6 +341,7 @@ public class EnvironmentPacker
     private void GetPathsRecursively(string uri, byte[] xmb2, float[] prefabPosition, float[] prefabRotation,
         float prefabScale, List<float[]> prefabRotations)
     {
+        uri = uri.ToLower();
         using var stream = new MemoryStream(xmb2);
         var package = Xmb2Document.GetRootElement(stream);
         var objects = package.GetElementByName("objects");
@@ -374,11 +372,9 @@ public class EnvironmentPacker
             DegreesToRadians(prefabRotation[0]),
             DegreesToRadians(prefabRotation[2]));
 
-        Parallel.For(0, elements.Count, counter =>
+        Parallel.For(1, elements.Count, counter =>
         {
             var element = elements.ElementAt(counter);
-
-            using var context = new FlagrumDbContext(_settings);
             var typeAttribute = element.GetAttributeByName("type").GetTextValue();
 
             if (counter == 0 && !_nodeTypes.Contains(typeAttribute))
@@ -455,7 +451,7 @@ public class EnvironmentPacker
                 var uriUri = new Uri(uri.Replace("data://", "data://data/"));
                 var combinedUri = new Uri(uriUri, relativeUri);
                 var combinedUriString = combinedUri.ToString().Replace("data://data/", "data://");
-                var innerXmb2 = context.GetFileByUri(combinedUriString);
+                var innerXmb2 = GetFileByUri(combinedUriString);
 
                 if (innerXmb2.Length > 0)
                 {
@@ -468,7 +464,8 @@ public class EnvironmentPacker
                     }
 
                     GetPathsRecursively(combinedUriString, innerXmb2,
-                        new[] {positionAltered.X, positionAltered.Y, positionAltered.Z}, rotationAltered, scaleAltered,
+                        new[] {positionAltered.X, positionAltered.Y, positionAltered.Z}, rotationAltered,
+                        scaleAltered,
                         newPrefabRotations);
                 }
                 else
@@ -487,5 +484,13 @@ public class EnvironmentPacker
     private float DegreesToRadians(float degrees)
     {
         return (float)(Math.PI / 180 * degrees);
+    }
+
+    private byte[] GetFileByUri(string uri)
+    {
+        uri = uri.ToLower();
+        return _scriptLocations.TryGetValue(uri, out var location)
+            ? Unpacker.GetFileByLocation(_settings.GameDataDirectory + "\\" + location, uri)
+            : Array.Empty<byte>();
     }
 }

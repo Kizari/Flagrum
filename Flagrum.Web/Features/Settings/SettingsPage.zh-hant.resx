@@ -60,4 +60,13 @@
     <data name="Chinese (Simplified)" xml:space="preserve">
         <value>簡體中文</value>
     </data>
+    <data name="AssetExplorerSettings" xml:space="preserve">
+        <value>資產瀏覽器設置</value>
+    </data>
+    <data name="SelectAllAddressBar" xml:space="preserve">
+        <value>單擊地址欄時選擇所有文本</value>
+    </data>
+    <data name="RegenerateFileIndex" xml:space="preserve">
+        <value>重建遊戲文件索引</value>
+    </data>
 </root>

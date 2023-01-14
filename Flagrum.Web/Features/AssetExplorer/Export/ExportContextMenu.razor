@@ -4,6 +4,7 @@
 @using System.IO
 @using System.Text
 @using Flagrum.Core.Animation
+@using Flagrum.Core.Archive
 @using Flagrum.Core.Ebex.Xmb2
 @using Flagrum.Web.Features.AssetExplorer.Base
 @inject IWpfService WpfService
@@ -118,14 +119,14 @@
     {
         var item = AssetExplorer.ContextNode;
 
-        var defaultName = item.Type switch
-        {
-            ExplorerItemType.Material => item.Name + ".gfxbin",
-            ExplorerItemType.Model => item.Name + ".gfxbin",
-            ExplorerItemType.Texture => item.Name[..item.Name.LastIndexOf('.')] + ".png",
-            ExplorerItemType.Xml => item.Name[..item.Name.LastIndexOf('.')] + ".xml",
-            _ => item.Name
-            };
+        // var defaultName = item.Type switch
+        // {
+        //     ExplorerItemType.Material => item.Name + ".gfxbin",
+        //     ExplorerItemType.Model => item.Name + ".gfxbin",
+        //     ExplorerItemType.Texture => item.Name[..item.Name.LastIndexOf('.')] + ".png",
+        //     ExplorerItemType.Xml => item.Name[..item.Name.LastIndexOf('.')] + ".xml",
+        //     _ => UriHelper.ReplaceFileNameExtensionWithTrueExtension(item.Name)
+        // };
 
         var filter = item.Type switch
         {
@@ -133,13 +134,14 @@
             ExplorerItemType.Model => "Game Model|*.gmdl.gfxbin",
             ExplorerItemType.Texture => "PNG Image|*.png|TGA Image|*.tga|DDS Image|*.dds|BTEX Image|*.btex",
             ExplorerItemType.Xml => "eXtensible Markup Language|*.xml|Ebony XML (XMB2)|*.exml",
-            _ => $"Unknown File|*.{item.Name.Split('.').Last()}"
-            };
+            _ => $"Unknown File|*.{UriHelper.GetTrueExtensionFromFileName(item.Name)}"
+        };
 
-        await WpfService.OpenSaveFileDialogAsync(defaultName, filter, path =>
+        var trueExtension = UriHelper.GetTrueExtensionFromFileName(item.Name);
+        await WpfService.OpenSaveFileDialogAsync(UriHelper.RemoveExtensionFromFileName(item.Name), filter, path =>
         {
             byte[] data;
-
+            
             switch (item.Type)
             {
                 case ExplorerItemType.Texture:
@@ -170,7 +172,16 @@
                     }
                     break;
                 }
+                case ExplorerItemType.Unspecified:
+                case ExplorerItemType.Unsupported:
+                case ExplorerItemType.Directory:
+                case ExplorerItemType.Material:
+                case ExplorerItemType.Model:
+                case ExplorerItemType.Text:
+                case ExplorerItemType.AnimationPackage:
                 default:
+                    path = path.Replace("." + trueExtension, "");
+                    path += "." + trueExtension;
                     data = item.Data;
                     break;
             }
