@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -8,10 +10,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Flagrum.Core.Utilities;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using Squirrel;
@@ -20,6 +22,8 @@ namespace Flagrum.Desktop;
 
 public partial class App
 {
+    public AppStateService AppState { get; set; }
+    
     public App()
     {
         // This is needed so Flagrum stacks with its pinned icon on the taskbar
@@ -52,14 +56,8 @@ public partial class App
 
         // Migrate the database if required
         using var context = new FlagrumDbContext();
-        var connection = (SqliteConnection)context.Database.GetDbConnection();
-        connection.Open();
-        SQLitePCL.raw.sqlite3_enable_load_extension(connection.Handle, 1);
-        connection.Close();
-        context.Database.ExecuteSqlRaw("SELECT load_extension('uuid.dll');");
         context.Database.MigrateAsync().Wait();
-        //ExtraDatabaseActions(context);
-
+        
         // Start loading asset explorer nodes so the user won't be waiting too long
         AppState = new AppStateService(new SettingsService());
         AppState.LoadNodes();
@@ -86,8 +84,6 @@ public partial class App
             CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
     }
-
-    public AppStateService AppState { get; set; }
 
     [DllImport("shell32.dll", SetLastError = true)]
     private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string appId);
@@ -129,8 +125,7 @@ public partial class App
 
     private void SetFileTypeAssociation()
     {
-        var flagrumPath =
-            $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum\\Flagrum.exe \"%1\"";
+        var flagrumPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\\Flagrum\\Flagrum.exe \"%1\"";
         //var flagrumPath = $"{IOHelper.GetExecutingDirectory()}\\Flagrum.exe \"%1\"";
         if ((string)Registry.GetValue("HKEY_CURRENT_USER\\Software\\Classes\\.fmod", "", "Flagrum")! != flagrumPath)
         {
@@ -156,19 +151,5 @@ public partial class App
 
         var window = new MainWindow(AppState, fmodPath);
         window.Show();
-    }
-
-    private void ExtraDatabaseActions(FlagrumDbContext context)
-    {
-        if (!context.GetBool(StateKey.ModManagerHasAddedUuids))
-        {
-            foreach (var mod in context.EarcMods)
-            {
-                mod.Id = Guid.NewGuid().ToString();
-            }
-    
-            context.SaveChanges();
-            context.SetBool(StateKey.ModManagerHasAddedUuids, true);
-        }
     }
 }

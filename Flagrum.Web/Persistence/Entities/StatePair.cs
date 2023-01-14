@@ -24,8 +24,7 @@ public enum StateKey
     CurrentAssetExplorerView,
     CurrentAssetExplorerLayout,
     ViewportTextureFidelity,
-    AssetExplorerAddressBarSelect,
-    ModManagerHasAddedUuids
+    AssetExplorerAddressBarSelect
 }
 
 public class StatePair

@@ -8,7 +8,7 @@ public class EarcModEarc
 {
     public int Id { get; set; }
 
-    public string EarcModId { get; set; }
+    public int EarcModId { get; set; }
     public EarcMod EarcMod { get; set; }
 
     public string EarcRelativePath { get; set; }

@@ -28,8 +28,8 @@ public class FlagrumDbContext : DbContext
     public DbSet<EarcModBackup> EarcModBackups { get; set; }
     public DbSet<EarcMod> EarcMods { get; set; }
     public DbSet<EarcModEarc> EarcModEarcs { get; set; }
-    public DbSet<EarcModFile> EarcModFiles { get; set; }
-    public DbSet<EarcModLooseFile> EarcModLooseFiles { get; set; }
+    public DbSet<EarcModFile> EarcModReplacements { get; set; }
+    public DbSet<EarcModLooseFile> EarcModLooseFile { get; set; }
     public DbSet<AssetExplorerNode> AssetExplorerNodes { get; set; }
     public DbSet<ArchiveLocation> ArchiveLocations { get; set; }
     public DbSet<AssetUri> AssetUris { get; set; }
@@ -45,10 +45,7 @@ public class FlagrumDbContext : DbContext
         var databasePath =
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\flagrum.db";
 
-        optionsBuilder.UseSqlite($"Data Source={databasePath};", options =>
-        {
-            options.CommandTimeout(180);
-        });
+        optionsBuilder.UseSqlite($"Data Source={databasePath};", options => { options.CommandTimeout(180); });
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

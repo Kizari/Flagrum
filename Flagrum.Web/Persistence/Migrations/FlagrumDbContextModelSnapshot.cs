@@ -15,7 +15,7 @@ namespace Flagrum.Web.Persistence.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.11");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.1");
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ArchiveLocation", b =>
                 {
@@ -135,8 +135,9 @@ namespace Flagrum.Web.Persistence.Migrations
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModManager.EarcMod", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Author")
                         .IsRequired()
@@ -162,15 +163,10 @@ namespace Flagrum.Web.Persistence.Migrations
                         .HasMaxLength(37)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PrerequisiteId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Readme")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PrerequisiteId");
 
                     b.ToTable("EarcMods");
                 });
@@ -181,8 +177,8 @@ namespace Flagrum.Web.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("EarcModId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("EarcModId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("EarcRelativePath")
                         .HasColumnType("TEXT");
@@ -237,8 +233,8 @@ namespace Flagrum.Web.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("EarcModId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("EarcModId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<long>("FileLastModified")
                         .HasColumnType("INTEGER");
@@ -285,11 +281,11 @@ namespace Flagrum.Web.Persistence.Migrations
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.AssetExplorerNode", b =>
                 {
-                    b.HasOne("Flagrum.Web.Persistence.Entities.AssetExplorerNode", "ParentNode")
-                        .WithMany("ChildNodes")
+                    b.HasOne("Flagrum.Web.Persistence.Entities.AssetExplorerNode", "Parent")
+                        .WithMany("Children")
                         .HasForeignKey("ParentId");
 
-                    b.Navigation("ParentNode");
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.AssetUri", b =>
@@ -312,20 +308,13 @@ namespace Flagrum.Web.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModManager.EarcMod", b =>
-                {
-                    b.HasOne("Flagrum.Web.Persistence.Entities.ModManager.EarcMod", "Prerequisite")
-                        .WithMany("Addons")
-                        .HasForeignKey("PrerequisiteId");
-
-                    b.Navigation("Prerequisite");
-                });
-
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModManager.EarcModEarc", b =>
                 {
                     b.HasOne("Flagrum.Web.Persistence.Entities.ModManager.EarcMod", "EarcMod")
                         .WithMany("Earcs")
-                        .HasForeignKey("EarcModId");
+                        .HasForeignKey("EarcModId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("EarcMod");
                 });
@@ -345,7 +334,9 @@ namespace Flagrum.Web.Persistence.Migrations
                 {
                     b.HasOne("Flagrum.Web.Persistence.Entities.ModManager.EarcMod", "EarcMod")
                         .WithMany("LooseFiles")
-                        .HasForeignKey("EarcModId");
+                        .HasForeignKey("EarcModId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("EarcMod");
                 });
@@ -357,7 +348,7 @@ namespace Flagrum.Web.Persistence.Migrations
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.AssetExplorerNode", b =>
                 {
-                    b.Navigation("ChildNodes");
+                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModelReplacementPreset", b =>
@@ -367,8 +358,6 @@ namespace Flagrum.Web.Persistence.Migrations
 
             modelBuilder.Entity("Flagrum.Web.Persistence.Entities.ModManager.EarcMod", b =>
                 {
-                    b.Navigation("Addons");
-
                     b.Navigation("Earcs");
 
                     b.Navigation("LooseFiles");

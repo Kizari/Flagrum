@@ -7,7 +7,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using BlazorContextMenu;
 using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Exceptions;
 using Flagrum.Web.Components.Modals;
@@ -36,19 +35,16 @@ public partial class Index : ModComponentBase
     private AutosizeModal ConflictsModal { get; set; }
     private AutosizeModal ReadmeModal { get; set; }
     private ModCardModal ModCardModal { get; set; }
-    private ContextMenu ContextMenu { get; set; }
     private MarkupString CurrentReadme { get; set; }
     private Dictionary<string, List<string>> LegacyConflicts { get; set; }
     private List<EarcConflictString> SelectedLegacyConflicts { get; set; }
     private TaskCompletionSource TaskCompletionSource { get; set; }
     private string DisplayText { get; set; }
     private string SubText { get; set; }
-    private List<string> TimestampsToUpdate { get; } = new();
+    private List<int> TimestampsToUpdate { get; } = new();
 
     private Expression<Func<EarcMod, bool>> Filter => m =>
-        (Category == -1 || m.Category == (ModCategory)Category) // Filter by selected category if applicable
-        && m.IsActive == ShowActive                             // Filter by active/disabled tab
-        && m.PrerequisiteId == null;                          // Don't show add-on mods
+        (Category == -1 || m.Category == (ModCategory)Category) && m.IsActive == ShowActive;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,19 +71,18 @@ public partial class Index : ModComponentBase
         foreach (var file in Directory.EnumerateFiles($@"{IOHelper.GetWebRoot()}\EarcMods"))
         {
             var id = file.Split('\\').Last().Replace(".png", "");
-            // TODO: Update to handle new IDs
-            // if (int.TryParse(id, out var idAsInt) && !Context.EarcMods.Any(m => m.Id == idAsInt))
-            // {
-            //     try
-            //     {
-            //         var thumbnail = $@"{IOHelper.GetWebRoot()}\EarcMods\{id}.png";
-            //         File.Delete(thumbnail);
-            //     }
-            //     catch
-            //     {
-            //         // Ignore, try again next time
-            //     }
-            // }
+            if (int.TryParse(id, out var idAsInt) && !Context.EarcMods.Any(m => m.Id == idAsInt))
+            {
+                try
+                {
+                    var thumbnail = $@"{IOHelper.GetWebRoot()}\EarcMods\{id}.png";
+                    File.Delete(thumbnail);
+                }
+                catch
+                {
+                    // Ignore, try again next time
+                }
+            }
         }
 
         // Jank delay to stop this showing on every launch
@@ -113,12 +108,12 @@ public partial class Index : ModComponentBase
         }
     }
 
-    public void AddTimestampToUpdate(string modId)
+    public void AddTimestampToUpdate(int modId)
     {
         TimestampsToUpdate.Add(modId);
     }
 
-    public bool CheckTimestampUpdate(string modId)
+    public bool CheckTimestampUpdate(int modId)
     {
         if (TimestampsToUpdate.Contains(modId))
         {
@@ -134,7 +129,7 @@ public partial class Index : ModComponentBase
         StateHasChanged();
     }
 
-    public Task ShowModCardModal(string modId)
+    public Task ShowModCardModal(int modId)
     {
         return ModCardModal.Open(modId);
     }
@@ -164,12 +159,10 @@ public partial class Index : ModComponentBase
     {
         if (Context.Settings.IsGameRunning())
         {
-            Alert.Open("Error", "FFXV is Running",
-                "Flagrum cannot install mods while the game is running. Please save and close down FFXV, then try again.",
-                null);
+            Alert.Open("Error", "FFXV is Running", "Flagrum cannot install mods while the game is running. Please save and close down FFXV, then try again.", null);
             return;
         }
-
+        
         await WpfService.OpenFileDialogAsync("Flagrum Mod|*.fmod;*.zip", async path => await InstallMod(path));
     }
 
