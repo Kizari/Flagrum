@@ -329,7 +329,7 @@ public class EntityPackageXmlLoader
             case Property.PrimitiveType.PointerArray:
             case Property.PrimitiveType.IntrusivePointerArray:
                 // GOTCHA: We don't want to create a new List, because other objects can reference the list before it's instantiated
-                value = obj.GetPropertyValue<IList>(property);
+                value = obj.GetPropertyValue<IList>(property) ?? new List<BaseObject>();
                 ReadPointerArray(obj, element, (IList)value, property);
                 break;
             default:
