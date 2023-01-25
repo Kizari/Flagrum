@@ -41,9 +41,18 @@ public static class BtexConverter
 
     public static byte[] BtexToDds(byte[] btex)
     {
-        // Remove SEDB header
-        var withoutSedb = new byte[btex.Length - 128];
-        Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
+        byte[] withoutSedb;
+        
+        if (btex[0] == 'B' && btex[1] == 'T' && btex[2] == 'E' && btex[3] == 'X')
+        {
+            withoutSedb = btex;
+        }
+        else
+        {
+            // Remove SEDB header
+            withoutSedb = new byte[btex.Length - 128];
+            Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
+        }
 
         var btexHeader = ReadBtexHeader(withoutSedb);
 

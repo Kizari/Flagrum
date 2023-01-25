@@ -4,11 +4,17 @@ using System.Text;
 using Flagrum.Console.Scripts.Archive;
 using Flagrum.Console.Scripts.Terrain;
 using Flagrum.Console.Utilities;
+using Flagrum.Core.Archive;
 using Flagrum.Core.Ebex.Xmb2;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+
+using var unpacker = new Unpacker(@"C:\Program Files (x86)\Steam\steamapps\common\FORSPOKEN Demo\datas\c000_003.earc");
+var data = unpacker.UnpackFileByQuery(
+    "data://asset/environment/common/props/co_bottle06/sourceimages/co_bottle06_a_n_$h.tif", out _);
+return;
 
 //IndexingScripts.DumpUniqueRelativeExtensions();
 

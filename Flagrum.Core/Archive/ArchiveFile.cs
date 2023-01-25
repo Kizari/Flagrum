@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Flagrum.Core.Utilities;
+using K4os.Compression.LZ4.Streams;
 using ZLibNet;
 
 namespace Flagrum.Core.Archive;
@@ -17,7 +18,8 @@ public enum ArchiveFileFlag
     Patched = 16,
     PatchedDeleted = 32,
     Encrypted = 64,
-    MaskProtected = 128
+    MaskProtected = 128,
+    LZ4Compression = 1342177280
 }
 
 public class ArchiveFile
@@ -178,7 +180,19 @@ public class ArchiveFile
 
         if (IsDataCompressed)
         {
-            buffer = DecompressData();
+            if (Flags.HasFlag(ArchiveFileFlag.LZ4Compression))
+            {
+                var stream = new MemoryStream(buffer);
+                using var lz4Stream = LZ4Stream.Decode(stream);
+                using var destinationStream = new MemoryStream();
+                lz4Stream.CopyTo(destinationStream);
+                stream.Dispose();
+                buffer = destinationStream.ToArray();
+            }
+            else
+            {
+                buffer = DecompressData();
+            }
         }
         else if (IsDataEncrypted)
         {
