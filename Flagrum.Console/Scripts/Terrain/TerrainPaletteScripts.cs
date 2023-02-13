@@ -14,7 +14,7 @@ public static class TerrainPaletteScripts
     /// <param name="tpdUri">The URI of the TPD file to read out</param>
     public static void DumpTerrainTextureTable(string tpdUri)
     {
-        using var context = new FlagrumDbContext(new SettingsService());
+        using var context = new FlagrumDbContext(new ProfileService());
         var data = context.GetFileByUri(tpdUri);
         var tpd = TerrainPaletteData.Read(data);
 

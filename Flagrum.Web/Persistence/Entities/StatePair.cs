@@ -24,7 +24,8 @@ public enum StateKey
     CurrentAssetExplorerView,
     CurrentAssetExplorerLayout,
     ViewportTextureFidelity,
-    AssetExplorerAddressBarSelect
+    AssetExplorerAddressBarSelect,
+    ForspokenPatch
 }
 
 public class StatePair
@@ -89,5 +90,17 @@ public static class StatePairExtensions
     public static void SetEnum<TEnum>(this FlagrumDbContext context, StateKey key, TEnum value)
     {
         SetString(context, key, value.ToString());
+    }
+
+    public static void DeleteStateKey(this FlagrumDbContext context, StateKey key)
+    {
+        var match = context.StatePairs.FirstOrDefault(p => p.Key == key);
+        if (match != null)
+        {
+            context.Remove(match);
+        }
+        
+        context.SaveChanges();
+        context.ChangeTracker.Clear();
     }
 }

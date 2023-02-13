@@ -36,18 +36,17 @@ public class GameViewFileList : FileList
             var nodeId = Context.GetInt(StateKey.CurrentAssetNode);
             if (nodeId > 0)
             {
-                var uri = Context.AssetExplorerNodes.FirstOrDefault(n => n.Id == nodeId)?.GetUri() ?? "data://";
-                var processedUri = uri.Trim().Replace("data://", "data:/").TrimEnd('/');
+                var uri = Context.AssetExplorerNodes.FirstOrDefault(n => n.Id == nodeId)?.GetUri() ?? "";
+                var processedUri = uri.Trim().Replace("://", ":/").TrimEnd('/');
                 var tokens = processedUri.Split('/')
+                    .Where(t => t != string.Empty)
                     .Select(t => t.ToLower())
                     .ToList();
 
-                var currentNode = AppState.RootGameViewNode;
-                for (var i = 1; i < tokens.Count; i++)
-                {
-                    currentNode = (AssetExplorerNode)currentNode.Children.FirstOrDefault(n => n.Name == tokens[i]);
-                }
-                
+                var currentNode = tokens.Aggregate(AppState.RootGameViewNode,
+                    (current, token) => (AssetExplorerNode)current!.Children
+                        .FirstOrDefault(n => n.Name == token));
+
                 SetCurrentNode(currentNode!.HasChildren ? currentNode : currentNode.Parent);
                 AssetExplorer.AddressBar.SetCurrentPath(uri);
             }

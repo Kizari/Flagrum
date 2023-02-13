@@ -10,8 +10,8 @@ from bpy_extras.io_utils import ImportHelper, ExportHelper
 from mathutils import Matrix, Euler, Vector
 
 from .generate_armature import generate_armature
-from .generate_mesh import generate_mesh
 from .generate_terrain import generate_terrain
+from .gmdlimporter import GmdlImporter
 from .import_context import ImportContext
 from .interop import Interop
 from .pack_mesh import pack_mesh
@@ -31,22 +31,33 @@ class ImportOperator(Operator, ImportHelper):
         options={'HIDDEN'}
     )
 
+    import_lods: BoolProperty(
+        name="Import LODs",
+        description="If checked, Flagrum will import all LOD meshes with this model.",
+        default=False
+    )
+
+    import_vems: BoolProperty(
+        name="Import VEMs",
+        description="If checked, Flagrum will import all VEM meshes with this model.",
+        default=False
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="GMDL Import Options")
+        layout.prop(data=self, property="import_lods")
+        layout.prop(data=self, property="import_vems")
+
     def execute(self, context):
-        import_context = ImportContext(self.filepath)
+        import_context = ImportContext(self.filepath, self.import_lods, self.import_vems)
 
-        mesh_data = Interop.import_mesh(import_context.gfxbin_path)
-
-        if len(mesh_data.BoneTable.__dict__) > 0:
-            armature_data = import_armature_data(import_context)
+        armature_data = import_armature_data(import_context)
+        if armature_data is not None:
             generate_armature(import_context, armature_data)
 
-        for mesh in mesh_data.Meshes:
-            generate_mesh(import_context,
-                          collection=import_context.collection,
-                          mesh_data=mesh,
-                          bone_table=mesh_data.BoneTable.__dict__,
-                          parts=mesh_data.Parts.__dict__)
-
+        importer = GmdlImporter(import_context)
+        importer.run()
         return {'FINISHED'}
 
 
@@ -127,9 +138,6 @@ class ImportEnvironmentOperator(Operator, ImportHelper):
 
                 if mesh_data is not None:
                     self.import_mesh(context, mesh_data, model, meshes)
-
-        for texture_slot in context.texture_slots:
-            print(texture_slot)
 
         return {'FINISHED'}
 

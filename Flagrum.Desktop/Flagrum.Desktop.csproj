@@ -8,8 +8,8 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <AssemblyName>Flagrum</AssemblyName>
-        <AssemblyVersion>1.3.5</AssemblyVersion>
-        <FileVersion>1.3.5</FileVersion>
+        <AssemblyVersion>1.4.1</AssemblyVersion>
+        <FileVersion>1.4.1</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -73,7 +73,7 @@
         </Content>
         <None Remove="Resources\earc.png" />
         <Content Include="Resources\earc.png">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
@@ -81,48 +81,51 @@
         <Resource Include="flagrum-titlebar.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
+        <Resource Include="patreon.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Resources\Localisation.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <LastGenOutput>Localisation.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Localisation.ja-JP.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <LastGenOutput>Localisation.ja-JP.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Localisation.zh-cn.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Localisation.zh-cn.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Localisation.zh-hk.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Localisation.zh-hk.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.ja-JP.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.zh-cn.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.zh-cn.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.zh-hk.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.zh-hk.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Resources\Localisation.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Localisation.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Localisation.ja-JP.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Localisation.ja-JP.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Localisation.zh-cn.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Localisation.zh-cn.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Localisation.zh-hk.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
-      </Compile>
+        <Compile Update="Resources\Localisation.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Localisation.ja-JP.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.ja-JP.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Localisation.zh-cn.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.zh-cn.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Localisation.zh-hk.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <PropertyGroup>

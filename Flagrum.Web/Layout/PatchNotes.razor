@@ -1,9 +1,14 @@
 ﻿@inject IStringLocalizer<PatchNotes> Localizer
 
 <div style="max-width: 600px;">
-    <h4 class="text-grey-300 mb-6 text-center">@Localizer["HasBeenUpdated", Version]</h4>
-    <div class="text-center">
-        @Localizer["UpdateNotes"]<br/><br/>
+    <h3 class="text-grey-300 mb-6">@Localizer["HasBeenUpdated", Version]</h3>
+    <div class="row bg-accent1-700 py-3 px-4 rounded text-white">
+        <span class="text-accent1-200 material-icons mr-3">auto_awesome</span>
+        @Localizer["EarlyAccess"] See <Hyperlink CssClass="mt-0 mx-1" Text="Patreon" Uri="https://www.patreon.com/Flagrum"/> for details.
+    </div>
+    <div class="mt-6">
+        <h4 class="text-grey-300 mb-2">@Localizer["NewInThisVersion"]</h4>
+        @((MarkupString)(string)Localizer["UpdateNotes"])<br/>
         <Hyperlink Text=@Localizer["ViewFullChangelog"] Uri=@Localizer["ChangelogUrl"]></Hyperlink>
     </div>
 </div>

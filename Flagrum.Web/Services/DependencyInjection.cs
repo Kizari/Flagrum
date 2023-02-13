@@ -1,4 +1,5 @@
-﻿using Flagrum.Web.Persistence;
+﻿using Flagrum.Web.Features.ModManager.Services;
+using Flagrum.Web.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Flagrum.Web.Services;
@@ -9,7 +10,6 @@ public static class DependencyInjection
     {
         services.AddLocalization();
         services.AddDbContext<FlagrumDbContext>(ServiceLifetime.Transient);
-        services.AddSingleton<SettingsService>();
         services.AddSingleton<UriMapper>();
         services.AddScoped<SteamWorkshopService>();
         services.AddScoped<JSInterop>();
@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<Modmeta>();
         services.AddScoped<EnvironmentPacker>();
         services.AddScoped<TerrainPacker>();
+        services.AddScoped<AssetConverter>();
         services.AddBlazorContextMenu();
 
         return services;

@@ -10,7 +10,13 @@ namespace Flagrum.Web.Persistence.Entities;
 
 public class AssetExplorerNode : IAssetExplorerNode
 {
+    public static ProfileService Profile;
+
+    private FlagrumDbContext _context;
+
     private string _path;
+
+    private FlagrumDbContext Context => _context ??= new FlagrumDbContext(Profile);
     public int Id { get; set; }
 
     public override string Name { get; set; }
@@ -37,14 +43,7 @@ public class AssetExplorerNode : IAssetExplorerNode
 
     //using var context = new FlagrumDbContext(new SettingsService());
     //return context.AssetExplorerNodes.Any(n => n.ParentId == Id);
-    public override byte[] Data
-    {
-        get
-        {
-            using var context = new FlagrumDbContext(new SettingsService());
-            return context.GetFileByUri(Path);
-        }
-    }
+    public override byte[] Data => Context.GetFileByUri(Path);
 
     public void Traverse(FlagrumDbContext context, Action<AssetExplorerNode> visitor)
     {
@@ -63,8 +62,7 @@ public class AssetExplorerNode : IAssetExplorerNode
         {
             if (ParentId != null)
             {
-                using var context = new FlagrumDbContext(new SettingsService());
-                Parent = context.AssetExplorerNodes.AsNoTracking().First(n => n.Id == ParentId);
+                Parent = Context.AssetExplorerNodes.AsNoTracking().First(n => n.Id == ParentId);
             }
         }
 
@@ -74,17 +72,23 @@ public class AssetExplorerNode : IAssetExplorerNode
     public string GetUri()
     {
         var uri = "";
-        TraverseDescending(node => uri = node.Name + (uri.Length > 0 && !node.Name.EndsWith('/') ? "/" : "") + uri);
-        return uri;
-    }
 
-    public string GetLocation()
-    {
-        using var context = new FlagrumDbContext(new SettingsService());
-        return context.Settings.GameDataDirectory + "\\" + context.AssetUris
-            .Where(a => a.Uri == Path)
-            .Select(a => a.ArchiveLocation.Path)
-            .FirstOrDefault();
+        TraverseDescending(node =>
+        {
+            if (node.Name != "")
+            {
+                var currentSection = node.Name;
+
+                if (uri.Length > 0)
+                {
+                    currentSection += node.Name.EndsWith(":") ? "//" : "/";
+                }
+
+                uri = currentSection + uri;
+            }
+        });
+
+        return uri;
     }
 
     protected override ExplorerItemType GetTypeFromExtension(string extension)

@@ -17,7 +17,7 @@ public class EarcModEarc
     /// <summary>
     /// Only applies to Add type
     /// </summary>
-    public ArchiveHeaderFlags Flags { get; set; }
+    public EbonyArchiveFlags Flags { get; set; }
 
     public ICollection<EarcModFile> Files { get; set; } = new List<EarcModFile>();
 

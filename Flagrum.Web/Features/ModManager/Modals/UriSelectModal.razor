@@ -1,0 +1,59 @@
+﻿@using Flagrum.Web.Persistence.Entities
+@using System.Timers
+@using Flagrum.Web.Features.AssetExplorer
+@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Features.AssetExplorer.GameView
+
+@implements Flagrum.Web.Features.AssetExplorer.Base.IAssetExplorerParent
+
+@inject AppStateService AppState
+@inject FlagrumDbContext Context
+@inject IStringLocalizer<UriSelectModal> Localizer
+
+<Modal @ref="Modal" Padding="0" Width="9999" Height="9999" BackgroundClass="bg-grey-900">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Localizer["BrowseGameAssets"]</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="w-full h-full flex flex-col">
+            <CascadingValue Value="this">
+                <AssetExplorer @ref="AssetExplorer" ItemSelectedOverride="OnItemSelected">
+                    <AddressBarTemplate>
+                        <GameViewAddressBar @ref="AssetExplorer.AddressBar"/>
+                    </AddressBarTemplate>
+                    <FileListTemplate>
+                        <GameViewFileList @ref="AssetExplorer.FileList"/>
+                    </FileListTemplate>
+                </AssetExplorer>
+            </CascadingValue>
+        </div>
+    </BodyView>
+</Modal>
+
+<AlertModal @ref="Alert" />
+
+@code
+{
+    [CascadingParameter]
+    public Editor Parent { get; set; }
+
+    [Parameter]
+    public Func<string, Task> OnFileSelected { get; set; }
+    
+    public AssetExplorerView CurrentView { get; set; }
+
+    private Modal Modal { get; set; }
+    private AssetExplorer AssetExplorer { get; set; }
+    public AlertModal Alert { get; set; }
+
+    private void OnItemSelected(IAssetExplorerNode node)
+    {
+        OnFileSelected(node.Path);
+    }
+
+    public void Open() => Modal.Open();
+    public void Close() => Modal.Close();
+    public void CallStateHasChanged() => StateHasChanged();
+}

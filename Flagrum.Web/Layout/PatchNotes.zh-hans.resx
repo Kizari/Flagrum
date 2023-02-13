@@ -24,7 +24,13 @@
     <data name="ViewFullChangelog" xml:space="preserve">
         <value>查看完整的更新日志</value>
     </data>
+    <data name="EarlyAccess" xml:space="preserve">
+        <value>FORSPOKEN现在正处于早期访问阶段。</value>
+    </data>
+    <data name="NewInThisVersion" xml:space="preserve">
+        <value>此版本中的新内容</value>
+    </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>改进了稳定性和错误修复。</value>
+        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;支持安装FORSPOKEN MOD&lt;/li&gt;&lt;li&gt;支持同时在多个游戏和版本中使用Flagrum&lt;/li&gt;&lt;li&gt;对纹理阵列的支持&lt;/li&gt;&lt;li&gt;小的错误修复&lt;/li&gt;&lt;/ul&gt;</value>
     </data>
 </root>

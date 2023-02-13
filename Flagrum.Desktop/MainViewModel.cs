@@ -55,7 +55,7 @@ public class MainViewModel : ObservableObject, IDisposable
             FarPlaneDistance = 10000
         };
 
-        using var context = new FlagrumDbContext(new SettingsService());
+        using var context = new FlagrumDbContext(new ProfileService());
 
         var viewportRotateModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportRotateModifierKey);
         var viewportRotateMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportRotateMouseAction);
@@ -77,6 +77,15 @@ public class MainViewModel : ObservableObject, IDisposable
         get => _hasWebView2Runtime;
         set => SetValue(ref _hasWebView2Runtime, value);
     }
+
+    private ICommand? _patreonLink;
+    public ICommand PatreonLink => _patreonLink ??= new RelayCommand(() =>
+    {
+        Process.Start(new ProcessStartInfo("https://www.patreon.com/Flagrum")
+        {
+            UseShellExecute = true
+        });
+    });
 
     public int ViewportLeft
     {

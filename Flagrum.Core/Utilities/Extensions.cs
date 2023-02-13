@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Flagrum.Core.Utilities;
@@ -96,5 +99,81 @@ public static class Extensions
     public static string SpacePascalCase(this string pascalCaseString)
     {
         return Regex.Replace(pascalCaseString, @"(?<=[A-Za-z])(?=[A-Z][a-z])|(?<=[a-z0-9])(?=[0-9]?[A-Z])", " ");
+    }
+
+    public static string WithTrailingZeros(this int value, int digits)
+    {
+        var result = value.ToString();
+        while (result.Length < digits)
+        {
+            result = "0" + result;
+        }
+
+        return result;
+    }
+    
+    /// <summary>
+    /// Creates a new object of the same type as the source, and copies the property values over.
+    /// WARNING: May not cater to all property types
+    /// </summary>
+    public static T DeepClone<T>(this T @object) where T : new()
+    {
+        var typeSource = @object.GetType();
+        var clone = Activator.CreateInstance(typeSource);
+
+        var propertyInfo =
+            typeSource.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+        foreach (var property in propertyInfo)
+        {
+            if (property.CanWrite)
+            {
+                if (property.PropertyType.IsValueType || property.PropertyType.IsEnum ||
+                    property.PropertyType == typeof(string))
+                {
+                    property.SetValue(clone, property.GetValue(@object));
+                }
+                else if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+                {
+                    var itemType = property.PropertyType
+                        .GetInterfaces()
+                        .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                        .Select(i => i.GetGenericArguments()[0])
+                        .FirstOrDefault()!;
+
+                    var countMethodInfo = typeof(Enumerable).GetMethods().Single(method =>
+                        method.Name == "Count" && method.IsStatic && method.IsGenericMethod &&
+                        method.GetParameters().Length == 1);
+                    var elementAtMethodInfo = typeof(Enumerable).GetMethods().Single(method =>
+                        method.Name == "ElementAt" && method.IsStatic && method.IsGenericMethod &&
+                        method.GetParameters().Length == 2 &&
+                        method.GetParameters()[1].ParameterType == typeof(int));
+                    var enumerable = property.GetValue(@object) as IEnumerable;
+
+                    var countMethod = countMethodInfo.MakeGenericMethod(itemType);
+                    var elementAtMethod = elementAtMethodInfo.MakeGenericMethod(itemType);
+                    var count = (int)countMethod.Invoke(enumerable, new object[] {enumerable})!;
+                    var cloneArray = Array.CreateInstance(itemType, count);
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        cloneArray.SetValue(
+                            elementAtMethod.Invoke(enumerable, new object[] {enumerable, i}).DeepClone(), i);
+                    }
+
+                    // var type = typeof(IEnumerable<>).MakeGenericType(itemType);
+                    // var constructor = property.PropertyType.GetConstructor(new[] {type})!;
+                    // var enumerableClone = constructor.Invoke((object[])cloneArray);
+                    property.SetValue(clone, cloneArray);
+                }
+                else
+                {
+                    var objPropertyValue = property.GetValue(@object);
+                    property.SetValue(clone, objPropertyValue?.DeepClone());
+                }
+            }
+        }
+
+        return (T)clone;
     }
 }

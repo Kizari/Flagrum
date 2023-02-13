@@ -47,7 +47,7 @@
 {
     [CascadingParameter]
     public IAssetExplorerParent Parent { get; set; }
-    
+
     [Parameter]
     public IAssetExplorerNode Item { get; set; }
 
@@ -75,15 +75,15 @@
             }
             catch
             {
-                // See https://github.com/Kizari/Flagrum/issues/33
-                // This prevents an edge case, no catch logic is required to continue normal operation
+    // See https://github.com/Kizari/Flagrum/issues/33
+    // This prevents an edge case, no catch logic is required to continue normal operation
             }
-            
+
             WpfService.Set3DViewportVisibility(true);
 
-            var gpubinQuery = Item.Name.Replace(".gmdl.gfxbin", ".gpubin").Replace(".gmdl", ".gpubin");
-            var gpubin = Item.Parent.Children.Single(n => n.Path.EndsWith(gpubinQuery))!;
-            await WpfService.ChangeModel(Item.Data, gpubin.Data, Parent.CurrentView, gpubin.Path);
+    //var gpubinQuery = Item.Name.Replace(".gmdl.gfxbin", ".gpubin").Replace(".gmdl", "_0.gpubin");
+    //var gpubin = Item.Parent.Children.Single(n => n.Path.EndsWith(gpubinQuery))!;
+            await WpfService.ChangeModel(Item, Parent.CurrentView);
 
             _lastItem = Item;
             _isRendered = true;
@@ -100,16 +100,11 @@
         {
             IsLoading = true;
             StateHasChanged();
-            
+
             WpfService.Set3DViewportVisibility(false);
 
-            await Task.Run(async () =>
-            {
-                var gpubinQuery = Item.Name.Replace(".gmdl.gfxbin", ".gpubin").Replace(".gmdl", ".gpubin");
-                var gpubin = Item.Parent.Children.Single(n => n.Path.EndsWith(gpubinQuery))!;
-                await InvokeAsync(async () => await WpfService.ChangeModel(Item.Data, gpubin.Data, Parent.CurrentView, gpubin.Path));
-            });
-            
+            await Task.Run(async () => { await InvokeAsync(async () => await WpfService.ChangeModel(Item, Parent.CurrentView)); });
+
             WpfService.Set3DViewportVisibility(true);
 
             _lastItem = Item;

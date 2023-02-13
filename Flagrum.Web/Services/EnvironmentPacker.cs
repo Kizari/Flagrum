@@ -40,22 +40,21 @@ public class EnvironmentPacker
 
     private readonly ConcurrentBag<EnvironmentModelMetadata> _models = new();
     private readonly ConcurrentBag<string> _nodeTypes = new();
-    private readonly SettingsService _settings;
+    private readonly ProfileService _profile;
 
     private readonly ConcurrentDictionary<string, bool> _textures = new();
     private readonly ConcurrentDictionary<string, bool> _unreadClassTypes = new();
 
     private string _modelsDirectory;
-    private ConcurrentDictionary<string, bool> _processedScripts = new();
     private ConcurrentDictionary<string, string> _scriptLocations;
     private string _texturesDirectory;
 
     public EnvironmentPacker(
         ILogger<EnvironmentPacker> logger,
-        SettingsService settings)
+        ProfileService profile)
     {
         _logger = logger;
-        _settings = settings;
+        _profile = profile;
     }
 
     public void Pack(string uri, string outputPath)
@@ -83,7 +82,7 @@ public class EnvironmentPacker
         }
 
         // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
-        using var outerContext = new FlagrumDbContext(_settings);
+        using var outerContext = new FlagrumDbContext(_profile);
 
         // Preload the script locations to prevent spam calling the DB
         _scriptLocations = new ConcurrentDictionary<string, string>(outerContext.AssetUris
@@ -114,7 +113,7 @@ public class EnvironmentPacker
         foreach (var (uri2, _) in _textures)
         {
             var btexData = GetFileByUri(uri2);
-            var converter = new TextureConverter();
+            var converter = new TextureConverter(_profile.Current.Type);
             var pngData = converter.BtexToTga(btexData);
             var fileName = uri2.Split('/').Last();
             var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
@@ -305,12 +304,12 @@ public class EnvironmentPacker
                         .Replace(".htpk", ".earc")
                         .Replace('/', '\\');
 
-                    var archivePath = $"{_settings.GameDataDirectory}\\{archiveRelativePath}";
+                    var archivePath = $@"{_profile.GameDataDirectory}\{archiveRelativePath}";
 
                     if (File.Exists(archivePath))
                     {
-                        using var unpacker = new Unpacker(archivePath);
-                        var files = string.Join(' ', unpacker.Files.Select(f => f.Uri));
+                        using var unpacker = new EbonyArchive(archivePath);
+                        var files = string.Join(' ', unpacker.Files.Select(f => f.Value.Uri));
                         highTexturePack = Encoding.UTF8.GetBytes(files);
                     }
                 }
@@ -490,7 +489,7 @@ public class EnvironmentPacker
     {
         uri = uri.ToLower();
         return _scriptLocations.TryGetValue(uri, out var location)
-            ? Unpacker.GetFileByLocation(_settings.GameDataDirectory + "\\" + location, uri)
+            ? EbonyArchive.GetFileByLocation(_profile.GameDataDirectory + "\\" + location, uri)
             : Array.Empty<byte>();
     }
 }

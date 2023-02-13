@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Archive;
+using Flagrum.Core.Utilities.Types;
 
 namespace Flagrum.Web.Features.AssetExplorer.Data;
 
@@ -19,7 +20,7 @@ public class ExportContext
     public Dictionary<string, bool> ScriptFormats { get; set; }
     public Dictionary<string, bool> ExportFormats { get; set; }
     
-    public ExportContext(ExportContextPreset preset)
+    public ExportContext(ExportContextPreset preset, LuminousGame type)
     {
         TextureFormats = new Dictionary<string, bool>
         {
@@ -37,11 +38,11 @@ public class ExportContext
         
         ExportFormats = preset switch
         {
-            ExportContextPreset.Scripts => ArchiveHelper.RelativeExtensions.ToDictionary(e => e,
+            ExportContextPreset.Scripts => ArchiveHelper.RelativeExtensions(type).ToDictionary(e => e,
                 e => e is "exml"),
-            ExportContextPreset.Models => ArchiveHelper.RelativeExtensions.ToDictionary(e => e,
+            ExportContextPreset.Models => ArchiveHelper.RelativeExtensions(type).ToDictionary(e => e,
                 e => e is "btex" or "gmdl.gfxbin" or "gpubin" or "gmtl.gfxbin" or "amdl"),
-            _ or ExportContextPreset.Textures => ArchiveHelper.RelativeExtensions.ToDictionary(e => e,
+            _ or ExportContextPreset.Textures => ArchiveHelper.RelativeExtensions(type).ToDictionary(e => e,
                 e => e == "btex")
         };
     }
