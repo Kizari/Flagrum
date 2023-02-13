@@ -9,8 +9,10 @@ using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using Flagrum.Core.Utilities.Types;
 using Flagrum.Desktop.Architecture;
 using Flagrum.Desktop.Services;
+using Flagrum.Web.Features.ModManager.Services;
 using Flagrum.Web.Services;
 using HelixToolkit.Wpf.SharpDX;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
@@ -30,7 +32,7 @@ namespace Flagrum.Desktop;
 /// </summary>
 public partial class MainWindow : INotifyPropertyChanged
 {
-    public MainWindow(AppStateService appStateService, string? fmodPath)
+    public MainWindow(ProfileService profileService, AppStateService appStateService, string? fmodPath)
     {
         var screen = Screen.FromHandle(new WindowInteropHelper(this).Handle);
         var bounds = screen.Bounds;
@@ -97,12 +99,28 @@ public partial class MainWindow : INotifyPropertyChanged
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, ConsoleLoggerProvider>());
             LoggerProviderOptions.RegisterProviderOptions<ConsoleLoggerConfiguration, ConsoleLoggerProvider>(
                 builder.Services);
-            Action<ConsoleLoggerConfiguration> configure = c => { };
-            builder.Services.Configure(configure);
+            
+            void Configure(ConsoleLoggerConfiguration c) { }
+            builder.Services.Configure((Action<ConsoleLoggerConfiguration>)Configure);
         });
 
         services.AddScoped<IWpfService, WpfService>(_ => new WpfService(this));
         services.AddSingleton(_ => appStateService);
+        services.AddSingleton(_ => profileService);
+
+        switch (profileService.Current.Type)
+        {
+            case LuminousGame.FFXV:
+                services.AddScoped<ModManagerServiceBase, FFXVModManager>();
+                break;
+            case LuminousGame.Forspoken:
+                services.AddScoped<ModManagerServiceBase, ForspokenModManager>();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(profileService.Current.Type), profileService.Current.Type,
+                    @"Unsupported mod manager service type");
+        }
+        
         services.AddBlazorWebView();
 
         services.AddFlagrum();

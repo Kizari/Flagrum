@@ -27,7 +27,7 @@ public static class AssetUriExtensions
             .Select(a => a.ArchiveLocation.Path)
             .FirstOrDefault();
 
-        return earcRelativePath == null ? null : context.Settings.GameDataDirectory + "\\" + earcRelativePath;
+        return earcRelativePath == null ? null : context.Profile.GameDataDirectory + "\\" + earcRelativePath;
     }
 
     public static string GetArchiveRelativeLocationByUri(this FlagrumDbContext context, string uri)
@@ -54,9 +54,9 @@ public static class AssetUriExtensions
             return Array.Empty<byte>();
         }
 
-        var location = context.Settings.GameDataDirectory + "\\" + earcRelativePath;
-
-        return Unpacker.GetFileByLocation(location, uri);
+        var location = context.Profile.GameDataDirectory + "\\" + earcRelativePath;
+        var archive = context.Profile.OpenArchive(location);
+        return archive[uri].GetReadableData();
     }
 
     public static IDictionary<string, byte[]> GetFilesByUri(this FlagrumDbContext context, IEnumerable<string> uris)
@@ -72,10 +72,10 @@ public static class AssetUriExtensions
         Parallel.ForEach(uriPaths.Select(up => up.Path).Distinct(), earcPath =>
         {
             var earcUris = uriPaths.Where(up => up.Path == earcPath).Select(up => up.Uri);
-            using var unpacker = new Unpacker(context.Settings.GameDataDirectory + "\\" + earcPath);
+            using var unpacker = new EbonyArchive(context.Profile.GameDataDirectory + "\\" + earcPath);
             foreach (var uri in earcUris)
             {
-                items.TryAdd(uri, unpacker.UnpackFileByQuery(uri, out _));
+                items.TryAdd(uri, unpacker[uri].GetReadableData());
             }
         });
 

@@ -1,14 +1,15 @@
 ﻿@page "/assets"
 
+@using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.AssetExplorer.Base
 @using Flagrum.Web.Features.AssetExplorer.Data
 @using Flagrum.Web.Features.AssetExplorer.FileSystem
 @using Flagrum.Web.Features.AssetExplorer.GameView
-@using Flagrum.Web.Features.AssetExplorer.Base
-@using Flagrum.Web.Persistence.Entities
-
-@implements IAssetExplorerParent
+@using Flagrum.Core.Utilities.Types
+@implements Flagrum.Web.Features.AssetExplorer.Base.IAssetExplorerParent
 
 @inject FlagrumDbContext Context
+@inject ProfileService Profile
 
 <CascadingValue Value="this">
     @switch (CurrentView)
@@ -36,22 +37,38 @@
         default:
             throw new ArgumentOutOfRangeException();
     }
-    
+
 </CascadingValue>
 
-<AlertModal @ref="Alert" />
+<AlertModal @ref="Alert"/>
 
-@code 
+@code
 {
     public AlertModal Alert { get; set; }
     public AssetExplorer AssetExplorer { get; set; }
-    
+
     public AssetExplorerView CurrentView { get; set; }
 
-    public void CallStateHasChanged() => StateHasChanged();
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {
+        if (Profile.Current.Type == LuminousGame.Forspoken && !Profile.IsEarlyAccessEnabled)
+        {
+            throw new Exception("Cannot access Asset Explorer for Forspoken without early access!");
+        }
+
+        if (Profile.Current.Type == LuminousGame.FFXV)
+        {
+            if (Context.AssetExplorerNodes.Any(n => n.Name == "sdk:"))
+            {
+                throw new Exception("Cannot access Asset Explorer for Forspoken without early access!");
+            }
+        }
+        
         CurrentView = Context.GetEnum<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
     }
 }

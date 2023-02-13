@@ -45,17 +45,11 @@
     <data name="Browse" xml:space="preserve">
         <value>ブラウズ</value>
     </data>
-    <data name="PathAutodetectFailed" xml:space="preserve">
-        <value>フラーグルムは、ゲームファイルの場所を自動的に検出することができませんでした。ファイナルファンタジーXVがインストールされていることを確認し、以下のパスを設定してください。</value>
-    </data>
     <data name="Language" xml:space="preserve">
         <value>言語</value>
     </data>
     <data name="RestartRequired" xml:space="preserve">
         <value>再起動が必要</value>
-    </data>
-    <data name="RestartPrompt" xml:space="preserve">
-        <value>言語の変更を適用するには、フラーグルムを再起動する必要があります。今すぐフラーグルムを再起動しますか？</value>
     </data>
     <data name="English" xml:space="preserve">
         <value>英語</value>

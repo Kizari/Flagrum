@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Timers;
 using Flagrum.Core.Archive;
+using Flagrum.Core.Utilities.Types;
 using Microsoft.Extensions.Logging;
 using Steamworks;
 
@@ -137,10 +138,9 @@ public class SteamWorkshopService
         {
             _appState.ActiveMod.ItemId = result.m_nPublishedFileId.m_PublishedFileId;
 
-            var unpacker = new Unpacker(_appState.ActiveMod.Path);
-            var packer = unpacker.ToPacker();
+            using var packer = new EbonyArchive(_appState.ActiveMod.Path);
             packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
-            packer.WriteToFile(_appState.ActiveMod.Path);
+            packer.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
 
             Update(_currentDetails, _onCreate);
         }
@@ -155,10 +155,9 @@ public class SteamWorkshopService
         {
             _appState.ActiveMod.IsUploaded = true;
 
-            var unpacker = new Unpacker(_appState.ActiveMod.Path);
-            var packer = unpacker.ToPacker();
+            using var packer = new EbonyArchive(_appState.ActiveMod.Path);
             packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
-            packer.WriteToFile(_appState.ActiveMod.Path);
+            packer.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
 
             _onUpdate();
 
@@ -181,10 +180,9 @@ public class SteamWorkshopService
             {
                 _appState.ActiveMod.ItemId = 0;
                 _appState.ActiveMod.IsUploaded = false;
-                var unpacker = new Unpacker(_appState.ActiveMod.Path);
-                var packer = unpacker.ToPacker();
+                using var packer = new EbonyArchive(_appState.ActiveMod.Path);
                 packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
-                packer.WriteToFile(_appState.ActiveMod.Path);
+                packer.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
 
                 _onQueryComplete(new WorkshopItemDetails());
                 return;

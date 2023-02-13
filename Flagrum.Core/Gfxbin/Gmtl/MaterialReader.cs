@@ -46,6 +46,11 @@ public class MaterialReader
     {
         _reader.UnpackUInt64(out var nameOffset);
 
+        if (_material.Header.Version >= 20220707)
+        {
+            _reader.UnpackUInt16(out _);
+        }
+
         _reader.UnpackUInt16(out var matUniformCount);
         _reader.UnpackUInt16(out var matBufferCount);
         _reader.UnpackUInt16(out var matTextureCount);
@@ -61,6 +66,12 @@ public class MaterialReader
         _reader.UnpackUInt32(out var gpuDataSize);
         _reader.UnpackUInt32(out _); // String buffer size
         _reader.UnpackUInt32(out var nameHash);
+
+        if (_material.Header.Version >= 20220707)
+        {
+            _reader.UnpackUInt32(out _);
+        }
+
         _reader.UnpackUInt32(out var blendType);
 
         _reader.UnpackFloat32(out var blendFactor);
@@ -330,7 +341,7 @@ public class MaterialReader
         {
             return;
         }
-        
+
         _reader.UnpackBlob(out var buffer, out _);
 
         foreach (var input in _material.InterfaceInputs)

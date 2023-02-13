@@ -46,7 +46,7 @@
         <value>Browse</value>
     </data>
     <data name="PathAutodetectFailed" xml:space="preserve">
-        <value>Flagrum was unable to automatically detect the location of your game files. Please ensure Final Fantasy XV is installed on your computer then set the paths below.</value>
+        <value>Flagrum was unable to automatically detect the location of your game files. Please ensure the game is installed then set the paths below.</value>
     </data>
     <data name="Language" xml:space="preserve">
         <value>Language</value>
@@ -55,7 +55,7 @@
         <value>Restart Required</value>
     </data>
     <data name="RestartPrompt" xml:space="preserve">
-        <value>Flagrum must be restarted to apply language changes. Would you like to restart Flagrum now?</value>
+        <value>Flagrum will restart itself to apply these changes. Do you wish to proceed?</value>
     </data>
     <data name="English" xml:space="preserve">
         <value>English</value>
@@ -77,5 +77,14 @@
     </data>
     <data name="RegenerateFileIndex" xml:space="preserve">
         <value>Regenerate File Index</value>
+    </data>
+    <data name="Profile" xml:space="preserve">
+        <value>Profile</value>
+    </data>
+    <data name="ForspokenPath" xml:space="preserve">
+        <value>Forspoken Executable Path</value>
+    </data>
+    <data name="DefaultForspokenPath" xml:space="preserve">
+        <value>Default C:\Program Files (x86)\Steam\steamapps\common\FORSPOKEN\FORSPOKEN.exe</value>
     </data>
 </root>

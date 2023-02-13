@@ -1,0 +1,39 @@
+﻿@using System.Diagnostics
+@inject ProfileService Profile
+
+<span @onclick="OnClick" class="text-accent1-200 hover:text-white block cursor-pointer font-display" style="font-size: 0.9rem;">@Text</span>
+
+@code
+{
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string[] Tags { get; set; }
+
+    private void OnClick()
+    {
+        if (Profile.SteamExePath == null)
+        {
+            const string baseUri = "https://steamcommunity.com/workshop/browse/?appid=637650&browsesort=toprated&section=readytouseitems";
+            var uri = Tags.Aggregate(baseUri, (current, tag) => current + $"&requiredtags[]={Uri.EscapeDataString(tag)}");
+            Process.Start(new ProcessStartInfo(uri)
+            {
+                UseShellExecute = true
+            });
+        }
+        else
+        {
+            const string baseUri = "steam://openurl/https://steamcommunity.com/workshop/browse/?appid=637650&browsesort=toprated&section=readytouseitems";
+            var uri = Tags.Aggregate(baseUri, (current, tag) => current + $"&requiredtags[]={Uri.EscapeDataString(tag)}");
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Profile.SteamExePath,
+                UseShellExecute = false,
+                CreateNoWindow = false,
+                Arguments = uri
+            });
+        }
+    }
+}

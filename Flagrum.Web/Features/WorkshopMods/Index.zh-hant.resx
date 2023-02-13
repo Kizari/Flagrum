@@ -1,0 +1,186 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="Accessory" xml:space="preserve">
+        <value>飾品</value>
+    </data>
+    <data name="AllFlagrumMods" xml:space="preserve">
+        <value>Flagrum MOD</value>
+    </data>
+    <data name="AllMods" xml:space="preserve">
+        <value>所有MOD</value>
+    </data>
+    <data name="Aranea" xml:space="preserve">
+        <value>艾拉妮亞</value>
+    </data>
+    <data name="Ardyn" xml:space="preserve">
+        <value>艾汀</value>
+    </data>
+    <data name="Bottoms" xml:space="preserve">
+        <value>下裝</value>
+    </data>
+    <data name="Browse" xml:space="preserve">
+        <value>流覽創意工坊的MOD</value>
+    </data>
+    <data name="BrowseDescription" xml:space="preserve">
+        <value>由於舊工具未將標籤應用到清單，僅能顯示使用Flagrum製作的MOD</value>
+    </data>
+    <data name="Cid" xml:space="preserve">
+        <value>希德</value>
+    </data>
+    <data name="Cidney" xml:space="preserve">
+        <value>希德妮</value>
+    </data>
+    <data name="ComradesStyles" xml:space="preserve">
+        <value>戰友角色</value>
+    </data>
+    <data name="ComradesWeapons" xml:space="preserve">
+        <value>戰友武器</value>
+    </data>
+    <data name="Cor" xml:space="preserve">
+        <value>科爾</value>
+    </data>
+    <data name="Crossbow" xml:space="preserve">
+        <value>十字弓</value>
+    </data>
+    <data name="Dagger" xml:space="preserve">
+        <value>雙刀</value>
+    </data>
+    <data name="Face" xml:space="preserve">
+        <value>臉部</value>
+    </data>
+    <data name="Gentiana" xml:space="preserve">
+        <value>肯提亞娜</value>
+    </data>
+    <data name="Gladiolus" xml:space="preserve">
+        <value>格拉迪歐藍斯</value>
+    </data>
+    <data name="Gloves" xml:space="preserve">
+        <value>手套</value>
+    </data>
+    <data name="Gun" xml:space="preserve">
+        <value>槍械</value>
+    </data>
+    <data name="Hair" xml:space="preserve">
+        <value>髮型</value>
+    </data>
+    <data name="Ignis" xml:space="preserve">
+        <value>伊格尼斯</value>
+    </data>
+    <data name="Iris" xml:space="preserve">
+        <value>伊莉絲</value>
+    </data>
+    <data name="Katana" xml:space="preserve">
+        <value>刀</value>
+    </data>
+    <data name="LargeSword" xml:space="preserve">
+        <value>雙手劍</value>
+    </data>
+    <data name="Large_Sword" xml:space="preserve">
+        <value>雙手劍</value>
+    </data>
+    <data name="LocalMods" xml:space="preserve">
+        <value>本地MOD</value>
+    </data>
+    <data name="Lunafrena" xml:space="preserve">
+        <value>露娜弗蕾亞</value>
+    </data>
+    <data name="Mace" xml:space="preserve">
+        <value>戰錘</value>
+    </data>
+    <data name="Magitek_Gladiolus" xml:space="preserve">
+        <value>魔導防護服（格拉迪歐藍斯）</value>
+    </data>
+    <data name="Magitek_Ignis" xml:space="preserve">
+        <value>魔導防護服（伊格尼斯）</value>
+    </data>
+    <data name="Magitek_Noctis" xml:space="preserve">
+        <value>魔導防護服（諾克提斯）</value>
+    </data>
+    <data name="Magitek_Prompto" xml:space="preserve">
+        <value>魔導防護服（普羅恩普特）</value>
+    </data>
+    <data name="ModelReplacements" xml:space="preserve">
+        <value>模型替換</value>
+    </data>
+    <data name="NewMod" xml:space="preserve">
+        <value>新MOD</value>
+    </data>
+    <data name="Noctis" xml:space="preserve">
+        <value>諾克提斯</value>
+    </data>
+    <data name="NPC_FEMALE" xml:space="preserve">
+        <value>女性NPC</value>
+    </data>
+    <data name="NPC_FEMALE_CHILD" xml:space="preserve">
+        <value>女童NPC</value>
+    </data>
+    <data name="NPC_MALE" xml:space="preserve">
+        <value>男性NPC</value>
+    </data>
+    <data name="NPC_MALE_CHILD" xml:space="preserve">
+        <value>男童NPC</value>
+    </data>
+    <data name="Other" xml:space="preserve">
+        <value>其他</value>
+    </data>
+    <data name="OutfitMods" xml:space="preserve">
+        <value>裝備MOD</value>
+    </data>
+    <data name="Outfits" xml:space="preserve">
+        <value>裝備</value>
+    </data>
+    <data name="Prompto" xml:space="preserve">
+        <value>普羅恩普特</value>
+    </data>
+    <data name="Ravus" xml:space="preserve">
+        <value>瑞布斯</value>
+    </data>
+    <data name="Replacements" xml:space="preserve">
+        <value>替換物</value>
+    </data>
+    <data name="Shield" xml:space="preserve">
+        <value>盾</value>
+    </data>
+    <data name="Shoes" xml:space="preserve">
+        <value>鞋</value>
+    </data>
+    <data name="Shuriken" xml:space="preserve">
+        <value>手裡劍</value>
+    </data>
+    <data name="Spear" xml:space="preserve">
+        <value>長槍</value>
+    </data>
+    <data name="Sword" xml:space="preserve">
+        <value>單手劍</value>
+    </data>
+    <data name="Tops" xml:space="preserve">
+        <value>頂部</value>
+    </data>
+    <data name="WeaponMods" xml:space="preserve">
+        <value>武器模組</value>
+    </data>
+    <data name="Weapons" xml:space="preserve">
+        <value>武器</value>
+    </data>
+    <data name="Wear" xml:space="preserve">
+        <value>服裝</value>
+    </data>
+    <data name="WorkshopMods" xml:space="preserve">
+        <value>創意工坊 MOD</value>
+    </data>
+</root>

@@ -1,8 +1,36 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
 @using System.IO
 @using Flagrum.Core.Utilities
-<div class="flex-grow flex flex-row items-center">
-    <img src="images/@ImageName" class="mx-auto" style="max-width: 70%"/>
+
+@inject ProfileService Profile
+
+<div class="flex-grow flex flex-col">
+    <div class="flex-grow flex flex-row items-center">
+        @if (CurrentIndex > 0)
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer ml-6 select-none" @onclick="() => SetImage(CurrentIndex - 1)">arrow_back_ios</span>
+        }
+        else
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer ml-6 select-none invisible">arrow_back_ios</span>
+        }
+        <img alt="Texture Preview" src="images/@Profile.Current.Id/@ImageName" class="mx-auto" style="max-width: 70%; max-height: 90%;"/>
+        @if (CurrentIndex < (Images.Count - 1))
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none" @onclick="() => SetImage(CurrentIndex + 1)">arrow_forward_ios</span>
+        }
+        else
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none invisible">arrow_forward_ios</span>
+        }
+    </div>
+    
+    @if (Images.Count > 1)
+    {
+        <div class="text-center mb-6">
+            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @Images.Count</span>
+        </div>
+    }
 </div>
 
 @code
@@ -13,6 +41,9 @@
     public IAssetExplorerNode Item { get; set; }
 
     private string ImageName { get; set; } = "asset_preview.jpg";
+    
+    private IList<byte[]> Images { get; set; }
+    private int CurrentIndex { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -20,15 +51,22 @@
         {
             _previousItem = Item;
 
-    // Convert to jpeg for display
-            var converter = new TextureConverter();
-            var jpegBytes = converter.BtexToJpg(Item.Data);
-            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\asset_preview.jpg", jpegBytes);
-
-    // Jank to trick the UI into updating
-            ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
-
-            StateHasChanged();
+            // Convert to jpeg for display
+            var converter = new TextureConverter(Profile.Current.Type);
+            Images = converter.BtexToJpgs(Item.Data).ToList();
+            
+            SetImage(0);
         }
+    }
+
+    private void SetImage(int index)
+    {
+        CurrentIndex = index;
+        File.WriteAllBytes($@"{Profile.ImagesDirectory}\asset_preview.jpg", Images[index]);
+
+        // Jank to trick the UI into updating
+        ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
+
+        StateHasChanged();
     }
 }

@@ -4,7 +4,8 @@
 
 <select value="@CurrentValueAsString"
         @onchange="OnChange"
-        class="input bg-dark-550 w-full">
+        class="input bg-dark-550 w-full"
+        style="@Style">
     @foreach (var item in Enum.GetValues(typeof(TEnum)))
     {
         <option value="@item" class="text-grey-400">@(Localizer == null ? item.ToString() : Localizer[$"{LocalizerPrefix}{item}"])</option>
@@ -18,6 +19,9 @@
     
     [Parameter]
     public string LocalizerPrefix { get; set; }
+    
+    [Parameter]
+    public string Style { get; set; }
 
     private void OnChange(ChangeEventArgs e)
     {

@@ -30,10 +30,10 @@ public partial class AssetExplorer
         {
             if (CurrentLayout == FileListLayout.ListView)
             {
-                return FileList?.CurrentNode == null ? "data://" : FileList.CurrentNode.Name;
+                return FileList?.CurrentNode == null || FileList?.CurrentNode.Name == "" ? "Game View" : FileList.CurrentNode.Name;
             }
 
-            return Parent.CurrentView == AssetExplorerView.FileSystem ? "This PC" : "data://";
+            return Parent.CurrentView == AssetExplorerView.FileSystem ? "This PC" : "Game View";
         }
     }
 

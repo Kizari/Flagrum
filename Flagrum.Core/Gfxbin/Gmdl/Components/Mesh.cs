@@ -70,8 +70,7 @@ public enum PrimitiveType
 public enum IndexType
 {
     IndexType16 = 0x0,
-    IndexType32 = 0x1,
-    IndexTypeNum = 0x2
+    IndexType32 = 0x1
 }
 
 public class Mesh

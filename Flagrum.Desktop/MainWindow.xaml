@@ -48,6 +48,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="45" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
                             <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="50" />
@@ -58,7 +59,18 @@
                                Foreground="#E7E5E4" FontSize="14"
                                VerticalAlignment="Center"
                                Padding="0, 5, 15, 8" />
-                        <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"
+                        <Image Grid.Column="2"
+                               Source="/patreon.png"
+                               WindowChrome.IsHitTestVisibleInChrome="True"
+                               Height="42"
+                               HorizontalAlignment="Right"
+                               Margin="0, 2, 15, 0"
+                               Cursor="Hand">
+                            <Image.InputBindings>
+                                <MouseBinding Gesture="LeftClick" Command="{Binding PatreonLink}" />
+                            </Image.InputBindings>
+                        </Image>
+                        <Button Grid.Column="3" WindowChrome.IsHitTestVisibleInChrome="True" Click="Minimize_Click"
                                 Content="&#xE949;" FontFamily="Segoe MDL2 Assets" FontSize="10"
                                 BorderBrush="Transparent"
                                 Foreground="#E7E5E4">
@@ -84,7 +96,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Grid.Column="3" WindowChrome.IsHitTestVisibleInChrome="True" Click="Maximize_Click"
+                        <Button Grid.Column="4" WindowChrome.IsHitTestVisibleInChrome="True" Click="Maximize_Click"
                                 FontFamily="Segoe MDL2 Assets" FontSize="10" BorderBrush="Transparent"
                                 Foreground="#E7E5E4">
                             <Button.Style>
@@ -114,7 +126,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Grid.Column="4" Padding="0,15" WindowChrome.IsHitTestVisibleInChrome="True"
+                        <Button Grid.Column="5" Padding="0,15" WindowChrome.IsHitTestVisibleInChrome="True"
                                 Click="Close_Click"
                                 Content="&#xE106;" FontFamily="Segoe MDL2 Assets" FontSize="10"
                                 BorderBrush="Transparent"
@@ -227,6 +239,7 @@
                             </helix:Viewport3DX.InputBindings>
                             <helix:DirectionalLight3D Direction="0, -1, -1" Color="White" />
                             <helix:DirectionalLight3D Direction="0, -1, 1" Color="#AAAAAA" />
+                            <helix:DirectionalLight3D Direction="0, 1, 0" Color="#888888" />
                             <helix:Element3DPresenter Content="{Binding ModelGroup}" />
                         </helix:Viewport3DX>
                     </architecture:AirspacePopup>

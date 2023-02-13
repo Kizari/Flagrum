@@ -5,35 +5,25 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Types;
 using Flagrum.Web.Features.AssetExplorer.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Flagrum.Web.Services;
 
-public class AppStateData
-{
-    public string CurrentAssetExplorerPath { get; set; }
-}
-
 public class AppStateService
 {
-    private readonly SettingsService _settings;
+    private readonly FlagrumDbContext _context;
+    private readonly UriMapper _mapper;
+    private readonly ProfileService _profile;
 
-    public AppStateService(SettingsService settings)
+    public AppStateService(ProfileService profile, FlagrumDbContext context, UriMapper mapper)
     {
-        _settings = settings;
-
-        // Assimilate old state file into local DB
-        if (File.Exists(_settings.StatePath))
-        {
-            using var context = new FlagrumDbContext(_settings);
-            var data = JsonConvert.DeserializeObject<AppStateData>(File.ReadAllText(_settings.StatePath))!;
-            context.SetString(StateKey.CurrentAssetExplorerPath, data.CurrentAssetExplorerPath);
-            File.Delete(_settings.StatePath);
-        }
+        _profile = profile;
+        _context = context;
+        _mapper = mapper;
     }
 
     public Binmod ActiveMod { get; set; }
@@ -43,7 +33,6 @@ public class AppStateService
     public bool IsIndexing { get; set; }
 
     public AssetExplorerNode RootModelBrowserNode { get; set; }
-    public IAssetExplorerNode RootFileSystemNode { get; set; }
     public IAssetExplorerNode RootGameViewNode { get; set; }
     public IAssetExplorerNode CurrentGameViewNode { get; set; }
     public Dictionary<ulong, string> PathMap { get; set; }
@@ -65,6 +54,12 @@ public class AppStateService
         return path;
     }
 
+    public string GetArchiveRelativePathByUri(string uri)
+    {
+        var hash = Cryptography.HashFileUri64(uri);
+        return PathMap[hash];
+    }
+
     public void UpdateBinmodList()
     {
         var fakeMods = UnmanagedEntries.Select(e => new Binmod
@@ -78,37 +73,51 @@ public class AppStateService
 
         var entries = Mods.Union(fakeMods);
 
-        var modList = ModlistEntry.FromFile(_settings.BinmodListPath);
+        var modList = ModlistEntry.FromFile(_profile.BinmodListPath);
         var fixIdMap = modList.ToDictionary(m => m.Path, m => m.Index);
 
-        ModlistEntry.ToFile(_settings.BinmodListPath, entries, fixIdMap);
+        ModlistEntry.ToFile(_profile.BinmodListPath, entries, fixIdMap);
     }
-    
+
     public void LoadNodes()
     {
-        // Run this separately as it shouldn't delay the startup
-        Task.Run(() =>
+        if (_profile.IsReady)
         {
-            using var context = new FlagrumDbContext(new SettingsService());
-            if (!context.AssetExplorerNodes.Any())
+            // Run this separately as it shouldn't delay the startup
+            Task.Run(() =>
             {
-                new UriMapper(context, context.Settings).RegenerateMap();
+                if (!_context.AssetExplorerNodes.Any())
+                {
+                    _mapper.RegenerateMap();
+                }
+
+                // Don't wait for this as it won't be needed until it's long since finished
+                Task.Run(LoadPathMap);
+
+                LoadNodeTree();
+            });
+
+            if (_profile.Current.Type == LuminousGame.Forspoken)
+            {
+                // Preload all earcs to speed up the Asset Explorer
+                Task.Run(() =>
+                {
+                    using var context = new FlagrumDbContext(_profile);
+                    foreach (var earc in context.ArchiveLocations)
+                    {
+                        _profile.OpenArchive($@"{_profile.GameDataDirectory}\{earc.Path}");
+                    }
+                });
             }
-
-            // Don't wait for this as it won't be needed until it's long since finished
-            Task.Run(LoadPathMap);
-
-            LoadNodeTree();
-        });
+        }
     }
 
     private void LoadNodeTree()
     {
-        using var context = new FlagrumDbContext(new SettingsService());
-        var currentNodeId = context.GetInt(StateKey.CurrentAssetNode);
+        var currentNodeId = _context.GetInt(StateKey.CurrentAssetNode);
 
         // Load the node tree from the DB
-        var nodeTree = new ConcurrentDictionary<int, AssetExplorerNode>(context.AssetExplorerNodes
+        var nodeTree = new ConcurrentDictionary<int, AssetExplorerNode>(_context.AssetExplorerNodes
             .AsNoTracking()
             .ToList()
             .ToDictionary(n => n.Id, n => n));
@@ -142,13 +151,13 @@ public class AppStateService
             }
         }
 
-        RootGameViewNode = nodeTree[1];
+        RootGameViewNode = nodeTree.First(n => n.Value.ParentId == null).Value;
         IsIndexing = false;
     }
 
     private void LoadPathMap()
     {
-        using var context = new FlagrumDbContext(new SettingsService());
+        using var context = new FlagrumDbContext(_profile);
         PathMap = context.AssetUris
             .Select(a => new
             {

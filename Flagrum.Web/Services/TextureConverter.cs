@@ -1,14 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
 using Flagrum.Core.Gfxbin.Btex;
 using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Types;
+using Flagrum.Web.Features.Settings.Data;
 
 namespace Flagrum.Web.Services;
 
 public class TextureConverter
 {
+    private readonly LuminousGame _profile;
+    
+    public TextureConverter(LuminousGame profile)
+    {
+        _profile = profile;
+    }
+    
     public byte[] ProcessEarcModThumbnail(byte[] data)
     {
         try
@@ -269,12 +280,16 @@ public class TextureConverter
         ddsStream.CopyTo(stream);
 
         return BtexConverter.DdsToBtex(request.Name, stream.ToArray(), request.ImageFlags, rowPitch,
-            (DxgiFormat)dxgiFormat);
+            (DxgiFormat)dxgiFormat, request.AddSedbHeader);
     }
 
     public byte[] BtexToDds(byte[] btex)
     {
-        var dds = BtexConverter.BtexToDds(btex);
+        var dds = BtexConverter.BtexToDds(btex, _profile, (format, width, height) =>
+        {
+            TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out var rowPitch, out var slicePitch, CP_FLAGS.NONE);
+            return (rowPitch, slicePitch);
+        });
 
         var pinnedData = GCHandle.Alloc(dds, GCHandleType.Pinned);
         var pointer = pinnedData.AddrOfPinnedObject();
@@ -300,6 +315,22 @@ public class TextureConverter
         return stream.ToArray();
     }
 
+    public IEnumerable<byte[]> BtexToJpgs(byte[] btex)
+    {
+        var image = BtexToScratchImage(btex);
+        var metadata = image.GetMetadata();
+
+        for (var i = 0; i < image.GetImageCount(); i += metadata.MipLevels)
+        {
+            using var stream = new MemoryStream();
+            using var jpgStream = image.SaveToJPGMemory(i, 1.0f);
+            jpgStream.CopyTo(stream);
+            yield return stream.ToArray();
+        }
+        
+        image.Dispose();
+    }
+
     public byte[] BtexToPng(byte[] btex)
     {
         var image = BtexToScratchImage(btex);
@@ -309,6 +340,23 @@ public class TextureConverter
         image.Dispose();
         pngStream.CopyTo(stream);
         return stream.ToArray();
+    }
+    
+    public IEnumerable<byte[]> BtexToPngs(byte[] btex)
+    {
+        var image = BtexToScratchImage(btex);
+        var metadata = image.GetMetadata();
+
+        for (var i = 0; i < image.GetImageCount(); i += metadata.MipLevels)
+        {
+            using var stream = new MemoryStream();
+            using var pngStream =
+                image.SaveToWICMemory(i, WIC_FLAGS.FORCE_SRGB, TexHelper.Instance.GetWICCodec(WICCodecs.PNG));
+            pngStream.CopyTo(stream);
+            yield return stream.ToArray();
+        }
+        
+        image.Dispose();
     }
 
     public byte[] BtexToTga(byte[] btex)
@@ -320,10 +368,30 @@ public class TextureConverter
         tgaStream.CopyTo(stream);
         return stream.ToArray();
     }
+    
+    public IEnumerable<byte[]> BtexToTgas(byte[] btex)
+    {
+        var image = BtexToScratchImage(btex);
+        var metadata = image.GetMetadata();
+
+        for (var i = 0; i < image.GetImageCount(); i += metadata.MipLevels)
+        {
+            using var stream = new MemoryStream();
+            using var tgaStream = image.SaveToTGAMemory(i);
+            tgaStream.CopyTo(stream);
+            yield return stream.ToArray();
+        }
+        
+        image.Dispose();
+    }
 
     private ScratchImage BtexToScratchImage(byte[] btex)
     {
-        var dds = BtexConverter.BtexToDds(btex);
+        var dds = BtexConverter.BtexToDds(btex, _profile, (format, width, height) =>
+        {
+            TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out var rowPitch, out var slicePitch, CP_FLAGS.NONE);
+            return (rowPitch, slicePitch);
+        });
 
         var pinnedData = GCHandle.Alloc(dds, GCHandleType.Pinned);
         var pointer = pinnedData.AddrOfPinnedObject();
@@ -462,6 +530,60 @@ public class TextureConverter
 
         return BtexConverter.DdsToBtex(type, name, stream.ToArray());
     }
+    
+    public void ExportTexture(string absoluteFilePath, ImageFormat targetFormat, byte[] btexData)
+    {
+        var outputPathNoExtension = absoluteFilePath[..absoluteFilePath.LastIndexOf('.')];
+
+        // ReSharper disable twice PossibleUnintendedReferenceComparison
+        if (targetFormat == ImageFormat.Btex)
+        {
+            var finalPath = $"{outputPathNoExtension}.{targetFormat}";
+            IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+            File.WriteAllBytes(finalPath, btexData);
+        }
+        else if (targetFormat == ImageFormat.Dds)
+        {
+            var finalPath = $"{outputPathNoExtension}.{targetFormat}";
+            IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+            File.WriteAllBytes(finalPath, BtexToDds(btexData));
+        }
+        else
+        {
+            List<byte[]> images;
+            if (targetFormat == ImageFormat.Png)
+            {
+                images = BtexToPngs(btexData).ToList();
+            }
+            else if (targetFormat == ImageFormat.Targa)
+            {
+                images = BtexToTgas(btexData).ToList();
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(targetFormat), targetFormat,
+                    @"Unsupported texture format");
+            }
+
+            if (images.Count > 1)
+            {
+                var name = outputPathNoExtension.Split('\\').Last();
+
+                for (var i = 0; i < images.Count; i++)
+                {
+                    var finalPath = $@"{outputPathNoExtension}\{name}.1{(i + 1).WithTrailingZeros(3)}.{targetFormat}";
+                    IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+                    File.WriteAllBytes(finalPath, images[i]);
+                }
+            }
+            else
+            {
+                var finalPath = $"{outputPathNoExtension}.{targetFormat}";
+                IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+                File.WriteAllBytes(finalPath, images[0]);
+            }
+        }
+    }
 }
 
 public class BtexBuildRequest
@@ -472,6 +594,7 @@ public class BtexBuildRequest
     public int MipLevels { get; set; }
     public BtexSourceFormat SourceFormat { get; set; }
     public byte[] SourceData { get; set; }
+    public bool AddSedbHeader { get; set; }
 }
 
 public enum BtexSourceFormat

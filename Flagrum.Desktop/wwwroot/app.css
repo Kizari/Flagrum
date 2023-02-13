@@ -27766,6 +27766,15 @@ textarea::-webkit-scrollbar-thumb {
   border-bottom-left-radius: 9999px;
 }
 
+.standard-table {
+  width: 100%;
+}
+
+.standard-table th, .standard-table td {
+  text-align: left;
+  padding: 10px 20px;
+}
+
 @media (min-width: 640px) {
   .sm\:container {
     width: 100%;

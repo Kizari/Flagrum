@@ -14,7 +14,7 @@
                     <strong class="font-display flex-grow">@FileListHeaderDisplayName</strong>
                     @if (Parent.CurrentView == AssetExplorerView.GameView && ItemSelectedOverride == null)
                     {
-                        if (FileList?.CurrentNode?.Name == "data://")
+                        if (FileList?.CurrentNode?.Name == "")
                         {
                             <span class="material-icons select-none cursor-pointer mr-6" style="font-size: 1rem" @onclick="ExportContextMenu.ExportCurrentFolder">drive_file_move</span>
                         }
@@ -28,7 +28,7 @@
             {
                 <div class="bg-dark border-t border-b border-r border-dark-550 p-3" style="flex: 0 0 315px;">
                     <div class="row">
-                        <strong class="font-display flex-grow">@(FileList?.CurrentNode == null ? "data://" : FileList.CurrentNode.Name)</strong>
+                        <strong class="font-display flex-grow">@(FileList?.CurrentNode == null ? "Game View" : FileList.CurrentNode.Name)</strong>
                     </div>
                 </div>
             }

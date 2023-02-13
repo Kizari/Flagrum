@@ -10,7 +10,7 @@ public abstract partial class AddressBar
     [CascadingParameter(Name = "AssetExplorer")]
     public AssetExplorer AssetExplorer { get; set; }
 
-    public string CurrentPath { get; protected set; } = "data://";
+    public string CurrentPath { get; protected set; } = "";
     private bool AddressBarSelect { get; set; }
 
     public abstract void NavigateToCurrentPath();

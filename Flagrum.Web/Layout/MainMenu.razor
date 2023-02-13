@@ -1,24 +1,32 @@
-﻿@using Flagrum.Core.Utilities
+﻿@using Flagrum.Core.Utilities.Types
+@using Flagrum.Core.Utilities
 @using System.IO
 @using System.Diagnostics
 @inject IWpfService WpfService
-@inject SettingsService Settings
 @inject IStringLocalizer<MainMenu> L
 @inject IStringLocalizer<App> AppLocalizer
 @inject FlagrumDbContext Context
+@inject ProfileService Profile
 
 <CascadingValue Value="this">
     <Bootstrapper/>
     <div class="h-full bg-dark flex flex-col border-dark-550 border-r" style="flex: 0 0 195px">
         <MenuItem Icon="apps" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
-        <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
-        <MenuItem Icon="steam" Text=@L["WorkshopMods"] Uri="/mod"/>
-        @* <MenuItem Icon="share" Text="Sequence Editor" Uri="/sequenceeditor"></MenuItem> *@
+
+        @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
+        {
+            <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
+        }
+
+        @if (Profile.Current.Type == LuminousGame.FFXV)
+        {
+            <MenuItem Icon="steam" Text=@L["WorkshopMods"] Uri="/mod"/>
+        }
+
         <div class="flex-grow"></div>
 
         <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri="@L["WikiUrl"]"/>
-        @* <MenuItem Icon="map" Text="Roadmap" Uri="/roadmap"/> *@
-        <MenuItem Icon="favorite" Text="@L["About"]" Uri="/about"/>
+        <MenuItem Icon="info" Text="@L["About"]" Uri="/about"/>
         <MenuItem Icon="settings" Text="@AppLocalizer["Settings"]" Uri="/settings"/>
 
         <img alt="Discord" @onclick="OpenDiscordLink" src="discord-button.png" class="p-2 rounded-md bg-grey-800 shadow-md mt-4 mx-4 cursor-pointer" style="max-width: 165px"/>
@@ -57,15 +65,15 @@
     {
         if (firstRender)
         {
-            if (Settings.LastVersionNotes != Version)
+            if (Profile.LastVersionNotes != Version)
             {
                 try
                 {
     // This check is here to stop thumbnails being moved around in development
-                    if (IOHelper.GetWebRoot().StartsWith(Settings.FlagrumDirectory, StringComparison.OrdinalIgnoreCase))
+                    if (IOHelper.GetWebRoot().StartsWith(Profile.FlagrumDirectory, StringComparison.OrdinalIgnoreCase))
                     {
                         var previousAppDirectory = Directory
-                            .EnumerateDirectories(Settings.FlagrumDirectory)
+                            .EnumerateDirectories(Profile.FlagrumDirectory)
                             .FirstOrDefault(d => d.Contains(@"\app-") && !d.Contains($@"\app-{Version}"));
 
                         var previousThumbnailDirectory = $@"{previousAppDirectory}\wwwroot\EarcMods";
@@ -91,12 +99,12 @@
                 VersionNotesModal.Open();
 
     // Clear build cache in case any build changes have been made in the new version that need to be applied
-                foreach (var file in Directory.EnumerateFiles(Settings.CacheDirectory))
+                foreach (var file in Directory.EnumerateFiles(Profile.CacheDirectory))
                 {
                     File.Delete(file);
                 }
 
-                Settings.SetLastVersionNotes(Version);
+                Profile.LastVersionNotes = Version;
             }
         }
     }
@@ -130,5 +138,10 @@
         {
             UseShellExecute = true
         });
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
     }
 }

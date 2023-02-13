@@ -6,15 +6,18 @@
 @using Flagrum.Core.Animation
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Ebex.Xmb2
+@using Flagrum.Core.Gfxbin.Btex
+@using Flagrum.Core.Utilities.Types
 @using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Features.Settings.Data
 @inject IWpfService WpfService
 @inject FlagrumDbContext Context
-@inject SettingsService Settings
 @inject ILogger<ExportContextMenu> Logger
 @inject EnvironmentPacker EnvironmentPacker
 @inject TerrainPacker TerrainPacker
 @inject IStringLocalizer<ExportContextMenu> Localizer
 @inject AppStateService AppState
+@inject ProfileService Profile
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
@@ -57,7 +60,7 @@
                 }
                 break;
             case ExplorerItemType.Xml:
-                if (Parent.CurrentView == AssetExplorerView.GameView)
+                if (Profile.Current.Type == LuminousGame.FFXV && Parent.CurrentView == AssetExplorerView.GameView)
                 {
                     <Item OnClick="@ExportEnvironment"
                           OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
@@ -119,15 +122,6 @@
     {
         var item = AssetExplorer.ContextNode;
 
-        // var defaultName = item.Type switch
-        // {
-        //     ExplorerItemType.Material => item.Name + ".gfxbin",
-        //     ExplorerItemType.Model => item.Name + ".gfxbin",
-        //     ExplorerItemType.Texture => item.Name[..item.Name.LastIndexOf('.')] + ".png",
-        //     ExplorerItemType.Xml => item.Name[..item.Name.LastIndexOf('.')] + ".xml",
-        //     _ => UriHelper.ReplaceFileNameExtensionWithTrueExtension(item.Name)
-        // };
-
         var filter = item.Type switch
         {
             ExplorerItemType.Material => "Game Material|*.gmtl.gfxbin",
@@ -147,15 +141,9 @@
                 case ExplorerItemType.Texture:
                 {
                     var extension = path.Split('.').Last();
-                    var converter = new TextureConverter();
-                    data = extension switch
-                    {
-                        "png" => converter.BtexToPng(item.Data),
-                        "tga" => converter.BtexToTga(item.Data),
-                        "dds" => converter.BtexToDds(item.Data),
-                        _ => item.Data
-                        };
-                    break;
+                    var converter = new TextureConverter(Profile.Current.Type);
+                    converter.ExportTexture(path, (ImageFormat)extension, item.Data);
+                    return;
                 }
                 case ExplorerItemType.Xml:
                 {

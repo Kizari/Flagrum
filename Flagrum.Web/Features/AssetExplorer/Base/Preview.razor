@@ -1,37 +1,71 @@
 ﻿@using Flagrum.Web.Persistence.Entities
 @using Index = Flagrum.Web.Features.AssetExplorer.Index
 @using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Core.Utilities.Types
 @inject FlagrumDbContext Context
 @inject IStringLocalizer<Index> Localizer
 @inject IStringLocalizer<Preview> PreviewLocalizer
-@inject SettingsService Settings
+@inject ProfileService Profile
 
-@switch (Item?.Type)
+@if (Profile.Current.Type == LuminousGame.FFXV)
 {
-    case ExplorerItemType.Texture:
-        <TexturePreview Item="@Item"/>
-        break;
-    case ExplorerItemType.Material:
-        <MaterialPreview Item="@Item"/>
-        break;
-    case ExplorerItemType.Xml:
-        <XmlPreview Item="@Item"/>
-        break;
-    case ExplorerItemType.Text:
-        <TextPreview Item="@Item"/>
-        break;
-    case ExplorerItemType.Model:
-        <ModelPreview Item="@Item"/>
-        break;
-    default:
-        <div class="flex-grow flex flex-row items-center">
-            <div class="mx-auto">
-                <strong class="text-grey-500">
-                    @PreviewLocalizer["NoPreview"]
-                </strong>
+    switch (Item?.Type)
+    {
+        case ExplorerItemType.Texture:
+            <TexturePreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Material:
+            <MaterialPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Xml:
+            <XmlPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Text:
+            <TextPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Model:
+            <ModelPreview Item="@Item"/>
+            break;
+        default:
+            <div class="flex-grow flex flex-row items-center">
+                <div class="mx-auto">
+                    <strong class="text-grey-500">
+                        @PreviewLocalizer["NoPreview"]
+                    </strong>
+                </div>
             </div>
-        </div>
-        break;
+            break;
+    }
+}
+else
+{
+    switch (Item?.Type)
+    {
+        case ExplorerItemType.Texture:
+            <TexturePreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Material:
+            <MaterialPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Xml:
+            <XmlPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Text:
+            <TextPreview Item="@Item"/>
+            break;
+        case ExplorerItemType.Model:
+            <ModelPreview Item="@Item"/>
+            break;
+        default:
+            <div class="flex-grow flex flex-row items-center">
+                <div class="mx-auto">
+                    <strong class="text-grey-500">
+                        @PreviewLocalizer["NoPreview"]
+                    </strong>
+                </div>
+            </div>
+            break;
+    }
 }
 
 @code
@@ -53,7 +87,7 @@
                 var relativePath = EarcRelativePath.Contains('\\')
                     ? '\\' + EarcRelativePath[..EarcRelativePath.LastIndexOf('\\')]
                     : "";
-                EarcUri = $@"{Settings.GameDataDirectory}{relativePath}";
+                EarcUri = $@"{Profile.GameDataDirectory}{relativePath}";
             }
         }
     }

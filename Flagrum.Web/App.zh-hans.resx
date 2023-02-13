@@ -33,4 +33,7 @@
     <data name="Yes" xml:space="preserve">
         <value>Yes</value>
     </data>
+    <data name="Delete" xml:space="preserve">
+        <value>删除</value>
+    </data>
 </root>

@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <root>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
                 xmlns="">
         <xsd:element name="root" msdata:IsDataSet="true">
 
@@ -32,7 +33,13 @@
     <data name="ChangelogUrl" xml:space="preserve">
         <value>https://github.com/Kizari/Flagrum/wiki/%E3%83%95%E3%83%A9%E3%83%BC%E3%82%B0%E3%83%AB%E3%83%A0%E3%83%81%E3%82%A7%E3%83%B3%E3%82%B8%E3%83%AD%E3%82%B0</value>
     </data>
+    <data name="EarlyAccess" xml:space="preserve">
+        <value>FORSPOKENのサポートが早期アクセスで開始されました。</value>
+    </data>
+    <data name="NewInThisVersion" xml:space="preserve">
+        <value>このバージョンで新たに追加された項目です</value>
+    </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>安定性の向上とバグフィックスを行いました。</value>
+        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;FORSPOKEN MODのインストールに対応&lt;/li&gt;&lt;li&gt;Flagrumを複数のゲームやバージョンで同時に使用することをサポートします。&lt;/li&gt;&lt;li&gt;テクスチャアレイのサポート&lt;/li&gt;&lt;li&gt;軽微なバグフィックス&lt;/li&gt;&lt;/ul&gt;</value>
     </data>
 </root>

@@ -104,4 +104,13 @@
         box-shadow: inset 0 0 10px 10px #44403C;
         @apply rounded-t-full rounded-b-full;
     }
+    
+    .standard-table {
+        width: 100%;
+    }
+    
+    .standard-table th, .standard-table td {
+        text-align: left;
+        padding: 10px 20px;
+    }
 }

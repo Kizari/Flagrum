@@ -42,12 +42,6 @@
     <data name="Language" xml:space="preserve">
         <value>語言</value>
     </data>
-    <data name="PathAutodetectFailed" xml:space="preserve">
-        <value>Flagrum無法自動檢測您的遊戲檔的位置。請確保《最終幻想15》已安裝在您的電腦上，並設置以下路徑。</value>
-    </data>
-    <data name="RestartPrompt" xml:space="preserve">
-        <value>Flagrum必須被重啟以應用語言的變更。需要立刻重啟Flagrum嗎？</value>
-    </data>
     <data name="RestartRequired" xml:space="preserve">
         <value>需要重啟</value>
     </data>

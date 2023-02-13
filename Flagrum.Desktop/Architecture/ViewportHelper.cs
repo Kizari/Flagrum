@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Flagrum.Core.Gfxbin.Gmdl.Components;
+using Flagrum.Core.Gfxbin.Gmdl.MessagePack;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Web.Features.AssetExplorer.Data;
 using Flagrum.Web.Persistence;
@@ -15,7 +17,6 @@ using HelixToolkit.SharpDX.Core.Assimp;
 using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using SharpDX;
-using ModelReader = Flagrum.Core.Gfxbin.Gmdl.ModelReader;
 
 namespace Flagrum.Desktop.Architecture;
 
@@ -29,10 +30,10 @@ public class ViewportHelper
         MainViewModel mainViewModel)
     {
         _mainViewModel = mainViewModel;
-        _context = new FlagrumDbContext(new SettingsService());
+        _context = new FlagrumDbContext(new ProfileService());
     }
 
-    public async Task ChangeModel(byte[] gmdl, byte[] gpubin, AssetExplorerView view, string? inputPath)
+    public async Task ChangeModel(IAssetExplorerNode gmdlNode, AssetExplorerView view)
     {
         _mainViewModel.Viewer.Reset();
 
@@ -77,27 +78,44 @@ public class ViewportHelper
         //     throw;
         // }
 
-        var model = new ModelReader(gmdl, gpubin).Read();
-        using var context = new FlagrumDbContext(_context.Settings);
+        //var model = new ModelReader(gmdl, gpubin).Read();
+        //var model = new Gfxbin(gmdl, gpubin);
+        var gmdl = gmdlNode.Data;
+        var model = new Gfxbin(gmdl);
+
+        var gpubinUris = model.Header.Dependencies
+            .Where(d => d.Value.EndsWith(".gpubin"))
+            .Select(d => d.Value)
+            .ToList();
+
+        var gpubins = gpubinUris.Select(uri => gmdlNode.Parent.Children
+                .Single(c => c.Path.EndsWith(uri.Split('\\', '/').Last(), StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(f => f.Name)
+            .Select(gpubin => gpubin.Data)
+            .ToList();
+
+        model.ReadVertexData2(gpubins);
+
+        await using var context = new FlagrumDbContext(_context.Profile);
         var fidelityInt = context.GetInt(StateKey.ViewportTextureFidelity);
-        _fidelity = fidelityInt == -1 ? ModelViewerTextureFidelity.Low : (ModelViewerTextureFidelity)fidelityInt;
+        _fidelity = fidelityInt == -1 ? ModelViewerTextureFidelity.None : (ModelViewerTextureFidelity)fidelityInt;
 
         // Calculate paths
-        var gpubinUri = model.Header.Dependencies.First(d => d.Path.EndsWith(".gpubin")).Path;
+        var gpubinUri = gpubinUris.First();
         var modelContext = new FileSystemModelContext
         {
             RootUri = gpubinUri[..gpubinUri.LastIndexOf('/')],
-            RootDirectory = inputPath == null ? null : string.Join('\\', inputPath.Split('\\')[..^1])
+            RootDirectory = string.Join('\\', gmdlNode.Path.Split('\\')[..^1])
         };
 
         Parallel.ForEach(model.MeshObjects, meshObject =>
         {
-            Parallel.ForEach(meshObject.Meshes.Where(m => m.LodNear == 0), mesh =>
+            Parallel.ForEach(meshObject.Meshes.Where(m => m.LodNear == 0 && (m.Flags & 67108864) == 0), mesh =>
             {
                 FlagrumDbContext? context = null;
                 if (view == AssetExplorerView.GameView)
                 {
-                    context = new FlagrumDbContext(_context.Settings);
+                    context = new FlagrumDbContext(_context.Profile);
                 }
 
                 object? contextObject = view == AssetExplorerView.FileSystem
@@ -113,40 +131,53 @@ public class ViewportHelper
                     for (var j = 0; j < 3; j++)
                     {
                         var index = (int)mesh.FaceIndices[i, j];
-                
+
                         if (index < mesh.VertexCount)
                         {
                             triangle.Add(index);
                         }
                     }
-                
+
                     if (triangle.Count == 3)
                     {
                         faceIndices.AddRange(triangle);
                     }
                 }
-                
-                var textureCoordinates = mesh.UVMaps.Count > 0
-                    ? mesh.UVMaps[0].UVs.Select(uv => new Vector2((float)uv.U, (float)uv.V)).ToList()
-                    : mesh.VertexPositions.Select(uv => new Vector2(0f, 0f)).ToList();
+
+                // var textureCoordinates = mesh.UVMaps.Count > 0
+                //     ? mesh.UVMaps[0].UVs.Select(uv => new Vector2((float)uv.U, (float)uv.V)).ToList()
+                //     : mesh.VertexPositions.Select(uv => new Vector2(0f, 0f)).ToList();
+                //
+                // builder.Append(
+                //     mesh.VertexPositions.Select(v => new Vector3(v.X, v.Y, v.Z)).ToList(),
+                //     faceIndices,
+                //     mesh.Normals.Select(n => new Vector3(
+                //         n.X > 0 ? n.X / 127f : n.X / 128f, 
+                //         n.Y > 0 ? n.Y / 127f : n.Y / 128f, 
+                //         n.Z > 0 ? n.Z / 127f : n.Z / 128f))
+                //         .ToList(),
+                //     textureCoordinates);
 
                 builder.Append(
-                    mesh.VertexPositions.Select(v => new Vector3(v.X, v.Y, v.Z)).ToList(),
+                    ((IList<float[]>)mesh.Semantics[VertexElementSemantic.Position0]).Select(v => new Vector3(v))
+                    .ToList(),
                     faceIndices,
-                    mesh.Normals.Select(n => new Vector3(n.X, n.Y, n.Z)).ToList(),
-                    textureCoordinates);
+                    ((IList<float[]>)mesh.Semantics[VertexElementSemantic.Normal0]).Select(n => new Vector3(n[..3]))
+                    .ToList(),
+                    ((IList<float[]>)mesh.Semantics[VertexElementSemantic.TexCoord0]).Select(c => new Vector2(c))
+                    .ToList());
 
                 var meshNode = new BoneSkinMeshNode();
                 var material = new PBRMaterial
                 {
-                    AlbedoColor = Color4.White
+                    AlbedoColor = Color4.White,
                 };
 
                 if (_fidelity != ModelViewerTextureFidelity.None)
                 {
                     var materialUri = model.Header.Dependencies
-                        .FirstOrDefault(d => d.PathHash == mesh.DefaultMaterialHash.ToString())
-                        !.Path;
+                        .FirstOrDefault(d => d.Key == mesh.MaterialHash.ToString())
+                        !.Value;
 
                     if (materialUri != null)
                     {
@@ -158,11 +189,13 @@ public class ViewportHelper
 
                         var gfxbin = new MaterialReader(materialData).Read();
                         var diffuseUri = gfxbin.Textures
-                            .FirstOrDefault(t => t.ShaderGenName.Contains("BaseColor0"))
+                            .FirstOrDefault(t =>
+                                t.ShaderGenName.Contains("BaseColor0") || t.ShaderGenName.Contains("BaseColorTexture0"))
                             ?.Path;
 
                         var normalUri = gfxbin.Textures
-                            .FirstOrDefault(t => t.ShaderGenName.Contains("Normal0"))
+                            .FirstOrDefault(t =>
+                                t.ShaderGenName.Contains("Normal0") || t.ShaderGenName.Contains("NormalTexture0"))
                             ?.Path;
 
                         if (diffuseUri != null && normalUri != null)
@@ -190,7 +223,7 @@ public class ViewportHelper
                             var diffuse = GetDataByUri(diffuseUri, contextObject, view);
                             var normal = GetDataByUri(normalUri, contextObject, view);
 
-                            var textureConverter = new TextureConverter();
+                            var textureConverter = new TextureConverter(new ProfileService().Current.Type);
 
                             TextureModel? albedoMap = null;
                             TextureModel? normalMap = null;
@@ -201,7 +234,7 @@ public class ViewportHelper
                                     {
                                         var tag = Encoding.UTF8.GetString(diffuse[..8]);
 
-                                        if (tag == "SEDBbtex")
+                                        if (tag == "SEDBbtex" || tag.StartsWith("BTEX"))
                                         {
                                             diffuse = textureConverter.BtexToPng(diffuse);
                                         }
@@ -217,7 +250,7 @@ public class ViewportHelper
                                     {
                                         var tag = Encoding.UTF8.GetString(normal[..8]);
 
-                                        if (tag == "SEDBbtex")
+                                        if (tag == "SEDBbtex" || tag.StartsWith("BTEX"))
                                         {
                                             normal = textureConverter.BtexToPng(normal);
                                         }
