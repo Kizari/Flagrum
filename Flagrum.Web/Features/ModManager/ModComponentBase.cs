@@ -70,7 +70,7 @@ public class ModComponentBase : ComponentBase
             {
                 foreach (var conflict in conflicts)
                 {
-                    await ModManagerService.DisableMod(conflict.Id);
+                    ModManagerService.DisableMod(conflict.Id);
                 }
 
                 await onYes();

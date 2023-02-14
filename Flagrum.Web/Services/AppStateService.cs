@@ -73,10 +73,10 @@ public class AppStateService
 
         var entries = Mods.Union(fakeMods);
 
-        var modList = ModlistEntry.FromFile(_profile.BinmodListPath);
+        var modList = ModlistEntry.FromFile(_profile.Current.BinmodListPath);
         var fixIdMap = modList.ToDictionary(m => m.Path, m => m.Index);
 
-        ModlistEntry.ToFile(_profile.BinmodListPath, entries, fixIdMap);
+        ModlistEntry.ToFile(_profile.Current.BinmodListPath, entries, fixIdMap);
     }
 
     public void LoadNodes()

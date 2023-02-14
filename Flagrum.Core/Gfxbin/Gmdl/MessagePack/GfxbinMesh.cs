@@ -32,7 +32,7 @@ public class GfxbinMesh : IMessagePackItem
     public uint UnknownOffset { get; set; }
     public uint UnknownSize { get; set; }
     public ulong MaterialHash { get; set; }
-    public uint DrawPriorityOffset { get; set; }
+    public int DrawPriorityOffset { get; set; }
     public bool Unknown7 { get; set; }
     public bool Unknown8 { get; set; }
     public float LodNear { get; set; }
@@ -124,7 +124,7 @@ public class GfxbinMesh : IMessagePackItem
         }
 
         MaterialHash = reader.Read<ulong>();
-        DrawPriorityOffset = reader.Read<uint>();
+        DrawPriorityOffset = reader.Read<int>();
         Unknown7 = reader.Read<bool>();
         Unknown8 = reader.Read<bool>();
         LodNear = reader.Read<float>();

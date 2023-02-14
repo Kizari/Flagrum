@@ -355,6 +355,7 @@ Steamworks.NET.dll
 
 # Jetbrains Rider data
 .idea/
+.run/
 
 # Item ID Fixer project which is of little importance
 ItemIdFixer/

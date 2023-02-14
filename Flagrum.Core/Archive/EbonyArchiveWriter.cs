@@ -72,22 +72,26 @@ public partial class EbonyArchive
         SerializeFileData(archiveStream, out var endOfFile);
         _stream?.Dispose();
 
+        if (targetGame == LuminousGame.FFXV)
+        {
+            var headerStream = SerializeHeader();
+            archiveStream.Seek(0, SeekOrigin.Begin);
+            headerStream.CopyTo(archiveStream);
+            headerStream.Dispose();
+        }
+
         var fileHeaderStream = SerializeFileHeaders();
         archiveStream.Seek(EbonyArchiveHeader.Size, SeekOrigin.Begin);
         fileHeaderStream.CopyTo(archiveStream);
         fileHeaderStream.Dispose();
 
-        var headerStream = targetGame switch
+        if (targetGame == LuminousGame.Forspoken)
         {
-            LuminousGame.FFXV => SerializeHeader(),
-            LuminousGame.Forspoken => SerializeHeaderWitch(archiveStream, endOfFile),
-            _ => throw new ArgumentOutOfRangeException(nameof(targetGame), targetGame,
-                $"Unsupported {nameof(LuminousGame)}")
-        };
-
-        archiveStream.Seek(0, SeekOrigin.Begin);
-        headerStream.CopyTo(archiveStream);
-        headerStream.Dispose();
+            var headerStream = SerializeHeaderWitch(archiveStream, endOfFile);
+            archiveStream.Seek(0, SeekOrigin.Begin);
+            headerStream.CopyTo(archiveStream);
+            headerStream.Dispose();
+        }
 
         archiveStream.Seek(0, SeekOrigin.Begin);
         using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);

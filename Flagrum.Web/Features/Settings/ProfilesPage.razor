@@ -29,7 +29,7 @@
             {
                 <tr>
                     <td style="width: 24px;">
-                        @if (profile == Profile.Current)
+                        @if (profile.Id == Profile.Current.Id)
                         {
                             <span class="material-icons">check</span>
                         }
@@ -66,7 +66,7 @@
 
     private void Delete(FlagrumProfile profile)
     {
-        if (Profile.Current == profile)
+        if (Profile.Current.Id == profile.Id)
         {
             Alert.Open("Error", "Profile is Active", "You cannot delete the active profile. Select another profile and try again.", null);
             return;

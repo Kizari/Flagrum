@@ -1,7 +1,6 @@
 ﻿@page "/settings"
 @using Flagrum.Web.Persistence.Entities
 @using Flagrum.Web.Features.Settings.Data
-@using Flagrum.Web.Features.Settings.Utilities
 @using Flagrum.Core.Utilities.Types
 @using Flagrum.Web.Services.Vendor.Patreon
 
@@ -47,7 +46,7 @@
         <div class="box p-4 mb-6">
             <div class="row mb-3">
                 <span class="mr-3" style="flex: 0 0 200px;">@Localizer[Profile.Current.Type == LuminousGame.FFXV ? "GamePath" : "ForspokenPath"]</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.GamePath" IsReadOnly="true"/>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.Current.GamePath" IsReadOnly="true"/>
                 <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
             </div>
             <small class="text-grey-600">@Localizer[Profile.Current.Type == LuminousGame.FFXV ? "DefaultGamePath" : "DefaultForspokenPath"]</small>
@@ -58,7 +57,7 @@
             <div class="box p-4 mb-6">
                 <div class="row mb-3">
                     <span class="mr-3" style="flex: 0 0 200px;">@Localizer["BinmodPath"]</span>
-                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.BinmodListPath" IsReadOnly="true"/>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.Current.BinmodListPath" IsReadOnly="true"/>
                     <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
                 </div>
                 <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
@@ -91,7 +90,7 @@
             
             <div class="flex-grow"></div>
 
-             <div class="box p-6 mb-2">
+             <div class="box p-6">
                  <div class="row">
                      <span class="mr-4 material-icons" style="color: @(Profile.IsEarlyAccessEnabled ? "#00ff00" : "#ff0000")">radio_button_checked</span>
                      <h5 class="text-grey-200 font-bold">Early Access</h5>
@@ -268,7 +267,7 @@
     {
         if (CurrentProfile != Profile.Current.Id)
         {
-            Profile.SetCurrentById(CurrentProfile);
+            Profile.SetCurrentProfile(CurrentProfile);
         }
 
         if (_currentCulture != _initialCulture)
@@ -292,7 +291,7 @@
             "Application (*.exe)|*.exe",
             path =>
             {
-                Profile.GamePath = path;
+                Profile.Current.GamePath = path;
                 InvokeAsync(StateHasChanged);
                 HandlePathState();
             });
@@ -304,7 +303,7 @@
             "Binmod List (*.list)|*.list",
             path =>
             {
-                Profile.BinmodListPath = path;
+                Profile.Current.BinmodListPath = path;
                 InvokeAsync(StateHasChanged);
                 HandlePathState();
             });
@@ -325,31 +324,31 @@
         }
     }
 
-    private async Task ToggleForspokenPatch()
-    {
-        LoadingText = IsForspokenPatchApplied ? "Reverting Patch" : "Applying Patch";
-        IsLoading = true;
-        await InvokeAsync(StateHasChanged);
-
-        await Task.Run(() =>
-        {
-            var patcher = new ForspokenPatcher(Profile);
-
-            if (IsForspokenPatchApplied)
-            {
-                patcher.Unpatch();
-                IsForspokenPatchApplied = false;
-            }
-            else
-            {
-                patcher.Patch();
-                IsForspokenPatchApplied = true;
-            }
-        });
-
-        IsLoading = false;
-        await InvokeAsync(StateHasChanged);
-    }
+    // private async Task ToggleForspokenPatch()
+    // {
+    //     LoadingText = IsForspokenPatchApplied ? "Reverting Patch" : "Applying Patch";
+    //     IsLoading = true;
+    //     await InvokeAsync(StateHasChanged);
+    //
+    //     await Task.Run(() =>
+    //     {
+    //         var patcher = new ForspokenPatcher(Profile);
+    //
+    //         if (IsForspokenPatchApplied)
+    //         {
+    //             patcher.Unpatch();
+    //             IsForspokenPatchApplied = false;
+    //         }
+    //         else
+    //         {
+    //             patcher.Patch();
+    //             IsForspokenPatchApplied = true;
+    //         }
+    //     });
+    //
+    //     IsLoading = false;
+    //     await InvokeAsync(StateHasChanged);
+    // }
 
     private void UnlinkPatreon()
     {

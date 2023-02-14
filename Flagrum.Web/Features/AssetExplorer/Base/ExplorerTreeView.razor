@@ -3,9 +3,7 @@
 
 <CascadingValue Value="this">
     <Virtualize Items="RootNode.Children.Where(n => n.Type == ExplorerItemType.Directory).ToList()" ItemSize="28" Context="node">
-        <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="e => ContextMenuMouseUp(e, node)">
-            <ExplorerTreeRow Node="node" Indent="2"/>
-        </ContextMenuTrigger>
+        <ExplorerTreeRow Node="node" Indent="2"/>
     </Virtualize>
 </CascadingValue>
 
@@ -65,14 +63,6 @@
                     await Task.Delay(100);
                 }
             }
-        }
-    }
-    
-    private void ContextMenuMouseUp(MouseEventArgs e, IAssetExplorerNode node)
-    {
-        if (e.Button == 2)
-        {
-            AssetExplorer.ContextNode = node;
         }
     }
 }

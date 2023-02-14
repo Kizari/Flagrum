@@ -5,6 +5,7 @@
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Utilities.Types
 @using Flagrum.Web.Features.ModManager.Data
+@using Flagrum.Web.Features.ModManager.Modals
 @inherits ModComponentBase
 
 @inject NavigationManager Navigation
@@ -64,11 +65,15 @@
 </div>
 
 <AlertModal @ref="Alert"/>
+<CascadingValue Value="this">
+    <CorruptionModal @ref="CorruptionModal"/>
+</CascadingValue>
 
 @code
 {
     private AlertModal Alert { get; set; }
     private long Timestamp { get; set; }
+    private CorruptionModal CorruptionModal { get; set; }
 
     [CascadingParameter]
     public Index Parent { get; set; }
@@ -159,7 +164,20 @@
     private async Task Disable()
     {
         await InvokeAsync(() => Parent.SetLoading(true, "DisablingMod"));
-        await Task.Run(async () => await ModManagerService.DisableMod(Mod.Id));
+        
+        await Task.Run(() =>
+        {
+            try
+            {
+                ModManagerService.DisableMod(Mod.Id);
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "Failed to disable mod due to exception");
+                InvokeAsync(() => CorruptionModal.Open(Mod.Id));
+            }
+        });
+        
         await InvokeAsync(() => Parent.SetLoading(false));
     }
 
@@ -229,4 +247,6 @@
     {
         Parent.ShowReadme(Mod.Readme);
     }
+
+    public void CallModListStateHasChanged() => Parent.CallStateHasChanged();
 }

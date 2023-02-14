@@ -33,6 +33,8 @@ public class Bootstrapper : ComponentBase
         HandleEarcModThumbnails();
         ScaleEarcModThumbnails();
         ConvertBackups();
+        
+        Logger.LogInformation("Bootstrapping Flagrum with {Profile} profile", Profile.Current.Type);
 
         if (Profile.Current.Type == LuminousGame.FFXV)
         {
@@ -62,19 +64,26 @@ public class Bootstrapper : ComponentBase
 
     private async Task LoadBinmods()
     {
+        Logger.LogInformation("Checking if Steam Workshop mod list is initialised");
+        
         if (!AppState.IsModListInitialized)
         {
+            Logger.LogInformation("Loading metadata from FFXVBINMOD files");
+            
             await Task.Run(() =>
             {
-                var binmodList = ModlistEntry.FromFile(Profile.BinmodListPath);
+                var binmodList = ModlistEntry.FromFile(Profile.Current.BinmodListPath);
                 var localMods =
                     Directory.GetFiles(Profile.ModDirectory, "*.ffxvbinmod", SearchOption.TopDirectoryOnly);
                 IEnumerable<string> allMods;
+                
+                Logger.LogInformation("{Count} Local FFXVBINMOD files detected", localMods.Length);
 
                 if (Directory.Exists(Profile.WorkshopDirectory))
                 {
                     var workshopMods = Directory.GetFiles(Profile.WorkshopDirectory, "*.ffxvbinmod",
-                        SearchOption.AllDirectories);
+                        SearchOption.AllDirectories).ToList();
+                    Logger.LogInformation("{Count} Steam Workshop FFXVBINMOD files detected", workshopMods.Count);
                     allMods = localMods.Union(workshopMods);
                 }
                 else
@@ -128,8 +137,8 @@ public class Bootstrapper : ComponentBase
                     binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
             });
 
-            ClearOldImages();
             AppState.IsModListInitialized = true;
+            ClearOldImages();
         }
     }
 

@@ -1,24 +1,27 @@
 ﻿@using Flagrum.Web.Features.AssetExplorer.Data
-<div id="@Node.ElementId" @onclick="OnClick" class="row py-1 pr-2 transition-colors hover:bg-grey-700 select-none cursor-pointer @(AssetExplorer.FileList.CurrentNode.Path == Node.Path ? "bg-grey-800" : "")"
-     style="padding-left: @(Indent * 5)px">
-    @if (IsExpandable)
-    {
-        <span @onclick="Expand" @onclick:stopPropagation="true" @onclick:preventDefault="true"
-              class="material-icons text-sm">
-            @(Node.IsExpanded ? "expand_more" : "chevron_right")
-        </span>
-    }
-    else if (Node.Type == ExplorerItemType.Directory)
-    {
-        <div style="width: 14px;"></div>
-    }
-    else
-    {
-        <div style="width: 6px;"></div>
-    }
-    <span class="material-icons text-sm">@Node.Icon</span>
-    <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Node.Name</span>
-</div>
+
+<ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="e => ContextMenuMouseUp(e, Node)">
+    <div id="@Node.ElementId" @onclick="OnClick" class="row py-1 pr-2 transition-colors hover:bg-grey-700 select-none cursor-pointer @(AssetExplorer.FileList.CurrentNode.Path == Node.Path ? "bg-grey-800" : "")"
+         style="padding-left: @(Indent * 5)px">
+        @if (IsExpandable)
+        {
+            <span @onclick="Expand" @onclick:stopPropagation="true" @onclick:preventDefault="true"
+                  class="material-icons text-sm">
+                @(Node.IsExpanded ? "expand_more" : "chevron_right")
+            </span>
+        }
+        else if (Node.Type == ExplorerItemType.Directory)
+        {
+            <div style="width: 14px;"></div>
+        }
+        else
+        {
+            <div style="width: 6px;"></div>
+        }
+        <span class="material-icons text-sm">@Node.Icon</span>
+        <span class="pl-2 flex-grow text-sm" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@Node.Name</span>
+    </div>
+</ContextMenuTrigger>
 
 @if (Node.IsExpanded)
 {
@@ -52,5 +55,13 @@
     {
         Node.IsExpanded = !Node.IsExpanded;
         StateHasChanged();
+    }
+    
+    private void ContextMenuMouseUp(MouseEventArgs e, IAssetExplorerNode node)
+    {
+        if (e.Button == 2)
+        {
+            AssetExplorer.ContextNode = node;
+        }
     }
 }

@@ -19,6 +19,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7" />
         <PackageReference Include="Scriban" Version="5.0.0" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.4" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
     </ItemGroup>

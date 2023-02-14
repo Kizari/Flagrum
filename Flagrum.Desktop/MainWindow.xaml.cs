@@ -80,6 +80,7 @@ public partial class MainWindow : INotifyPropertyChanged
         Closed += (_, _) => { (DataContext as IDisposable)?.Dispose(); };
 
         ((MainViewModel)DataContext).FmodPath = fmodPath;
+        ((MainViewModel)DataContext).ProfileService = profileService;
 
         try
         {

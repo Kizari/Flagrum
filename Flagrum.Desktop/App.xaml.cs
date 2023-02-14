@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Configuration;
+using Flagrum.Web.Persistence.Configuration.Entities;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,10 @@ public partial class App
             onAppUninstall: OnUninstall);
 
         SetFileTypeAssociation();
+        
+        // Migrate the configuration database if required
+        using var configuration = new ConfigurationDbContext();
+        configuration.Database.MigrateAsync().Wait();
 
         // Migrate the database if required
         Profile = new ProfileService();
@@ -62,8 +68,8 @@ public partial class App
             var gamePath = context.GetString(StateKey.GamePath);
             var binmodListPath = context.GetString(StateKey.BinmodListPath);
 
-            Profile.GamePath = gamePath;
-            Profile.BinmodListPath = binmodListPath;
+            Profile.Current.GamePath = gamePath;
+            Profile.Current.BinmodListPath = binmodListPath;
 
             context.DeleteStateKey(StateKey.GamePath);
             context.DeleteStateKey(StateKey.BinmodListPath);

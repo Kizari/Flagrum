@@ -192,7 +192,7 @@ public abstract class ModManagerServiceBase
         _context.ChangeTracker.Clear();
     }
 
-    public async Task DisableMod(int modId)
+    public void DisableMod(int modId)
     {
         // Need to pull this again with includes as they won't be there in the Mod Manager
         var mod = _context.EarcMods
@@ -209,7 +209,7 @@ public abstract class ModManagerServiceBase
         // Now that the mod has been reverted, it can be marked as disabled
         mod.IsActive = false;
         _context.Update(mod);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
         _context.ChangeTracker.Clear();
     }
 

@@ -13,6 +13,8 @@ using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Types;
 using Flagrum.Services.Vendor.Patreon;
 using Flagrum.Web.Features.Settings.Data;
+using Flagrum.Web.Persistence.Configuration;
+using Flagrum.Web.Persistence.Configuration.Entities;
 using Flagrum.Web.Services.Vendor.Patreon;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -23,39 +25,75 @@ public class ProfileService : IDisposable
 {
     private const string Steam32 = @"SOFTWARE\VALVE\Steam";
     private const string Steam64 = @"SOFTWARE\Wow6432Node\Valve\Steam";
-    private static readonly object _persistLock = new();
     private readonly EbonyArchiveManager _archiveManager = new();
-
-    private FlagrumProfile _current;
-
-    private string _lastVersionNotes;
+    private readonly ConfigurationDbContext _configuration;
 
     public ProfileService()
     {
-        // Setup profiles
+        _configuration = new ConfigurationDbContext();
+        
+        // Migrate from profiles.json to config.fcg
         if (File.Exists(ProfilesPath))
         {
-            string json;
-
-            lock (_persistLock)
-            {
-                json = File.ReadAllText(ProfilesPath);
-            }
-
+            var json = File.ReadAllText(ProfilesPath);
             var container = JsonConvert.DeserializeObject<FlagrumProfileContainer>(json)!;
-            Profiles = container.Profiles;
-            _lastVersionNotes = container.LastVersionNotes;
-            PatreonToken = container.PatreonToken;
-            PatreonRefreshToken = container.PatreonRefreshToken;
-            PatreonTokenExpiry = container.PatreonTokenExpiry;
-            _current = Profiles.First(p => p.Id == container.Current);
+
+            var profiles = container.Profiles
+                .Select(p => new ProfileEntity
+                {
+                    Id = p.Id,
+                    Type = p.Type,
+                    Name = p.Name,
+                    GamePath = p.GamePath,
+                    BinmodListPath = p.BinmodListPath
+                });
+
+            _configuration.ProfileEntities.AddRange(profiles);
+            _configuration.SaveChanges();
+            
+            _configuration.SetString(ConfigurationKey.CurrentProfile, container.Current);
+            _configuration.SetString(ConfigurationKey.LatestVersionNotes, container.LastVersionNotes);
+            _configuration.SetString(ConfigurationKey.PatreonToken, container.PatreonToken);
+            _configuration.SetString(ConfigurationKey.PatreonRefreshToken, container.PatreonRefreshToken);
+            _configuration.SetDateTime(ConfigurationKey.PatreonTokenExpiry, container.PatreonTokenExpiry);
+            
+            File.Delete(ProfilesPath);
         }
-        else
+
+        // Generate default profiles if none exist
+        var needsMigrating = false;
+        if (!_configuration.ProfileEntities.Any())
         {
-            var container = FlagrumProfileContainer.GetDefault();
-            Profiles = container.Profiles;
-            Current = Profiles.First(p => p.Id == container.Current);
-            Persist();
+            var defaultProfileId = Guid.NewGuid().ToString();
+            
+            _configuration.ProfileEntities.AddRange(new List<ProfileEntity>
+            {
+                new()
+                {
+                    Id = defaultProfileId,
+                    Name = "Final Fantasy XV Windows Edition",
+                    Type = LuminousGame.FFXV
+                },
+                new()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Forspoken",
+                    Type = LuminousGame.Forspoken
+                }
+            });
+
+            _configuration.SaveChanges();
+            _configuration.SetString(ConfigurationKey.CurrentProfile, defaultProfileId);
+            needsMigrating = true;
+        }
+        
+        // Setup current profile
+        var id = _configuration.GetString(ConfigurationKey.CurrentProfile);
+        var current = _configuration.ProfileEntities.Find(id);
+        Current = new ConcurrentProfileEntity(_configuration, current);
+
+        if (needsMigrating)
+        {
             MigratePreProfilesData();
         }
 
@@ -76,7 +114,14 @@ public class ProfileService : IDisposable
         TrySetSteamExePath();
     }
 
-    public List<FlagrumProfile> Profiles { get; }
+    public List<FlagrumProfile> Profiles => _configuration.ProfileEntities.Select(p => new FlagrumProfile
+    {
+        Id = p.Id,
+        Type = p.Type,
+        Name = p.Name,
+        GamePath = p.GamePath,
+        BinmodListPath = p.BinmodListPath
+    }).ToList();
 
     #if DEBUG
     public bool IsEarlyAccessEnabled
@@ -90,33 +135,18 @@ public class ProfileService : IDisposable
     #else
     public bool IsEarlyAccessEnabled { get; set; }
     #endif
-    
-    public FlagrumProfile Current
-    {
-        get => _current;
-        private set
-        {
-            _current = value;
-            Persist();
-        }
-    }
+
+    public ConcurrentProfileEntity Current { get; }
 
     public string LastVersionNotes
     {
-        get => _lastVersionNotes;
-        set
-        {
-            if (_lastVersionNotes != value)
-            {
-                _lastVersionNotes = value;
-                Persist();
-            }
-        }
+        get => _configuration.GetString(ConfigurationKey.LatestVersionNotes);
+        set => _configuration.SetString(ConfigurationKey.LatestVersionNotes, value);
     }
 
-    public string PatreonToken { get; private set; }
-    public string PatreonRefreshToken { get; private set; }
-    public DateTime PatreonTokenExpiry { get; private set; }
+    public string PatreonToken => _configuration.GetString(ConfigurationKey.PatreonToken);
+    private string PatreonRefreshToken => _configuration.GetString(ConfigurationKey.PatreonRefreshToken);
+    private DateTime PatreonTokenExpiry => _configuration.GetDateTime(ConfigurationKey.PatreonTokenExpiry);
 
     public bool DidMigrateThisSession { get; private set; }
 
@@ -124,12 +154,12 @@ public class ProfileService : IDisposable
     {
         get
         {
-            if (Current?.Type == LuminousGame.FFXV && GamePath?.Contains("forspoken", StringComparison.OrdinalIgnoreCase) == true)
+            if (Current?.Type == LuminousGame.FFXV && Current.GamePath?.Contains("forspoken", StringComparison.OrdinalIgnoreCase) == true)
             {
                 return false;
             }
             
-            return GamePath != null && (Current?.Type == LuminousGame.Forspoken || BinmodListPath != null);
+            return Current?.GamePath != null && (Current?.Type == LuminousGame.Forspoken || Current?.BinmodListPath != null);
         }
     }
 
@@ -150,15 +180,15 @@ public class ProfileService : IDisposable
     public string EarcModThumbnailDirectory => $@"{EarcModsDirectory}\thumbnails";
     public string EarcModBackupsDirectory => $@"{EarcModsDirectory}\backup";
 
-    public string ProfilesPath => $@"{FlagrumDirectory}\profiles.json";
+    private string ProfilesPath => $@"{FlagrumDirectory}\profiles.json";
 
     public string SteamExePath { get; private set; }
 
-    public string ModDirectory => $"{Path.GetDirectoryName(BinmodListPath)}";
+    public string ModDirectory => $"{Path.GetDirectoryName(Current.BinmodListPath)}";
     public string WorkshopDirectory => $@"{Path.GetDirectoryName(WorkshopPath)}\content\637650";
     public string GameDataDirectory => $@"{Path.GetDirectoryName(Current.GamePath)}\datas";
 
-    public string WorkshopPath
+    private string WorkshopPath
     {
         get
         {
@@ -175,66 +205,58 @@ public class ProfileService : IDisposable
         }
     }
 
-    public string GamePath
-    {
-        get => Current.GamePath;
-        set
-        {
-            Current.GamePath = value;
-            Persist();
-        }
-    }
-
-    public string BinmodListPath
-    {
-        get => Current.BinmodListPath;
-        set
-        {
-            if (Current.BinmodListPath != value)
-            {
-                Current.BinmodListPath = value;
-                Persist();
-            }
-        }
-    }
-
     [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize")]
     public void Dispose()
     {
         _archiveManager?.Dispose();
+        _configuration?.Dispose();
     }
 
     public void SetPatreonToken(string token, string refreshToken, DateTime expiry)
     {
-        PatreonToken = token;
-        PatreonRefreshToken = refreshToken;
-        PatreonTokenExpiry = expiry;
-        Persist();
+        _configuration.SetString(ConfigurationKey.PatreonToken, token);
+        _configuration.SetString(ConfigurationKey.PatreonRefreshToken, refreshToken);
+        _configuration.SetDateTime(ConfigurationKey.PatreonTokenExpiry, expiry);
     }
 
-    public void SetCurrentById(string id)
+    public void SetCurrentProfile(string id)
     {
-        Current = Profiles.First(p => p.Id == id);
+        _configuration.SetString(ConfigurationKey.CurrentProfile, id);
     }
 
     public void Add(FlagrumProfile profile)
     {
-        Profiles.Add(profile);
-        Persist();
+        _configuration.ProfileEntities.Add(new ProfileEntity
+        {
+            Id = profile.Id,
+            Type = profile.Type,
+            Name = profile.Name,
+            GamePath = profile.GamePath,
+            BinmodListPath = profile.BinmodListPath,
+        });
+
+        _configuration.SaveChanges();
     }
 
     public void Update(FlagrumProfile profile)
     {
-        var match = Profiles.First(p => p.Id == profile.Id);
-        match.Name = profile.Name;
-        match.Type = profile.Type;
-        Persist();
+        _configuration.ProfileEntities.Update(new ProfileEntity
+        {
+            Id = profile.Id,
+            Type = profile.Type,
+            Name = profile.Name,
+            GamePath = profile.GamePath,
+            BinmodListPath = profile.BinmodListPath,
+        });
+        
+        _configuration.SaveChanges();
     }
 
     public void Delete(FlagrumProfile profile)
     {
-        Profiles.Remove(profile);
-        Persist();
+        var profileEntity = _configuration.ProfileEntities.Find(profile.Id)!;
+        _configuration.Remove(profileEntity);
+        _configuration.SaveChanges();
 
         var databasePath = DatabasePath.Replace(Current.Id, profile.Id);
         if (File.Exists(databasePath))
@@ -282,51 +304,33 @@ public class ProfileService : IDisposable
         return false;
     }
 
-    private void Persist()
-    {
-        var container = new FlagrumProfileContainer
-        {
-            Current = Current.Id,
-            Profiles = Profiles,
-            LastVersionNotes = LastVersionNotes,
-            PatreonToken = PatreonToken,
-            PatreonRefreshToken = PatreonRefreshToken,
-            PatreonTokenExpiry = PatreonTokenExpiry
-        };
-
-        lock (_persistLock)
-        {
-            File.WriteAllText(ProfilesPath, JsonConvert.SerializeObject(container));
-        }
-    }
-
     private void TrySetDefaultGamePath()
     {
-        if (GamePath == null && Current.Type == LuminousGame.FFXV)
+        if (Current.GamePath == null && Current.Type == LuminousGame.FFXV)
         {
             var gamePath =
                 $@"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\Steam\steamapps\common\Final Fantasy XV\ffxv_s.exe";
 
             if (File.Exists(gamePath))
             {
-                GamePath = gamePath;
+                Current.GamePath = gamePath;
             }
         }
-        else if (GamePath == null && Current.Type == LuminousGame.Forspoken)
+        else if (Current.GamePath == null && Current.Type == LuminousGame.Forspoken)
         {
             var gamePath =
                 $@"{Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}\Steam\steamapps\common\FORSPOKEN\FORSPOKEN.exe";
 
             if (File.Exists(gamePath))
             {
-                GamePath = gamePath;
+                Current.GamePath = gamePath;
             }
         }
     }
 
     private void TrySetDefaultBinmodListPath()
     {
-        if (BinmodListPath == null && Current.Type == LuminousGame.FFXV)
+        if (Current.BinmodListPath == null && Current.Type == LuminousGame.FFXV)
         {
             var basePath =
                 $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\Documents\My Games\FINAL FANTASY XV\Steam";
@@ -344,7 +348,7 @@ public class ProfileService : IDisposable
 
                             if (binmodList != null)
                             {
-                                BinmodListPath = binmodList;
+                                Current.BinmodListPath = binmodList;
                             }
                         }
                     }

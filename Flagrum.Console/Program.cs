@@ -1,11 +1,18 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Types;
 using Flagrum.Web.Features.ModManager.Data;
 using Flagrum.Web.Services;
 using K4os.Compression.LZ4.Streams;
+
+var profile = new ProfileService();
+using var archive = new EbonyArchive(@$"{profile.GameDataDirectory}\level\dlc_ex\tera2\env\tb2_c_invisible - Copy.earc");
+archive.RemoveFile("data://environment/world/curve/collision/area_tb2_malmalm_base_c.tcm");
+archive.WriteToFile(@$"{profile.GameDataDirectory}\level\dlc_ex\tera2\env\tb2_c_invisible.earc", LuminousGame.FFXV);
+return;
 
 var fragment = new FmodFragment();
 fragment.Read(@"C:\Users\Kieran\AppData\Local\Flagrum\earc\d52176d1-2d22-4311-be79-5ff8831976ed\2\2.ffg");
@@ -40,14 +47,6 @@ var btex = converter.ToBtex(new BtexBuildRequest
 });
 
 File.WriteAllBytes(@"C:\Users\Kieran\Downloads\hu000_000_inner_shirts_1001_b_h_EvilTerada.btex", btex);
-return;
-
-using var archive =
-    new EbonyArchive(
-        @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\menu\first_ff\script\menuswfentry_first_ff.backup");
-archive.WriteToFile(
-    @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas\menu\first_ff\script\menuswfentry_first_ff.earc",
-    LuminousGame.FFXV);
 return;
 
 //IndexingScripts.DumpUniqueRelativeExtensions();

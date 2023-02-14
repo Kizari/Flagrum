@@ -25,12 +25,13 @@ public class ViewportHelper
     private readonly FlagrumDbContext _context;
     private readonly MainViewModel _mainViewModel;
     private ModelViewerTextureFidelity _fidelity;
+    private readonly ProfileService _profile;
 
-    public ViewportHelper(
-        MainViewModel mainViewModel)
+    public ViewportHelper(MainViewModel mainViewModel, ProfileService profileService)
     {
         _mainViewModel = mainViewModel;
-        _context = new FlagrumDbContext(new ProfileService());
+        _profile = profileService;
+        _context = new FlagrumDbContext(profileService);
     }
 
     public async Task ChangeModel(IAssetExplorerNode gmdlNode, AssetExplorerView view)
@@ -223,7 +224,7 @@ public class ViewportHelper
                             var diffuse = GetDataByUri(diffuseUri, contextObject, view);
                             var normal = GetDataByUri(normalUri, contextObject, view);
 
-                            var textureConverter = new TextureConverter(new ProfileService().Current.Type);
+                            var textureConverter = new TextureConverter(_profile.Current.Type);
 
                             TextureModel? albedoMap = null;
                             TextureModel? normalMap = null;
