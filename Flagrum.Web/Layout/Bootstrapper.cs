@@ -96,9 +96,17 @@ public class Bootstrapper : ComponentBase
                 Parallel.ForEach(allMods, file =>
                 {
                     using var unpacker = new EbonyArchive(file);
-                    var modmetaBytes = unpacker.Files
-                        .First(f => f.Value.Uri.EndsWith("index.modmeta")).Value
-                        .GetReadableData();
+                    
+                    var modmetaFile = unpacker.Files
+                        .FirstOrDefault(f => f.Value.Uri.EndsWith("index.modmeta")).Value;
+
+                    if (modmetaFile == null)
+                    {
+                        Logger.LogWarning("There was no modmeta file in {File}", file);
+                        return;
+                    }
+                    
+                    var modmetaBytes = modmetaFile.GetReadableData();
 
                     var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper, Logger);
                     var previewBytes = unpacker.Files
