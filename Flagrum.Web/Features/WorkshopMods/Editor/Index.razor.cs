@@ -235,32 +235,39 @@ public partial class Index : ComponentBase
 
     private async void SaveAsync()
     {
-        using var packer = new EbonyArchive(Mod.Path);
+        using var archive = new EbonyArchive(Mod.Path);
 
-        packer.UpdateFile("index.modmeta", Modmeta.Build(Mod));
+        var modmetaUri = archive.Files.First(f => f.Value.Uri.EndsWith("index.modmeta")).Value.Uri;
+        archive.UpdateFile(modmetaUri, Modmeta.Build(Mod));
 
         if (WorkshopModBuildContext.Flags.HasFlag(WorkshopModBuildContextFlags.PreviewImageChanged))
         {
             await WorkshopModBuildContext.WaitForPreviewData(Mod.Type == (int)BinmodType.StyleEdit);
-            packer.UpdateFile("$preview.png", WorkshopModBuildContext.PreviewBtex);
-            packer.UpdateFile("$preview.png.bin", WorkshopModBuildContext.PreviewImage);
+            var previewPngUri = archive.Files
+                .First(f => f.Value.Uri.EndsWith("$preview.png")).Value.Uri;
+            var previewBinUri = archive.Files
+                .First(f => f.Value.Uri.EndsWith("$preview.png.bin")).Value.Uri;
+            archive.UpdateFile(previewPngUri, WorkshopModBuildContext.PreviewBtex);
+            archive.UpdateFile(previewBinUri, WorkshopModBuildContext.PreviewImage);
 
             if (Mod.Type == (int)BinmodType.StyleEdit)
             {
-                packer.UpdateFile("default.png", WorkshopModBuildContext.ThumbnailBtex);
+                var defaultPngUri = archive.Files
+                    .First(f => f.Value.Uri.EndsWith("default.png")).Value.Uri;
+                archive.UpdateFile(defaultPngUri, WorkshopModBuildContext.ThumbnailBtex);
 
-                if (packer.HasFile($"data://mod/{Mod.ModDirectoryName}/default.png.bin"))
+                if (archive.HasFile($"data://mod/{Mod.ModDirectoryName}/default.png.bin"))
                 {
-                    packer.UpdateFile("default.png.bin", WorkshopModBuildContext.ThumbnailImage);
+                    archive.UpdateFile($"data://mod/{Mod.ModDirectoryName}/default.png.bin", WorkshopModBuildContext.ThumbnailImage);
                 }
                 else
                 {
-                    packer.AddFile(WorkshopModBuildContext.ThumbnailImage, $"data://mod/{Mod.ModDirectoryName}/default.png.bin");
+                    archive.AddFile(WorkshopModBuildContext.ThumbnailImage, $"data://mod/{Mod.ModDirectoryName}/default.png.bin");
                 }
             }
         }
 
-        packer.WriteToFile(Mod.Path, LuminousGame.FFXV);
+        archive.WriteToFile(Mod.Path, LuminousGame.FFXV);
 
         AppState.ActiveMod.UpdateFrom(Mod);
         Navigation.NavigateTo("/mod");

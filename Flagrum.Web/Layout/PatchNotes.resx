@@ -27,7 +27,7 @@
         <value>Flagrum has been updated to Version {0}!</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;Support for installing Forspoken mods&lt;/li&gt;&lt;li&gt;Support for using Flagrum with multiple games and versions at once&lt;/li&gt;&lt;li&gt;Support for texture arrays&lt;/li&gt;&lt;li&gt;Minor bug fixes&lt;/li&gt;&lt;/ul&gt;</value>
+        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;Bug fixes&lt;/li&gt;&lt;/ul&gt;</value>
     </data>
     <data name="ViewFullChangelog" xml:space="preserve">
         <value>View Full Changelog</value>

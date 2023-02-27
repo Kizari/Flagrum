@@ -40,6 +40,6 @@
         <value>このバージョンで新たに追加された項目です</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;FORSPOKEN MODのインストールに対応&lt;/li&gt;&lt;li&gt;Flagrumを複数のゲームやバージョンで同時に使用することをサポートします。&lt;/li&gt;&lt;li&gt;テクスチャアレイのサポート&lt;/li&gt;&lt;li&gt;軽微なバグフィックス&lt;/li&gt;&lt;/ul&gt;</value>
+        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;バグフィックス&lt;/li&gt;&lt;/ul&gt;</value>
     </data>
 </root>

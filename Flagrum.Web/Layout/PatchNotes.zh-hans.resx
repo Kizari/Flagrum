@@ -31,6 +31,6 @@
         <value>此版本中的新内容</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;支持安装FORSPOKEN MOD&lt;/li&gt;&lt;li&gt;支持同时在多个游戏和版本中使用Flagrum&lt;/li&gt;&lt;li&gt;对纹理阵列的支持&lt;/li&gt;&lt;li&gt;小的错误修复&lt;/li&gt;&lt;/ul&gt;</value>
+        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;错误修复&lt;/li&gt;&lt;/ul&gt;</value>
     </data>
 </root>

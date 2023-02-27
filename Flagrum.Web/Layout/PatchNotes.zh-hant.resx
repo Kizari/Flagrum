@@ -31,6 +31,6 @@
         <value>此版本中的新功能</value>
     </data>
     <data name="UpdateNotes" xml:space="preserve">
-        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;支持安裝 FORSPOKEN MOD&lt;/li&gt;&lt;li&gt;支持同時將 Flagrum 與多個遊戲和版本一起使用&lt;/li&gt;&lt;li&gt;支持紋理數組&lt;/li&gt;&lt;li&gt;修正了一些小錯誤&lt;/li&gt;&lt;/ul&gt;</value>
+        <value>&lt;ul class="list-disc ml-6"&gt;&lt;li&gt;錯誤修復&lt;/li&gt;&lt;/ul&gt;</value>
     </data>
 </root>

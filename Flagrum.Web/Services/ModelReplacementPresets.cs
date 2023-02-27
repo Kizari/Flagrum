@@ -41,14 +41,13 @@ public class ModelReplacementPresets
         {
             return Replacements.First(r => r.Index == target).Models;
         }
-        else
-        {
-            return _context.ModelReplacementPresets
-                .First(r => r.Id == (target - 100))
-                .ReplacementPaths
-                .Select(r => r.Path)
-                .ToList();
-        }
+
+        var presetId = target - 100;
+        return _context.ModelReplacementPresets
+            .Where(p => p.Id == presetId)
+            .SelectMany(p => p.ReplacementPaths
+                .Select(r => r.Path))
+            .ToList();
     }
 
     private void BuildDictionary()

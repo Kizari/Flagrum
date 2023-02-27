@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Timers;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities.Types;
@@ -138,9 +139,11 @@ public class SteamWorkshopService
         {
             _appState.ActiveMod.ItemId = result.m_nPublishedFileId.m_PublishedFileId;
 
-            using var packer = new EbonyArchive(_appState.ActiveMod.Path);
-            packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
-            packer.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
+            using var archive = new EbonyArchive(_appState.ActiveMod.Path);
+            var modmetaUri = archive.Files
+                .First(f => f.Value.Uri.EndsWith("index.modmeta")).Value.Uri;
+            archive.UpdateFile(modmetaUri, _modmeta.Build(_appState.ActiveMod));
+            archive.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
 
             Update(_currentDetails, _onCreate);
         }
@@ -155,9 +158,11 @@ public class SteamWorkshopService
         {
             _appState.ActiveMod.IsUploaded = true;
 
-            using var packer = new EbonyArchive(_appState.ActiveMod.Path);
-            packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
-            packer.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
+            using var archive = new EbonyArchive(_appState.ActiveMod.Path);
+            var modmetaUri = archive.Files
+                .First(f => f.Value.Uri.EndsWith("index.modmeta")).Value.Uri;
+            archive.UpdateFile(modmetaUri, _modmeta.Build(_appState.ActiveMod));
+            archive.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
 
             _onUpdate();
 
@@ -180,9 +185,12 @@ public class SteamWorkshopService
             {
                 _appState.ActiveMod.ItemId = 0;
                 _appState.ActiveMod.IsUploaded = false;
-                using var packer = new EbonyArchive(_appState.ActiveMod.Path);
-                packer.UpdateFile("index.modmeta", _modmeta.Build(_appState.ActiveMod));
-                packer.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
+                
+                using var archive = new EbonyArchive(_appState.ActiveMod.Path);
+                var modmetaUri = archive.Files
+                    .First(f => f.Value.Uri.EndsWith("index.modmeta")).Value.Uri;
+                archive.UpdateFile(modmetaUri, _modmeta.Build(_appState.ActiveMod));
+                archive.WriteToFile(_appState.ActiveMod.Path, LuminousGame.FFXV);
 
                 _onQueryComplete(new WorkshopItemDetails());
                 return;

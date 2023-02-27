@@ -95,9 +95,9 @@ public class Bootstrapper : ComponentBase
 
                 Parallel.ForEach(allMods, file =>
                 {
-                    using var unpacker = new EbonyArchive(file);
+                    using var archive = new EbonyArchive(file);
                     
-                    var modmetaFile = unpacker.Files
+                    var modmetaFile = archive.Files
                         .FirstOrDefault(f => f.Value.Uri.EndsWith("index.modmeta")).Value;
 
                     if (modmetaFile == null)
@@ -109,7 +109,7 @@ public class Bootstrapper : ComponentBase
                     var modmetaBytes = modmetaFile.GetReadableData();
 
                     var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper, Logger);
-                    var previewBytes = unpacker.Files
+                    var previewBytes = archive.Files
                         .FirstOrDefault(f => f.Value.Uri.EndsWith("$preview.png.bin")).Value
                         ?.GetReadableData() ?? Array.Empty<byte>();
 

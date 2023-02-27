@@ -55,7 +55,8 @@ public class UriMapper
                 allUris.TryAdd(uri, archive);
 
                 var earcDirectory = Path.GetDirectoryName(archive.Path)!;
-                var uriReplaced = Path.GetDirectoryName(uri.Replace('/', '\\'));
+                var uriReplaced = Path.GetDirectoryName(uri.Replace('/', '\\'))!;
+                uriReplaced = uriReplaced[(uriReplaced.IndexOf(':') + 1)..];    // Remove prefixes like data:\
                 if (earcDirectory.Equals(uriReplaced, StringComparison.OrdinalIgnoreCase))
                 {
                     assetUris.TryAdd(uri, new AssetUri

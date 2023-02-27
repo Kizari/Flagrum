@@ -173,6 +173,8 @@
             }
 
             Context.SaveChanges();
+            Context.ChangeTracker.Clear();
+            
             Navigation.NavigateTo("/mod/configure/frompreset");
         }
     }

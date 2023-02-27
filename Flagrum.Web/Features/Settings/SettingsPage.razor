@@ -40,7 +40,10 @@
                     <option value="@profile.Id">@profile.Name</option>
                 }
             </select>
-            <Button Icon="edit" Text="Edit Profiles" OnClick="@(() => Navigation.NavigateTo("/settings/profiles"))"/>
+            @if (!Warn)
+            {
+                <Button Icon="edit" Text="Edit Profiles" OnClick="@(() => Navigation.NavigateTo("/settings/profiles"))"/>
+            }
         </div>
 
         <div class="box p-4 mb-6">
