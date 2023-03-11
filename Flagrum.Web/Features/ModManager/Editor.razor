@@ -21,10 +21,7 @@
         <div class="flex-grow h-full flex flex-col">
             <div class="box p-6 mb-6 flex flex-row items-center">
                 <h4 class="text-grey-200 flex-grow">@Mod.Name</h4>
-                @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
-                {
-                    <Button Icon="save" Text="@Localizer["Save"]" CssClass="mr-3" OnClickAsync="Save"/>
-                }
+                <Button Icon="save" Text="@Localizer["Save"]" CssClass="mr-3" OnClickAsync="Save"/>
                 @if (ModId != null && ModManagerService.HasAnyCachedFiles(Mod))
                 {
                     <Button Icon="folder_off" Text="@Localizer["ClearCache"]" OnClick="ClearCache" CssClass="mr-3"/>
@@ -34,11 +31,8 @@
             </div>
             <div class="box flex flex-row items-center p-6 border-b border-black">
                 <h5 class="text-grey-200 flex-grow">@Localizer["BuildList"]</h5>
-                @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
-                {
-                    <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
-                    <Button Icon="block" Text="@Localizer["RemoveAsset"]" OnClick="OpenRemoveModal"/>
-                }
+                <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3" OnClick="OpenReplaceModal"/>
+                <Button Icon="block" Text="@Localizer["RemoveAsset"]" OnClick="OpenRemoveModal"/>
             </div>
             <div class="box flex flex-row items-center px-4 py-2 border-b border-black">
                 <span class="material-icons text-accent1-200 mr-3">filter_alt</span>
@@ -128,14 +122,11 @@
                                         }
                                     </div>
                                     <div class="ml-8">
-                                        @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
+                                        @if (replacement.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace or EarcFileChangeType.AddToTextureArray)
                                         {
-                                            if (replacement.Type is EarcFileChangeType.Add or EarcFileChangeType.Replace or EarcFileChangeType.AddToTextureArray)
-                                            {
-                                                <span class="material-icons text-accent1-200 cursor-pointer mr-3" @onclick="() => UpdateReplacementPath(replacement)">edit</span>
-                                            }
-                                            <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
+                                            <span class="material-icons text-accent1-200 cursor-pointer mr-3" @onclick="() => UpdateReplacementPath(replacement)">edit</span>
                                         }
+                                        <span class="material-icons text-accent1-200 cursor-pointer" @onclick="() => RemoveReplacement(earc, replacement)">delete</span>
                                     </div>
                                 </div>
                             </Virtualize>

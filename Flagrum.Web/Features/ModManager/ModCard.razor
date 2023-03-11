@@ -44,15 +44,12 @@
     <div class="p-4">
         <div class="row mb-2">
             <strong class="block text-grey-200 flex-grow font-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">@Mod.Name</strong>
-            @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
-            {
-                <span class="material-icons ml-3 text-accent1-200 cursor-pointer hover:text-white"
-                      style="font-size: 0.95rem;"
-                      @onclick="() => Parent.ShowModCardModal(Mod.Id)"
-                      @onclick:stopPropagation="true">
-                    edit
-                </span>
-            }
+            <span class="material-icons ml-3 text-accent1-200 cursor-pointer hover:text-white"
+                  style="font-size: 0.95rem;"
+                  @onclick="() => Parent.ShowModCardModal(Mod.Id)"
+                  @onclick:stopPropagation="true">
+                edit
+            </span>
         </div>
         <div class="block text-grey-200 flex-grow mb-2 flex flex-row items-center">
             <span class="material-icons text-grey-200 mr-2">person</span>

@@ -51,10 +51,7 @@
                 <DropdownButtonItem Text="@Localizer["CategoryOther"]" OnClick="() => { SetCategory((int)ModCategory.Other); return Task.CompletedTask; }"/>
             </DropdownButton>
             <div class="flex-grow"></div>
-            @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
-            {
-                <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(0))"/>
-            }
+            <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(0))"/>
             <Button Icon="upload" Text=@Localizer["InstallFromZip"] OnClickAsync="Install"/>
             <div class="row rounded text-sm font-bold text-grey-100 pl-1 pr-1.5 pt-1 pb-1 ml-4 cursor-pointer select-none" style="background-color: #107ef4;" @onclick="OpenModWorkshop">
                 <img alt="MWS" src="/branding/mws_logo_white.svg" style="width: 16px; height: 16px;"/>

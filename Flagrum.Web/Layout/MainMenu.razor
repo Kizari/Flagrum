@@ -12,11 +12,7 @@
     <Bootstrapper/>
     <div class="h-full bg-dark flex flex-col border-dark-550 border-r" style="flex: 0 0 195px">
         <MenuItem Icon="apps" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
-
-        @if (Profile.Current.Type == LuminousGame.FFXV || Profile.IsEarlyAccessEnabled)
-        {
-            <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
-        }
+        <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
 
         @if (Profile.Current.Type == LuminousGame.FFXV)
         {

@@ -56,19 +56,6 @@
 
     protected override void OnInitialized()
     {
-        if (Profile.Current.Type == LuminousGame.Forspoken && !Profile.IsEarlyAccessEnabled)
-        {
-            throw new Exception("Cannot access Asset Explorer for Forspoken without early access!");
-        }
-
-        if (Profile.Current.Type == LuminousGame.FFXV)
-        {
-            if (Context.AssetExplorerNodes.Any(n => n.Name == "sdk:"))
-            {
-                throw new Exception("Cannot access Asset Explorer for Forspoken without early access!");
-            }
-        }
-        
         CurrentView = Context.GetEnum<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
     }
 }
