@@ -44,7 +44,6 @@ public class MainViewModel : ObservableObject, IDisposable
 
     public MainViewModel()
     {
-        ViewportHelper = new ViewportHelper(this);
         EffectsManager = new DefaultEffectsManager();
         Camera = new PerspectiveCamera
         {
@@ -54,20 +53,28 @@ public class MainViewModel : ObservableObject, IDisposable
             NearPlaneDistance = 0,
             FarPlaneDistance = 10000
         };
+    }
 
-        using var context = new FlagrumDbContext(new SettingsService());
+    public ProfileService ProfileService
+    {
+        set
+        {
+            using var context = new FlagrumDbContext(value);
 
-        var viewportRotateModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportRotateModifierKey);
-        var viewportRotateMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportRotateMouseAction);
-        _viewportRotateGesture = new MouseGesture(viewportRotateMouseAction, viewportRotateModifierKey);
+            var viewportRotateModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportRotateModifierKey);
+            var viewportRotateMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportRotateMouseAction);
+            _viewportRotateGesture = new MouseGesture(viewportRotateMouseAction, viewportRotateModifierKey);
 
-        var viewportPanModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportPanModifierKey);
-        var viewportPanMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportPanMouseAction);
-        _viewportPanGesture = new MouseGesture(viewportPanMouseAction, viewportPanModifierKey);
+            var viewportPanModifierKey = context.GetEnum<ModifierKeys>(StateKey.ViewportPanModifierKey);
+            var viewportPanMouseAction = context.GetEnum<MouseAction>(StateKey.ViewportPanMouseAction);
+            _viewportPanGesture = new MouseGesture(viewportPanMouseAction, viewportPanModifierKey);
+            
+            ViewportHelper = new ViewportHelper(this, value);
+        }
     }
 
     public string HostPage => IOHelper.GetWebRoot() + "/index.html";
-    public ViewportHelper ViewportHelper { get; }
+    public ViewportHelper ViewportHelper { get; private set; }
     public Viewport3DX Viewer { get; set; }
     public AirspacePopup AirspacePopup { get; set; }
     public string? FmodPath { get; set; }
@@ -77,6 +84,15 @@ public class MainViewModel : ObservableObject, IDisposable
         get => _hasWebView2Runtime;
         set => SetValue(ref _hasWebView2Runtime, value);
     }
+
+    private ICommand? _patreonLink;
+    public ICommand PatreonLink => _patreonLink ??= new RelayCommand(() =>
+    {
+        Process.Start(new ProcessStartInfo("https://www.patreon.com/Flagrum")
+        {
+            UseShellExecute = true
+        });
+    });
 
     public int ViewportLeft
     {

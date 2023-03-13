@@ -1,0 +1,198 @@
+﻿@page "/mod/configure"
+@page "/mod/configure/{NavigationParameter}"
+@using Flagrum.Core.Archive
+@using Flagrum.Web.Features.WorkshopMods.Stats
+
+@inject IStringLocalizer<Index> L
+
+<CascadingValue Value="this">
+    <LoadingView Text="@LoadingText"
+                 IsLoading="@IsLoading">
+        <div class="p-6">
+
+            <div class="box row p-4">
+                <span class="flex-grow">@(IsNew ? L["NewMod"] : Mod.GameMenuTitle ?? Mod.WorkshopTitle)</span>
+                <Button Icon="save" Text="@L["Save"]" OnClick="Save" IsDisabled="@(!CanSave || StatsTotal > 100)"/>
+                <Button Icon="cancel" Text="@L["Cancel"]" CssClass="ml-3" OnClick="Cancel"/>
+            </div>
+
+            @if (!CanSave)
+            {
+                <div class="row mt-6">
+                    <div class="box row p-4 flex-grow @(Mod.Type == (int)BinmodType.Character && Mod.Target < 0 ? "" : "mr-3")">
+                        <label class="inline-block mr-3 flex-shrink-0">@L["Type"]</label>
+                        <IntSelect @bind-Value="Mod.Type" Values="ModTypes" OnChange="ModTypeChanged"/>
+                    </div>
+                    @if (Mod.Type != (int)BinmodType.Character)
+                    {
+                        <div class="box row p-4 ml-3 flex-grow">
+                            <label class="inline-block mr-3 flex-shrink-0">@L["Target"]</label>
+                            <IntSelect @bind-Value="Mod.Target" Values="ModTargets" OnChange="ModTargetChanged" Placeholder=@L["SelectTarget"] />
+                        </div>
+                    }
+                    else if (Mod.Target > -1)
+                    {
+                        <div class="box row p-4 ml-3 flex-grow">
+                            <label class="inline-block mr-3">@L["Target"]</label>
+                            <span class="flex-grow input mr-3">@ModelReplacementPresetName</span>
+                            <span class="material-icons cursor-pointer" @onclick="() => Mod.Target = -1">clear</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="box row p-4 ml-3">
+                            <Button CssClass="my-1" Icon="add" Text="@L["NewPreset"]" OnClick="@(() => Navigation.NavigateTo("/mod/presets/create/0/false"))"/>
+                        </div>
+                    }
+
+                    @if (Mod.Type == (int)BinmodType.StyleEdit)
+                    {
+                        <div class="box row p-4 ml-6 flex-grow">
+                            <label class="inline-block mr-3 flex-shrink-0">@L["Variant"]</label>
+                            <select value="@Mod.Gender"
+                                    @onchange="VariantChanged"
+                                    class="input bg-dark-550 w-full">
+                                <option value="">@L["SelectVariant"]</option>
+                                <option value="Female">@L["Female"]</option>
+                                <option value="Male">@L["Male"]</option>
+                            </select>
+                        </div>
+                    }
+                </div>
+
+                @if (Mod.Type == (int)BinmodType.Character && Mod.Target < 0)
+                {
+                    <ModelReplacements/>
+                }
+
+                @if (Mod.Target > -1 && (Mod.Type != (int)BinmodType.StyleEdit || !string.IsNullOrEmpty(Mod.Gender)))
+                {
+                    @if (ModelCount == 1)
+                    {
+                        <div class="box row p-4 mt-6">
+                            <span class="flex-grow">
+                                @L["SelectFmd"]
+                            </span>
+                            <Button Icon="folder"
+                                    Text="@L["Browse"]"
+                                    OnClick="() => SelectModel(0)"/>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="box row p-4 mt-6">
+                            <span class="flex-grow">
+                                @(FmdFileNames[0] == null ? L["SelectFmdPlaceholder", ModelNames[0]] : FmdFileNames[0])
+                            </span>
+                            <Button Icon="folder"
+                                    Text="@L["Browse"]"
+                                    OnClick="() => SelectModel(0)"/>
+                        </div>
+                        <div class="box row p-4 mt-6">
+                            <span class="flex-grow">
+                                @(FmdFileNames[1] == null ? L["SelectFmdPlaceholder", ModelNames[1]] : FmdFileNames[1])
+                            </span>
+                            <Button Icon="folder"
+                                    Text="@L["Browse"]"
+                                    OnClick="() => SelectModel(1)"/>
+                        </div>
+                    }
+                }
+            }
+            else
+            {
+                <div class="box row p-5 mt-6">
+                    <img style="display:block;width:175px;height:175px;" src="images/@(ImageName).png"/>
+                    <div class="flex-grow pl-6">
+                        <table>
+                            <tr>
+                                <td class="pb-1">@L["ModType"]:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@L[((BinmodType)Mod.Type).ToString()]</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pb-1">@L["ModTarget"]:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@ParentLocalizer[BinmodTypeHelper.GetTargetName(Mod.Type, Mod.Target)]</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="pb-1">@L["Uuid"]:</td>
+                                <td class="pb-1 pl-3">
+                                    <strong>@Mod.Uuid</strong>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="row @(Mod.IsWorkshopMod ? "mt-20" : "mt-14")">
+                            @if (!Mod.IsWorkshopMod)
+                            {
+                                <Button Icon="image"
+                                        Text="@L["ChangeImage"]"
+                                        OnClickAsync="SelectImage"/>
+                                @if (Mod.Type == (int)BinmodType.StyleEdit)
+                                {
+                                    <Button Icon="image"
+                                            Text="@L["ChangeThumbnail"]"
+                                            OnClickAsync="SelectThumbnail"
+                                            CssClass="ml-3"/>
+                                }
+                                @if (ModelCount == 1)
+                                {
+                                    <Button Icon="view_in_ar"
+                                            Text="@L["ChangeModel"]"
+                                            OnClick="() => SelectModel(0)"
+                                            CssClass="ml-3"/>
+                                }
+                                else
+                                {
+                                    <Button Icon="view_in_ar"
+                                            Text="@L["ChangeModelPlaceholder", ModelNames[0]]"
+                                            OnClick="() => SelectModel(0)"
+                                            CssClass="ml-3"/>
+                                    <Button Icon="view_in_ar"
+                                            Text="@L["ChangeModelPlaceholder", ModelNames[1]]"
+                                            OnClick="() => SelectModel(1)"
+                                            CssClass="ml-3"/>
+                                }
+                            }
+
+                            @if (!IsNew && !Mod.IsWorkshopMod)
+                            {
+                                <Button Icon="upload" Text="@L["UploadWorkshop"]" OnClick="Upload" CssClass="ml-3"/>
+                                <Button Icon="delete_forever" Text="@L["Delete"]" OnClick="Delete" CssClass="ml-3"/>
+                            }
+                        </div>
+                    </div>
+                    @if (Mod.Type == (int)BinmodType.StyleEdit)
+                    {
+                        <img style="display:block;width:121px;height:175px;" src="images/@(ThumbnailName).png"/>
+                    }
+                </div>
+                switch (Mod.Type)
+                {
+                    case (int)BinmodType.Cloth:
+                        <Outfit/>
+                        break;
+                    case (int)BinmodType.Weapon or (int)BinmodType.Multi_Weapon:
+                        <Weapon/>
+                        break;
+                    case (int)BinmodType.StyleEdit:
+                        <StyleEdit/>
+                        break;
+                    default:
+                        <Replacement/>
+                        break;
+                }
+            }
+        </div>
+    </LoadingView>
+</CascadingValue>
+
+<PromptModal Title="@L["DeleteMod"]"
+             @ref="DeleteModal"
+             Heading=@L["AreYouSure"]
+             Subtext=@L["CannotBeUndone"]
+             YesText=@L["Delete"]
+             NoText=@L["Cancel"]
+             OnYes="OnDelete"/>

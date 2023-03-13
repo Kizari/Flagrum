@@ -1,13 +1,18 @@
 ﻿@page "/settings"
 @using Flagrum.Web.Persistence.Entities
+@using Flagrum.Web.Features.Settings.Data
+@using Flagrum.Core.Utilities.Types
+@using Flagrum.Web.Services.Vendor.Patreon
 
-@inject SettingsService Settings
 @inject IWpfService WpfService
 @inject IStringLocalizer<SettingsPage> Localizer
 @inject FlagrumDbContext Context
 @inject IJSRuntime JSRuntime
+@inject ProfileService Profile
+@inject NavigationManager Navigation
+@inject AppStateService AppState
 
-<div class="p-6">
+<LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="p-6 h-full">
 
     @if (Warn)
     {
@@ -18,61 +23,130 @@
         </div>
     }
 
-    <EditForm Model="Data">
+    <EditForm Model="this" class="h-full flex flex-col">
 
         <div class="box p-4 mb-6 row">
-            <span class="mr-3" style="flex: 0 0 200px">@Localizer["Language"]</span>
-            <select class="input bg-dark-550 flex-grow" style="max-width: 500px;" @bind="CurrentCulture">
+            <span class="mr-3">@Localizer["Language"]</span>
+            <select class="input bg-dark-550 flex-grow" @bind="CurrentCulture">
                 <option value="en-GB">@GetLanguageString("English")</option>
                 <option value="ja-JP">@GetLanguageString("Japanese")</option>
                 <option value="zh-Hans">@GetLanguageString("Chinese (Simplified)")</option>
                 <option value="zh-Hant">@GetLanguageString("Chinese (Traditional)")</option>
             </select>
+            <span class="ml-6 mr-3">@Localizer["Profile"]</span>
+            <select class="input bg-dark-550 flex-grow mr-6" @bind="CurrentProfile">
+                @foreach (var profile in Profile.Profiles)
+                {
+                    <option value="@profile.Id">@profile.Name</option>
+                }
+            </select>
+            @if (!Warn)
+            {
+                <Button Icon="edit" Text="Edit Profiles" OnClick="@(() => Navigation.NavigateTo("/settings/profiles"))"/>
+            }
         </div>
 
         <div class="box p-4 mb-6">
             <div class="row mb-3">
-                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["GamePath"]</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.GamePath" IsReadOnly="true"/>
+                <span class="mr-3" style="flex: 0 0 200px;">@Localizer[Profile.Current.Type == LuminousGame.FFXV ? "GamePath" : "ForspokenPath"]</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.Current.GamePath" IsReadOnly="true"/>
                 <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
             </div>
-            <small class="text-grey-600">@Localizer["DefaultGamePath"]</small>
+            <small class="text-grey-600">@Localizer[Profile.Current.Type == LuminousGame.FFXV ? "DefaultGamePath" : "DefaultForspokenPath"]</small>
         </div>
 
-        <div class="box p-4 mb-6">
-            <div class="row mb-3">
-                <span class="mr-3" style="flex: 0 0 200px;">@Localizer["BinmodPath"]</span>
-                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Data.BinmodListPath" IsReadOnly="true"/>
-                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
+        @if (Profile.Current.Type == LuminousGame.FFXV)
+        {
+            <div class="box p-4 mb-6">
+                <div class="row mb-3">
+                    <span class="mr-3" style="flex: 0 0 200px;">@Localizer["BinmodPath"]</span>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.Current.BinmodListPath" IsReadOnly="true"/>
+                    <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="BinmodListPathClicked"/>
+                </div>
+                <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
             </div>
-            <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
-        </div>
+        }
+        @* else *@
+        @* { *@
+        @*     <div class="box p-4 mb-6"> *@
+        @*         <div class="row mb-3"> *@
+        @*             <span class="mr-2 material-icons" style="color: @(IsForspokenPatchApplied ? "#00ff00" : "#ff0000")">radio_button_checked</span> *@
+        @*             <span class="mr-3 flex-grow">Forspoken Patch</span> *@
+        @*             <Button Icon="@(IsForspokenPatchApplied ? "undo" : "check")" Text="@(IsForspokenPatchApplied ? "Revert Patch" : "Apply Patch")" CssClass="ml-4" OnClickAsync="ToggleForspokenPatch"/> *@
+        @*         </div> *@
+        @*         <small class="text-grey-600">This patch will disable Forspoken's checksum verification so that it won't crash when the game files are modded.</small> *@
+        @*     </div> *@
+        @* } *@
         
         @if (!Warn)
         {
             <div class="box p-6 mb-6">
                 <div class="row mb-6">
                     <h4 class="text-grey-300 flex-grow">@Localizer["AssetExplorerSettings"]</h4>
-                    <Button Icon="cached" Text="@Localizer["RegenerateFileIndex"]" OnClick="() => RegenerateModal?.Open()" />
+                    <Button Icon="cached" Text="@Localizer["RegenerateFileIndex"]" OnClick="() => RegenerateModal?.Open()"/>
                 </div>
                 <div class="row">
-                    <Checkbox IsChecked="AddressBarToggle" OnChange="t => ToggleAddressBar(t)" />
+                    <Checkbox IsChecked="AddressBarToggle" OnChange="t => ToggleAddressBar(t)"/>
                     <span class="ml-3">@Localizer["SelectAllAddressBar"]</span>
                 </div>
             </div>
             
+            <div class="flex-grow"></div>
+
+             <div class="box p-6">
+                 <div class="row">
+                     <span class="mr-4 material-icons" style="color: @(Profile.IsEarlyAccessEnabled ? "#00ff00" : "#ff0000")">radio_button_checked</span>
+                     <h5 class="text-grey-200 font-bold">Early Access</h5>
+                     <div class="flex-grow ml-10">
+                         <strong>Status:&nbsp;</strong>
+                          @if (Profile.IsEarlyAccessEnabled)
+                          {
+                              <span>Early access is active</span>
+                          }
+                          else if (Profile.PatreonToken != null)
+                          {
+                              <span>Not currently a patron</span>
+                          }
+                          else
+                          {
+                              <span>Patreon account not linked</span>
+                          }
+                     </div>
+                     @if (Profile.PatreonToken == null)
+                     {
+                         <Button Icon="link" Text="Link Patreon Account"
+                                 OnClick="@(() => Navigation.NavigateTo($"https://www.patreon.com/oauth2/authorize?response_type=code&client_id={PatreonConstants.ClientId}&redirect_uri=https://0.0.0.0/patreon"))"/>
+                     }
+                     else
+                     {
+                         <Button Icon="link_off" Text="Unlink Patreon Account" OnClick="PatreonPrompt.Open"/>
+                     }
+                 </div>
+                 <div class="row mt-6">
+                     <small class="font-bold">Currently in early access:</small>
+                     <small>&nbsp;Ability to create and edit Forspoken mods in the Mod Manager, access to the Asset Explorer for Forspoken to preview and export assets, and the Flagrum-Blender add-on for Forspoken models.</small>
+                 </div>
+            </div>
+
             <RegenerateModal @ref="RegenerateModal"/>
         }
 
     </EditForm>
 
-</div>
+</LoadingView>
 
 <PromptModal @ref="RestartPrompt"
              Title=@Localizer["RestartRequired"]
              Heading=@Localizer["RestartRequired"]
              Subtext=@Localizer["RestartPrompt"]
-             OnYes="RestartApplication"/>
+             OnYes="RestartApplication"
+             OnNo="CancelRestart"/>
+
+<PromptModal @ref="PatreonPrompt"
+             Title="Warning"
+             Heading="Are you sure?"
+             Subtext="If you currently have early access, unlinking your Patreon account will remove this access."
+             OnYes="UnlinkPatreon"/>
 
 @code
 {
@@ -82,13 +156,19 @@
     [Parameter]
     public bool Warn { get; set; }
 
+    private string _initialCulture;
     private string _currentCulture;
-    
-    private SettingsData Data { get; } = new();
+    private string _currentProfile;
+    private string _gamePath;
+    private string _binmodListPath;
+
     private PromptModal RestartPrompt { get; set; }
+    private PromptModal PatreonPrompt { get; set; }
     private LanguageTable LanguageTable { get; set; } = new();
     private RegenerateModal RegenerateModal { get; set; }
     private bool AddressBarToggle { get; set; }
+    private bool IsLoading { get; set; }
+    private string LoadingText { get; set; }
 
     private string CurrentCulture
     {
@@ -98,17 +178,38 @@
             if (_currentCulture != value)
             {
                 _currentCulture = value;
-                OnLanguageChanged(_currentCulture);
+                RestartPrompt.Open();
             }
+        }
+    }
+
+    private string CurrentProfile
+    {
+        get => _currentProfile;
+        set
+        {
+            _currentProfile = value;
+            RestartPrompt.Open();
+        }
+    }
+
+    private bool _isForspokenPatchApplied;
+
+    private bool IsForspokenPatchApplied
+    {
+        get => _isForspokenPatchApplied;
+        set
+        {
+            _isForspokenPatchApplied = value;
+            Context.SetBool(StateKey.ForspokenPatch, _isForspokenPatchApplied);
         }
     }
 
     protected override void OnInitialized()
     {
-        Data.GamePath = Settings.GamePath;
-        Data.WorkshopPath = Settings.WorkshopPath;
-        Data.BinmodListPath = Settings.BinmodListPath;
+        _currentProfile = Profile.Current.Id;
         AddressBarToggle = Context.GetBool(StateKey.AssetExplorerAddressBarSelect);
+        IsForspokenPatchApplied = Context.GetBool(StateKey.ForspokenPatch);
 
         var supportedExtraCultures = new List<CultureInfo>
         {
@@ -122,11 +223,13 @@
             var closestCulture = GetClosestCulture(culture);
             if (closestCulture != null)
             {
+                _initialCulture = closestCulture;
                 _currentCulture = closestCulture;
                 break;
             }
         }
 
+        _initialCulture ??= "en-GB";
         _currentCulture ??= "en-GB";
     }
 
@@ -158,20 +261,31 @@
         var currentCultureString = Localizer[language];
         var nativeCultureString = LanguageTable[language];
 
-        return currentCultureString == nativeCultureString 
-            ? nativeCultureString 
+        return currentCultureString == nativeCultureString
+            ? nativeCultureString
             : $"{currentCultureString} ({nativeCultureString})";
-    }
-
-    private void OnLanguageChanged(string language)
-    {
-        Context.SetString(StateKey.Language, language ?? "en-GB");
-        RestartPrompt.Open();
     }
 
     private void RestartApplication()
     {
+        if (CurrentProfile != Profile.Current.Id)
+        {
+            Profile.SetCurrentProfile(CurrentProfile);
+        }
+
+        if (_currentCulture != _initialCulture)
+        {
+            Context.SetString(StateKey.Language, _currentCulture ?? "en-GB");
+        }
+
         WpfService.Restart();
+    }
+
+    private void CancelRestart()
+    {
+        _currentProfile = Profile.Current.Id;
+        _currentCulture = _initialCulture;
+        StateHasChanged();
     }
 
     private async Task GamePathClicked()
@@ -180,10 +294,9 @@
             "Application (*.exe)|*.exe",
             path =>
             {
-                Data.GamePath = path;
-                Settings.SetGamePath(path);
+                Profile.Current.GamePath = path;
                 InvokeAsync(StateHasChanged);
-                InvokeAsync(Layout.CallStateHasChanged);
+                HandlePathState();
             });
     }
 
@@ -193,10 +306,58 @@
             "Binmod List (*.list)|*.list",
             path =>
             {
-                Data.BinmodListPath = path;
-                Settings.SetBinmodListPath(path);
+                Profile.Current.BinmodListPath = path;
                 InvokeAsync(StateHasChanged);
-                InvokeAsync(Layout.CallStateHasChanged);
+                HandlePathState();
             });
+    }
+
+    private void HandlePathState()
+    {
+        if (Profile.IsReady)
+        {
+    // This will ensure the full UI is loaded if all required paths are now set
+            InvokeAsync(Layout.CallStateHasChanged);
+
+    // This will ensure file indexing starts if it isn't already done
+            if (!Context.AssetExplorerNodes.Any())
+            {
+                AppState.LoadNodes();
+            }
+        }
+    }
+
+    // private async Task ToggleForspokenPatch()
+    // {
+    //     LoadingText = IsForspokenPatchApplied ? "Reverting Patch" : "Applying Patch";
+    //     IsLoading = true;
+    //     await InvokeAsync(StateHasChanged);
+    //
+    //     await Task.Run(() =>
+    //     {
+    //         var patcher = new ForspokenPatcher(Profile);
+    //
+    //         if (IsForspokenPatchApplied)
+    //         {
+    //             patcher.Unpatch();
+    //             IsForspokenPatchApplied = false;
+    //         }
+    //         else
+    //         {
+    //             patcher.Patch();
+    //             IsForspokenPatchApplied = true;
+    //         }
+    //     });
+    //
+    //     IsLoading = false;
+    //     await InvokeAsync(StateHasChanged);
+    // }
+
+    private void UnlinkPatreon()
+    {
+        Profile.SetPatreonToken(null, null, default); 
+        Profile.IsEarlyAccessEnabled = false; 
+        StateHasChanged();
+        Layout.CallStateHasChanged();
     }
 }

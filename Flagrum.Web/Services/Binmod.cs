@@ -55,26 +55,26 @@ public class Binmod
 
     public byte[] GetPreviewPng()
     {
-        using var unpacker = new Unpacker(Path);
-        return unpacker.UnpackFileByQuery("$preview.png.bin", out _);
+        using var unpacker = new EbonyArchive(Path);
+        return unpacker.Files.First(f => f.Value.Uri.EndsWith("$preview.png.bin")).Value.GetReadableData();
     }
 
     /// <summary>
-    ///     Check if the thumbnail PNG is present in the current archive
+    /// Check if the thumbnail PNG is present in the current archive
     /// </summary>
     /// <param name="data">Contains PNG data if true, or BTEX data if false</param>
     /// <returns>True if default.png.bin is present in the archive</returns>
     public bool HasThumbnailPng(out byte[] data)
     {
-        using var unpacker = new Unpacker(Path);
+        using var unpacker = new EbonyArchive(Path);
 
         if (unpacker.HasFile($"data://mod/{ModDirectoryName}/default.png.bin"))
         {
-            data = unpacker.UnpackFileByQuery("default.png.bin", out _);
+            data = unpacker[$"data://mod/{ModDirectoryName}/default.png.bin"].GetReadableData();
             return true;
         }
 
-        data = unpacker.UnpackFileByQuery("default.png", out _);
+        data = unpacker[$"data://mod/{ModDirectoryName}/default.png"].GetReadableData();
         return false;
     }
 

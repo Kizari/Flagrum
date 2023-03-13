@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
-using Flagrum.Web.Features.AssetExplorer.Data;
-using Flagrum.Web.Features.EarcMods.Data;
+using Flagrum.Core.Utilities.Types;
+using Flagrum.Web.Features.ModManager.Data;
 using Flagrum.Web.Persistence;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
@@ -23,7 +22,7 @@ public class Bootstrapper : ComponentBase
     [Inject] private FlagrumDbContext Context { get; set; }
     [Inject] private AppStateService AppState { get; set; }
     [Inject] private UriMapper UriMapper { get; set; }
-    [Inject] private SettingsService Settings { get; set; }
+    [Inject] private ProfileService Profile { get; set; }
     [Inject] private ILogger<Bootstrapper> Logger { get; set; }
     [Inject] private BinmodTypeHelper BinmodTypeHelper { get; set; }
 
@@ -34,20 +33,26 @@ public class Bootstrapper : ComponentBase
         HandleEarcModThumbnails();
         ScaleEarcModThumbnails();
         ConvertBackups();
-        Task.Run(async () => await LoadBinmods());
+        
+        Logger.LogInformation("Bootstrapping Flagrum with {Profile} profile", Profile.Current.Type);
+
+        if (Profile.Current.Type == LuminousGame.FFXV)
+        {
+            Task.Run(async () => await LoadBinmods());
+        }
     }
 
     private async Task ScaleEarcModThumbnails()
     {
         if (!Context.GetBool(StateKey.HaveThumbnailsBeenResized))
         {
-            var earcModDirectory = $@"{IOHelper.GetWebRoot()}\EarcMods";
+            var earcModDirectory = $@"{Profile.EarcImagesDirectory}";
             if (Directory.Exists(earcModDirectory))
             {
                 foreach (var imagePath in Directory.GetFiles(earcModDirectory, "*.png"))
                 {
                     var imageData = await File.ReadAllBytesAsync(imagePath);
-                    var converter = new TextureConverter();
+                    var converter = new TextureConverter(Profile.Current.Type);
                     var image = converter.ProcessEarcModThumbnail(imageData);
                     await File.WriteAllBytesAsync(imagePath, image);
                 }
@@ -57,61 +62,28 @@ public class Bootstrapper : ComponentBase
         }
     }
 
-    // private void OnNodesLoaded()
-    // {
-    //     // Set the root node
-    //     AppState.Node = Context.AssetExplorerNodes
-    //         .FirstOrDefault(n => n.Id == 1);
-    //
-    //     Task.Run(() =>
-    //     {
-    //         using var context = new FlagrumDbContext(Settings);
-    //
-    //         // Get all model nodes
-    //         var modelNodes = context.AssetExplorerNodes
-    //             .Where(n => n.Name.EndsWith(".gmdl"))
-    //             .ToList();
-    //
-    //         // Recursively populate parents for each node up the tree
-    //         foreach (var node in modelNodes)
-    //         {
-    //             node.TraverseDescending(n =>
-    //             {
-    //                 if (n.ParentId != null)
-    //                 {
-    //                     n.Parent = context.AssetExplorerNodes.FirstOrDefault(m => m.Id == n.ParentId);
-    //                     ((AssetExplorerNode)n.Parent).ChildNodes ??= new List<AssetExplorerNode>();
-    //                     ((AssetExplorerNode)n.Parent).Children.Add(n);
-    //                 }
-    //             });
-    //         }
-    //
-    //         // Get root node from arbitrary node
-    //         var rootNode = modelNodes[0];
-    //         while (rootNode.Parent != null)
-    //         {
-    //             rootNode = (AssetExplorerNode)rootNode.Parent;
-    //         }
-    //
-    //         AppState.RootModelBrowserNode = rootNode;
-    //     });
-    // }
-
     private async Task LoadBinmods()
     {
+        Logger.LogInformation("Checking if Steam Workshop mod list is initialised");
+        
         if (!AppState.IsModListInitialized)
         {
+            Logger.LogInformation("Loading metadata from FFXVBINMOD files");
+            
             await Task.Run(() =>
             {
-                var binmodList = ModlistEntry.FromFile(Settings.BinmodListPath);
+                var binmodList = ModlistEntry.FromFile(Profile.Current.BinmodListPath);
                 var localMods =
-                    Directory.GetFiles(Settings.ModDirectory, "*.ffxvbinmod", SearchOption.TopDirectoryOnly);
+                    Directory.GetFiles(Profile.ModDirectory, "*.ffxvbinmod", SearchOption.TopDirectoryOnly);
                 IEnumerable<string> allMods;
+                
+                Logger.LogInformation("{Count} Local FFXVBINMOD files detected", localMods.Length);
 
-                if (Directory.Exists(Settings.WorkshopDirectory))
+                if (Directory.Exists(Profile.WorkshopDirectory))
                 {
-                    var workshopMods = Directory.GetFiles(Settings.WorkshopDirectory, "*.ffxvbinmod",
-                        SearchOption.AllDirectories);
+                    var workshopMods = Directory.GetFiles(Profile.WorkshopDirectory, "*.ffxvbinmod",
+                        SearchOption.AllDirectories).ToList();
+                    Logger.LogInformation("{Count} Steam Workshop FFXVBINMOD files detected", workshopMods.Count);
                     allMods = localMods.Union(workshopMods);
                 }
                 else
@@ -123,10 +95,23 @@ public class Bootstrapper : ComponentBase
 
                 Parallel.ForEach(allMods, file =>
                 {
-                    using var unpacker = new Unpacker(file);
-                    var modmetaBytes = unpacker.UnpackFileByQuery("index.modmeta", out _);
+                    using var archive = new EbonyArchive(file);
+                    
+                    var modmetaFile = archive.Files
+                        .FirstOrDefault(f => f.Value.Uri.EndsWith("index.modmeta")).Value;
+
+                    if (modmetaFile == null)
+                    {
+                        Logger.LogWarning("There was no modmeta file in {File}", file);
+                        return;
+                    }
+                    
+                    var modmetaBytes = modmetaFile.GetReadableData();
+
                     var mod = Binmod.FromModmetaBytes(modmetaBytes, BinmodTypeHelper, Logger);
-                    var previewBytes = unpacker.UnpackFileByQuery("$preview.png.bin", out _);
+                    var previewBytes = archive.Files
+                        .FirstOrDefault(f => f.Value.Uri.EndsWith("$preview.png.bin")).Value
+                        ?.GetReadableData() ?? Array.Empty<byte>();
 
                     var binmodListing = binmodList.FirstOrDefault(e =>
                         file.Contains(e.Path.Replace('/', '\\'), StringComparison.OrdinalIgnoreCase));
@@ -160,8 +145,8 @@ public class Bootstrapper : ComponentBase
                     binmodList.Where(e => !paths.Any(p => p.Contains(e.Path.Replace('/', '\\')))).ToList();
             });
 
-            ClearOldImages();
             AppState.IsModListInitialized = true;
+            ClearOldImages();
         }
     }
 
@@ -194,7 +179,7 @@ public class Bootstrapper : ComponentBase
     {
         if (!Context.GetBool(StateKey.HasMigratedBackups))
         {
-            var backupDirectory = $@"{Context.Settings.FlagrumDirectory}\earc\backup";
+            var backupDirectory = $@"{Profile.EarcModBackupsDirectory}";
             foreach (var backup in Context.EarcModBackups)
             {
                 var hash = Cryptography.HashFileUri64(backup.Uri);
@@ -226,9 +211,9 @@ public class Bootstrapper : ComponentBase
     private void HandleEarcModThumbnails()
     {
         var modIds = Context.EarcMods.Select(m => m.Id).ToList();
-        var thumbnailPaths = Directory.EnumerateFiles(Context.Settings.EarcModThumbnailDirectory).ToList();
+        var thumbnailPaths = Directory.EnumerateFiles(Profile.EarcModThumbnailDirectory).ToList();
         var thumbnailIds = thumbnailPaths.Select(p => p.Split('\\').Last().Split('.').First()).ToList();
-        var wwwrootIds = Directory.EnumerateFiles($@"{IOHelper.GetWebRoot()}\EarcMods")
+        var wwwrootIds = Directory.EnumerateFiles(Profile.EarcImagesDirectory)
             .Select(p => p.Split('\\').Last().Split('.').First())
             .ToList();
 
@@ -247,10 +232,10 @@ public class Bootstrapper : ComponentBase
         {
             if (!thumbnailIds.Any(t => t == modId.ToString()))
             {
-                var path = $@"{IOHelper.GetWebRoot()}\EarcMods\{modId}.png";
+                var path = $@"{Profile.EarcImagesDirectory}\{modId}.png";
                 if (File.Exists(path))
                 {
-                    var destination = $@"{Context.Settings.EarcModThumbnailDirectory}\{modId}.png";
+                    var destination = $@"{Profile.EarcModThumbnailDirectory}\{modId}.png";
                     File.Copy(path, destination);
                 }
             }
@@ -261,10 +246,10 @@ public class Bootstrapper : ComponentBase
         {
             if (!wwwrootIds.Any(t => t == modId.ToString()))
             {
-                var path = $@"{Context.Settings.EarcModThumbnailDirectory}\{modId}.png";
+                var path = $@"{Profile.EarcModThumbnailDirectory}\{modId}.png";
                 if (File.Exists(path))
                 {
-                    var destination = $@"{IOHelper.GetWebRoot()}\EarcMods\{modId}.png";
+                    var destination = $@"{Profile.EarcImagesDirectory}\{modId}.png";
                     File.Copy(path, destination);
                 }
             }

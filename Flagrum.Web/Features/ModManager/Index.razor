@@ -1,0 +1,160 @@
+﻿@page "/"
+@using Microsoft.EntityFrameworkCore
+@using Flagrum.Web.Persistence.Entities.ModManager
+@using Flagrum.Web.Features.ModManager.Modals
+@using Flagrum.Web.Features.ModManager.Services
+@using Flagrum.Core.Utilities.Types
+@inherits ModComponentBase
+
+@inject IWpfService WpfService
+@inject ILogger<Index> Logger
+@inject ProfileService Profile
+@inject AppStateService AppState
+@inject ModManagerServiceBase ModManagerService
+
+<style>
+    .rte-container h1, .rte-container h2, .rte-container h3, .rte-container h4, .rte-container h5, .rte-container h6 {
+        color: #b3b1ac;
+    }
+    
+    .rte-container ul {
+        list-style: disc;
+        margin-left: 2em;
+    }
+    
+    .rte-container ol {
+        list-style: decimal;
+        margin-left: 2em;
+    }
+</style>
+
+<CascadingValue Value="this">
+
+    @if (!IsLoading)
+    {
+        <div class="flex flex-row items-center p-5 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+            <div class="flex flex-row items-center">
+                <div class="bg-dark-600 shadow-md rounded row mr-6">
+                    <ModTypeButtonGroup Target="@EnabledState" OnItemSelected="SetEnabledState">
+                        <ModTypeButton Text=@Localizer["ActiveMods"] Value="0"/>
+                        <ModTypeButton Text=@Localizer["DisabledMods"] Value="1"/>
+                    </ModTypeButtonGroup>
+                </div>
+            </div>
+            <DropdownButton Icon="filter_alt" DropdownWidth="150"
+                            Text=@($"{Localizer["Filter"]} {(Category == -1 ? Localizer["CategoryAll"] : Localizer[$"Category{(ModCategory)Category}"])}")>
+                <DropdownButtonItem Text="@Localizer["CategoryAll"]" OnClick="() => { SetCategory(-1); return Task.CompletedTask; }"/>
+                @foreach (var category in Enum.GetValues<ModCategory>().Where(e => e != ModCategory.Other).OrderBy(e => e.ToString()))
+                {
+                    <DropdownButtonItem Text="@Localizer[$"Category{category}"]" OnClick="() => { SetCategory((int)category); return Task.CompletedTask; }"/>
+                }
+                <DropdownButtonItem Text="@Localizer["CategoryOther"]" OnClick="() => { SetCategory((int)ModCategory.Other); return Task.CompletedTask; }"/>
+            </DropdownButton>
+            <div class="flex-grow"></div>
+            <Button Icon="add" Text=@Localizer["CreateMod"] CssClass="mr-4" OnClick="@(() => ModCardModal.Open(0))"/>
+            <Button Icon="upload" Text=@Localizer["InstallFromZip"] OnClickAsync="Install"/>
+            <div class="row rounded text-sm font-bold text-grey-100 pl-1 pr-1.5 pt-1 pb-1 ml-4 cursor-pointer select-none" style="background-color: #107ef4;" @onclick="OpenModWorkshop">
+                <img alt="MWS" src="/branding/mws_logo_white.svg" style="width: 16px; height: 16px;"/>
+                <span class="ml-1">@Localizer["DownloadMods"]</span>
+            </div>
+        </div>
+    }
+    <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
+        @{
+            using var context = new FlagrumDbContext(Profile);
+            var items = context.EarcMods
+                .Where(Filter)
+                .AsNoTracking()
+                .OrderByDescending(m => m.IsFavourite)
+                .ThenBy(m => m.Name)
+                .ToList();
+
+            if (items.Any())
+            {
+                <div class="px-4 pb-8 flex flex-row flex-wrap">
+                    @foreach (var item in items)
+                    {
+                        <ModCard Mod="item" IsDisabled="false"/>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="p-8 flex flex-row h-full">
+                    <div class="self-center mx-auto text-center">
+                        <span class="text-grey-600 material-icons block mb-4" style="font-size: 120px;">inbox</span>
+                        <span class="text-grey-600 text-lg font-display">
+                            @(!Context.EarcMods.Any() ? Localizer["NoMods"] : ShowActive ? Localizer["NoActiveMods"] : Localizer["NoDisabledMods"])
+                        </span>
+                    </div>
+                </div>
+            }
+        }
+    </LoadingView>
+
+    <AutosizeModal @ref="ConflictsModal">
+        <HeaderView>
+            <span class="text-grey-300 flex-grow">@Localizer["ConflictsDetected"]</span>
+            <span class="material-icons cursor-pointer" @onclick="CancelLegacyConflicts">cancel</span>
+        </HeaderView>
+        <BodyView>
+            <div>
+                <h4 class="text-grey-300">
+                    @Localizer["DuplicateEarcsDetected"]
+                </h4>
+                <span class="block">@Localizer["ChooseConflict"]</span>
+                @{
+                    if (LegacyConflicts != null)
+                    {
+                        var i = 0;
+                        var legacyConflicts = LegacyConflicts
+                            .Where(c => c.Value.Count > 1)
+                            .Select(kvp => (kvp.Key, kvp.Value))
+                            .ToList();
+
+                        if (legacyConflicts.Count > 0)
+                        {
+                            foreach (var conflict in SelectedLegacyConflicts)
+                            {
+                                var index = i++;
+                                var (original, options) = legacyConflicts[index];
+                                conflict.Value = options.First();
+                                <h6 class="text-grey-300 mt-4 mb-2">@original</h6>
+                                <EditForm Model="new object()">
+                                    <InputRadioGroup @bind-Value="conflict.Value">
+                                        @foreach (var option in options)
+                                        {
+                                            <div class="flex flex-row items-center">
+                                                <InputRadio Value="@option"/>
+                                                <span class="flex-grow block ml-2">@option</span>
+                                            </div>
+                                        }
+                                    </InputRadioGroup>
+                                </EditForm>
+                            }
+
+                            <Button Icon="check" Text=@Localizer["Confirm"] CssClass="mt-6" OnClick="ConfirmLegacyConflicts"/>
+                        }
+                    }
+                }
+            </div>
+        </BodyView>
+    </AutosizeModal>
+
+    <AutosizeModal @ref="ReadmeModal" MinWidth="600px">
+        <HeaderView>
+            <span class="text-grey-300 flex-grow">@Localizer["ModReadme"]</span>
+            <span class="material-icons cursor-pointer" @onclick="() => ReadmeModal.Close()">cancel</span>
+        </HeaderView>
+        <BodyView>
+            <div class="rte-container px-2 pb-2" style="max-height: 100%;">
+                @CurrentReadme
+            </div>
+        </BodyView>
+    </AutosizeModal>
+
+    <AlertModal @ref="Alert"/>
+    <PromptModal @ref="Prompt"/>
+    <ModCardModal @ref="ModCardModal"/>
+
+</CascadingValue>

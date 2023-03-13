@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Types;
 
 namespace Flagrum.Core.Gfxbin.Btex;
 
@@ -39,22 +40,90 @@ public static class BtexConverter
     public static FallbackMap<DxgiFormat, BtexFormat> FormatMap { get; } =
         new(DxgiFormat.BC1_UNORM, BtexFormat.BC1_UNORM);
 
-    public static byte[] BtexToDds(byte[] btex)
+    public static byte[] BtexToDds(byte[] btex, LuminousGame profile,
+        Func<DxgiFormat, int, int, (long rowPitch, long slicePitch)> calculatePitch)
     {
-        // Remove SEDB header
-        var withoutSedb = new byte[btex.Length - 128];
-        Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
+        byte[] withoutSedb;
 
-        var btexHeader = ReadBtexHeader(withoutSedb);
-
-        if (btexHeader.ArraySize > 1)
+        if (btex[0] == 'B' && btex[1] == 'T' && btex[2] == 'E' && btex[3] == 'X')
         {
+            withoutSedb = btex;
+        }
+        else
+        {
+            // Remove SEDB header
+            withoutSedb = new byte[btex.Length - 128];
+            Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
+        }
+
+        var btexHeader = ReadBtexHeader(withoutSedb, profile == LuminousGame.FFXV);
+
+        if (profile == LuminousGame.FFXV)
+        {
+            if (btexHeader.ArraySize > 1)
+            {
+                using var stream = new MemoryStream();
+                using var writer = new BinaryWriter(stream);
+
+                foreach (var mip in btexHeader.MipMaps.SelectMany(m => m))
+                {
+                    writer.Write(btexHeader.Data, (int)mip.Offset, (int)mip.Size);
+                }
+
+                btexHeader.Data = stream.ToArray();
+            }
+        }
+        else
+        {
+            var offset = 0;
             using var stream = new MemoryStream();
             using var writer = new BinaryWriter(stream);
 
-            foreach (var mip in btexHeader.MipMaps.SelectMany(m => m))
+            try 
             {
-                writer.Write(btexHeader.Data, (int)mip.Offset, (int)mip.Size);
+                for (var a = 0; a < btexHeader.ArraySize; a++)
+                {
+                    var format = FormatMap[btexHeader.Format];
+                    var formatBlockSize = GetBlockSize(format);
+                    uint width = btexHeader.Width;
+                    uint height = btexHeader.Height;
+
+                    for (var i = 0; i < btexHeader.MipMapCount; i++)
+                    {
+                        var mipSize = (int)((width + 3) / 4) * (int)((height + 3) / 4) * formatBlockSize;
+                        var size = (uint)Math.Max(formatBlockSize, mipSize);
+
+                        var blockSize = size == formatBlockSize
+                            ? formatBlockSize
+                            : Math.Min(256, Math.Max(formatBlockSize, (int)size / (int)(Math.Min(width, height) / 4)));
+
+                        var blockCount = size / blockSize;
+
+                        for (var j = 0; j < blockCount; j++)
+                        {
+                            writer.Write(btexHeader.Data, offset, blockSize);
+                            offset += blockSize;
+
+                            if (size == formatBlockSize && j > blockCount - 4)
+                            {
+                                offset += 512 - blockSize;
+                            }
+                            else
+                            {
+                                offset += 256 - blockSize;
+                            }
+                        }
+
+                        width /= 2;
+                        height /= 2;
+                    }
+                }
+            }
+            catch
+            {
+                // Cringe to avoid dealing with stupid BTEX edge-cases with Forspoken direct storage nonsense
+                btexHeader.ArraySize = 1;
+                btexHeader.MipMapCount = 1;
             }
 
             btexHeader.Data = stream.ToArray();
@@ -78,74 +147,6 @@ public static class BtexConverter
         };
 
         return WriteDds(ddsHeader, btexHeader.Data);
-    }
-
-    public static IEnumerable<byte[]> BtexArrayToDds(byte[] btex)
-    {
-        // Remove SEDB header
-        var withoutSedb = new byte[btex.Length - 128];
-        Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
-
-        var btexHeader = ReadBtexHeader(withoutSedb);
-
-        var ddsHeader = new DdsHeader
-        {
-            Height = btexHeader.Height,
-            Width = btexHeader.Width,
-            PitchOrLinearSize = btexHeader.Pitch,
-            Depth = btexHeader.Depth,
-            MipMapCount = 1, //btexHeader.MipMapCount,
-            Flags = DDSFlags.Texture | DDSFlags.Pitch | DDSFlags.Depth | DDSFlags.MipMapCount,
-            PixelFormat = new PixelFormat(),
-            DX10Header = new DX10
-            {
-                ArraySize = 1, //btexHeader.ArraySize,
-                Format = FormatMap[btexHeader.Format],
-                ResourceDimension = btexHeader.Dimension + 1u
-            }
-        };
-
-        foreach (var mips in btexHeader.MipMaps)
-        {
-            var start = (int)mips[0].Offset;
-            var end = (int)(start + mips[0].Size);
-            yield return WriteDds(ddsHeader, btexHeader.Data[start..end]);
-        }
-    }
-
-    public static byte[] ReplaceInTextureArray(byte[] btex, List<byte[]> btexMips, int index)
-    {
-        // Remove SEDB header
-        var withoutSedb = new byte[btex.Length - 128];
-        Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
-        var btexHeader = ReadBtexHeader(withoutSedb);
-
-        for (var i = 0; i < btexMips.Count; i++)
-        {
-            var mipBtex = btexMips[i];
-            File.WriteAllBytes(@$"C:\Modding\Wiz\Terrain\TestDump\{i}.btex", mipBtex);
-            var mipWithoutSedb = new byte[mipBtex.Length - 128];
-            Array.Copy(mipBtex, 128, mipWithoutSedb, 0, mipWithoutSedb.Length);
-            var mipBtexHeader = ReadBtexHeader(mipWithoutSedb);
-
-            var mipmap = btexHeader.MipMaps[index][i];
-            if (mipmap.Size != mipBtexHeader.MipMaps[0][0].Size)
-            {
-                Console.WriteLine(
-                    $"Mip {i} of size {mipBtexHeader.MipMaps[0][0].Size} is not equal to {mipmap.Size}—will not continue");
-                break;
-            }
-
-            var start = btexHeader.HeaderSize + 128 + mipmap.Offset;
-            var end = start + mipmap.Size;
-
-            for (var j = start; j < end; j++)
-            {
-                btex[j] = mipBtexHeader.Data[j - start];
-            }
-        }
-
-        return btex;
     }
 
     public static byte[] DdsToBtex(TextureType type, string fileName, byte[] dds)
@@ -201,7 +202,8 @@ public static class BtexConverter
         return stream.ToArray();
     }
 
-    public static byte[] DdsToBtex(string fileName, byte[] dds, byte imageFlags, long rowPitch, DxgiFormat format)
+    public static byte[] DdsToBtex(string fileName, byte[] dds, byte imageFlags, long rowPitch, DxgiFormat format,
+        bool addSedbHeader)
     {
         var ddsHeader = ReadDdsHeader(dds, out var ddsContent);
         var btexHeader = new BtexHeader
@@ -218,38 +220,112 @@ public static class BtexConverter
             p_ImageFileSize = (uint)ddsContent.Length,
             p_ImageFlags = imageFlags,
             p_Name = fileName,
-            p_SurfaceCount = (ushort)ddsHeader.MipMapCount
+            p_SurfaceCount = addSedbHeader ? (ushort)ddsHeader.MipMapCount : (ushort)0
         };
 
-        uint width = btexHeader.Width;
-        uint height = btexHeader.Height;
-
-        var mips = new List<BtexMipMap>();
-        for (var i = 0; i < btexHeader.MipMapCount; i++)
+        if (addSedbHeader)
         {
-            mips.Add(new BtexMipMap
-            {
-                Offset = i == 0 ? 0 : mips[i - 1].Offset + mips[i - 1].Size,
-                Size = (uint)Math.Max(GetBlockSize(format), CalculatePitch(width, format) * height)
-            });
+            btexHeader.HeaderSize = 128;
 
-            width /= 2;
-            height /= 2;
+            uint width = btexHeader.Width;
+            uint height = btexHeader.Height;
+
+            var mips = new List<BtexMipMap>();
+            for (var i = 0; i < btexHeader.MipMapCount; i++)
+            {
+                mips.Add(new BtexMipMap
+                {
+                    Offset = i == 0 ? 0 : mips[i - 1].Offset + mips[i - 1].Size,
+                    Size = (uint)Math.Max(GetBlockSize(format), CalculatePitch(width, format) * height)
+                });
+
+                width /= 2;
+                height /= 2;
+            }
+
+            btexHeader.MipMaps.Add(mips);
+        }
+        else
+        {
+            btexHeader.HeaderSize = 128;
+            btexHeader.p_Name = "";
+            btexHeader.Pitch = 0; // Terada why?
+
+            var offset = 0u;
+            using var stream = new MemoryStream();
+            using var writer = new BinaryWriter(stream);
+
+            for (var a = 0; a < btexHeader.ArraySize; a++)
+            {
+                var formatBlockSize = GetBlockSize(format);
+                uint width = btexHeader.Width;
+                uint height = btexHeader.Height;
+
+                for (var i = 0; i < btexHeader.MipMapCount; i++)
+                {
+                    var mipSize = (int)((width + 3) / 4) * (int)((height + 3) / 4) * formatBlockSize;
+                    var size = (uint)Math.Max(formatBlockSize, mipSize);
+
+                    var blockSize = size == formatBlockSize
+                        ? formatBlockSize
+                        : Math.Min(256, Math.Max(formatBlockSize, (int)size / (int)(Math.Max(width, height) / 4)));
+
+                    var blockCount = size / blockSize;
+
+                    for (var j = 0; j < blockCount; j++)
+                    {
+                        writer.Write(btexHeader.Data, (int)offset, blockSize);
+                        offset += (uint)blockSize;
+
+                        if (a == btexHeader.ArraySize - 1 && i == btexHeader.MipMapCount - 1)
+                        {
+                            btexHeader.p_PlatformDataSize = (uint)stream.Position;
+                            writer.Align(256, 0x00);
+                            btexHeader.p_ImageFileSize = (uint)stream.Position;
+                        }
+                        else if (size == formatBlockSize && j > blockCount - 4)
+                        {
+                            var paddingSize = 512 - blockSize;
+                            if (paddingSize > 0)
+                            {
+                                writer.Write(new byte[paddingSize]);
+                            }
+                        }
+                        else
+                        {
+                            var paddingSize = 256 - blockSize;
+                            if (paddingSize > 0)
+                            {
+                                writer.Write(new byte[paddingSize]);
+                            }
+                        }
+                    }
+
+                    width /= 2;
+                    height /= 2;
+                }
+            }
+
+            btexHeader.Data = stream.ToArray();
         }
 
-        btexHeader.MipMaps.Add(mips);
         var btex = WriteBtex(btexHeader);
 
-        var sedbHeader = new SedbBtexHeader
+        if (addSedbHeader)
         {
-            FileSize = (ulong)btex.Length + 128 // Size of this header itself
-        };
+            var sedbHeader = new SedbBtexHeader
+            {
+                FileSize = (ulong)btex.Length + 128 // Size of this header itself
+            };
 
-        using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream, Encoding.UTF8);
-        writer.Write(sedbHeader.ToBytes());
-        writer.Write(btex);
-        return stream.ToArray();
+            using var stream = new MemoryStream();
+            using var writer = new BinaryWriter(stream, Encoding.UTF8);
+            writer.Write(sedbHeader.ToBytes());
+            writer.Write(btex);
+            return stream.ToArray();
+        }
+
+        return btex;
     }
 
     public static byte[] WriteDds(DdsHeader header, byte[] data)
@@ -426,8 +502,15 @@ public static class BtexConverter
         };
     }
 
-    public static BtexHeader ReadBtexHeader(byte[] btex)
+    public static BtexHeader ReadBtexHeader(byte[] btex, bool readMipData, bool readImageData = true)
     {
+        // Skip the SEDBbtex header if it is present
+        var tag = Encoding.UTF8.GetString(btex[..4]);
+        if (tag == "SEDB")
+        {
+            btex = btex[128..];
+        }
+
         var header = new BtexHeader();
         using var memoryStream = new MemoryStream(btex);
         using var reader = new BinaryReader(memoryStream, Encoding.UTF8);
@@ -471,41 +554,48 @@ public static class BtexConverter
         header.p_TileMode = reader.ReadUInt32();
         header.ArraySize = reader.ReadUInt32();
 
-        for (var i = 0; i < header.ArraySize; i++)
+        if (readMipData)
         {
-            var mips = new List<BtexMipMap>();
-            for (var j = 0; j < header.MipMapCount; j++)
+            for (var i = 0; i < header.ArraySize; i++)
             {
-                mips.Add(new BtexMipMap
+                var mips = new List<BtexMipMap>();
+                for (var j = 0; j < header.MipMapCount; j++)
                 {
-                    Offset = reader.ReadUInt32(),
-                    Size = reader.ReadUInt32()
-                });
+                    mips.Add(new BtexMipMap
+                    {
+                        Offset = reader.ReadUInt32(),
+                        Size = reader.ReadUInt32()
+                    });
+                }
+
+                header.MipMaps.Add(mips);
             }
 
-            header.MipMaps.Add(mips);
-        }
+            memoryStream.Seek(header.p_ImageHeaderOffset + header.p_NameOffset, SeekOrigin.Begin);
 
-        memoryStream.Seek(header.p_ImageHeaderOffset + header.p_NameOffset, SeekOrigin.Begin);
+            var nameBytes = new List<byte>();
+            byte current = 0x00;
 
-        var nameBytes = new List<byte>();
-        byte current = 0x00;
-
-        do
-        {
-            current = reader.ReadByte();
-
-            if (current != 0x00)
+            do
             {
-                nameBytes.Add(current);
-            }
-        } while (current != 0x00);
+                current = reader.ReadByte();
 
-        header.p_Name = Encoding.UTF8.GetString(nameBytes.ToArray());
+                if (current != 0x00)
+                {
+                    nameBytes.Add(current);
+                }
+            } while (current != 0x00);
+
+            header.p_Name = Encoding.UTF8.GetString(nameBytes.ToArray());
+        }
 
         memoryStream.Seek(header.HeaderSize, SeekOrigin.Begin);
 
-        header.Data = reader.ReadBytes((int)(memoryStream.Length - memoryStream.Position));
+        if (readImageData)
+        {
+            header.Data = reader.ReadBytes((int)(memoryStream.Length - memoryStream.Position));
+        }
+
         return header;
     }
 
@@ -578,13 +668,13 @@ public static class BtexConverter
         var withoutSedb = new byte[btex.Length - 128];
         Array.Copy(btex, 128, withoutSedb, 0, withoutSedb.Length);
 
-        var btexHeader = ReadBtexHeader(withoutSedb);
+        var btexHeader = ReadBtexHeader(withoutSedb, true);
 
         // Remove SEDB header
         var withoutSedbArray = new byte[btexArray.Length - 128];
         Array.Copy(btexArray, 128, withoutSedbArray, 0, withoutSedbArray.Length);
 
-        var btexArrayHeader = ReadBtexHeader(withoutSedbArray);
+        var btexArrayHeader = ReadBtexHeader(withoutSedbArray, true);
 
         // Update metadata
         btexArrayHeader.ArraySize++;

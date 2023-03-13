@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Flagrum.Web.Persistence;
+using Flagrum.Web.Persistence.Configuration;
+using Flagrum.Web.Persistence.Configuration.Entities;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Services;
 using Microsoft.EntityFrameworkCore;
@@ -48,13 +50,69 @@ public partial class App
             onAppUninstall: OnUninstall);
 
         SetFileTypeAssociation();
+        
+        // Migrate the configuration database if required
+        using var configuration = new ConfigurationDbContext();
+        configuration.Database.MigrateAsync().Wait();
 
         // Migrate the database if required
-        using var context = new FlagrumDbContext();
+        Profile = new ProfileService();
+        AssetExplorerNode.Profile = Profile;
+        using var context = new FlagrumDbContext(Profile);
         context.Database.MigrateAsync().Wait();
 
+        // If this is the first time using the profiles system
+        if (Profile.DidMigrateThisSession)
+        {
+            // Move the paths out into the profiles file
+            var gamePath = context.GetString(StateKey.GamePath);
+            var binmodListPath = context.GetString(StateKey.BinmodListPath);
+
+            Profile.Current.GamePath = gamePath;
+            Profile.Current.BinmodListPath = binmodListPath;
+
+            context.DeleteStateKey(StateKey.GamePath);
+            context.DeleteStateKey(StateKey.BinmodListPath);
+
+            var oldRoot = context.AssetExplorerNodes
+                .Where(n => n.ParentId == null)
+                .Select(n => n.Id)
+                .First();
+
+            var newRoot = new AssetExplorerNode {Name = ""};
+            context.AssetExplorerNodes.Add(newRoot);
+            context.SaveChanges();
+
+            var oldRootEntity = context.AssetExplorerNodes.Find(oldRoot)!;
+            oldRootEntity.ParentId = newRoot.Id;
+            oldRootEntity.Name = "data:";
+            context.SaveChanges();
+            
+            // Update the mod paths to point to the new locations
+            foreach (var file in context.EarcModReplacements)
+            {
+                if (file.ReplacementFilePath?.StartsWith($@"{Profile.FlagrumDirectory}\earc") == true)
+                {
+                    file.ReplacementFilePath = file.ReplacementFilePath.Replace($@"{Profile.FlagrumDirectory}\earc", Profile.EarcModsDirectory);
+                }
+            }
+            
+            context.SaveChanges();
+
+            foreach (var file in context.EarcModLooseFile)
+            {
+                if (file.FilePath?.StartsWith($@"{Profile.FlagrumDirectory}\earc") == true)
+                {
+                    file.FilePath = file.FilePath.Replace($@"{Profile.FlagrumDirectory}\earc", Profile.EarcModsDirectory);
+                }
+            }
+            
+            context.SaveChanges();
+        }
+
         // Start loading asset explorer nodes so the user won't be waiting too long
-        AppState = new AppStateService(new SettingsService());
+        var appStateContext = new FlagrumDbContext(Profile);
+        AppState = new AppStateService(Profile, appStateContext, new UriMapper(appStateContext, Profile));
         AppState.LoadNodes();
 
         // Set default key bindings for 3D viewer
@@ -85,7 +143,8 @@ public partial class App
         }
     }
 
-    public AppStateService AppState { get; set; }
+    public AppStateService AppState { get; }
+    public ProfileService Profile { get; }
 
     [DllImport("shell32.dll", SetLastError = true)]
     private static extern void SetCurrentProcessExplicitAppUserModelID([MarshalAs(UnmanagedType.LPWStr)] string appId);
@@ -152,7 +211,7 @@ public partial class App
             fmodPath = e.Args[0];
         }
 
-        var window = new MainWindow(AppState, fmodPath);
+        var window = new MainWindow(Profile, AppState, fmodPath);
         window.Show();
     }
 }

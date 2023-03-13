@@ -42,4 +42,7 @@
     <data name="Settings" xml:space="preserve">
         <value>設定</value>
     </data>
+    <data name="Delete" xml:space="preserve">
+        <value>削除</value>
+    </data>
 </root>

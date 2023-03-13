@@ -7,7 +7,8 @@ using Flagrum.Core.Gfxbin.Gmdl.Constructs;
 using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Gfxbin.Gmtl;
 using Flagrum.Core.Utilities;
-using Flagrum.Web.Features.ModLibrary.Data;
+using Flagrum.Core.Utilities.Types;
+using Flagrum.Web.Features.WorkshopMods.Data;
 
 namespace Flagrum.Web.Services;
 
@@ -17,7 +18,7 @@ public class BinmodBuilder
     private readonly Modmeta _modmeta;
 
     private Binmod _mod;
-    private Packer _packer;
+    private EbonyArchive _packer;
 
     public BinmodBuilder(
         EntityPackageBuilder entityPackageBuilder,
@@ -27,10 +28,10 @@ public class BinmodBuilder
         _modmeta = modmeta;
     }
 
-    public void Initialise(Binmod mod, BuildContext context)
+    public void Initialise(Binmod mod, WorkshopModBuildContext context)
     {
         _mod = mod;
-        _packer = new Packer();
+        _packer = new EbonyArchive(true);
         //_packer.SetFlags(ArchiveHeaderFlags.Copyguard);
         _packer.AddFile(_modmeta.Build(_mod), GetDataPath("index.modmeta"));
 
@@ -49,7 +50,7 @@ public class BinmodBuilder
 
     public void WriteToFile(string outPath)
     {
-        _packer.WriteToFile(outPath);
+        _packer.WriteToFile(outPath, LuminousGame.FFXV);
     }
 
     public void AddFile(string uri, byte[] data)
@@ -59,11 +60,20 @@ public class BinmodBuilder
 
     public void AddModelFromExisting(Binmod mod, int index)
     {
-        using var unpacker = new Unpacker(mod.Path);
+        using var unpacker = new EbonyArchive(mod.Path);
         var modelName = index == 0 ? mod.Model1Name : mod.Model2Name;
 
-        var gmdl = unpacker.UnpackFileByQuery($"{modelName}.gmdl", out var gmdlUri);
-        var gpubin = unpacker.UnpackFileByQuery($"{modelName}.gpubin", out var gpubinUri);
+        var gmdlFile = unpacker.Files
+            .First(f => f.Value.Uri.EndsWith($"{modelName}.gmdl")).Value;
+
+        var gpubinFile = unpacker.Files
+            .First(f => f.Value.Uri.EndsWith($"{modelName}.gpubin")).Value;
+
+        var gmdl = gmdlFile.GetReadableData();
+        var gpubin = gpubinFile.GetReadableData();
+        var gmdlUri = gmdlFile.Uri;
+        var gpubinUri = gpubinFile.Uri;
+
         var reader = new ModelReader(gmdl, gpubin);
         var model = reader.Read();
 
@@ -73,7 +83,7 @@ public class BinmodBuilder
 
         foreach (var material in materialPaths)
         {
-            var data = unpacker.UnpackFileByQuery(material, out var materialUri);
+            var data = unpacker[material].GetReadableData();
             var materialReader = new MaterialReader(data);
             var materialObject = materialReader.Read();
             var texturePaths = materialObject.Textures
@@ -82,11 +92,11 @@ public class BinmodBuilder
 
             foreach (var texture in texturePaths)
             {
-                var textureData = unpacker.UnpackFileByQuery(texture, out var textureUri);
-                _packer.AddFile(textureData, textureUri);
+                var textureData = unpacker[texture].GetReadableData();
+                _packer.AddFile(textureData, texture);
             }
 
-            _packer.AddFile(data, materialUri);
+            _packer.AddFile(data, material);
         }
 
         _packer.AddFile(gmdl, gmdlUri);

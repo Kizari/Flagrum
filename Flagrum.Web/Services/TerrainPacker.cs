@@ -31,7 +31,7 @@ public class TerrainPacker
 {
     private readonly FlagrumDbContext _context;
     private readonly ILogger<TerrainPacker> _logger;
-    private readonly SettingsService _settings;
+    private readonly ProfileService _profile;
 
     private readonly ConcurrentBag<TerrainMetadata> _tiles = new();
 
@@ -39,10 +39,10 @@ public class TerrainPacker
 
     public TerrainPacker(
         ILogger<TerrainPacker> logger,
-        SettingsService settings)
+        ProfileService profile)
     {
         _logger = logger;
-        _settings = settings;
+        _profile = profile;
     }
 
     public void Pack(string uri, string outputPath)
@@ -57,7 +57,7 @@ public class TerrainPacker
         var outputFileName = outputPath.Split('\\').Last();
         var outputFileNameWithoutExtension = outputFileName[..outputFileName.LastIndexOf('.')];
         _texturesDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_terrain_textures";
-        var hebDirectory = $@"{_settings.GameDataDirectory}\environment\world\heightmaps";
+        var hebDirectory = $@"{_profile.GameDataDirectory}\environment\world\heightmaps";
 
         if (!Directory.Exists(_texturesDirectory))
         {
@@ -68,7 +68,7 @@ public class TerrainPacker
         ExportTerrainTextures(basePath);
 
         // This instance is needed because the injected one was rarely causing a concurrency exception for some reason
-        using var outerContext = new FlagrumDbContext(_settings);
+        using var outerContext = new FlagrumDbContext(_profile);
 
         GetPathsRecursively(uri, outerContext.GetFileByUri(uri));
 
@@ -255,9 +255,13 @@ public class TerrainPacker
 
     private void ExportTextureArray(string outputDirectory, string uri)
     {
-        using var context = new FlagrumDbContext(new SettingsService());
+        using var context = new FlagrumDbContext(_profile);
         var btex = context.GetFileByUri(uri);
-        var data = BtexConverter.BtexToDds(btex);
+        var data = BtexConverter.BtexToDds(btex, _profile.Current.Type, (format, width, height) =>
+        {
+            TexHelper.Instance.ComputePitch((DXGI_FORMAT)format, width, height, out var rowPitch, out var slicePitch, CP_FLAGS.NONE);
+            return (rowPitch, slicePitch);
+        });
 
         var pinnedData = GCHandle.Alloc(data, GCHandleType.Pinned);
         var pointer = pinnedData.AddrOfPinnedObject();
@@ -296,7 +300,7 @@ public class TerrainPacker
         {
             var element = elements.ElementAt(counter);
 
-            using var context = new FlagrumDbContext(_settings);
+            using var context = new FlagrumDbContext(_profile);
             var typeAttribute = element.GetAttributeByName("type").GetTextValue();
 
             var type = Assembly.GetExecutingAssembly().GetTypes()

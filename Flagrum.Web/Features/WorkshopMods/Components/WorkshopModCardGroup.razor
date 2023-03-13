@@ -1,0 +1,29 @@
+﻿<CascadingValue Value="this">
+    @{
+        var counter = 0;
+        foreach (var mod in Mods)
+        {
+            var key = counter;
+            <WorkshopModCard @key="key" Mod="mod"/>
+            counter++;
+        }
+    }
+</CascadingValue>
+
+@code
+{
+    [Parameter]
+    public IEnumerable<Binmod> Mods { get; set; }
+
+    private List<WorkshopModCard> Children { get; set; } = new();
+
+    public void AddChild(WorkshopModCard child)
+    {
+        Children.Add(child);
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
+}

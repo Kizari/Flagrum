@@ -13,63 +13,55 @@ public class GameViewAddressBar : AddressBar
 
     public override void NavigateToCurrentPath()
     {
-        var processedUri = CurrentPath.Trim().Replace("data://", "data:/").TrimEnd('/');
+        if (CurrentPath == null || CurrentPath.Trim() == "")
+        {
+            AssetExplorer.FileList.SetCurrentNode(AppState.RootGameViewNode);
+            return;
+        }
+        
+        var processedUri = CurrentPath.Trim().Replace("://", ":/").TrimEnd('/');
         var tokens = processedUri.Split('/')
             .Select(t => t.ToLower())
             .ToList();
 
-        if (tokens[0] == "data:")
+        var currentNode = AppState.RootGameViewNode;
+        foreach (var token in tokens)
         {
-            var currentNode = AppState.RootGameViewNode;
-            for (var i = 1; i < tokens.Count; i++)
-            {
-                currentNode = (AssetExplorerNode)currentNode.Children.FirstOrDefault(n => n.Name == tokens[i]);
+            currentNode = (AssetExplorerNode)currentNode.Children.FirstOrDefault(n => n.Name == token);
 
-                if (currentNode == null)
+            if (currentNode == null)
+            {
+                if (AppState.Is3DViewerOpen)
                 {
-                    if (AppState.Is3DViewerOpen)
-                    {
-                        WpfService.Set3DViewportVisibility(false);
-                    }
-                    
-                    Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", () =>
-                    {
-                        WpfService.Set3DViewportVisibility(true);
-                    });
-                    return;
+                    WpfService.Set3DViewportVisibility(false);
                 }
+                
+                Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", () =>
+                {
+                    WpfService.Set3DViewportVisibility(true);
+                });
+                
+                return;
             }
+        }
 
-            if (!currentNode.HasChildren)
+        if (!currentNode.HasChildren)
+        {
+            var parent = currentNode.Parent;
+            AssetExplorer.FileList.SetCurrentNode(parent);
+
+            if (AssetExplorer.ItemSelectedOverride == null)
             {
-                var parent = currentNode.Parent;
-                AssetExplorer.FileList.SetCurrentNode(parent);
-
-                if (AssetExplorer.ItemSelectedOverride == null)
-                {
-                    AssetExplorer.Preview.SetItem(currentNode);
-                }
-                else
-                {
-                    AssetExplorer.ItemSelectedOverride(currentNode);
-                }
+                AssetExplorer.Preview.SetItem(currentNode);
             }
             else
             {
-                AssetExplorer.FileList.SetCurrentNode(currentNode);
+                AssetExplorer.ItemSelectedOverride(currentNode);
             }
         }
         else
         {
-            if (AppState.Is3DViewerOpen)
-            {
-                WpfService.Set3DViewportVisibility(false);
-            }
-            
-            Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.", () =>
-            {
-                WpfService.Set3DViewportVisibility(true);
-            });
+            AssetExplorer.FileList.SetCurrentNode(currentNode);
         }
     }
 }

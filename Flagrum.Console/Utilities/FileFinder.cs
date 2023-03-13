@@ -23,7 +23,9 @@ public class FileData
 
 public class FileFinder
 {
-    private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
+    //private const string DataDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY XV\datas";
+    private const string DataDirectory =
+        @"F:\Forspoken\Forspoken.Digital.Deluxe.Edition.Steam.Rip-InsaneRamZes\FORSPOKEN";
 
     private ConcurrentBag<FileData> _map;
 
@@ -90,8 +92,9 @@ public class FileFinder
 
             if (file.EndsWith(".earc"))
             {
-                using var unpacker = new Unpacker(file);
-                foreach (var archiveFile in unpacker.Files.Where(f => !f.Flags.HasFlag(ArchiveFileFlag.Reference)))
+                using var unpacker = new EbonyArchive(file);
+                foreach (var (_, archiveFile) in unpacker.Files.Where(f =>
+                             !f.Value.Flags.HasFlag(ArchiveFileFlag.Reference)))
                 {
                     _map.Add(new FileData
                     {
@@ -105,38 +108,33 @@ public class FileFinder
         }
     }
 
-    public void FindByQuery(Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch, bool unpackMatchedFiles)
+    public void FindByQuery(Func<KeyValuePair<ulong, ArchiveFile>, bool> condition, Action<ArchiveFile> onMatch)
     {
         System.Console.WriteLine("Starting search...");
         var watch = Stopwatch.StartNew();
 
         var startDirectory = DataDirectory;
         Parallel.ForEach(Directory.EnumerateDirectories(startDirectory),
-            directory => { FindRecursively(directory, condition, onMatch, unpackMatchedFiles); });
+            directory => { FindRecursively(directory, condition, onMatch); });
 
         watch.Stop();
         System.Console.WriteLine($"Search finished after {watch.ElapsedMilliseconds} milliseconds.");
     }
 
-    private void FindRecursively(string directory, Func<ArchiveFile, bool> condition, Action<ArchiveFile> onMatch,
-        bool unpackMatchedFiles)
+    private void FindRecursively(string directory, Func<KeyValuePair<ulong, ArchiveFile>, bool> condition,
+        Action<ArchiveFile> onMatch)
     {
         foreach (var file in Directory.EnumerateFiles(directory, "*.earc"))
         {
-            using var unpacker = new Unpacker(file);
-            foreach (var archiveFile in unpacker.Files.Where(condition))
+            using var unpacker = new EbonyArchive(file);
+            foreach (var (_, archiveFile) in unpacker.Files.Where(condition))
             {
-                if (unpackMatchedFiles)
-                {
-                    unpacker.ReadFileData(archiveFile);
-                }
-
                 onMatch(archiveFile);
             }
         }
 
         Parallel.ForEach(Directory.EnumerateDirectories(directory),
-            subdirectory => { FindRecursively(subdirectory, condition, onMatch, unpackMatchedFiles); });
+            subdirectory => { FindRecursively(subdirectory, condition, onMatch); });
     }
 
     public static List<string> GetUrisByString(string query, string extension)
@@ -144,9 +142,9 @@ public class FileFinder
         var list = new List<string>();
         var finder = new FileFinder();
         finder.FindByQuery(
-            file => file.Uri.Contains(query, StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith("." + extension),
-            file => { list.Add(file.Uri); },
-            false);
+            file => file.Value.Uri.Contains(query, StringComparison.OrdinalIgnoreCase) &&
+                    file.Value.Uri.EndsWith("." + extension),
+            file => { list.Add(file.Uri); });
 
         return list;
     }
@@ -155,16 +153,16 @@ public class FileFinder
     {
         var finder = new FileFinder();
         finder.FindByQuery(
-            file => file.Uri.Contains(query, StringComparison.OrdinalIgnoreCase) && file.Uri.EndsWith(".btex"),
-            file => { System.Console.WriteLine(file.Uri); },
-            false);
+            file => file.Value.Uri.Contains(query, StringComparison.OrdinalIgnoreCase) &&
+                    file.Value.Uri.EndsWith(".btex"),
+            file => { System.Console.WriteLine(file.Uri); });
     }
 
     public static void FindStringInExml(string query)
     {
         var finder = new FileFinder();
         finder.FindByQuery(
-            file => file.Uri.EndsWith(".ebex") || file.Uri.EndsWith(".prefab"),
+            file => file.Value.Uri.EndsWith(".ebex") || file.Value.Uri.EndsWith(".prefab"),
             file =>
             {
                 var builder = new StringBuilder();
@@ -174,15 +172,14 @@ public class FileFinder
                 {
                     System.Console.WriteLine(file.Uri);
                 }
-            },
-            true);
+            });
     }
 
     public static void FindStringInMaterialTextures(string query)
     {
         var finder = new FileFinder();
         finder.FindByQuery(
-            file => file.Uri.EndsWith(".gmtl"),
+            file => file.Value.Uri.EndsWith(".gmtl"),
             file =>
             {
                 var reader = new MaterialReader(file.GetReadableData()).Read();
@@ -190,7 +187,6 @@ public class FileFinder
                 {
                     System.Console.WriteLine(file.Uri);
                 }
-            },
-            true);
+            });
     }
 }

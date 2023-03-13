@@ -40,9 +40,10 @@ class Interop:
 
     @staticmethod
     def import_mesh(gfxbin_path):
-        tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
-        command = "import -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
-        Interop.run_command(command)
+        tempfile_path = "C:\\Users\\Kieran\\Desktop\\Models2\\hu000\\model_000\\temp.json"
+        # tempfile_path = tempfile.NamedTemporaryFile().name + ".json"
+        # command = "import -i \"" + gfxbin_path + "\" -o \"" + tempfile_path + "\""
+        # Interop.run_command(command)
 
         import_file = open(tempfile_path, mode='r')
         import_data = import_file.read()

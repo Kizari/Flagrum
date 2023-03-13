@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Flagrum.Core.Archive.DataSource;
 using Flagrum.Core.Utilities;
+using K4os.Compression.LZ4;
+using K4os.Compression.LZ4.Streams;
 using ZLibNet;
 
 namespace Flagrum.Core.Archive;
@@ -17,7 +20,8 @@ public enum ArchiveFileFlag
     Patched = 16,
     PatchedDeleted = 32,
     Encrypted = 64,
-    MaskProtected = 128
+    MaskProtected = 128,
+    LZ4Compression = 1342177280
 }
 
 public class ArchiveFile
@@ -28,7 +32,7 @@ public class ArchiveFile
     public const uint HeaderSize = 40;
     public const ulong HeaderHash = 14695981039346656037;
 
-    private byte[] _buffer;
+    private IArchiveFileDataSource _dataSource;
 
     public ArchiveFile() { }
 
@@ -100,10 +104,8 @@ public class ArchiveFile
     public ArchiveFileFlag Flags { get; set; }
     public byte LocalizationType { get; set; }
     public byte Locale { get; set; }
-
     public ushort Key { get; set; }
 
-    public bool HasData => _buffer?.Length > 0;
     public bool IsDataEncrypted { get; set; }
     public bool IsDataCompressed { get; set; }
 
@@ -149,7 +151,7 @@ public class ArchiveFile
 
     public byte[] GetReadableData()
     {
-        var buffer = _buffer;
+        var buffer = _dataSource.GetData();
 
         if (Key > 0)
         {
@@ -178,11 +180,23 @@ public class ArchiveFile
 
         if (IsDataCompressed)
         {
-            buffer = DecompressData();
+            if (Flags.HasFlag(ArchiveFileFlag.LZ4Compression))
+            {
+                var stream = new MemoryStream(buffer);
+                using var lz4Stream = LZ4Stream.Decode(stream);
+                using var destinationStream = new MemoryStream();
+                lz4Stream.CopyTo(destinationStream);
+                stream.Dispose();
+                buffer = destinationStream.ToArray();
+            }
+            else
+            {
+                buffer = DecompressData(buffer);
+            }
         }
         else if (IsDataEncrypted)
         {
-            buffer = Cryptography.Decrypt(_buffer);
+            buffer = Cryptography.Decrypt(buffer);
         }
 
         if (ProcessedSize > Size)
@@ -197,14 +211,16 @@ public class ArchiveFile
 
     public byte[] GetDataForExport()
     {
-        if (_buffer == null)
+        if (_dataSource == null)
         {
             return Array.Empty<byte>();
         }
 
+        var buffer = _dataSource.GetData();
+
         if (!IsDataEncrypted && !IsDataCompressed)
         {
-            Size = (uint)_buffer.Length;
+            Size = _dataSource.Size;
         }
 
         if (!(Flags.HasFlag(ArchiveFileFlag.Encrypted) || Flags.HasFlag(ArchiveFileFlag.Compressed)))
@@ -214,16 +230,30 @@ public class ArchiveFile
 
         if (!IsDataEncrypted && Flags.HasFlag(ArchiveFileFlag.Encrypted))
         {
-            var encryptedData = Cryptography.Encrypt(_buffer);
+            var encryptedData = Cryptography.Encrypt(buffer);
             ProcessedSize = (uint)encryptedData.Length;
             return encryptedData;
         }
 
         if (!IsDataCompressed && Flags.HasFlag(ArchiveFileFlag.Compressed))
         {
-            var compressedData = CompressData(_buffer);
+            byte[] compressedData;
 
-            if (compressedData.Length >= _buffer.Length)
+            if (Flags.HasFlag(ArchiveFileFlag.LZ4Compression))
+            {
+                using var stream = new MemoryStream(buffer);
+                using var destinationStream = new MemoryStream();
+                var lz4Stream = LZ4Stream.Encode(destinationStream, LZ4Level.L12_MAX);
+                stream.CopyTo(lz4Stream);
+                lz4Stream.Dispose();
+                compressedData = destinationStream.ToArray();
+            }
+            else
+            {
+                compressedData = CompressData(buffer);
+            }
+
+            if (compressedData.Length >= buffer.Length)
             {
                 Flags &= ~ArchiveFileFlag.Compressed;
                 Key = 0;
@@ -236,47 +266,38 @@ public class ArchiveFile
             }
         }
 
-        return _buffer;
+        return buffer;
     }
 
     public byte[] GetRawData()
     {
-        return _buffer;
+        return _dataSource.GetData();
     }
 
     public void SetDataByFlags(byte[] data)
     {
-        _buffer = data;
+        _dataSource = new MemoryDataSource(data);
         IsDataCompressed = Flags.HasFlag(ArchiveFileFlag.Compressed);
         IsDataEncrypted = Flags.HasFlag(ArchiveFileFlag.Encrypted);
     }
 
     public void SetProcessedData(uint originalSize, byte[] data)
     {
-        _buffer = data;
+        _dataSource = new MemoryDataSource(data);
         Size = originalSize;
         ProcessedSize = (uint)data.Length;
     }
 
     public void SetRawData(byte[] data)
     {
-        _buffer = data;
+        _dataSource = new MemoryDataSource(data);
         IsDataCompressed = false;
         IsDataEncrypted = false;
     }
 
-    public void SetCompressedData(byte[] data)
+    public void SetRawData(Stream stream)
     {
-        _buffer = data;
-        IsDataCompressed = true;
-        IsDataEncrypted = false;
-    }
-
-    public void SetEncryptedData(byte[] data)
-    {
-        _buffer = data;
-        IsDataCompressed = false;
-        IsDataEncrypted = true;
+        _dataSource = new OpenFileDataSource(stream, DataOffset, ProcessedSize);
     }
 
     private ArchiveFileFlag GetDefaultBinmodFlags()
@@ -366,7 +387,7 @@ public class ArchiveFile
         return memoryStream.ToArray();
     }
 
-    private byte[] DecompressData()
+    private byte[] DecompressData(byte[] dataSourceBuffer)
     {
         const int chunkSize = 128 * 1024;
         var chunks = Size / chunkSize;
@@ -377,7 +398,7 @@ public class ArchiveFile
             chunks++;
         }
 
-        using var memoryStream = new MemoryStream(_buffer);
+        using var memoryStream = new MemoryStream(dataSourceBuffer);
         using var outStream = new MemoryStream();
         using var writer = new BinaryWriter(outStream);
 
@@ -441,7 +462,7 @@ public class ArchiveFile
         }
         else if (RelativePath.EndsWith(".ebex@"))
         {
-            RelativePath = RelativePath.Replace(".ebex@", ".earc");
+            RelativePath = "$archives/" + RelativePath.Replace(".ebex@", ".earc");
         }
         else if (RelativePath.EndsWith(".prefab@"))
         {

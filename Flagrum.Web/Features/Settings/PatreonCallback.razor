@@ -1,0 +1,55 @@
+﻿@page "/patreon"
+@using Flagrum.Services.Vendor.Patreon
+@using Flagrum.Web.Services.Vendor.Patreon
+
+@inject NavigationManager Navigation
+@inject ProfileService Profile
+@inject IJSRuntime JSRuntime
+
+<LoadingView IsLoading="true" Text="Authenticating"/>
+
+<AlertModal @ref="Alert"/>
+
+@code
+{
+    [CascadingParameter]
+    public MainLayout Parent { get; set; }
+
+    private AlertModal Alert { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+    // See https://docs.patreon.com/#oauth for API documentation
+        using var client = new HttpClient();
+        var parameters = Navigation.GetQueryParameters();
+
+    // Trade the one time token for a month-long token
+        var response = await client.GetFromJsonAsync<PatreonTokenResponse>($"https://ek19cc.deta.dev/patreon/newtoken?code={parameters["code"]}");
+        Profile.SetPatreonToken(response!.AccessToken, response.RefreshToken, DateTime.Now.AddSeconds(response.SecondsUntilExpiry));
+
+    // Check for membership
+        var result = await Profile.CheckPatreonStatus();
+
+        switch (result)
+        {
+            case PatreonStatus.TokenExpired:
+                Alert.Open("Warning", "Patreon Link Expired",
+                    "Unfortunately, since you haven't used Flagrum for some time, Patreon won't allow us to automatically renew your account link. Please visit the settings page and relink your Patreon account.",
+                    () => Navigation.NavigateTo("/settings"));
+                break;
+            case PatreonStatus.AuthorisationFailed:
+                Alert.Open("Warning", "Patreon Authentication Failed",
+                    "Something went wrong and your Patreon account was unable to be authorised. Please try again. If this problem persists, please open an issue on GitHub or contact me on Discord or Patreon for assistance.",
+                    () => Navigation.NavigateTo("/settings"));
+                break;
+            case PatreonStatus.AllOkay:
+                Navigation.NavigateTo("/settings");
+                break;
+            case PatreonStatus.AuthorisationStateChanged:
+                Parent.CallStateHasChanged();
+                Parent.UpdateMenuState();
+                Navigation.NavigateTo("/settings");
+                break;
+        }
+    }
+}

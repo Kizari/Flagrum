@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Flagrum.Web.Features.AssetExplorer.Data;
 using Flagrum.Web.Persistence.Entities;
 using Flagrum.Web.Persistence.Entities.ModManager;
 using Flagrum.Web.Services;
@@ -16,14 +15,12 @@ public class IndexCount
 
 public class FlagrumDbContext : DbContext
 {
-    public FlagrumDbContext() { }
-
-    public FlagrumDbContext(SettingsService settings)
+    public FlagrumDbContext(ProfileService profile)
     {
-        Settings = settings;
+        Profile = profile;
     }
 
-    public SettingsService Settings { get; }
+    public ProfileService Profile { get; }
 
     public DbSet<EarcModBackup> EarcModBackups { get; set; }
     public DbSet<EarcMod> EarcMods { get; set; }
@@ -42,10 +39,7 @@ public class FlagrumDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var databasePath =
-            $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\flagrum.db";
-
-        optionsBuilder.UseSqlite($"Data Source={databasePath};", options => { options.CommandTimeout(180); });
+        optionsBuilder.UseSqlite($"Data Source={Profile.DatabasePath};", options => { options.CommandTimeout(180); });
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,20 +1,20 @@
 ﻿@using Flagrum.Web.Persistence.Entities
-@using Index = Flagrum.Web.Features.AssetExplorer.Index
+@using Flagrum.Web.Features.AssetExplorer.Base
+@using Flagrum.Web.Features.AssetExplorer.Data
 @using Flagrum.Core.Gfxbin.Gmtl.Data
+@using Flagrum.Core.Utilities
 @using Flagrum.Core.Gfxbin.Data
 @using Flagrum.Core.Gfxbin.Gmtl
 @using System.IO
-@using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
-@using Flagrum.Core.Archive
 @using System.Text
-@using Flagrum.Core.Utilities
-@using Flagrum.Web.Features.AssetExplorer.Base
-@using Flagrum.Web.Features.AssetExplorer.Data
+@using Flagrum.Core.Archive
+@using Flagrum.Core.Gfxbin.Btex
+@using BinaryReader = Flagrum.Core.Gfxbin.Serialization.BinaryReader
 @inject IWpfService WpfService
-@inject SettingsService Settings
 @inject FlagrumDbContext Context
 @inject IStringLocalizer<ExportWithDependenciesModal> L
 @inject AppStateService AppState
+@inject ProfileService Profile
 
 <Modal @ref="Modal">
     <HeaderView>
@@ -68,7 +68,7 @@
     {
         Modal.Close();
         AppState.IsModalOpen = false;
-        
+
         if (AppState.Is3DViewerOpen)
         {
             WpfService.Set3DViewportVisibility(true);
@@ -103,9 +103,11 @@
             var highMaterials = new Dictionary<string, byte[]>();
             var textures = new Dictionary<string, byte[]>();
             var highTextures = new Dictionary<string, byte[]>();
-
-            var gpubinUri = header.Dependencies.FirstOrDefault(d => d.Path.EndsWith(".gpubin"))?.Path;
-            var gpubin = Context.GetFileByUri(gpubinUri);
+            
+            var root = Path.GetDirectoryName(path);
+            var materialsDirectory = $"{root}\\materials";
+            var texturesDirectory = $"{root}\\sourceimages";
+            var highImagesDirectory = $"{root}\\highimages";
 
             var materialUris = header.Dependencies
                 .Where(d => d.Path.EndsWith(".gmtl"))
@@ -128,7 +130,7 @@
 
                     if (textureData.Length > 0)
                     {
-                        textures.Add(texture.Path, ConvertTexture(textureData));
+                        ConvertTexture(texture.Path, texturesDirectory, textureData);
                     }
                 }
 
@@ -136,7 +138,7 @@
                 {
     // Process high resolution textures
                     var highTexturePackUri = material.HighTexturePackAsset.Replace(".htpk", ".autoext");
-                    var highMaterial = ProcessHighTextures(material, highTexturePackUri, textures, false);
+                    var highMaterial = ProcessHighTextures(material, highTexturePackUri, texturesDirectory, textures, false);
                     if (highMaterial.Length > 0)
                     {
                         highMaterials.Add(highTexturePackUri, highMaterial);
@@ -144,7 +146,7 @@
 
     // Attempt to process 4K texture pack
                     highTexturePackUri = highTexturePackUri.Insert(highTexturePackUri.LastIndexOf('.'), "2");
-                    highMaterial = ProcessHighTextures(material, highTexturePackUri, highTextures, true);
+                    highMaterial = ProcessHighTextures(material, highTexturePackUri, highImagesDirectory, highTextures, true);
                     if (highMaterial.Length > 0)
                     {
                         highMaterials.Add(highTexturePackUri, highMaterial);
@@ -153,11 +155,20 @@
             }
 
             File.WriteAllBytes(path, gfxbin);
-            File.WriteAllBytes(path.Replace(".gmdl.gfxbin", ".gpubin"), gpubin);
-            var root = Path.GetDirectoryName(path);
-            var materialsDirectory = $"{root}\\materials";
-            var texturesDirectory = $"{root}\\sourceimages";
-            var highImagesDirectory = $"{root}\\highimages";
+
+            var gpubinUris = header.Dependencies
+                .Where(d => d.Path.EndsWith(".gpubin"))
+                .Select(d => d.Path);
+
+            foreach (var gpubinUri in gpubinUris)
+            {
+                var gpubinData = Context.GetFileByUri(gpubinUri);
+                if (gpubinData.Length > 0)
+                {
+                    var gpubinPath = $@"{root}\{gpubinUri.Split('/').Last()}";
+                    File.WriteAllBytes(gpubinPath, gpubinData);
+                }
+            }
 
             foreach (var (uri, data) in materials)
             {
@@ -173,29 +184,11 @@
                 File.WriteAllBytes(materialPath, data);
             }
 
-            foreach (var (uri, data) in textures)
-            {
-                var fileName = uri.Split('/').Last();
-                fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
-                var texturePath = $"{texturesDirectory}\\{fileName}";
-                IOHelper.EnsureDirectoriesExistForFilePath(texturePath);
-                File.WriteAllBytes(texturePath, data);
-            }
-
-            foreach (var (uri, data) in highTextures)
-            {
-                var fileName = uri.Split('/').Last();
-                fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
-                var texturePath = $"{highImagesDirectory}\\{fileName}";
-                IOHelper.EnsureDirectoriesExistForFilePath(texturePath);
-                File.WriteAllBytes(texturePath, data);
-            }
-
             InvokeAsync(() => Parent.SetLoading(false));
         });
     }
 
-    private byte[] ProcessHighTextures(Material material, string highTexturePackUri, Dictionary<string, byte[]> textures, bool is4K)
+    private byte[] ProcessHighTextures(Material material, string highTexturePackUri, string directory, Dictionary<string, byte[]> textures, bool is4K)
     {
         byte[] highTexturePack = null;
         if (Context.ArchiveExistsForUri(highTexturePackUri))
@@ -209,12 +202,12 @@
                 .Replace(".htpk", ".earc")
                 .Replace('/', '\\');
 
-            var archivePath = $"{Settings.GameDataDirectory}\\{archiveRelativePath}";
+            var archivePath = $"{Profile.GameDataDirectory}\\{archiveRelativePath}";
 
             if (File.Exists(archivePath))
             {
-                using var unpacker = new Unpacker(archivePath);
-                var files = string.Join(' ', unpacker.Files.Select(f => f.Uri));
+                using var unpacker = new EbonyArchive(archivePath);
+                var files = string.Join(' ', unpacker.Files.Select(f => f.Value.Uri));
                 highTexturePack = Encoding.UTF8.GetBytes(files);
             }
         }
@@ -244,7 +237,8 @@
 
                 if (textureData.Length > 0)
                 {
-                    textures.Add(highTexture, ConvertTexture(textureData));
+                    ConvertTexture(highTexture, directory, textureData);
+                    textures.Add(highTexture, null);
                 }
             }
 
@@ -257,20 +251,17 @@
     private bool CommonCheck(string uri)
     {
         return IncludeCommonTextures
-               || !uri.StartsWith("data://shader")
-               && !uri.StartsWith("data://vfx")
-               && !uri.Contains("/common/");
+               || (!uri.StartsWith("data://shader")
+                   && !uri.StartsWith("data://vfx")
+                   && !uri.Contains("/common/"));
     }
 
-    private byte[] ConvertTexture(byte[] btex)
+    private void ConvertTexture(string uri, string directory, byte[] btex)
     {
-        var converter = new TextureConverter();
-        return Extension switch
-        {
-            "PNG" => converter.BtexToPng(btex),
-            "TGA" => converter.BtexToTga(btex),
-            "DDS" => converter.BtexToDds(btex),
-            _ => btex
-            };
+        var fileName = uri.Split('/').Last();
+        fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
+        var texturePath = $"{directory}\\{fileName}";
+        
+        new TextureConverter(Profile.Current.Type).ExportTexture(texturePath, (ImageFormat)Extension, btex);
     }
 }

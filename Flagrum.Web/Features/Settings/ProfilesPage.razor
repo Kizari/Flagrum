@@ -1,0 +1,88 @@
+﻿@page "/settings/profiles"
+@using Flagrum.Web.Features.Settings.Modals
+@using Flagrum.Web.Features.Settings.Data
+
+@inject ProfileService Profile
+@inject IStringLocalizer<ProfilesPage> Localizer
+@inject IStringLocalizer<App> AppLocalizer
+@inject NavigationManager Navigation
+
+<div class="p-6">
+    
+    <div class="box p-4">
+        <table class="standard-table">
+            <thead>
+            <tr>
+                <th style="width: 24px;">
+                    <span class="material-icons cursor-pointer text-accent1-200" @onclick="@(() => Navigation.NavigateTo("/settings"))">arrow_back</span>
+                </th>
+                <th><strong>@Localizer["ProfileName"]</strong></th>
+                <th><strong>@Localizer["ProfileType"]</strong></th>
+                <th><strong>@Localizer["ProfileId"]</strong></th>
+                <th style="text-align: end;">
+                    <Button Icon="add" Text="@Localizer["NewProfile"]" OnClick="() => Modal.Open(null)"/>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var profile in Profile.Profiles)
+            {
+                <tr>
+                    <td style="width: 24px;">
+                        @if (profile.Id == Profile.Current.Id)
+                        {
+                            <span class="material-icons">check</span>
+                        }
+                    </td>
+                    <td>@profile.Name</td>
+                    <td>
+                        @profile.Type.ToString()
+                    </td>
+                    <td>@profile.Id</td>
+                    <td style="text-align: end;">
+                        <Button Icon="edit" Text="@AppLocalizer["Edit"]" CssClass="mr-3" OnClick="() => Modal.Open(profile)"/>
+                        <Button Icon="delete" Text="@AppLocalizer["Delete"]" OnClick="() => Delete(profile)" />
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+<CascadingValue Value="this">
+    <ProfileModal @ref="Modal" />
+</CascadingValue>
+
+<AlertModal @ref="Alert" />
+<PromptModal @ref="Prompt"/>
+
+@code
+{
+    private ProfileModal Modal { get; set; }
+    private AlertModal Alert { get; set; }
+    private PromptModal Prompt { get; set; }
+
+    private void Delete(FlagrumProfile profile)
+    {
+        if (Profile.Current.Id == profile.Id)
+        {
+            Alert.Open("Error", "Profile is Active", "You cannot delete the active profile. Select another profile and try again.", null);
+            return;
+        }
+
+        Prompt.Title = "Warning";
+        Prompt.Heading = "Are you sure?";
+        Prompt.Subtext = "All files associated with this profile will be deleted, including mods, thumbnails, and file indices. This action cannot be undone!";
+        Prompt.OnYes = () =>
+        {
+            Profile.Delete(profile);
+            StateHasChanged();
+        };
+        
+        Prompt.Open();
+    }
+
+    public void CallStateHasChanged() => StateHasChanged();
+}

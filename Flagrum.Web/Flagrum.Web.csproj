@@ -19,6 +19,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.1" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7" />
         <PackageReference Include="Scriban" Version="5.0.0" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.4" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
         <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
     </ItemGroup>
@@ -36,6 +37,10 @@
         <_ContentIncludedByDefault Remove="Layout\TypeTreeComponent.razor" />
         <_ContentIncludedByDefault Remove="Features\FileInspector\Index.razor" />
         <_ContentIncludedByDefault Remove="Features\FileInspector\ObjectInspector.razor" />
+        <_ContentIncludedByDefault Remove="Features\SequenceEditor\SequenceEditor.razor" />
+        <_ContentIncludedByDefault Remove="Components\Graph\StandardGroupRenderer.razor" />
+        <_ContentIncludedByDefault Remove="Components\Graph\StandardNodeRenderer.razor" />
+        <_ContentIncludedByDefault Remove="Components\Graph\StandardPortRenderer.razor" />
     </ItemGroup>
 
 
@@ -67,7 +72,7 @@
 
 
     <ItemGroup>
-        <Folder Include="Services\Vendor" />
+        <Folder Include="Services\Vendor\BlazorContextMenuLibrary" />
     </ItemGroup>
 
 
@@ -279,6 +284,10 @@
         <EmbeddedResource Update="Features\Settings\RegenerateModal.resx">
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>RegenerateModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Features\Settings\ProfilesPage.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>ProfilesPage.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
 
