@@ -13,7 +13,8 @@
 [![Support Me](https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white)](#support-the-continued-development-of-ffxv-tools)
 [![Chat on Discord](https://img.shields.io/badge/discord-EXINERIS-8D96F6.svg?style=flat&logo=discord&logoColor=white)](https://discord.gg/7cNNwwJKsJ)
 [![Follow on Twitter](https://img.shields.io/badge/twitter-%40KizariXV-blue.svg?style=flat&logo=twitter&logoColor=white)](https://twitter.com/KizariXV)
-[![Reddit](https://img.shields.io/badge/reddit-%2Fr%2FFlagrum-orange?logo=reddit&logoColor=white)](https://www.reddit.com/r/Flagrum/)  
+[![Reddit](https://img.shields.io/badge/reddit-%2Fr%2FFlagrum-orange?logo=reddit&logoColor=white)](https://www.reddit.com/r/Flagrum/) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKizari%2FFlagrum.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKizari%2FFlagrum?ref=badge_shield)
+ 
 &nbsp;
 
 <h1 align="center">Asset Management</h1>
@@ -98,3 +99,7 @@ Elisa<br/>
 Saturn<br/>
 Castagnaccio
 </p>
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKizari%2FFlagrum.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKizari%2FFlagrum?ref=badge_large)
