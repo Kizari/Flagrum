@@ -7,11 +7,12 @@
 <h3 align="center">An all-in-one solution for modders, artists, and players of Final Fantasy XV</h3>
 
 ---
-[![Release](https://img.shields.io/github/release/Kizari/Flagrum.svg?style=flat&maxAge=3600)](https://github.com/Kizari/Flagrum/releases)
-[![Downloads](https://img.shields.io/github/downloads/Kizari/Flagrum/setup.exe.svg?style=flat&logo=github)](https://github.com/Kizari/Flagrum/releases/latest)
-[![Become a Patron](https://img.shields.io/badge/patreon-Flagrum-orange?logo=patreon&logoColor=white)](https://www.patreon.com/Flagrum)
-[![Support Me](https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white)](#support-the-continued-development-of-ffxv-tools)
-[![Follow on Twitter](https://img.shields.io/badge/twitter-%40KizariXV-blue.svg?style=flat&logo=twitter&logoColor=white)](https://twitter.com/KizariXV)
+<p align="center">
+<a href="https://github.com/Kizari/Flagrum/releases"><img src="https://img.shields.io/github/release/Kizari/Flagrum.svg?style=flat&maxAge=3600" alt="Release"></img></a>
+<a href="https://www.patreon.com/Flagrum"><img src="https://img.shields.io/badge/patreon-Flagrum-orange?logo=patreon&logoColor=white" alt="Become a Patron"></img></a>
+<a href="#support-the-continued-development-of-ffxv-tools"><img src="https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white" alt="Support Me"></img></a>
+<a href="https://twitter.com/KizariXV"><img src="https://img.shields.io/badge/twitter-%40KizariXV-blue.svg?style=flat&logo=twitter&logoColor=white" alt="Follow on Twitter"></img></a>
+</p>
 &nbsp;
 
 <h1 align="center">Asset Management</h1>
@@ -68,7 +69,7 @@ These tools take a monumental amount of time and effort to develop.<br/>
 If you want to support the ongoing development of Flagrum and my other XV projects, please consider donating.<br/><br/><br/>
 <a href="https://www.patreon.com/Flagrum"><img height="40" src="Images/Readme/patreon-button.png" alt="Patreon" /></a>&nbsp;&nbsp;
 <a href="https://ko-fi.com/Kizari"><img height="40" src="Images/Readme/kofi-button.png" alt="Ko-Fi" /></a>&nbsp;&nbsp;
-<a href="https://buymeacoffee.com/Exineris"><img height="40" src="Images/Readme/bmc-button.png" alt="Buy Me a Coffee" /></a>
+<a href="https://buymeacoffee.com/Kizari"><img height="40" src="Images/Readme/bmc-button.png" alt="Buy Me a Coffee" /></a>
 </p>
 <p><br/></p>
 &nbsp;
@@ -82,4 +83,9 @@ If you want to support the ongoing development of Flagrum and my other XV projec
 <h3 align="center">Contributors</h3>
 <p align="center">
 Rinual&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;AsteriskAmpersand&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;ImpatientTraveler&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Yretenai&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Katelynn Kittaly&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Chisa&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Sai
+</p>
+<br/>
+<h3 align="center">Special thanks to the current and past top-tier Patrons for their generous support!</h3>
+<p align="center">
+Kym&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Daniel Welch&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Jiselle
 </p>
