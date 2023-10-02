@@ -21,7 +21,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Crash logs**
-If Flagrum crashed, please attach the crash log found at `%LOCALAPPDATA%\Flagrum\crashes`. If there are multiple crash logs for the relevant date/time, please them all.
+If Flagrum crashed, please attach the crash log found at `%LOCALAPPDATA%\Flagrum\crashes`. If there are multiple crash logs for the relevant date/time, please attach them all.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
