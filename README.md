@@ -9,10 +9,23 @@
 ---
 <p align="center">
 <a href="https://github.com/Kizari/Flagrum/releases"><img src="https://img.shields.io/github/release/Kizari/Flagrum.svg?style=flat&maxAge=3600" alt="Release"></img></a>
-<a href="https://www.patreon.com/Flagrum"><img src="https://img.shields.io/badge/patreon-Flagrum-orange?logo=patreon&logoColor=white" alt="Become a Patron"></img></a>
+<a href="https://www.patreon.com/Kizari"><img src="https://img.shields.io/badge/patreon-Flagrum-orange?logo=patreon&logoColor=white" alt="Become a Patron"></img></a>
 <a href="#support-the-continued-development-of-ffxv-tools"><img src="https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white" alt="Support Me"></img></a>
 <a href="https://twitter.com/KizariXV"><img src="https://img.shields.io/badge/twitter-%40KizariXV-blue.svg?style=flat&logo=twitter&logoColor=white" alt="Follow on Twitter"></img></a>
 </p>
+&nbsp;  
+&nbsp;
+
+<h3 align="center">Lucent, a visual scripting tool for FFXV is now available on Patreon!</h3>
+
+![Logo](https://github.com/Kizari/Flagrum/assets/25322543/d41df31c-7d3c-4364-9bf3-08afbc7c83a8)
+![Screenshot](https://github.com/Kizari/Flagrum/assets/25322543/e4c73a8e-8310-4466-b3ba-c7f753eb783b)
+
+<p align="center">
+<a href="https://www.patreon.com/posts/visual-scripting-91823536">Learn more about Lucent</a>
+</p>
+
+---
 &nbsp;
 
 <h1 align="center">Asset Management</h1>
@@ -67,7 +80,7 @@
 <p align="center">
 These tools take a monumental amount of time and effort to develop.<br/>
 If you want to support the ongoing development of Flagrum and my other XV projects, please consider donating.<br/><br/><br/>
-<a href="https://www.patreon.com/Flagrum"><img height="40" src="Images/Readme/patreon-button.png" alt="Patreon" /></a>&nbsp;&nbsp;
+<a href="https://www.patreon.com/Kizari"><img height="40" src="Images/Readme/patreon-button.png" alt="Patreon" /></a>&nbsp;&nbsp;
 <a href="https://ko-fi.com/Kizari"><img height="40" src="Images/Readme/kofi-button.png" alt="Ko-Fi" /></a>&nbsp;&nbsp;
 <a href="https://buymeacoffee.com/Kizari"><img height="40" src="Images/Readme/bmc-button.png" alt="Buy Me a Coffee" /></a>
 </p>
