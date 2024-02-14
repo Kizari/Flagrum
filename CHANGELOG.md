@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.11
+
+_Released 14 February 2024_
+
+
+### New Features
+
+- Add Forspoken support to force reset feature ([@Kizari](https://github.com/Kizari))
+
+
+### Bug Fixes
+
+- Improve formatting for automated release notes ([@Kizari](https://github.com/Kizari))
+
+- Resolve broken crash log functionality ([@Kizari](https://github.com/Kizari))
+
+- Fix missing data issues with some applied mods ([@Kizari](https://github.com/Kizari))
+
+- Prevent FMOD file lock persisting ([@Kizari](https://github.com/Kizari))
+
+- Resolve new archive add file refresh issue ([@Kizari](https://github.com/Kizari))
+
+- Prevent binmod.list corrupting from broken mods ([@Kizari](https://github.com/Kizari))
+
+
+### Refactor
+
+- Move mod state into ModManager service ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.10
 
 _Released 12 February 2024_
