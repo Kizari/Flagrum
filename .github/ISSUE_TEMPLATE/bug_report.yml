@@ -20,6 +20,17 @@ body:
         - Other
     validations:
       required: true
+  - type: dropdown
+    id: game-version
+    attributes:
+      label: Game Version
+      description: Which version of the game are you applying your mods to?
+      options:
+        - Latest Steam Release
+        - Other Game Store (please specify in the "Additional context" section)
+        - Debug Executable
+        - Avatara Executable
+        - Other (please specify in the "Additional context" section)
   - type: input
     id: version
     attributes:
@@ -50,14 +61,20 @@ body:
     id: crash-logs
     attributes:
       label: Crash logs
-      description: If Flagrum crashed, please attach **all** crash logs in the `%LOCALAPPDATA%\Flagrum\crashes` folder with the timestamp matching the date/time of the crash.
+      description: |
+        If Flagrum crashed, please attach **all** crash logs in the `%LOCALAPPDATA%\Flagrum\crashes` folder with the timestamp matching the date/time of the crash.
+
+        You can attach log files by clicking this area to highlight it and then drag the files and drop them on it.
     validations:
       required: false
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
-      description: If applicable, add screenshots to help explain your problem.
+      description: |
+        If applicable, add screenshots to help explain your problem.
+
+        You can attach images by clicking this area to highlight it and then drag the files and drop them on it.
     validations:
       required: false
   - type: textarea
@@ -67,3 +84,20 @@ body:
       description: Add any other information or context here that may help with figuring out what went wrong.
     validations:
       required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: |
+        By submitting this issue, you agree that you have done your due diligence before asking for someone to give up their free time to help you.
+
+        **Failure to comply with these terms may result in a ban from this repository.**
+      options:
+        - label: I confirm that this bug report is pertaining to Flagrum, **not** an individual mod, the game itself, or an issue with my system or files.
+          required: true
+        - label: I confirm that I am using a legitimate copy of the game.
+          required: true
+        - label: I confirm that I installed Flagrum with a clean installation of the game, and have not used any tools other than Flagrum to mod my game files.
+          required: true
+        - label: If my issue relates to the game itself crashing or exhibiting unexpected behaviour, I confirm that I have tried running a clean **unmodded** installation of the game to see if this resolves my issue before filing a bug report.
+          required: true
