@@ -95,11 +95,11 @@ body:
 
         **Failure to comply with these terms may result in a ban from this repository.**
       options:
-        - label: I confirm that this bug report is pertaining to Flagrum, **not** an individual mod, the game itself, or an issue with my system or files.
+        - label: I confirm that this bug report is pertaining to Flagrum, not an individual mod, the game itself, or an issue with my system or files.
           required: true
         - label: I confirm that I am using a legitimate copy of the game.
           required: true
         - label: I confirm that I installed Flagrum with a clean installation of the game, and have not used any tools other than Flagrum to mod my game files.
           required: true
-        - label: If my issue relates to the game itself crashing or exhibiting unexpected behaviour, I confirm that I have tried running a clean **unmodded** installation of the game to see if this resolves my issue before filing a bug report.
+        - label: If my issue relates to the game itself crashing or exhibiting unexpected behaviour, I confirm that I have tried running a clean unmodded installation of the game to see if this resolves my issue before filing a bug report.
           required: true
