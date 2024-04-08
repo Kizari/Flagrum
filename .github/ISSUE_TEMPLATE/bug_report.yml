@@ -1,0 +1,69 @@
+name: Bug Report
+description: Report a Flagrum bug.
+title: ''
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do **not** report issues with individual mods. Direct those to the author of the mod.
+
+        Please fill this form out in its entirety and with as much detail as possible. We cannot help you without the necessary information to do so.
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you running Flagrum on?
+      options:
+        - Windows 10 64-Bit
+        - Windows 11 64-Bit
+        - Other
+      validations:
+        required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of Flagrum are you running? (You can find this in the bottom-left corner of the Flagrum window).
+      placeholder: e.g. 1.5.0
+    validations:
+      required: true
+  - type: textarea
+    id: bug
+    attributes:
+      label: Description of the bug
+      description: Explain in as much detail as possible what went wrong, and what you expected to happen instead.
+    vaidations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to reproduce the bug
+      description: A numbered list of the steps to take to trigger the bug.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: crash-logs
+    attributes:
+      label: Crash logs
+      description: If Flagrum crashed, please attach **all** crash logs in the `%LOCALAPPDATA%\Flagrum\crashes` folder with the timestamp matching the date/time of the crash.
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other information or context here that may help with figuring out what went wrong.
+    validations:
+      required: false
