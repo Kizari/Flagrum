@@ -31,7 +31,7 @@ body:
     attributes:
       label: Description of the bug
       description: Explain in as much detail as possible what went wrong, and what you expected to happen instead.
-    vaidations:
+    validations:
       required: true
   - type: textarea
     id: reproduction-steps
