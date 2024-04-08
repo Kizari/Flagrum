@@ -18,6 +18,8 @@ body:
         - Windows 10 64-Bit
         - Windows 11 64-Bit
         - Other
+    validations:
+      required: true
   - type: input
     id: version
     attributes:
