@@ -27,10 +27,12 @@ body:
       description: Which version of the game are you applying your mods to?
       options:
         - Latest Steam Release
-        - Other Game Store (please specify in the "Additional context" section)
+        - Other Game Store (please specify in "Additional context")
         - Debug Executable
         - Avatara Executable
-        - Other (please specify in the "Additional context" section)
+        - Other (please specify in "Additional context")
+    validations:
+      required: true
   - type: input
     id: version
     attributes:
