@@ -1,6 +1,6 @@
 name: Feature Request
 description: Request a new Flagrum feature or a change to an existing feature.
-title: " "
+title: "[Request]: "
 labels: ["enhancement"]
 body:
   - type: textarea
