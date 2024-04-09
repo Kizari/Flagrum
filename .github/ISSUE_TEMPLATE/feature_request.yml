@@ -1,0 +1,29 @@
+name: Feature Request
+description: Request a new Flagrum feature or a change to an existing feature.
+title: " "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: request
+    attributes:
+      label: Feature Request
+      description: What would you like to see added or changed?
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Proposed Value
+      description: What value does your proposed feature offer to the users of Flagrum?
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to the following.
+      options:
+        - label: I confirm that I have ensured this feature hasn't already been suggested in another issue.
+          required: true
+        - label: I confirm that I believe this suggestion would benefit many users of Flagrum, not just myself.
+          required: true
