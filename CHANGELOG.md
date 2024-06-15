@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.13
+
+_Released 15 June 2024_
+
+
+### New Features
+
+- Add new file finder ([@Kizari](https://github.com/Kizari))
+
+- Add property browser for assets ([@Kizari](https://github.com/Kizari))
+
+
+### Bug Fixes
+
+- Fix colorSet2 regression for workshop mods ([@Kizari](https://github.com/Kizari))
+
+- Resolve misnaming issue for Forspoken—
+[#151](https://github.com/Kizari/Flagrum/issues/151) ([@Kizari](https://github.com/Kizari))
+
+- Resolve file index duplicates issue—
+[#150](https://github.com/Kizari/Flagrum/issues/150), [#152](https://github.com/Kizari/Flagrum/issues/152) ([@Kizari](https://github.com/Kizari))
+
+- Add missing PS4 sound extensions ([@Kizari](https://github.com/Kizari))
+
+- Prevent crash when deleting uncached mods—
+[#141](https://github.com/Kizari/Flagrum/issues/141) ([@Kizari](https://github.com/Kizari))
+
+- Repair file index inconsistencies ([@Kizari](https://github.com/Kizari))
+
+- Solve environment export texture resolution—
+[Kizari/Flagrum#149](https://github.com/Kizari/Flagrum/issues/Kizari/Flagrum#149) ([@Kizari](https://github.com/Kizari))
+
+
+### Refactor
+
+- Add BlackTexture enums ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.12
 
 _Released 22 February 2024_
