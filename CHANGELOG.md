@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.14
+
+_Released 18 June 2024_
+
+
+### Bug Fixes
+
+- Hotfix for file system view ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.13
 
 _Released 15 June 2024_
