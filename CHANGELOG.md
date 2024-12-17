@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.15
+
+_Released 17 December 2024_
+
+
+### Bug Fixes
+
+- Rework Flagrum+ authentication ([@Kizari](https://github.com/Kizari))
+
+
+### Refactor
+
+- Fix namespace issues ([@Kizari](https://github.com/Kizari))
+
+- Remove Lucent IPC ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.14
 
 _Released 18 June 2024_
