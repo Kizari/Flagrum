@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.16
+
+_Released 20 December 2024_
+
+
+### Bug Fixes
+
+- Resolve unpersisted gift token state ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.15
 
 _Released 17 December 2024_
