@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.17
+
+_Released 24 January 2025_
+
+
+### Bug Fixes
+
+- Rework mod loader ([@Kizari](https://github.com/Kizari))
+
+
+### Refactor
+
+- Remove redundant legacy code ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.16
 
 _Released 20 December 2024_
