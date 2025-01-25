@@ -91,14 +91,14 @@ If you want to support the ongoing development of Flagrum and my other XV projec
 <h1 align="center">Credits</h1>
 <br/>
 <h3 align="center">Core Development</h3>
-<p align="center">Kizari</p>
+<p align="center"><a href="https://github.com/Kizari">Kizari</a></p>
 <br/>
 <h3 align="center">Contributors</h3>
 <p align="center">
-Rinual&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;AsteriskAmpersand&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;ImpatientTraveler&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Yretenai&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Katelynn Kittaly&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Chisa&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Sai
+<a href="https://github.com/AlexPlaceres">Alex Cup</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/Rinual">Rinual</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/AsteriskAmpersand">AsteriskAmpersand</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/EratoTiaTuatha">ImpatientTraveler</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/yretenai">Yretenai</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/katekittaly">Katelynn Kittaly</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/ChisaJoestar">Chisa</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/youarebritish">Sai</a>
 </p>
 <br/>
 <h3 align="center">Special thanks to the current and past top-tier Patrons for their generous support!</h3>
 <p align="center">
-Kym&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Daniel Welch&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Jiselle
+Daniel Welch&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Kym&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Jiselle
 </p>
