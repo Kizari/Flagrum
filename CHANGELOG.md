@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.  
 &nbsp;
 
+## Flagrum 1.5.18
+
+_Released 27 January 2025_
+
+
+### Bug Fixes
+
+- Rework mod loader ([@Kizari](https://github.com/Kizari))
+
+- Prevent crash loop if game moves—
+[Kizari/Flagrum#153](https://github.com/Kizari/Flagrum/issues/Kizari/Flagrum#153) ([@Kizari](https://github.com/Kizari))
+
+- Ensure patch references are removed—
+[Kizari/Flagrum#163](https://github.com/Kizari/Flagrum/issues/Kizari/Flagrum#163) ([@Kizari](https://github.com/Kizari))
+
+- Detect insufficient user elevation—
+[Kizari/Flagrum#176](https://github.com/Kizari/Flagrum/issues/Kizari/Flagrum#176) ([@Kizari](https://github.com/Kizari))
+
+
+&nbsp;
 ## Flagrum 1.5.17
 
 _Released 24 January 2025_
