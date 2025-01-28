@@ -4,4 +4,4 @@ _Released 28 January 2025_
 
 ### Bug Fixes
 
-* Fixed issue with Flagrum initialization progress on Windows 11
+* Fixed issue with Flagrum initialization process on Windows 11
