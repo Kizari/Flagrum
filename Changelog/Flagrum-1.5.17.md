@@ -2,7 +2,7 @@
 
 _Released 24 January 2025_
 
-**Huge thanks to [Alex Cup](https://github.com/AlexPlaceres) for discovering the solution that fixed the mod loader!**
+> **Huge thanks to [Alex Cup](https://github.com/AlexPlaceres) for discovering the solution that fixed the mod loader!**
 
 ### Bug Fixes
 
