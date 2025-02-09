@@ -1,4 +1,4 @@
-# Flagrum 1.5.22
+## Flagrum 1.5.22
 
 _Released 10 February 2025_
 
