@@ -36,8 +36,6 @@ internal static class Program
         VelopackApp.Build()
             .WithFirstRun(OnFreshInstall)
             .Run();
-        
-        OnFreshInstall(new SemanticVersion(1, 5, 22));
 
         // Handle commandline arguments
         if (args.Any(a => a == "--launch"))

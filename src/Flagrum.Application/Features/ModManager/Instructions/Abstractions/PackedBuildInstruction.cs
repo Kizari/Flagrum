@@ -20,15 +20,15 @@ public abstract partial class PackedBuildInstruction : ModBuildInstruction, IPac
     [FactoryInject] protected IProfileService Profile { get; set; }
     [FactoryInject] protected IAuthenticationService Authentication { get; set; }
     [FactoryInject] protected IPremiumService Premium { get; set; }
+    
+    /// <inheritdoc />
+    public override string FilterableName => Uri;
+    
+    /// <inheritdoc />
+    public string Uri { get; set; }
 
     /// <inheritdoc />
     public EbonyArchiveFileFlags Flags { get; set; }
-
-    /// <inheritdoc />
-    public override string FilterableName => Uri;
-
-    /// <inheritdoc />
-    public string Uri { get; set; }
 
     /// <inheritdoc />
     public abstract void Apply(IFlagrumProject mod, IEbonyArchive archive, IFlagrumProjectArchive projectArchive);
