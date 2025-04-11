@@ -1,0 +1,156 @@
+﻿@using Flagrum.Abstractions.Archive
+@using Flagrum.Core.Archive
+<style>
+    thead {
+        position: sticky;
+        top: 0;
+    }
+
+    table th {
+        text-align: left;
+        padding: 5px 10px;
+        white-space: nowrap;
+        background-color: #1c1917;
+        border: 1px solid #000000;
+    }
+
+    table td {
+        border: 1px solid #000000;
+        padding: 5px 10px;
+        white-space: nowrap;
+    }
+
+    .filter-row th {
+        padding: 5px;
+    }
+</style>
+
+<EditForm Model="this">
+    <table class="w-full bg-grey-900">
+        <thead>
+        <tr>
+            <th>File</th>
+            <th>Compressed Size</th>
+            <th>Original Size</th>
+            <th>Flags</th>
+            <th>URI</th>
+            <th>Relative Path</th>
+        </tr>
+        <tr class="filter-row">
+            <th>
+                <Textbox @bind-Value="FileFilter" Size="Textbox.Variant.Stretch"/>
+            </th>
+            <th></th>
+            <th></th>
+            <th>
+                <Textbox @bind-Value="FlagsFilter" Size="Textbox.Variant.Stretch"/>
+            </th>
+            <th>
+                <Textbox @bind-Value="UriFilter" Size="Textbox.Variant.Stretch"/>
+            </th>
+            <th>
+                <Textbox @bind-Value="RelativePathFilter" Size="Textbox.Variant.Stretch"/>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <Virtualize Items="Files" Context="file">
+            <tr>
+                <td>@file.RelativePath.Split('/')[^1]</td>
+                <td class="text-right">@file.CompressedSize</td>
+                <td class="text-right">@file.OriginalSize</td>
+                <td>@file.Flags</td>
+                <td>@file.Uri</td>
+                <td>@file.RelativePath</td>
+            </tr>
+        </Virtualize>
+        </tbody>
+    </table>
+</EditForm>
+
+@code
+{
+    private IAssetExplorerNode _previousItem;
+    private ICollection<ArchivePreviewItem> _files;
+
+    private EbonyArchiveHeader Header { get; set; }
+
+    private ICollection<ArchivePreviewItem> Files => _files
+        .Where(f => string.IsNullOrEmpty(FileFilter) || f.File.Contains(FileFilter))
+        .Where(f => string.IsNullOrEmpty(FlagsFilter) || f.Flags.Contains(FlagsFilter, StringComparison.OrdinalIgnoreCase))
+        .Where(f => string.IsNullOrEmpty(UriFilter) || f.Uri.Contains(UriFilter))
+        .Where(f => string.IsNullOrEmpty(RelativePathFilter) || f.RelativePath.Contains(RelativePathFilter))
+        .ToList();
+
+    private string FileFilter { get; set; }
+    private string UriFilter { get; set; }
+    private string RelativePathFilter { get; set; }
+    private string FlagsFilter { get; set; }
+
+    [Parameter] public IAssetExplorerNode Item { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_previousItem != Item)
+        {
+            _previousItem = Item;
+
+            using var archive = new EbonyArchive(Item.Path);
+            var map = new RelativeExtensionMap();
+
+            Header = archive.Header;
+            _files = archive.Files.Values
+                .Select(v =>
+                {
+                    var tokens = v.Uri.Split('.');
+                    var extension = string.Join('.', tokens[^(tokens.Length > 2 ? 2 : 1)..]).Trim();
+                    return new ArchivePreviewItem
+                    {
+                        File = v.RelativePath.Split('/')[^1],
+                        CompressedSize = v.ProcessedSize == v.Size ? "—" : FormatSize(v.ProcessedSize),
+                        OriginalSize = v.Flags.HasFlag(EbonyArchiveFileFlags.Reference) && v.Size == 0 ? "—" : FormatSize(v.Size),
+                        Flags = ((EbonyArchiveFileFlags)((uint)v.Flags & ~256)).ToString(),
+                        Uri = v.Uri,
+                        RelativePath = v.RelativePath,
+                        Extension = map[extension]
+                    };
+                })
+                .OrderBy(v => v.Extension)
+                .ThenBy(v => v.File)
+                .ToList();
+
+            StateHasChanged();
+        }
+    }
+
+    private string FormatSize(uint size)
+    {
+        string[] sizeSuffixes = [" B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+        if (size == 0)
+        {
+            return "0" + sizeSuffixes[0];
+        }
+
+        var mag = (int)Math.Log(size, 1024);
+        var adjustedSize = (decimal)size / (1L << (mag * 10));
+
+        if (Math.Round(adjustedSize, 2) >= 1000)
+        {
+            mag += 1;
+            adjustedSize /= 1024;
+        }
+
+        return $"{adjustedSize:n1} {sizeSuffixes[mag]}";
+    }
+
+    private class ArchivePreviewItem
+    {
+        public string File { get; set; }
+        public string CompressedSize { get; set; }
+        public string OriginalSize { get; set; }
+        public string Flags { get; set; }
+        public string Uri { get; set; }
+        public string RelativePath { get; set; }
+        public string Extension { get; set; }
+    }
+}

@@ -1,0 +1,43 @@
+namespace Flagrum.Core.Animation.Clip;
+
+public enum TriggerTrackType : ushort
+{
+    eTriggerTrackType_LocomotionFeetEventTrack = 0x0,
+    eTriggerTrackType_ExampleType_RangeBegin = 0x0B,
+    eTriggerTrackType_ExampleType_RangeEnd = 0x14,
+    eTriggerTrackType_LuminousMessageTriggerTrack_RangeBegin = 0x21,
+    eTriggerTrackType_LuminousMessageTriggerTrack_RangeEnd = 0x100,
+
+    //eTriggerTrackType_LuminousAssetTriggerTrack_RangeBegin = 0x1001,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Anonymous_RangeBegin = 0x1001,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Anonymous_RangeEnd = 0x1100,
+    eTriggerTrackType_LuminousAssetTriggerTrack_InModel_RangeBegin = 0x1101,
+    eTriggerTrackType_LuminousAssetTriggerTrack_InModel_RangeEnd = 0x1200,
+    eTriggerTrackType_LuminousAssetTriggerTrack_ModelDrawable_RangeBegin = 0x1201,
+    eTriggerTrackType_LuminousAssetTriggerTrack_ModelDrawable_RangeEnd = 0x1300,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Collision_RangeBegin = 0x1301,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Collision_RangeEnd = 0x1400,
+    eTriggerTrackType_LuminousAssetTriggerTrack_VFX_RangeBegin = 0x1401,
+    eTriggerTrackType_LuminousAssetTriggerTrack_VFX_RangeEnd = 0x1500,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Sound_RangeBegin = 0x1501,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Sound_RangeEnd = 0x1600,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Light_RangeBegin = 0x1601,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Light_RangeEnd = 0x1700,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Camera_RangeBegin = 0x1701,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Camera_RangeEnd = 0x1800,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Scaleform_RangeBegin = 0x1801,
+    eTriggerTrackType_LuminousAssetTriggerTrack_Scaleform_RangeEnd = 0x1900,
+    eTriggerTrackType_RequireTrackTypeMatchForRangeEventMatch_RangeEnd = 0x1FFF,
+    eTriggerTrackType_BlackAssetTriggerTrack_General_RangeBegin = 0x2001,
+    eTriggerTrackType_BlackAssetTriggerTrack_General_RangeEnd = 0x2100,
+    eTriggerTrackType_BlackAssetTriggerTrack_VFX_RangeBegin = 0x2101,
+    eTriggerTrackType_BlackAssetTriggerTrack_VFX_RangeEnd = 0x2200,
+    eTriggerTrackType_BlackAssetTriggerTrack_Sound_RangeBegin = 0x2201,
+    eTriggerTrackType_BlackAssetTriggerTrack_Sound_RangeEnd = 0x2300,
+    eTriggerTrackType_BlackAssetTriggerTrack_Combat_RangeBegin = 0x2301,
+    eTriggerTrackType_BlackAssetTriggerTrack_Combat_RangeEnd = 0x2400,
+    eTriggerTrackType_BlackAssetTriggerTrack_Facial_RangeBegin = 0x2401,
+    eTriggerTrackType_BlackAssetTriggerTrack_Facial_RangeEnd = 0x2500,
+    eTriggerTrackType_AnyTypeEnumIdx = 0x0FFFE,
+    eTriggerTrackType_Unknown = 0x0FFFF
+}

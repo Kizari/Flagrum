@@ -1,0 +1,30 @@
+﻿@using System.Text
+<div class="p-6">
+    <div class="box p-4 max-w-full flex flex-col items-stretch">
+        @foreach (var line in Lines)
+        {
+            <span class="block">@line</span>
+        }
+    </div>
+</div>
+
+@code
+{
+    private IAssetExplorerNode _previousItem;
+
+    private List<string> Lines { get; set; }
+
+    [Parameter] public IAssetExplorerNode Item { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_previousItem == Item)
+        {
+            return;
+        }
+
+        var bytes = Item.Data;
+        Lines = Encoding.UTF8.GetString(bytes).Split('\n').ToList();
+        StateHasChanged();
+    }
+}

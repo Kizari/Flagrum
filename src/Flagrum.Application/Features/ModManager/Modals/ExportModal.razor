@@ -1,0 +1,229 @@
+﻿@using System.IO
+@using Flagrum.Abstractions.ModManager.Project
+@using Flagrum.Core.Archive
+@using Flagrum.Application.Features.ModManager.Data
+@using Flagrum.Application.Features.ModManager.Mod
+@using Flagrum.Application.Features.ModManager.Services
+@using Index = Index
+@inject ModManagerServiceBase ModManagerService
+@inject IProfileService Profile
+@inject IPlatformService PlatformService
+@inject AppStateService AppState
+
+<AutosizeModal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Export</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        @if (IsExportingPack)
+        {
+            <div style="min-height: 500px;">
+                <h4 class="text-grey-300 mb-2">Export Mod Pack</h4>
+                <span class="block mb-4">
+                    This will export all the selected mods as a single file.<br/>
+                    Users will be given the option to choose which mods they wish to install when installing the pack.
+                </span>
+                @* <span class="bg-grey-900 border border-dark-550 py-4 pl-4 pr-6">Select each mod you wish to add to this pack.</span> *@
+                <div class="bg-grey-900 border border-dark-550 p-4">
+                    <SearchSelectBase Items="Mods"
+                                      Placeholder="-- Select Mod --"
+                                      RemoveOnSelect="true"
+                                      OnSelect="OnModSelected"
+                                      CloseOnSelect="false"
+                                      SearchValue="m => m.Name"
+                                      @ref="SearchSelect">
+                        <DisplayTemplate Context="mod">
+                            @mod.Name
+                        </DisplayTemplate>
+                    </SearchSelectBase>
+                </div>
+                @foreach (var mod in SelectedMods)
+                {
+                    <div class="row bg-grey-900 border-l border-b border-r border-dark-550 p-4">
+                        <div class="flex-grow">@mod.Name</div>
+                        <span class="material-icons select-none cursor-pointer text-grey-300"
+                              @onclick="() => RemoveSelectedMod(mod)">close</span>
+                    </div>
+                }
+                <div class="bg-grey-900 border-l border-r border-b border-dark-550 p-4">
+                    <Button Text="Export Mod Pack" Icon="file_download" IsDisabled="@(SelectedMods.Count < 2)"
+                            OnClickAsync="ExportModPack"/>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="bg-grey-900 p-6 text-center mr-6 select-none cursor-pointer" @onclick="ExportSingle">
+                    <span class="material-icons text-5xl">upload_file</span>
+                    <h4 class="text-grey-300 mt-2">Export Single</h4>
+                </div>
+                <div class="bg-grey-900 p-6 text-center select-none cursor-pointer" @onclick="ExportMultiple">
+                    <span class="material-icons text-5xl">unarchive</span>
+                    <h4 class="text-grey-300 mt-2">Export in Pack</h4>
+                </div>
+            </div>
+        }
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    [CascadingParameter] public Index Parent { get; set; }
+
+    private AutosizeModal Modal { get; set; }
+    private SearchSelectBase<IFlagrumProject> SearchSelect { get; set; }
+    private bool IsExportingPack { get; set; }
+    private List<IFlagrumProject> Mods { get; set; } = [];
+    private List<IFlagrumProject> SelectedMods { get; set; } = [];
+
+    private void RemoveSelectedMod(IFlagrumProject mod)
+    {
+        SelectedMods.Remove(mod);
+        SearchSelect.AddItem(mod);
+        StateHasChanged();
+    }
+
+    public void Open()
+    {
+        // Reset the modal
+        IsExportingPack = false;
+        Mods = [];
+        SelectedMods = [];
+
+        Modal.Open();
+    }
+
+    private void OnModSelected(IFlagrumProject mod)
+    {
+        SelectedMods.Add(mod);
+        StateHasChanged();
+    }
+
+    private void ExportMultiple()
+    {
+        Mods = ModManagerService.Projects.Values.OrderBy(p => p.Name).ToList();
+        var match = Mods.First(m => m.Identifier == Parent.GetContextMod().Identifier);
+        Mods.Remove(match);
+        SelectedMods.Add(match);
+        IsExportingPack = true;
+    }
+
+    private async Task ExportSingle()
+    {
+        Modal.Close();
+
+        var mod = Parent.GetContextMod();
+
+        if (!mod.Archives.Any(a => a.Instructions.Any()) && !mod.Instructions.Any())
+        {
+            Parent.Alert.Open("Error", "Empty Mod", "You cannot export a mod that does not have " +
+                                                    "any instructions in the build list.", null);
+            return;
+        }
+
+        var deadFiles = mod.GetDeadFiles();
+
+        if (deadFiles.Any())
+        {
+            var message = deadFiles.Aggregate("The mod could not be built as the following files were missing:<ul class='mt-4'>",
+                (current, file) => current + $"<li>{file}</li>");
+            Parent.Alert.Open("Error", "Missing Files", message + "</ul>", null, 400, 300, true);
+            return;
+        }
+
+        var defaultName = mod.Name.ToLower().Replace(" ", "_") + ".fmod";
+        const string filter = "Flagrum Mod|*.fmod";
+        await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async savePath =>
+        {
+            await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
+
+            await Task.Run(() =>
+            {
+                using (var archiveManager = new EbonyArchiveManager())
+                {
+                    ModManagerService.BuildAssetCache(mod, archiveManager);
+                }
+
+                var modPack = new FlagrumModPack();
+                var thumbnailPath = Path.Combine(Profile.ImagesDirectory, $"{mod.Identifier}.jpg");
+                var fmod = FmodExtensions.FromFlagrumProject(mod, thumbnailPath, Profile.CacheDirectory);
+                modPack.Mods.Add(fmod);
+                modPack.Write(savePath);
+
+                ModManagerService.ClearCachedFilesForMod(mod.Identifier);
+            });
+
+            await InvokeAsync(() => Parent.SetLoading(false));
+        });
+    }
+
+    private async Task ExportModPack()
+    {
+        foreach (var mod in SelectedMods.Where(m => !ModManagerService.CheckModIsCached(m)))
+        {
+            var deadFiles = mod.GetDeadFiles();
+            if (deadFiles.Any())
+            {
+                var message = deadFiles.Aggregate("The mod could not be built as the following files were missing:<ul class='mt-4'>",
+                    (current, file) => current + $"<li>{file}</li>");
+                Parent.Alert.Open("Error", "Missing Files", message + "</ul>", null, 400, 300, true);
+                return;
+            }
+        }
+
+        if (SelectedMods.Any(mod => !mod.Archives.Any(a => a.Instructions.Any()) && !mod.Instructions.Any()))
+        {
+            Parent.Alert.Open("Error", "Empty Mod", "You cannot export a mod that does not have " +
+                                                    "any instructions in the build list.", null);
+            return;
+        }
+
+        Modal.Close();
+
+        const string filter = "Flagrum Mod|*.fmod";
+        await PlatformService.OpenSaveFileDialogAsync("modpack.fmod", filter, async savePath =>
+        {
+            await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
+
+            await Task.Run(() =>
+            {
+                var modPack = new FlagrumModPack();
+                var modsToUncache = new List<Guid>();
+
+                foreach (var mod in SelectedMods)
+                {
+                    var thumbnailPath = Path.Combine(Profile.ImagesDirectory, $"{mod.Identifier}.jpg");
+
+                    if (ModManagerService.CheckModIsCached(mod))
+                    {
+                        var fmod = FmodExtensions.FromFlagrumProject(mod, thumbnailPath, Profile.CacheDirectory);
+                        modPack.Mods.Add(fmod);
+                    }
+                    else
+                    {
+                        using (var archiveManager = new EbonyArchiveManager())
+                        {
+                            ModManagerService.BuildAssetCache(mod, archiveManager);
+                        }
+
+                        var fmod = FmodExtensions.FromFlagrumProject(mod, thumbnailPath, Profile.CacheDirectory);
+                        modPack.Mods.Add(fmod);
+
+                        modsToUncache.Add(mod.Identifier);
+                    }
+                }
+
+                modPack.Write(savePath);
+
+                foreach (var modId in modsToUncache)
+                {
+                    ModManagerService.ClearCachedFilesForMod(modId);
+                }
+            });
+
+            await InvokeAsync(() => Parent.SetLoading(false));
+        });
+    }
+}

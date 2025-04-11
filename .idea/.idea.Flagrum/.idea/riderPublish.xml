@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="LocationsWithSilentDeleteHolder">
+    <option name="locations">
+      <list>
+        <option value="$USER_HOME$/AppData/Roaming/Blender Foundation/Blender/3.0/scripts/addons/Flagrum/lib" />
+        <option value="$PROJECT_DIR$/Flagrum.Core/bin/Release/net7.0/win-x64/publish" />
+        <option value="$PROJECT_DIR$/Flagrum.Core/bin/Release/netstandard2.1/win-x64/publish" />
+        <option value="$USER_HOME$/AppData/Roaming/Blender Foundation/Blender/4.0/scripts/addons/Flagrum/lib" />
+        <option value="$PROJECT_DIR$/Flagrum.Desktop/bin/Release/net6.0-windows/publish" />
+      </list>
+    </option>
+  </component>
+</project>

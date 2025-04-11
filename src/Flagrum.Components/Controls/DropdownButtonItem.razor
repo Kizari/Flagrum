@@ -1,0 +1,13 @@
+﻿<div class="border-b border-grey-800 pl-6 pr-3 py-2 hover:bg-grey-600 transition-colors select-none cursor-pointer"
+     @onclick="OnClick">
+    @Text
+</div>
+
+@code
+{
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+}

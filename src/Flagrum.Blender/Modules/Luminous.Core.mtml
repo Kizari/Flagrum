@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<module name="Luminous.Core">
+	<classes>
+		<class name="SQEX.Ebony.Std.DynamicArray" nameHashCode="73795865" versionHashCode="468083943">
+			<attributes>
+				<attribute name="DisplayName" type="string">可変長配列</attribute>
+				<attribute name="PrimitiveType" type="bool">True</attribute>
+			</attributes>
+			<properties />
+		</class>
+		<class name="SQEX.Ebony.Std.IntrusivePointerDynamicArray" nameHashCode="-1586114989" versionHashCode="1828178831">
+			<attributes>
+				<attribute name="DisplayName" type="string">参照数管理可変長配列</attribute>
+				<attribute name="PrimitiveType" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.Std.DynamicArray&lt; IntrusivePointer&lt;TypeName &gt;, memoryCategory, boundary &gt;" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.Std.DynamicArray&lt; IntrusivePointer&lt;TypeName &gt;, memoryCategory, boundary &gt;" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.Base.Resource.ResourceId" nameHashCode="45941482" versionHashCode="-1178004004">
+			<attributes>
+				<attribute name="DisplayName" type="string">リソースID</attribute>
+				<attribute name="ImplSerializeTo" type="string"></attribute>
+				<attribute name="ImplDeserializeFrom" type="string"></attribute>
+			</attributes>
+			<properties>
+				<property name="Type" type="uint32_t">
+					<attributes>
+						<attribute name="DefaultValue" type="int">0</attribute>
+					</attributes>
+				</property>
+				<property name="Primary" type="uint32_t">
+					<attributes>
+						<attribute name="DefaultValue" type="int">0</attribute>
+					</attributes>
+				</property>
+				<property name="Secondary" type="uint32_t">
+					<attributes>
+						<attribute name="DefaultValue" type="int">0</attribute>
+					</attributes>
+				</property>
+				<property name="Flag" type="uint32_t">
+					<attributes>
+						<attribute name="DefaultValue" type="int">0</attribute>
+					</attributes>
+				</property>
+			</properties>
+		</class>
+		<class name="SQEX.Ebony.Base.Serialization.ExternalPointerInfo" nameHashCode="27860655" versionHashCode="-1601333406">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties>
+				<property name="protocol_" type="uint16_t" />
+				<property name="pointerAddress_" type="void" pointer="True" />
+				<property name="paramsBuffer_" type="Memory.Buffer" />
+				<property name="keys_" type="SQEX.Ebony.Std.DynamicArray&lt; Ebony.Base.String, MEMORY_CATEGORY_SERIALIZE &gt;" />
+				<property name="isIntrusive_" type="bool" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.Base.RTC.DateTime" nameHashCode="290277821" versionHashCode="1710889249">
+			<properties>
+				<property name="year" type="int" />
+				<property name="month" type="int" />
+				<property name="day" type="int" />
+				<property name="weekDay" type="int" />
+				<property name="hour" type="int" />
+				<property name="minute" type="int" />
+				<property name="second" type="int" />
+			</properties>
+		</class>
+		<class name="SQEX.Luminous.Core.MessageParameter" nameHashCode="811747650" versionHashCode="507658620">
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.Object" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.Object" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.Core.Component.Component" nameHashCode="-863915930" versionHashCode="1869422645">
+			<attributes>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties />
+			<functions>
+				<function name="GetContainer" returntype="SQEX.Luminous.Core.Component.ComponentContainer" returntype_pointer="True">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+				<function name="GetContainer" returntype="SQEX.Luminous.Core.Component.ComponentContainer" returntype_pointer="True">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+			</functions>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.Core.Component.ComponentContainer" nameHashCode="-40208171" versionHashCode="-922357409">
+			<attributes>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties />
+			<functions>
+				<function name="GetComponent" returntype="SQEX.Luminous.Core.Component.Component" returntype_pointer="True">
+					<argument name="hash" type="uint32_t" />
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+			</functions>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.Core.Object.BaseObject" nameHashCode="867168775" versionHashCode="963446197">
+			<attributes>
+				<attribute name="AsRefTarget" type="string"></attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="Allocatable" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="Allocatable" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.Core.Object.Object" nameHashCode="-1064124188" versionHashCode="760203975">
+			<attributes>
+				<attribute name="DisplayName" type="string">基本オブジェクト</attribute>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+				<baseclass type="Ebony.Std.NonCopyable" />
+			</baseclasses>
+			<properties />
+			<functions>
+				<function name="FromPtr" static="True" returntype="SQEX.Luminous.Core.Object.Object" returntype_pointer="True">
+					<argument name="ptr" type="int64_t" />
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+			</functions>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+				<dependency type="Ebony.Std.NonCopyable" />
+			</dependencies>
+		</class>
+	</classes>
+	<typedefs>
+		<typedef name="SQEX.Ebony.Std.Fixid" type="uint32_t">
+			<attributes>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+		</typedef>
+	</typedefs>
+	<enums />
+</module>

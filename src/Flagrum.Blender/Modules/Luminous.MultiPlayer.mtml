@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<module name="Luminous.MultiPlayer">
+	<classes>
+		<class name="SQEX.Luminous.MultiPlayer.Matching.Client.LobbyModuleBase" nameHashCode="208366774" versionHashCode="-1031848151">
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties />
+			<functions>
+				<function name="setErrorState" virtual="True" returntype="void">
+					<argument name="pErrorCode" type="int" const="True" pointer="True" />
+					<argument name="additionalString" type="char" const="True" pointer="True" />
+				</function>
+				<function name="sendAskWorldInfo" virtual="True" returntype="void" />
+				<function name="sendAskLobbyInfo" virtual="True" returntype="void" />
+				<function name="sendJoinLobby" virtual="True" returntype="void">
+					<argument name="pJoiningLobbyId" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="setLocalError" virtual="True" returntype="void">
+					<argument name="" type="SQEX.Luminous.MultiPlayer.Matching.Client.LobbyModuleBase.REPLY_MESSAGE_TYPE" const="True" pointer="True" />
+				</function>
+				<function name="RecvCreateJoinRoomReply" virtual="True" returntype="void">
+					<argument name="reply" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvJoinRoomReply" virtual="True" returntype="void">
+					<argument name="reply" type="JoinRoomRecvStruct" const="True" pointer="True" />
+				</function>
+				<function name="OnSearchRoomReply" virtual="True" returntype="void">
+					<argument name="infos" type="Protocol.InfoRoomArray" const="True" pointer="True" />
+				</function>
+				<function name="RecvLeaveRoomReply" virtual="True" returntype="void">
+					<argument name="reply" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvCloseRoomReply" virtual="True" returntype="void">
+					<argument name="reply" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvChangeRoomStateReply" virtual="True" returntype="void">
+					<argument name="reply" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifyPeerBindPort" virtual="True" returntype="void">
+					<argument name="port" type="uint16_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifyPeerID" virtual="True" returntype="void">
+					<argument name="peer_id" type="uint16_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvP2PSignal" virtual="True" returntype="void">
+					<argument name="signal" type="Protocol.P2PSignal" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifyDisconnect" virtual="True" returntype="void">
+					<argument name="peer_id" type="uint16_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifySocketError" virtual="True" returntype="void">
+					<argument name="peer_id" type="uint16_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifyContentHost" virtual="True" returntype="void">
+					<argument name="peer_id" type="uint16_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifyRoomFull" virtual="True" returntype="void">
+					<argument name="room_id" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvNotifyRoomClose" virtual="True" returntype="void">
+					<argument name="room_id" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvLobbyChatMessage" virtual="True" returntype="void">
+					<argument name="iText" type="char" const="True" pointer="True" />
+				</function>
+				<function name="RecvKickoutReply" virtual="True" returntype="void">
+					<argument name="reply" type="uint64_t" const="True" pointer="True" />
+				</function>
+				<function name="UpdateCustomPlayerContext" virtual="True" returntype="void">
+					<argument name="" type="SQEX.Luminous.MultiPlayer.Matching.Client.LobbyModuleBase.customplayercontext_t" const="True" pointer="True" />
+				</function>
+			</functions>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.MultiPlayer.Matching.Client.LobbyModuleOriginal" nameHashCode="-1085732041" versionHashCode="46017319">
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.MultiPlayer.Matching.Client.LobbyModuleBase" />
+			</baseclasses>
+			<properties />
+			<functions>
+				<function name="RecvNotifyPeerBindPort" virtual="True" returntype="void">
+					<argument name="port" type="uint16_t" const="True" pointer="True" />
+				</function>
+				<function name="RecvAlive" returntype="void" />
+			</functions>
+			<dependencies>
+				<dependency type="SQEX.Luminous.MultiPlayer.Matching.Client.LobbyModuleBase" />
+			</dependencies>
+		</class>
+	</classes>
+	<typedefs />
+	<enums />
+</module>

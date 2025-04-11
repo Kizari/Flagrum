@@ -1,0 +1,35 @@
+﻿@typeparam TEnum
+@using Microsoft.Extensions.Localization
+@inherits InputBase<TEnum>
+
+<select value="@CurrentValueAsString"
+        @onchange="OnChange"
+        class="input bg-dark-550 w-full"
+        style="@Style">
+    @foreach (var item in Enum.GetValues(typeof(TEnum)))
+    {
+        <option value="@item"
+                class="text-grey-400">@(Localizer == null ? item.ToString() : Localizer[$"{LocalizerPrefix}{item}"])</option>
+    }
+</select>
+
+@code
+{
+    [Parameter] public IStringLocalizer Localizer { get; set; }
+
+    [Parameter] public string LocalizerPrefix { get; set; }
+
+    [Parameter] public string Style { get; set; }
+
+    private void OnChange(ChangeEventArgs e)
+    {
+        CurrentValueAsString = e.Value.ToString();
+    }
+
+    protected override bool TryParseValueFromString(string value, out TEnum result, out string validationErrorMessage)
+    {
+        result = (TEnum)Enum.Parse(typeof(TEnum), value);
+        validationErrorMessage = null;
+        return true;
+    }
+}

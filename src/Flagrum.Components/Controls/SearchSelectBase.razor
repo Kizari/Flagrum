@@ -1,0 +1,52 @@
+﻿@typeparam TItem
+
+@inject IJSRuntime JSRuntime
+
+<div class="v-select-wrapper" id="@WrapperId">
+    <div class="v-select" id="@Id">
+        <div class="v-select-trigger" @onclick="Toggle">
+            <span>
+                @if (SelectedItem != null)
+                {
+                    @DisplayTemplate(SelectedItem)
+                }
+                else
+                {
+                    @PlaceholderFragment
+                }
+            </span>
+            <div class="arrow"></div>
+        </div>
+        <div class="v-options">
+            <div class="p-2 border-bottom-300 bg-dark-550" style="position: sticky; top: 0; left: 0; right: 0; height: auto; z-index: 2;">
+                <input type="text" class="input w-full v-select-search-box" placeholder="Search..." id="@SearchId" @bind-value="Query" @bind-value:event="oninput"/>
+            </div>
+            @if (IsSearching)
+            {
+                <Indicator Color="BaseColor.Primary" Size="IndicatorSize.Medium" class="my-4"/>
+            }
+            else if (EncapsulatedItems != null)
+            {
+                foreach (var item in EncapsulatedItems)
+                {
+                    <div class="v-option @(item.IsSelected ? "selected" : "")" @onclick="() => SelectItem(item)" style="@(item.IsVisible ? "" : "display: none;")">@DisplayTemplate(item.Item)</div>
+                }
+
+                if (Remote && HasNextPage)
+                {
+                    <div class="v-option text-center">
+                        <Button Text="Load More" OnClickAsync="LoadMore" Link="true" CssClass="load-more-button"/>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code
+{
+    protected override void OnParametersSet()
+    {
+        PlaceholderFragment = @<span class="text-muted">@Placeholder</span>;
+    }
+}

@@ -1,0 +1,157 @@
+﻿@page "/mod/upload"
+@using Flagrum.Application.Features.Shared
+@using Flagrum.Core.Archive.Mod
+@inject SteamWorkshopService SteamWorkshop
+@inject AppStateService AppState
+@inject NavigationManager Navigation
+@inject BinmodTypeHelper BinmodTypeHelper
+@inject TextureConverter TextureConverter
+
+<LoadingView Text="@LoadingText"
+             IsLoading="IsLoading">
+    <EditForm Model="Details">
+        <div class="p-6">
+
+            <div class="box row p-4">
+                <span class="flex-grow">
+                    Upload to Steam Workshop
+                </span>
+                <Button CssClass="inline-block mr-3" Icon="upload" Text="Upload" OnClick="Publish"/>
+                <Button Icon="cancel" Text="Cancel" OnClick="Cancel"/>
+            </div>
+
+            <div class="box p-4 mt-6">
+                <table class="w-full">
+                    <tr>
+                        <td class="text-right pr-4" style="width: 150px;">
+                            <label class="block mt-4 mb-2">VISIBILITY</label>
+                        </td>
+                        <td class="pt-3">
+                            <EnumSelect @bind-Value="Details.Visibility"/>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top; width: 150px;" class="pt-2">
+                        <td class="text-right pr-4">
+                            <label class="block mt-4 mb-2">WORKSHOP DESCRIPTION</label>
+                        </td>
+                        <td class="pt-3">
+                            <Textbox Rows="12" Size="Textbox.Variant.Stretch" @bind-Value="Details.Description"/>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top; width: 150px;" class="pt-2">
+                        <td class="text-right pr-4">
+                            <label class="block mt-4 mb-2">CHANGE NOTES</label>
+                        </td>
+                        <td class="pt-3">
+                            <Textbox Rows="5" Size="Textbox.Variant.Stretch" @bind-Value="Details.ChangeNotes"/>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+
+        </div>
+    </EditForm>
+</LoadingView>
+
+<AlertModal @ref="Modal"/>
+
+@code
+{
+    private WorkshopItemDetails Details { get; set; } = new();
+
+    private bool IsLoading { get; set; } = true;
+    private string LoadingText { get; set; } = "Contacting Steam";
+
+    private AlertModal Modal { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            if (SteamWorkshop.Initialize())
+            {
+                if (AppState.ActiveMod.ItemId > 0)
+                {
+                    SteamWorkshop.Get(AppState.ActiveMod.ItemId, result =>
+                    {
+                        Details = result;
+                        IsLoading = false;
+                        InitializeData();
+                        InvokeAsync(StateHasChanged);
+                    });
+                }
+                else
+                {
+                    IsLoading = false;
+                    InitializeData();
+                    StateHasChanged();
+                }
+            }
+            else
+            {
+                Modal.Open("Error",
+                    "Unable to Connect to Steam",
+                    "Please ensure that Steam is running on your computer and try again.",
+                    () => Navigation.NavigateTo("/mod/configure"));
+            }
+        }
+    }
+
+    private void InitializeData()
+    {
+        var preview = AppState.ActiveMod.GetPreviewPng();
+
+    // Compress preview if it's too large for Steam
+        if (preview.Length > 953673)
+        {
+            _ = TextureConverter.WicToBinmodPreviewBlackTexture("$preview", preview, out var jpeg);
+            preview = jpeg;
+        }
+
+        Details.PreviewBytes = preview;
+
+        var mod = AppState.ActiveMod;
+        var tags = new List<string>
+        {
+            "Flagrum",
+            BinmodTypeHelper.GetDisplayName((WorkshopModType)mod.Type),
+            BinmodTypeHelper.GetTargetTag(mod.Type, mod.Target)
+        };
+
+        if (mod.Type == (int)WorkshopModType.StyleEdit)
+        {
+            tags.Add(mod.Gender);
+        }
+
+        Details.Tags = tags;
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/mod/configure");
+    }
+
+    private void Publish()
+    {
+        LoadingText = "Uploading";
+        IsLoading = true;
+        StateHasChanged();
+
+        if (AppState.ActiveMod.ItemId > 0)
+        {
+            SteamWorkshop.Update(Details, OnUploaded);
+        }
+        else
+        {
+            SteamWorkshop.Publish(Details, OnUploaded);
+        }
+    }
+
+    private void OnUploaded()
+    {
+        Navigation.NavigateTo("/mod");
+    }
+}

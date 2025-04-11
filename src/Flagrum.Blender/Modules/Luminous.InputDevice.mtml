@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<module name="Luminous.InputDevice">
+	<classes>
+		<class name="SQEX.Luminous.InputDevice.GyroData" nameHashCode="-169428647" versionHashCode="-1346235963">
+			<properties>
+				<property name="Valid" type="bool" />
+				<property name="PadGyro" type="bool" />
+				<property name="Position" type="Luminous.Math.VectorA" />
+				<property name="Velocity" type="Luminous.Math.VectorA" />
+				<property name="Acceleration" type="Luminous.Math.VectorA" />
+				<property name="Orientation" type="Luminous.Math.QuatA" />
+				<property name="AngularVelocity" type="Luminous.Math.VectorA" />
+				<property name="AngularAcceleration" type="Luminous.Math.VectorA" />
+			</properties>
+		</class>
+		<class name="SQEX.Luminous.InputDevice.PadDataSet" nameHashCode="-690713709" versionHashCode="-1832572289">
+			<properties>
+				<property name="Datas" type="SQEX.Luminous.InputDevice.PadData" count="MAX_PAD_COUNT" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.InputDevice.PadData" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.InputDevice.PadRecord" nameHashCode="-828597274" versionHashCode="-106467037">
+			<properties>
+				<property name="items_" type="Std.DynamicArray&lt; SQEX.Luminous.InputDevice.PadRecordItem* &gt;">
+					<attributes>
+						<attribute name="AsContainer" type="string"></attribute>
+					</attributes>
+				</property>
+			</properties>
+		</class>
+		<class name="SQEX.Luminous.InputDevice.PadData" nameHashCode="-551833698" versionHashCode="-692203151">
+			<properties>
+				<property name="PushMap" type="uint32_t" />
+				<property name="ButtonValue" type="float" count="MAX_BUTTON_COUNT" />
+				<property name="Stick" type="float" count="MAX_STICK_COUNT" />
+			</properties>
+		</class>
+		<class name="SQEX.Luminous.InputDevice.PadRecordItem" nameHashCode="-1870458987" versionHashCode="459145793">
+			<attributes>
+				<attribute name="AsRefTarget" type="string"></attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties>
+				<property name="delta_" type="int32_t" />
+				<property name="dataSet_" type="SQEX.Luminous.InputDevice.PadDataSet" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+				<dependency type="SQEX.Luminous.InputDevice.PadDataSet" />
+			</dependencies>
+		</class>
+	</classes>
+	<typedefs />
+	<enums />
+</module>

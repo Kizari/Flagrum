@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<module name="Luminous.Mono">
+	<classes>
+		<class name="SQEX.Luminous.Mono.LmMonoDebugService" nameHashCode="-1752376594" versionHashCode="1220378216">
+			<attributes>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+			<properties />
+			<functions>
+				<function name="Get" static="True" returntype="SQEX.Luminous.Mono.LmMonoDebugService">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+				<function name="Reload" returntype="bool">
+					<argument name="oldAssemblyPath" type="Luminous.Core.String" const="True" reference="True" />
+					<argument name="newAssemblyPath" type="Luminous.Core.String" const="True" reference="True" />
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+			</functions>
+		</class>
+		<class name="SQEX.Luminous.Mono.Entity.LmMonoScriptEntity" nameHashCode="2010594942" versionHashCode="1191531755">
+			<attributes>
+				<attribute name="DisplayName" type="string">C#Script</attribute>
+				<attribute name="CSharpType" type="bool">True</attribute>
+				<attribute name="DisplayNameJP" type="string">C#スクリプト</attribute>
+				<attribute name="HelpURL" type="string"></attribute>
+				<attribute name="Icon" type="string">CSharpScript</attribute>
+				<attribute name="DefaultName" type="string">csscript</attribute>
+				<attribute name="Deprecated" type="bool">True</attribute>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.Framework.Entity.Entity" />
+			</baseclasses>
+			<properties>
+				<property name="sourcePathCs_" type="Ebony.Base.String">
+					<attributes>
+						<attribute name="EarcExternal" type="string"></attribute>
+						<attribute name="DisplayName" type="string">C#SourceFile</attribute>
+						<attribute name="DisplayNameJP" type="string">C#ソースファイル</attribute>
+						<attribute name="FileExtension" type="string">cs</attribute>
+						<attribute name="NewFile" type="string">SQEX.Ebony.Jenova.CSharpScript.FilePathEditorCreateCsCommand</attribute>
+						<attribute name="EditFile" type="string">SQEX.Ebony.Jenova.CSharpScript.FilePathEditorEditCsCommand</attribute>
+						<attribute name="Category" type="string">Script</attribute>
+						<attribute name="CenterTextTarget" type="string">C#</attribute>
+					</attributes>
+				</property>
+				<property name="createInstanceOnLoaded" type="bool">
+					<attributes>
+						<attribute name="DisplayName" type="string">Create Instance on Loaded</attribute>
+						<attribute name="DisplayNameJP" type="string">読込時にインスタンス化</attribute>
+						<attribute name="DefaultValue" type="bool">True</attribute>
+						<attribute name="Category" type="string">Script</attribute>
+						<attribute name="CenterTextTarget" type="string">new</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.Framework.Entity.Entity" />
+			</dependencies>
+		</class>
+	</classes>
+	<typedefs />
+	<enums />
+</module>

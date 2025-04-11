@@ -1,0 +1,41 @@
+﻿@using Index = Flagrum.Application.Features.WorkshopMods.Editor.Index
+@inject IStringLocalizer<Index> Localizer
+
+<div class="box mt-6">
+    <EditForm Model="Parent">
+        <div class="p-4">
+            <table class="w-full right-align-all-labels">
+                <tr>
+                    <td>
+                        <label>@Localizer["ModTitle"]</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.WorkshopTitle"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>@Localizer["ModDescription"]</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Rows="5" Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.Description"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>@Localizer["GearMenuTitle"]</label>
+                    </td>
+                    <td colspan="7" class="pl-4">
+                        <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Parent.Mod.GameMenuTitle"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </EditForm>
+</div>
+
+@code
+{
+    [CascadingParameter]
+    public Index Parent { get; set; }
+}

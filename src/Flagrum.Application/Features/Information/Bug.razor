@@ -1,0 +1,38 @@
+﻿@page "/bug"
+
+<div class="flex flex-row h-full">
+    <div class="py-8 px-10 flex-grow flex flex-col h-full">
+        <h2 class="text-grey-300 mb-6">Reporting a Bug</h2>
+        <strong class="text-accent1-400 bg-accent1-800 p-4 border border-accent1-400 block mb-6">
+            IMPORTANT: I am the only developer working on Flagrum. Please respect my time by reading instructions on the
+            wiki and reading other bug reports before submitting a new issue!
+        </strong>
+        <span>
+            Bug reports are handled through Flagrum's GitHub repository. Please provide as much information as
+            possible when submitting a bug report, including:
+        </span>
+        <ul class="list-disc ml-6">
+            <li>The steps you took leading up to the bug occurring</li>
+            <li>What you expected to occur instead of the bug</li>
+            <li>Attach your crash report found on your PC at %LOCALAPPDATA%\Flagrum\crashes. If there are multiple
+                crash logs for the same date/time, please attach them all.</li>
+        </ul>
+        <strong class="block my-6">Support will only be provided for the most recent version of Flagrum!</strong>
+        <span>
+            While I am happy to support some other versions of the game itself in certain cases, this will be done at
+            my own discretion. By default, support is only provided for the latest version of the game.
+        </span>
+        <strong class="block my-6 text-accent2-700 bg-dark-600 p-4 border border-accent2-700">
+            Do NOT report mod bugs! Flagrum is not responsible for the behaviour of your mods, please direct any queries
+            or concerns to the mod author using the platform you downloaded the mod from.
+        </strong>
+        <span class="block mb-6">
+            Use the link below to go to the issues page for Flagrum. First check through other bug reports in both
+            the Open and Closed tab at the top of the list to see if your bug has already been reported. You may
+            find that a solution has already been posted. You can also comment on existing issues to provide more
+            information to help the bug get fixed quicker. If you are absolutely certain your issue has not already
+            been reported, click the green "New Issue" button in the top-right corner to create your own.
+        </span>
+        <Hyperlink Text="Go to GitHub Issues" Uri="https://github.com/Kizari/Flagrum/issues"/>
+    </div>
+</div>

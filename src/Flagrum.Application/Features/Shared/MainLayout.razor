@@ -1,0 +1,79 @@
+﻿@inherits LayoutComponentBase
+@using Flagrum.Abstractions.AssetExplorer
+@using Flagrum.Application.Features.Menu
+@implements IRefreshableComponent
+@inject IFileIndex FileIndex
+@inject IProfileService Profile
+@inject ComponentStateService ComponentState
+
+<AlertServiceModal/>
+<CascadingValue TValue="IRefreshableComponent" Value="this">
+    <PremiumComponent Type="PremiumComponentType.PremiumAuthenticator"/>
+</CascadingValue>
+
+@if (IsLoading)
+{
+    <div class="flex flex-row h-full">
+        <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
+            <LoadingView IsLoading="true" Text="Initialising"/>
+        </div>
+    </div>
+}
+else
+{
+    <div class="flex flex-row h-full">
+        @if (Profile.IsReady)
+        {
+            <CascadingValue Value="this">
+                <MainMenu @ref="Menu"/>
+            </CascadingValue>
+            <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
+                @if (FileIndex.IsRegenerating)
+                {
+                    <div class="row py-2 px-4 text-grey-400" style="background-color: rgba(5, 5, 1, 0.35)">
+                        <LoadingIndicator/>
+                        <span class="flex-grow">
+                            Indexing game files, this may take several minutes, but will only need to happen once
+                        </span>
+                    </div>
+                }
+                <div class="flex-grow bg-grey-900 overflow-auto flex flex-col">
+                    <CascadingValue Value="this">
+                        @Body
+                    </CascadingValue>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bg-grey-900 flex-grow h-full overflow-auto flex flex-col">
+                <CascadingValue Value="this">
+                    <Flagrum.Application.Features.Settings.SettingsPage Warn="true"/>
+                </CascadingValue>
+            </div>
+        }
+    </div>
+}
+
+<AlertModal @ref="Alert"/>
+
+@code
+{
+    private MainMenu Menu { get; set; }
+    private AlertModal Alert { get; set; }
+    private bool IsLoading { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ComponentState.OnRefreshLayout += StateHasChanged;
+        FileIndex.OnIsRegeneratingChanged += _ => InvokeAsync(StateHasChanged);
+    }
+
+    public void UpdateMenuState()
+    {
+        Menu.CallStateHasChanged();
+    }
+
+    /// <inheritdoc />
+    public void Refresh() => StateHasChanged();
+}

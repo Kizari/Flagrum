@@ -1,0 +1,122 @@
+﻿name: Deploy to Releases
+
+on: workflow_dispatch
+
+jobs:      
+  deploy:
+    name: Deploy Release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          
+      - name: Get Version from Project File
+        id: get-version
+        shell: bash
+        run: echo "version=$(grep -oE '<Version>[^<]+' Flagrum.Desktop/Flagrum.Desktop.csproj | sed 's/<Version>//')" >> $GITHUB_OUTPUT
+          
+      - name: Generate metadata.json for Azure Code Signing
+        shell: pwsh
+        run: |
+          $jsonContent = @{
+            Endpoint = "${{ secrets.TRUSTED_SIGNING_ACCOUNT_ENDPOINT }}"
+            CodeSigningAccountName = "${{ secrets.TRUSTED_SIGNING_ACCOUNT_NAME }}"
+            CertificateProfileName = "${{ secrets.CERTIFICATE_PROFILE_NAME }}"
+          } | ConvertTo-Json -Depth 10
+          $utf8NoBom = New-Object System.Text.UTF8Encoding $False
+          [System.IO.File]::WriteAllText('metadata.json', $jsonContent, $utf8NoBom)
+          
+      - name: Install Azure CLI
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLIInstaller.msi
+          Start-Process -FilePath .\AzureCLIInstaller.msi -ArgumentList '/quiet' -Wait
+          
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          
+      - name: Add Private Package Source for Premium DLL
+        run: dotnet nuget add source --username Kizari --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kizari/index.json"
+
+      - name: Publish Flagrum.Desktop
+        run: dotnet publish Flagrum.Desktop/Flagrum.Desktop.csproj -c Release -o publish -r win-x64 --self-contained true
+
+      - name: Download Previous Release
+        id: download-previous
+        uses: robinraju/release-downloader@v1.9
+        continue-on-error: true
+        with:
+          repository: "Kizari/Flagrum"
+          latest: true
+          fileName: "*"
+          tarBall: false
+          zipBall: false
+          out-file-path: "Releases"
+          extract: false
+
+      - name: Delete Previous Setup and Excess Deltas
+        id: cleanup-release
+        if: steps.download-previous.outcome == 'success'
+        shell: bash
+        run: |
+          set -x
+          cd Releases
+          rm Setup.exe
+          
+          echo "full=$(ls | grep 'Flagrum-.*-full.nupkg')" >> $GITHUB_OUTPUT
+          DELTA_FILES=$(ls | grep 'Flagrum-.*-delta.nupkg' | sort -V) || true
+
+          if [ ${#DELTA_FILES[@]} -gt 4 ]; then
+            REMOVE_FILES=(${DELTA_FILES[@]:0:${#DELTA_FILES[@]}-4})
+            echo "Removing old delta files: ${REMOVE_FILES[@]}"
+            rm ${REMOVE_FILES[@]}
+          else
+            echo "There are 4 or fewer delta files. No files removed."
+          fi
+
+      - name: Create Velopack Release
+        # The --exclude regex replaces the default PDB exclusion, since a blank string will not work
+        # While it's not proper, I don't think we need to ever worry about a file with the .zzzzz extension
+        run: |
+          dotnet tool install -g vpk
+          vpk pack -u Flagrum -v ${{ steps.get-version.outputs.version }} -p publish -e Flagrum.exe -s .github/Images/Splash.png -i Flagrum.Desktop/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --noPortable --azureTrustedSignFile metadata.json --exclude .*\.zzzzz
+          mv Releases/Flagrum-win-Setup.exe Releases/Setup.exe
+
+      - name: Delete Previous '-full' Package
+        if: steps.download-previous.outcome == 'success'
+        run: rm Releases/${{ steps.cleanup-release.outputs.full }}
+        
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1.13.0
+        with:
+          tag: v${{ steps.get-version.outputs.version }}
+          name: Flagrum ${{ steps.get-version.outputs.version }}
+          body: |
+            ## English / 英語
+
+            Download and run Setup.exe to install Flagrum.
+
+            IMPORTANT: The [companion add-on for Blender](https://github.com/Kizari/Flagrum-Blender/releases/latest) is required for certain asset importing and creating Steam Workshop mods.  
+            &nbsp;
+
+            ## 日本語 / Japanese
+
+            フラーグルムをインストールするために「Setup.exe」をダウンロードし、実行します。
+
+            重要：特定のアセットのインポートとSteamワークショップのMODの作成には、[Blender用のコンパニオンアドオン](https://github.com/Kizari/Flagrum-Blender/releases/latest)が必要です。
+          draft: true
+          prerelease: false
+          owner: Kizari
+          repo: Flagrum
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifactErrorsFailBuild: true
+          artifacts: "Releases/*.nupkg,Releases/releases.win.json,Releases/Setup.exe,Releases/RELEASES"

@@ -1,0 +1,82 @@
+﻿@using Flagrum.Components.Controls
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<PromptModal> Localizer
+
+<AutosizeModal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Title</span>
+    </HeaderView>
+    <BodyView>
+        <div class="text-center w-full">
+            <h3 class="mb-4 text-grey-300">@Heading</h3>
+            <span class="block mb-10">
+                @((MarkupString)Subtext)
+            </span>
+            <Button Text="@YesText" OnClick="() => Close(true)" CssClass="mr-1.5 mb-6"/>
+            <Button Text="@NoText" OnClick="() => Close(false)" CssClass="ml-1.5 mb-6"/>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    private AutosizeModal Modal { get; set; }
+
+    [Parameter] public string Title { get; set; }
+
+    [Parameter] public string Heading { get; set; }
+
+    [Parameter] public string Subtext { get; set; }
+
+    [Parameter] public string YesText { get; set; }
+
+    [Parameter] public string NoText { get; set; }
+
+    [Parameter] public Action OnYes { get; set; }
+
+    [Parameter] public Func<Task> OnYesAsync { get; set; }
+
+    [Parameter] public Action OnNo { get; set; }
+
+    [Parameter] public Func<Task> OnNoAsync { get; set; }
+
+    protected override void OnInitialized()
+    {
+        YesText = Localizer["Yes"];
+        NoText = Localizer["No"];
+    }
+
+    public void Open()
+    {
+        Modal.Open();
+    }
+
+    public void Close(bool isYes)
+    {
+        InvokeAsync(() =>
+        {
+            if (isYes)
+            {
+                if (OnYesAsync == null)
+                {
+                    Modal.Close(OnYes);
+                }
+                else
+                {
+                    Modal.Close(OnYesAsync);
+                }
+            }
+            else
+            {
+                if (OnNoAsync == null)
+                {
+                    Modal.Close(OnNo);
+                }
+                else
+                {
+                    Modal.Close(OnNoAsync);
+                }
+            }
+        });
+    }
+}

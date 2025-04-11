@@ -1,0 +1,28 @@
+﻿@using System.Diagnostics
+<div class="bg-accent2-900 rounded-md py-2 pl-2 pr-3 cursor-pointer select-none row" @onclick="OnClick">
+    <img alt="@Alt" src="@ImageUrl" style="width: auto; height: 24px;"/>
+    <span class="text-white font-display font-bold ml-2 text-sm">@Text</span>
+</div>
+
+@code
+{
+    [Parameter]
+    public string Alt { get; set; }
+
+    [Parameter]
+    public string ImageUrl { get; set; }
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string Url { get; set; }
+
+    private void OnClick()
+    {
+        Process.Start(new ProcessStartInfo(Url)
+        {
+            UseShellExecute = true
+        });
+    }
+}

@@ -1,0 +1,23 @@
+﻿<AutosizeModal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Error</span>
+    </HeaderView>
+    <BodyView>
+        <div class="text-center w-full">
+            <h3 class="mb-4 text-grey-300">Unauthorised File Access Detected</h3>
+            <span class="block mb-10">
+                Windows has prevented Flagrum from performing this action.
+                <br/><br/>
+                Please review this page on the Flagrum Wiki for more information on resolving this issue.<br/>
+                <Hyperlink Text="Dealing with Unauthorised File Access" Uri="https://github.com/Kizari/Flagrum/wiki/Dealing-with-Unauthorised-File-Access"/>
+            </span>
+            <Button Text="Acknowledge" OnClick="() => Modal.Close()" CssClass="mx-1.5 mb-6"/>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    private AutosizeModal Modal { get; set; }
+    public void Open() => Modal.Open();
+}

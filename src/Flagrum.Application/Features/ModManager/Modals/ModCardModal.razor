@@ -1,0 +1,170 @@
+﻿@using System.IO
+@using Blazored.TextEditor
+@using Flagrum.Core.Utilities
+@using Flagrum.Application.Features.ModManager.Editor
+@using Flagrum.Application.Features.ModManager.Project
+@using Flagrum.Application.Features.ModManager.Services
+@using Index = Index
+@inject IStringLocalizer<Editor> EditorLocalizer
+@inject IStringLocalizer<ModCardModal> Localizer
+@inject IStringLocalizer<Index> IndexLocalizer
+@inject IPlatformService PlatformService
+@inject NavigationManager Navigation
+@inject IProfileService Profile
+@inject ModManagerServiceBase ModManagerService
+@inject TextureConverter TextureConverter
+@inject AppStateService AppState
+
+<style>
+    .rte-container h1, .rte-container h2, .rte-container h3, .rte-container h4, .rte-container h5, .rte-container h6 {
+        color: #b3b1ac;
+    }
+</style>
+
+<AutosizeModal @ref="Modal" Padding="0" MinWidth="1024px">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Localizer["SetModInformation"]</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="flex flex-row">
+            <EditForm Model="Mod" OnValidSubmit="Submit" class="shadow-md flex-shrink-0">
+                <DataAnnotationsValidator/>
+                <img alt="Mod Thumbnail" class="relative rounded-t" style="display: block; width: 330px; height: 180px;"
+                     src="images/@Profile.Current.Id/@(ImageName).png"/>
+                <div class="p-4 flex-grow flex flex-col">
+                    <small class="text-center mb-4">Recommended thumbnail size 326x170</small>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name"
+                             Placeholder="@EditorLocalizer["ModName"]"/>
+                    <ValidationMessage For="() => Mod.Name"/>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Author"
+                             Placeholder="@EditorLocalizer["Author"]" Class="my-3"/>
+                    <ValidationMessage For="() => Mod.Author"/>
+                    <Textbox Size="Textbox.Variant.Stretch" Rows="7" @bind-Value="Mod.Description"
+                             Placeholder="@EditorLocalizer["Description"]" Class="flex-grow"/>
+                    <ValidationMessage For="() => Mod.Description"/>
+                </div>
+                <div class="px-4 pb-4 flex flex-row">
+                    <Button Icon="image" Text="@EditorLocalizer["ChangeImage"]" CssClass="mr-3"
+                            OnClickAsync="SelectImage"/>
+                    <div class="flex-grow"></div>
+                    <Button Icon="save" Text=@EditorLocalizer["Save"] Type="submit"/>
+                </div>
+            </EditForm>
+            @* style="padding-bottom: 102px;" *@
+            <div class="bg-dark px-6 pt-6 flex-grow flex-shrink rte-container" style="padding-bottom: 102px;">
+                <h6 class="text-grey-300 mb-4">@Localizer["Readme"]</h6>
+                <div style="max-width: 646px; height: 100%;">
+                    <BlazoredTextEditor @ref="Editor" Placeholder="@string.Empty">
+                        <ToolbarContent>
+                            <select class="ql-header">
+                                <option selected=""></option>
+                                <option value="1"></option>
+                                <option value="2"></option>
+                                <option value="3"></option>
+                                <option value="4"></option>
+                                <option value="5"></option>
+                            </select>
+                            <span class="ql-formats">
+                                <button class="ql-bold"></button>
+                                <button class="ql-italic"></button>
+                                <button class="ql-underline"></button>
+                                <button class="ql-strike"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-list" value="ordered"></button>
+                                <button class="ql-list" value="bullet"></button>
+                            </span>
+                        </ToolbarContent>
+                    </BlazoredTextEditor>
+                </div>
+            </div>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    [CascadingParameter] public Index Parent { get; set; }
+
+    private Guid Identifier { get; set; }
+    private ModCardViewModel Mod { get; set; } = new();
+    private AutosizeModal Modal { get; set; }
+    private BlazoredTextEditor Editor { get; set; }
+    private string ImageName { get; set; } = "current_earc_preview";
+
+    public async Task Open(Guid modId)
+    {
+        Mod = new ModCardViewModel();
+        var currentPreviewPath = $@"{Profile.ImagesDirectory}\current_earc_preview.png";
+
+        if (modId == Guid.Empty)
+        {
+            Identifier = Guid.Empty;
+            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+            File.Copy(defaultPreviewPath, currentPreviewPath, true);
+            await Editor.LoadHTMLContent(null);
+        }
+        else
+        {
+            // Populate from the existing mod
+            Identifier = modId;
+            var project = ModManagerService.Projects[modId];
+            Mod.Name = project.Name;
+            Mod.Author = project.Author;
+            Mod.Description = project.Description;
+            await Editor.LoadHTMLContent(project.Readme);
+
+            var file = Path.Combine(Profile.ModFilesDirectory, project.Identifier.ToString(), "thumbnail.jpg");
+
+            if (File.Exists(file))
+            {
+                var image = await File.ReadAllBytesAsync(file);
+                await File.WriteAllBytesAsync(currentPreviewPath, image);
+            }
+            else
+            {
+                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+                File.Copy(defaultPreviewPath, currentPreviewPath, true);
+            }
+        }
+
+        // This jank is required or the UI won't update the image if the value hasn't changed
+        ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+        StateHasChanged();
+        Modal.Open();
+    }
+
+    private Task SelectImage()
+    {
+        return PlatformService.OpenFileDialogAsync(
+            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            async path =>
+            {
+                var processedImage = TextureConverter.WicToEarcThumbnailJpeg(await File.ReadAllBytesAsync(path));
+                await File.WriteAllBytesAsync($@"{Profile.ImagesDirectory}\current_earc_preview.png", processedImage);
+                // This jank is required or the UI won't update the image if the value hasn't changed
+                ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+                await InvokeAsync(StateHasChanged);
+            });
+    }
+
+    private async Task Submit()
+    {
+        var mod = Identifier == Guid.Empty ? new FlagrumProject() : ModManagerService.Projects[Identifier];
+        mod.Name = Mod.Name;
+        mod.Author = Mod.Author;
+        mod.Description = Mod.Description;
+        mod.Readme = await Editor.GetHTML();
+        await ModManagerService.SaveModCard(mod);
+
+        Parent.AddTimestampToUpdate(mod.Identifier);
+        Parent.CallStateHasChanged();
+        Modal.Close();
+
+        if (Identifier == Guid.Empty)
+        {
+            Navigation.NavigateTo($"/earc/editor/{mod.Identifier}");
+        }
+    }
+}

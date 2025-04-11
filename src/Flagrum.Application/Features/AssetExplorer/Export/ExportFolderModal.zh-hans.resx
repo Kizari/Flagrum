@@ -1,0 +1,75 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="Export" xml:space="preserve">
+        <value>导出</value>
+    </data>
+    <data name="ExportFolder" xml:space="preserve">
+        <value>导出文件夹</value>
+    </data>
+    <data name="Recursion" xml:space="preserve">
+        <value>也可以从子目录中递归式导出</value>
+    </data>
+    <data name="TextureFormat" xml:space="preserve">
+        <value>纹理输出格式</value>
+    </data>
+    <data name="Convert" xml:space="preserve">
+        <value>转换</value>
+    </data>
+    <data name="AdditionalConversionOptions" xml:space="preserve">
+        <value>转换含附加选项</value>
+    </data>
+    <data name="AdditionalOptions" xml:space="preserve">
+        <value>导出含附加选项</value>
+    </data>
+    <data name="ConvertFolder" xml:space="preserve">
+        <value>转换文件夹</value>
+    </data>
+    <data name="ConvertFormats" xml:space="preserve">
+        <value>格式转换</value>
+    </data>
+    <data name="ConvertRecursively" xml:space="preserve">
+        <value>也可以从子目录中递归式转换</value>
+    </data>
+    <data name="DeselectAll" xml:space="preserve">
+        <value>取消全选</value>
+    </data>
+    <data name="ExportFormats" xml:space="preserve">
+        <value>输出格式</value>
+    </data>
+    <data name="ExportRecursively" xml:space="preserve">
+        <value>也可以从子目录中递归式导出</value>
+    </data>
+    <data name="Models" xml:space="preserve">
+        <value>模型</value>
+    </data>
+    <data name="QuickPresets" xml:space="preserve">
+        <value>快速预设</value>
+    </data>
+    <data name="ScriptFormat" xml:space="preserve">
+        <value>脚本输出格式</value>
+    </data>
+    <data name="Scripts" xml:space="preserve">
+        <value>脚本</value>
+    </data>
+    <data name="SelectAll" xml:space="preserve">
+        <value>全选</value>
+    </data>
+    <data name="Textures" xml:space="preserve">
+        <value>纹理</value>
+    </data>
+</root>

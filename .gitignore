@@ -349,16 +349,5 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# Dependencies that are copied after publish
-Dependencies/
-Steamworks.NET.dll
-
-# Jetbrains Rider data
-.idea/
-.run/
-
 # Item ID Fixer project which is of little importance
 ItemIdFixer/
-
-# Flagrum.Unity as it is not yet far enough to even be worth checking in
-Flagrum.Unity/

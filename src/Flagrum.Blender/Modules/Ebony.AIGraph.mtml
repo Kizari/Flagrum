@@ -1,0 +1,1468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<module name="Ebony.AIGraph">
+	<classes>
+		<class name="SQEX.Ebony.AIGraph.AIGraphRunnableBase" nameHashCode="-1596447987" versionHashCode="509830927">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.Framework.Node.GraphNode" />
+			</baseclasses>
+			<properties>
+				<property name="uid_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="startNodeUid_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="bDisable_" type="bool">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DisplayNameJP" type="string">無効フラグ</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="bSkipblackBoardInitialization_" type="bool">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.Framework.Node.GraphNode" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.AIGraphSubstanceBase" nameHashCode="-1467150794" versionHashCode="609861188">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.AIGraphRunnableBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.AIGraphRunnableBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Core.AIGraphCompiledExpression" nameHashCode="-357804267" versionHashCode="-855782566">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.Object" />
+			</baseclasses>
+			<properties>
+				<property name="compiledExpression_" type="Ebony.Base.String" />
+				<property name="debugRawExpression_" type="Ebony.Base.String" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.Object" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Core.AIGraphContainer" nameHashCode="-1622162244" versionHashCode="1428221721">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="DisplayName" type="string">AIGraph</attribute>
+				<attribute name="DefaultName" type="string">aigraph</attribute>
+				<attribute name="Icon" type="string">Config</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.Framework.Entity.Entity" />
+			</baseclasses>
+			<properties>
+				<property name="entryPoint_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.AIGraphNodeEntryPoint*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="Description" type="string">List of EntryPoint</attribute>
+						<attribute name="AsContainer" type="string"></attribute>
+						<attribute name="EarcRecursive" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="trays_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Tray.AIGraphTrayBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="Description" type="string">List of Tray</attribute>
+						<attribute name="AsBaseContainer" type="string"></attribute>
+						<attribute name="EarcRecursive" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="leafs_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="Description" type="string">List of Leafs</attribute>
+						<attribute name="AsBaseContainer" type="string"></attribute>
+						<attribute name="EarcRecursive" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="layer_" type="SQEX.Ebony.AIGraph.AIGRAPH_LAYER">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="Description" type="string">Layer type</attribute>
+					</attributes>
+				</property>
+				<property name="constantValueList_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueData*, MEMORY_CATEGORY_AI_GRAPH &gt;" />
+				<property name="compiledExpressionCacheList_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Core.AIGraphCompiledExpression*, MEMORY_CATEGORY_AI_GRAPH &gt;" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.Framework.Entity.Entity" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.ConditionData" nameHashCode="286990604" versionHashCode="480872431">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.Object" />
+			</baseclasses>
+			<properties>
+				<property name="type_" type="SQEX.Ebony.AIGraph.Data.CONDITION_TYPE" />
+				<property name="condition_" type="Ebony.Base.String" />
+				<property name="compiledCondition_" type="Ebony.Base.String" />
+				<property name="conditionIdxInContainerCache_" type="int">
+					<attributes>
+						<attribute name="DefaultValue" type="int">-1</attribute>
+					</attributes>
+				</property>
+				<property name="bDebugLog_" type="bool" />
+				<property name="bDebugConditionWatch_" type="bool" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.Object" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.TransitionData" nameHashCode="-654322719" versionHashCode="150703589">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.Object" />
+			</baseclasses>
+			<properties>
+				<property name="fromNodeIdx_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="int">-1</attribute>
+					</attributes>
+				</property>
+				<property name="toNodeIdx_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="int">-1</attribute>
+					</attributes>
+				</property>
+				<property name="conditionIdxInContainerCache_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="int">-1</attribute>
+					</attributes>
+				</property>
+				<property name="hasRequiresCanStartNextCalculationFlag_" type="bool">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="requiresCanStartNextCalculation_" type="bool">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="bDebugLog_" type="bool" />
+				<property name="bDebugConditionWatch_" type="bool" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.Object" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueData" nameHashCode="-1383737248" versionHashCode="319549414">
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties>
+				<property name="values_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase*, MEMORY_CATEGORY_AI_GRAPH &gt;" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBool" nameHashCode="177610597" versionHashCode="464964607">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="bool" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueFloat" nameHashCode="1826674779" versionHashCode="804675479">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="float" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueInt" nameHashCode="-859826694" versionHashCode="1347306027">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="int" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.ConstantValue.ConstantValueBase" nameHashCode="1388774900" versionHashCode="-1493460426">
+			<attributes>
+				<attribute name="Interface" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.LinkPropertyBase" nameHashCode="1006713530" versionHashCode="-171767373">
+			<attributes>
+				<attribute name="Interface" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBase" nameHashCode="-31335148" versionHashCode="866080775">
+			<attributes>
+				<attribute name="Interface" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<properties>
+				<property name="propertyId_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="indexOfLinkedProperty_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="int">-1</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool" nameHashCode="-10076795" versionHashCode="1152024414">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="bool" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyEnum" nameHashCode="-1658932703" versionHashCode="1823480773">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyFixid" nameHashCode="766542312" versionHashCode="1398209959">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="SQEX.Ebony.Std.Fixid" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyFloat" nameHashCode="1569638647" versionHashCode="1604895067">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="float" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt" nameHashCode="770109782" versionHashCode="402270521">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="int" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" nameHashCode="-1950126957" versionHashCode="1716691662">
+			<attributes>
+				<attribute name="Interface" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.LinkPropertyBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.LinkPropertyBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyString" nameHashCode="1654572532" versionHashCode="1797725160">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="Ebony.Base.String" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyVector" nameHashCode="331827515" versionHashCode="-2039299747">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="Luminous.Math.VectorA" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyBool" nameHashCode="560919828" versionHashCode="-1273980357">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="bool" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyFloat" nameHashCode="-1641990589" versionHashCode="-587546967">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyPrimitiveBase" />
+			</baseclasses>
+			<properties>
+				<property name="value_" type="float" />
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyPrimitiveBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Data.PropertyData.LightProperty.LightPropertyPrimitiveBase" nameHashCode="2147455658" versionHashCode="-989594745">
+			<attributes>
+				<attribute name="Interface" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeAbsoluteValue" nameHashCode="146678547" versionHashCode="975331913">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" nameHashCode="-1142270157" versionHashCode="-1450192902">
+			<attributes>
+				<attribute name="Interface" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.BaseObject" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.BaseObject" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeOnAnyActionMessage" nameHashCode="-658875451" versionHashCode="-242489604">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeOnAnyMessage" nameHashCode="-814397550" versionHashCode="-1127341468">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeOnMessage" nameHashCode="-1469959673" versionHashCode="735262562">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeOnMessageTag" nameHashCode="-473013992" versionHashCode="-1701033547">
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Expression.Invoke.AIGraphExpressionInvokeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Invoke.AIGraphInvokeAssignValue" nameHashCode="-696634918" versionHashCode="430917582">
+			<attributes>
+				<attribute name="Browsable" type="bool">True</attribute>
+				<attribute name="DisplayName" type="string">Assign Value</attribute>
+				<attribute name="DisplayNameJP" type="string">変数の代入</attribute>
+				<attribute name="Category" type="string">System</attribute>
+				<attribute name="Description" type="string">Assign value to BlackBoard Variable.(write expression)</attribute>
+				<attribute name="DescriptionJP" type="string">BlackBoard変数に値を代入します。(式を記述)</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Invoke.AIGraphInvokeBase" />
+			</baseclasses>
+			<properties>
+				<property name="compiledExpression_" type="SQEX.Ebony.Base.String">
+					<attributes>
+						<attribute name="Argument" type="bool">True</attribute>
+						<attribute name="Expression" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Expression</attribute>
+						<attribute name="DisplayNameJP" type="string">式</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Invoke.AIGraphInvokeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Invoke.AIGraphInvokeBase" nameHashCode="1648279955" versionHashCode="-880213522">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="ObjectType" type="string">Function</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.Object" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.Object" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" nameHashCode="1887313510" versionHashCode="414318621">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">Node</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.AIGraphRunnableBase" />
+			</baseclasses>
+			<properties>
+				<property name="invokeListOnActivate_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Invoke.AIGraphInvokeBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsBaseContainer" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="invokeListOnDeactivate_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Invoke.AIGraphInvokeBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsBaseContainer" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="conditions_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Data.ConditionData*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsContainer" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="displayName_" type="Ebony.Base.String">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="displayNameJP_" type="Ebony.Base.String">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.AIGraphRunnableBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.AIGraphNodeEntryPoint" nameHashCode="1361212580" versionHashCode="-1755612763">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">Node</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" />
+			</baseclasses>
+			<properties>
+				<property name="trayIndex_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" nameHashCode="-1938365506" versionHashCode="1910785854">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" />
+			</baseclasses>
+			<properties>
+				<property name="parentNode_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+				<property name="childList_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTControlBase" nameHashCode="-1595200357" versionHashCode="-1666818923">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT.Decorator</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTRoot" nameHashCode="-1401632846" versionHashCode="1194387278">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="DisplayName" type="string">Root</attribute>
+				<attribute name="Category" type="string">BT</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" />
+			</baseclasses>
+			<properties>
+				<property name="blockTreeDebugLogs" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="Expose" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Block Debug Condition Log</attribute>
+						<attribute name="DescriptionJP" type="string">Block Debug Condition Log</attribute>
+						<attribute name="DescriptionJP" type="string">Block Debug Condition Log</attribute>
+						<attribute name="Description" type="string">Block Debug Condition Log</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorBase" nameHashCode="-422051325" versionHashCode="1997473953">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT.Behavior</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorTray" nameHashCode="-963842594" versionHashCode="62843782">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT.Behavior</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorBase" />
+			</baseclasses>
+			<properties>
+				<property name="trayIndex_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorLeaf" nameHashCode="-92917868" versionHashCode="-114541189">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT.Behavior</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorBase" />
+			</baseclasses>
+			<properties>
+				<property name="leafIndex_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Behavior.AIGraphNodeBTBehaviorBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositePriorityUpActiveSelector" nameHashCode="-271888614" versionHashCode="-158852131">
+			<attributes>
+				<attribute name="Browsable" type="bool">True</attribute>
+				<attribute name="DisplayName" type="string">Priority Up Active Selector</attribute>
+				<attribute name="DisplayNameJP" type="string">Priority Up Active Selector</attribute>
+				<attribute name="Description" type="string">Priority Selector of re-select child node on every frame.But,this node not select lower nodes of the current running node.</attribute>
+				<attribute name="DescriptionJP" type="string">毎フレーム子を選び直すプライオリティセレクタ。ただし、現在実行中のノードより下位のノードは選び直さない。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeActiveSelector" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeActiveSelector" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeActiveSelector" nameHashCode="413991232" versionHashCode="-518336537">
+			<attributes>
+				<attribute name="Browsable" type="bool">True</attribute>
+				<attribute name="DisplayName" type="string">Active Selector</attribute>
+				<attribute name="DisplayNameJP" type="string">Active Selector</attribute>
+				<attribute name="Description" type="string">Priority Selector of re-select child node on every frame</attribute>
+				<attribute name="DescriptionJP" type="string">毎フレーム子を選び直すプライオリティセレクタ</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" nameHashCode="-2038548248" versionHashCode="-1487152444">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTControlBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTControlBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeForceSequence" nameHashCode="-1854407412" versionHashCode="-1477465581">
+			<attributes>
+				<attribute name="DisplayName" type="string">Force Sequence</attribute>
+				<attribute name="DisplayNameJP" type="string">Force Sequence</attribute>
+				<attribute name="Description" type="string">Run one by one in order child. Even if child(ren) failed, run the Sequence to the end. This node only return SUCCEEDED.</attribute>
+				<attribute name="DescriptionJP" type="string">子を順番に一つずつ実行します。いずれかの子が失敗しても、最後までシーケンスを実行します。このノードは必ずSUCCEEDEDを返却します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<properties>
+				<property name="bEvalFailWhenAllChildrenEvalFail" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool">
+					<attributes>
+						<attribute name="DisplayName" type="string">FailWhenAllChildrenEvalFail</attribute>
+						<attribute name="DisplayNameJP" type="string">全ての子のEvalがFailだった場合、このノードのEvalもFailになるか？</attribute>
+						<attribute name="DefaultValue" type="string">false</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeMonitor" nameHashCode="330807477" versionHashCode="1548674114">
+			<attributes>
+				<attribute name="DisplayName" type="string">[Test]Monitor</attribute>
+				<attribute name="DisplayNameJP" type="string">[Test]Monitor</attribute>
+				<attribute name="Description" type="string">Monitor of execution node by condition node. Place the execution node at the top, and place condition node(s) at below. This node is running until condition(s) fail.</attribute>
+				<attribute name="DescriptionJP" type="string">実行ノードを終わらせるための条件を、別のノードで監視します。一番上が実行ノード、以外はコンディションノードを配置します。コンディションノードに記述された条件が満たされなくなった場合、終了します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<properties>
+				<property name="runChildIndex_" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="DefaultValue" type="int">0</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeParallel" nameHashCode="-2084129462" versionHashCode="617502009">
+			<attributes>
+				<attribute name="DisplayName" type="string">Parallel</attribute>
+				<attribute name="DisplayNameJP" type="string">Parallel</attribute>
+				<attribute name="Description" type="string">Run a child(ren) in parallel. If finish even one, Parallel will also finish.</attribute>
+				<attribute name="DescriptionJP" type="string">並列に子を実行します。いずれかの子が終了したら終了します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositePriority" nameHashCode="1203885993" versionHashCode="-683253169">
+			<attributes>
+				<attribute name="DisplayName" type="string">Priority</attribute>
+				<attribute name="DisplayNameJP" type="string">Priority</attribute>
+				<attribute name="Description" type="string">Evaluates the children in order from the top, and select first one viable child.</attribute>
+				<attribute name="DescriptionJP" type="string">上から順番に子を評価し、実行可能な子を一つだけ実行します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeRandom" nameHashCode="175702476" versionHashCode="1805775082">
+			<attributes>
+				<attribute name="DisplayName" type="string">Random</attribute>
+				<attribute name="DisplayNameJP" type="string">Random</attribute>
+				<attribute name="Description" type="string">Select a child at random. Set the weight of the probability of being selected.</attribute>
+				<attribute name="DescriptionJP" type="string">ランダムに子を選択します。選ばれる確率を重みで設定します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<properties>
+				<property name="weightList_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Data.PropertyData.PropertyFloat*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsContainer" type="string"></attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeSequence" nameHashCode="-466899937" versionHashCode="-928471473">
+			<attributes>
+				<attribute name="DisplayName" type="string">Sequence</attribute>
+				<attribute name="DisplayNameJP" type="string">Sequence</attribute>
+				<attribute name="Description" type="string">Run one by one in order child. if fails even one, Sequence will also fail.</attribute>
+				<attribute name="DescriptionJP" type="string">子を順番に一つずつ実行します。子が一つでも失敗したら、シーケンスも失敗終了します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeAllPassParallel" nameHashCode="-828007238" versionHashCode="2075891480">
+			<attributes>
+				<attribute name="DisplayName" type="string">All Pass Parallel</attribute>
+				<attribute name="DisplayNameJP" type="string">All Pass Parallel</attribute>
+				<attribute name="Description" type="string">Only if all children can be passed, run children in parallel. If finish even one, Parallel will also finish.</attribute>
+				<attribute name="DescriptionJP" type="string">全ての子が開始可能な場合にのみ、並列に子を実行します。いずれかの子が終了したら終了します。</attribute>
+				<attribute name="Category" type="string">BT.Composite</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Composite.AIGraphNodeBTCompositeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" nameHashCode="-861491124" versionHashCode="-190445394">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">BT.Decorator</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTControlBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.AIGraphNodeBTControlBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorCondition" nameHashCode="872836592" versionHashCode="1870333609">
+			<attributes>
+				<attribute name="DisplayName" type="string">Condition</attribute>
+				<attribute name="DisplayNameJP" type="string">Condition</attribute>
+				<attribute name="Description" type="string">Do the condition determination. If result of evaluate is OK and connect to child, then this node evaluate child and return the child result.</attribute>
+				<attribute name="DescriptionJP" type="string">条件判定を行います。判定OKで子が接続されている場合、子の判定を行い、その結果を返します。</attribute>
+				<attribute name="Category" type="string">BT.Decorator</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorFilter" nameHashCode="952107149" versionHashCode="1028611214">
+			<attributes>
+				<attribute name="DisplayName" type="string">Filter</attribute>
+				<attribute name="DisplayNameJP" type="string">Filter</attribute>
+				<attribute name="Description" type="string">Do the Condition determination in the same way as Condition node. However, even if the evaluation result is the NG, this node return the OK. In this case, child node will not be executed.</attribute>
+				<attribute name="DescriptionJP" type="string">Conditionノードと同じように判定を行います。ただし、判定結果がNGだった場合でも、OKを返却します。この場合、子は実行されません。</attribute>
+				<attribute name="Category" type="string">BT.Decorator</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorForceSuccess" nameHashCode="378886959" versionHashCode="297122004">
+			<attributes>
+				<attribute name="DisplayName" type="string">Force Success</attribute>
+				<attribute name="DisplayNameJP" type="string">Force Success</attribute>
+				<attribute name="Description" type="string">Overwrite the execution result to SUCCEEDED of the qualified child. This node does not overwrite the results of the EvalStart. If you want overwrite the result of the EvalStart, please consider the combination of the Filter node.</attribute>
+				<attribute name="DescriptionJP" type="string">修飾している子の実行結果をSUCCEEDEDに上書きします。実行可能チェック（EvalStart）の結果は上書きしません。EvalStartも偽装したい場合はFilterノードを併用してください。</attribute>
+				<attribute name="Category" type="string">BT.Decorator</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorLoop" nameHashCode="-1262665475" versionHashCode="-575272435">
+			<attributes>
+				<attribute name="DisplayName" type="string">Loop</attribute>
+				<attribute name="DisplayNameJP" type="string">Loop</attribute>
+				<attribute name="Description" type="string">Re-run a child to the specified number of times.</attribute>
+				<attribute name="DescriptionJP" type="string">子を指定回数まで再実行します。</attribute>
+				<attribute name="Category" type="string">BT.Decorator</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+			</baseclasses>
+			<properties>
+				<property name="loopCount_" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="DefaultValue" type="int">1</attribute>
+						<attribute name="Description" type="string">If wants infinite loop, specify -1.</attribute>
+						<attribute name="DescriptionJP" type="string">-1の場合は無限ループ</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.BT.Decorator.AIGraphNodeBTDecoratorBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" nameHashCode="2109080656" versionHashCode="793008337">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.AIGraphNodeBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMEnd" nameHashCode="-688769894" versionHashCode="1759618768">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="DisplayName" type="string">End</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</baseclasses>
+			<properties>
+				<property name="endStatus_" type="SQEX.Ebony.AIGraph.Node.FSM.END_STATUS">
+					<attributes>
+						<attribute name="DefaultValue" type="string">END_STATUS_SUCCEEDED</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMHub" nameHashCode="-1849145155" versionHashCode="1018008552">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="DisplayName" type="string">Hub</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMInterrupt" nameHashCode="2113364580" versionHashCode="-1942802011">
+			<attributes>
+				<attribute name="DisplayName" type="string">Interrupt</attribute>
+				<attribute name="DisplayNameJP" type="string">Interrupt</attribute>
+				<attribute name="Category" type="string">System</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</baseclasses>
+			<properties>
+				<property name="priority" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Interupt priority</attribute>
+						<attribute name="DisplayNameJP" type="string">割り込み優先度</attribute>
+						<attribute name="DefaultValue" type="string">100</attribute>
+						<attribute name="DescriptionJP" type="string">割り込み実行中にこの優先度未満の優先度の割り込みを無視します。数字が高い方が優先度が高いです。</attribute>
+						<attribute name="Description" type="string">Ignore another interrupt that below this priority, while this interrupt node acting. Big number is higher priority.</attribute>
+					</attributes>
+				</property>
+				<property name="interruptSamePriority" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Enable interupt of same priority</attribute>
+						<attribute name="DisplayNameJP" type="string">同一優先度でも割り込み可能</attribute>
+						<attribute name="DefaultValue" type="string">false</attribute>
+						<attribute name="DescriptionJP" type="string">同じ優先度の割り込みを再度受け入れます。メッセージ用</attribute>
+						<attribute name="Description" type="string">Enable to accept same priority interrupt. It is for receive message.</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyInt" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMReset" nameHashCode="724210700" versionHashCode="1288043948">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="DisplayName" type="string">Reset</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMRoot" nameHashCode="-985679196" versionHashCode="-42135839">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="DisplayName" type="string">Root</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</baseclasses>
+			<properties>
+				<property name="interruptNodes_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMInterrupt*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsContainer" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="blockTreeDebugLogs" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="Expose" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Block Debug Condition Log</attribute>
+						<attribute name="DescriptionJP" type="string">Block Debug Condition Log</attribute>
+						<attribute name="DescriptionJP" type="string">Block Debug Condition Log</attribute>
+						<attribute name="Description" type="string">Block Debug Condition Log</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateBase" nameHashCode="-1223477980" versionHashCode="-2085802583">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateLeaf" nameHashCode="1053349719" versionHashCode="1980581615">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateBase" />
+			</baseclasses>
+			<properties>
+				<property name="leafIndex_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateTray" nameHashCode="830993931" versionHashCode="-784015606">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">FSM</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateBase" />
+			</baseclasses>
+			<properties>
+				<property name="trayIndex_" type="int">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMStateBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafAssert" nameHashCode="-1600787815" versionHashCode="1160991399">
+			<attributes>
+				<attribute name="DisplayName" type="string">Assert</attribute>
+				<attribute name="DisplayNameJP" type="string">アサート</attribute>
+				<attribute name="Category" type="string">Common</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" />
+			</baseclasses>
+			<properties>
+				<property name="text_" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyString">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="Expose" type="bool">False</attribute>
+						<attribute name="DisplayNameJP" type="string">テキスト</attribute>
+						<attribute name="DescriptionJP" type="string">ダイアログに表示するテキスト</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyString" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" nameHashCode="146570641" versionHashCode="25329154">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Category" type="string">Leaf</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.AIGraphSubstanceBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.AIGraphSubstanceBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafClearInterrupt" nameHashCode="1922569935" versionHashCode="2111059546">
+			<attributes>
+				<attribute name="DisplayName" type="string">Clear interrupt status</attribute>
+				<attribute name="DisplayNameJP" type="string">割り込み中解除</attribute>
+				<attribute name="Description" type="string">You can finish interrupt status.</attribute>
+				<attribute name="DescriptionJP" type="string">割り込み状態を終了させます。</attribute>
+				<attribute name="Category" type="string">Common</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" />
+			</baseclasses>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafWaitTime" nameHashCode="-1879145519" versionHashCode="-297681796">
+			<attributes>
+				<attribute name="DisplayName" type="string">Wait</attribute>
+				<attribute name="DisplayNameJP" type="string">秒数指定時間待ち</attribute>
+				<attribute name="Description" type="string">Wait during the specified time.</attribute>
+				<attribute name="DescriptionJP" type="string">指定時間の間待ちます。</attribute>
+				<attribute name="Category" type="string">Common</attribute>
+				<attribute name="LayerType" type="string">LAYER_ALL</attribute>
+				<attribute name="StartConditionDispName" type="string">なし</attribute>
+				<attribute name="FailedConditionDispName" type="string">なし</attribute>
+				<attribute name="SuccessConditionDispName" type="string">指定時間が過ぎたとき</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" />
+			</baseclasses>
+			<properties>
+				<property name="waitTime_" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyFloat">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="Expose" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Min Time</attribute>
+						<attribute name="DescriptionJP" type="string">待ち時間(Min)、秒指定。-1で無限。</attribute>
+						<attribute name="Description" type="string">wait for this time(min).(Unit:SEC. if this value is -1, this node will not end.)</attribute>
+						<attribute name="DefaultValue" type="int">1.0</attribute>
+						<attribute name="MinValue" type="int">-1.0</attribute>
+						<attribute name="MaxValue" type="int">100000.0</attribute>
+					</attributes>
+				</property>
+				<property name="waitTimeMax_" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyFloat">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="Expose" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Max Time</attribute>
+						<attribute name="DescriptionJP" type="string">待ち時間(Max)、秒指定。Minより小さい値が指定された場合はMinの時間分待機。</attribute>
+						<attribute name="DescriptionJP" type="string">この時間以下待機します。（単位:秒。Minより小さい値が指定された場合はMinの時間分待機します。</attribute>
+						<attribute name="Description" type="string">wait for this time(max).(Unit:SEC. if this value is less than min time, this node waits for min time.)</attribute>
+						<attribute name="DefaultValue" type="int">-1.0</attribute>
+						<attribute name="MinValue" type="int">-1.0</attribute>
+						<attribute name="MaxValue" type="int">100000.0</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Node.Leaf.AIGraphNodeLeafBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyFloat" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Tray.AIGraphTrayBase" nameHashCode="575897381" versionHashCode="-2143755722">
+			<attributes>
+				<attribute name="Browsable" type="bool">False</attribute>
+				<attribute name="Interface" type="bool">True</attribute>
+				<attribute name="Category" type="string">Tray</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.AIGraphSubstanceBase" />
+			</baseclasses>
+			<properties>
+				<property name="nodes_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.AIGraphNodeBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsBaseContainer" type="string"></attribute>
+						<attribute name="EarcRecursive" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="properties_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBase*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsBaseContainer" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="debug_BlockWarningRunningWithNoChildren_" type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool">
+					<attributes>
+						<attribute name="Browsable" type="bool">True</attribute>
+						<attribute name="DisplayName" type="string">Block Warning When Tray is Running With No Children</attribute>
+						<attribute name="DisplayNameJP" type="string">Block Warning When Tray is Running With No Children</attribute>
+						<attribute name="DisplayOnly" type="bool">True</attribute>
+						<attribute name="DefaultValue" type="bool">False</attribute>
+						<attribute name="Description" type="string">Block Warning When Tray is Running With No Children</attribute>
+						<attribute name="Category" type="string">Debug</attribute>
+						<attribute name="CategoryJP" type="string">Debug</attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.AIGraphSubstanceBase" />
+				<dependency type="SQEX.Ebony.AIGraph.Data.PropertyData.PropertyBool" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Tray.AIGraphTrayBT" nameHashCode="1971316743" versionHashCode="-1524880033">
+			<attributes>
+				<attribute name="Browsable" type="bool">True</attribute>
+				<attribute name="DisplayName" type="string">Behavior Tree</attribute>
+				<attribute name="Category" type="string">Tray</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Tray.AIGraphTrayBase" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Tray.AIGraphTrayBase" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Ebony.AIGraph.Tray.AIGraphTrayFSM" nameHashCode="1210509326" versionHashCode="842769728">
+			<attributes>
+				<attribute name="Browsable" type="bool">True</attribute>
+				<attribute name="DisplayName" type="string">State Machine</attribute>
+				<attribute name="Category" type="string">Tray</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Ebony.AIGraph.Tray.AIGraphTrayBase" />
+			</baseclasses>
+			<properties>
+				<property name="transits_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Data.TransitionData*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsContainer" type="string"></attribute>
+					</attributes>
+				</property>
+				<property name="rootNodes_" type="SQEX.Ebony.Std.DynamicArray&lt; SQEX.Ebony.AIGraph.Node.FSM.AIGraphNodeFSMRoot*, MEMORY_CATEGORY_AI_GRAPH &gt;">
+					<attributes>
+						<attribute name="Browsable" type="bool">False</attribute>
+						<attribute name="AsContainer" type="string"></attribute>
+					</attributes>
+				</property>
+			</properties>
+			<dependencies>
+				<dependency type="SQEX.Ebony.AIGraph.Tray.AIGraphTrayBase" />
+			</dependencies>
+		</class>
+	</classes>
+	<typedefs />
+	<enums>
+		<enum name="SQEX.Ebony.AIGraph.AIGRAPH_LAYER" nameHashCode="-7814860" versionHashCode="-465273300">
+			<items>
+				<item name="CHARACTER_AI_MIND">
+					<attributes>
+						<attribute name="DisplayName" type="string">Character-AI Mind</attribute>
+						<attribute name="DisplayNameJP" type="string">キャラクターAI マインド</attribute>
+						<attribute name="Value" type="int">1</attribute>
+					</attributes>
+				</item>
+				<item name="CHARACTER_AI_MIND_TASK">
+					<attributes>
+						<attribute name="DisplayName" type="string">Character-AI Mind task</attribute>
+						<attribute name="DisplayNameJP" type="string">キャラクターAI マインドタスク</attribute>
+						<attribute name="Value" type="int">2</attribute>
+					</attributes>
+				</item>
+				<item name="BODY_LAYER">
+					<attributes>
+						<attribute name="DisplayName" type="string">Body</attribute>
+						<attribute name="DisplayNameJP" type="string">ボディ</attribute>
+						<attribute name="Value" type="int">4</attribute>
+					</attributes>
+				</item>
+				<item name="TEAM_TASK_LAYER">
+					<attributes>
+						<attribute name="DisplayName" type="string">TeamTask</attribute>
+						<attribute name="DisplayNameJP" type="string">チームタスク</attribute>
+						<attribute name="Value" type="int">16</attribute>
+					</attributes>
+				</item>
+				<item name="LAYER_TEST">
+					<attributes>
+						<attribute name="DisplayName" type="string">テスト用レイヤー</attribute>
+						<attribute name="Value" type="int">-2147483648</attribute>
+					</attributes>
+				</item>
+				<item name="LAYER_ALL">
+					<attributes>
+						<attribute name="DisplayName" type="string">すべて</attribute>
+						<attribute name="Value" type="int">-1</attribute>
+					</attributes>
+				</item>
+			</items>
+		</enum>
+		<enum name="SQEX.Ebony.AIGraph.EVAL_RESULT" nameHashCode="-1307374031" versionHashCode="762958018">
+			<items>
+				<item name="EVAL_RESULT_SUCCEEDED">
+					<attributes>
+						<attribute name="DescriptionJP" type="string">Conditionノードなどで、判定のみOK</attribute>
+						<attribute name="Value" type="int">0</attribute>
+					</attributes>
+				</item>
+				<item name="EVAL_RESULT_FAILED">
+					<attributes>
+						<attribute name="DescriptionJP" type="string">判定NG</attribute>
+						<attribute name="Value" type="int">1</attribute>
+					</attributes>
+				</item>
+				<item name="EVAL_RESULT_RUN_ENABLE">
+					<attributes>
+						<attribute name="DescriptionJP" type="string">Activate（実行）可能</attribute>
+						<attribute name="Value" type="int">2</attribute>
+					</attributes>
+				</item>
+			</items>
+		</enum>
+		<enum name="SQEX.Ebony.AIGraph.RUN_STATUS" nameHashCode="1930263710" versionHashCode="1230515561">
+			<items>
+				<item name="RUN_STATUS_IDLE">
+					<attributes>
+						<attribute name="Value" type="int">0</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_RUN">
+					<attributes>
+						<attribute name="Value" type="int">1</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_SUSPEND">
+					<attributes>
+						<attribute name="Value" type="int">2</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_SUCCEEDED">
+					<attributes>
+						<attribute name="Value" type="int">3</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_FAILED">
+					<attributes>
+						<attribute name="Value" type="int">4</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_FINISHED_BY_OUTSIDE">
+					<attributes>
+						<attribute name="Value" type="int">5</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_EVAL_FAILED">
+					<attributes>
+						<attribute name="Value" type="int">6</attribute>
+					</attributes>
+				</item>
+				<item name="RUN_STATUS_NUM">
+					<attributes>
+						<attribute name="Value" type="int">7</attribute>
+					</attributes>
+				</item>
+			</items>
+		</enum>
+		<enum name="SQEX.Ebony.AIGraph.Data.CONDITION_TYPE" nameHashCode="2002020455" versionHashCode="10640778">
+			<attributes>
+				<attribute name="DisplayNameJP" type="string">条件タイプ</attribute>
+			</attributes>
+			<items>
+				<item name="CONDITION_TYPE_BEGIN">
+					<attributes>
+						<attribute name="DisplayNameJP" type="string">開始条件</attribute>
+						<attribute name="Value" type="int">0</attribute>
+					</attributes>
+				</item>
+				<item name="CONDITION_TYPE_SUCCEED">
+					<attributes>
+						<attribute name="DisplayNameJP" type="string">成功終了条件</attribute>
+						<attribute name="Value" type="int">1</attribute>
+					</attributes>
+				</item>
+				<item name="CONDITION_TYPE_FAIL">
+					<attributes>
+						<attribute name="DisplayNameJP" type="string">失敗終了条件</attribute>
+						<attribute name="Value" type="int">2</attribute>
+					</attributes>
+				</item>
+			</items>
+		</enum>
+		<enum name="SQEX.Ebony.AIGraph.Node.FSM.END_STATUS" nameHashCode="-1741934537" versionHashCode="100693632">
+			<items>
+				<item name="END_STATUS_SUCCEEDED">
+					<attributes>
+						<attribute name="Value" type="int">0</attribute>
+					</attributes>
+				</item>
+				<item name="END_STATUS_FAILED">
+					<attributes>
+						<attribute name="Value" type="int">1</attribute>
+					</attributes>
+				</item>
+			</items>
+		</enum>
+	</enums>
+</module>

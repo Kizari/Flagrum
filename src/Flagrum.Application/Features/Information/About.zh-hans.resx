@@ -1,0 +1,96 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="About" xml:space="preserve">
+        <value>关于Flagrum</value>
+    </data>
+    <data name="AboutSubtext" xml:space="preserve">
+        <value>Flagrum是一个专为《最终幻想15》打造的一体化MOD多功能整合平台。</value>
+    </data>
+    <data name="Accessible" xml:space="preserve">
+        <value>它可以使《最终幻想15》的MOD管理及制作变得更便捷高效。</value>
+    </data>
+    <data name="BMC" xml:space="preserve">
+        <value>“Buy Me a Coffee”</value>
+    </data>
+    <data name="Continue" xml:space="preserve">
+        <value>继续增加新的工具，并进一步展示MOD的无限可能</value>
+    </data>
+    <data name="Contributors" xml:space="preserve">
+        <value>贡献者名录</value>
+    </data>
+    <data name="CoreDevelopment" xml:space="preserve">
+        <value>核心开发</value>
+    </data>
+    <data name="Credits" xml:space="preserve">
+        <value>开发者</value>
+    </data>
+    <data name="ExinerisDiscord" xml:space="preserve">
+        <value>EXINERIS Discord</value>
+    </data>
+    <data name="Fix" xml:space="preserve">
+        <value>修复了以往MOD工具和平台的明显缺陷</value>
+    </data>
+    <data name="Foundation" xml:space="preserve">
+        <value>打造高品质基石并为MOD制作的持续发展开创了全新的里程碑</value>
+    </data>
+    <data name="Further" xml:space="preserve">
+        <value>进一步全方位支持各种不同的需求可能</value>
+    </data>
+    <data name="Goals" xml:space="preserve">
+        <value>Flagrum的目标：</value>
+    </data>
+    <data name="Join" xml:space="preserve">
+        <value>加入我们的行列</value>
+    </data>
+    <data name="JoinSubtext1" xml:space="preserve">
+        <value>如果你想为开发MOD的平台出一份力，请在Discord上联系Kizari#0755或加入</value>
+    </data>
+    <data name="JoinSubtext2" xml:space="preserve">
+        <value>Discord的服务器</value>
+    </data>
+    <data name="Ko-Fi" xml:space="preserve">
+        <value>在Ko-Fi上支持我</value>
+    </data>
+    <data name="LevelEditor" xml:space="preserve">
+        <value>创建《最终幻想15》关卡编辑器</value>
+    </data>
+    <data name="NodeEditor" xml:space="preserve">
+        <value>为EXML创建一个可视化的脚本工具</value>
+    </data>
+    <data name="PayPal" xml:space="preserve">
+        <value>通过PayPal支持平台</value>
+    </data>
+    <data name="Roadmap" xml:space="preserve">
+        <value>路标</value>
+    </data>
+    <data name="RoadmapSubtext" xml:space="preserve">
+        <value>MOD工具平台——Flagrum的长期项目计划：</value>
+    </data>
+    <data name="Streamline" xml:space="preserve">
+        <value>改进并简化现有的MOD制作过程</value>
+    </data>
+    <data name="Support" xml:space="preserve">
+        <value>支持FFXV修改工具平台的继续发展</value>
+    </data>
+    <data name="SupportSubtext" xml:space="preserve">
+        <value>该平台耗费开发者的大量时间和精力进行开发。若您愿意支持Flagrum和开发者的其他MOD项目的持续发展，请通过下列捐助方式支持平台。</value>
+    </data>
+    <data name="Updates" xml:space="preserve">
+        <value>对Flagrum的持续更新和维护</value>
+    </data>
+</root>

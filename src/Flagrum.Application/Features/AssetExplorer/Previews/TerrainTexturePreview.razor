@@ -1,0 +1,85 @@
+﻿@using System.IO
+@using Flagrum.Core.Graphics.Terrain
+@inject IProfileService Profile
+@inject TextureConverter TextureConverter
+
+<div class="flex-grow flex flex-col">
+    <div class="flex flex-row items-center" style="flex: 1 1 auto;">
+        @if (CurrentIndex > 0)
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer ml-6 select-none"
+                  @onclick="() => SetImage(CurrentIndex - 1)">arrow_back_ios</span>
+        }
+        else
+        {
+            <span
+                class="material-icons text-5xl text-grey-400 cursor-pointer ml-6 select-none invisible">arrow_back_ios</span>
+        }
+        @if (Images.Count > 0)
+        {
+            <img alt="Texture Preview" src="images/@Profile.Current.Id/@ImageName" class="mx-auto select-none"
+                 style="max-width: 70%; max-height: 90%;"/>
+        }
+        else
+        {
+            <strong class="text-grey-600 mx-auto">This Height Entity Binary contains no images</strong>
+        }
+        @if (CurrentIndex < Images.Count - 1)
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none"
+                  @onclick="() => SetImage(CurrentIndex + 1)">arrow_forward_ios</span>
+        }
+        else
+        {
+            <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none invisible">arrow_forward_ios</span>
+        }
+    </div>
+
+    @if (Images.Count > 1)
+    {
+        <div class="text-center mb-6" style="flex: 0 0 auto;">
+            <span
+                class="font-display text-grey-400 text-lg select-none">Image @(CurrentIndex + 1) / @Images.Count &nbsp;(@ImageTypes[CurrentIndex])</span>
+        </div>
+    }
+</div>
+
+@code
+{
+    private IAssetExplorerNode _previousItem;
+
+    [Parameter] public IAssetExplorerNode Item { get; set; }
+
+    private string ImageName { get; set; } = "asset_preview.jpg";
+
+    private List<HeightEntityBinaryImageType> ImageTypes { get; set; }
+    private IList<byte[]> Images { get; set; }
+    private int CurrentIndex { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_previousItem != Item)
+        {
+            _previousItem = Item;
+            var heb = HeightEntityBinary.FromData(Item.Data);
+            Images = heb.ImageHeaders.Select(h => TextureConverter.DdsToScratchImage(h.ToDds()).ToPng()).ToList();
+            ImageTypes = heb.ImageHeaders.Select(h => h.Type).ToList();
+            SetImage(0);
+        }
+    }
+
+    private void SetImage(int index)
+    {
+        CurrentIndex = index;
+
+        if (Images.Count > 0)
+        {
+            File.WriteAllBytes(Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg"), Images[index]);
+
+            // Jank to trick the UI into updating
+            ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
+        }
+
+        StateHasChanged();
+    }
+}

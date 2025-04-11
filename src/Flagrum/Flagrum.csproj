@@ -1,0 +1,176 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
+        <DebugType>embedded</DebugType>
+        <AssemblyName>Flagrum</AssemblyName>
+        <AssemblyVersion>1.6.0</AssemblyVersion>
+        <FileVersion>1.6.0</FileVersion>
+        <Version>1.6.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="loading.gif"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="boilerplatezero" Version="2.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
+        <PackageReference Include="FontAwesome5" Version="2.1.6"/>
+        <PackageReference Include="HelixToolkit.SharpDX.Assimp" Version="2.22.0"/>
+        <PackageReference Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.22.0"/>
+        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2"/>
+        <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Velopack" Version="0.0.320"/>
+        <PackageReference Include="Drautos" Version="1.0.0" />
+    </ItemGroup>
+
+    <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
+    <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <PackageReference Include="Flagrum.Premium" Version="1.0.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\tools\Flagrum.Generators\Flagrum.Generators.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="steam_appid.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="steam_api64.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <Content Include="Resources\preview.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\default.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Resources\Textures\teal.btex">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\Play-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\app.css">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\index.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="wwwroot\interop.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\earc.png"/>
+        <Content Include="Resources\earc.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <None Remove="Resources\Play-Regular.ttf"/>
+        <Resource Include="Resources\Play-Regular.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Include="flagrum-titlebar.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="patreon.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
+        <None Remove="Resources\logo.png"/>
+        <Resource Include="Resources\logo.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
+        <None Remove="Resources\logo_outlined.png"/>
+        <Resource Include="Resources\logo_outlined.png">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\Localisation.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.ja-JP.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.ja-JP.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.zh-cn.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.zh-cn.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Localisation.zh-hk.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Localisation.zh-hk.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Resources\Localisation.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Localisation.ja-JP.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.ja-JP.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Localisation.zh-cn.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.zh-cn.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Localisation.zh-hk.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ApplicationDefinition Remove="App.xaml"/>
+        <Page Include="App.xaml"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+
+    <Target Name="CopyDependencies" AfterTargets="Publish">
+        <ItemGroup>
+            <ExternalDependencies Include="$(SolutionDir)\libs\**\*.*"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(ExternalDependencies)" DestinationFiles="@(ExternalDependencies->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')"/>
+    </Target>
+
+</Project>

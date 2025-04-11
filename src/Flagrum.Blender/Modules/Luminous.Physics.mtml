@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<module name="Luminous.Physics">
+	<classes>
+		<class name="SQEX.Luminous.Physics.RigidDynamics.OverlapReport" nameHashCode="2086492906" versionHashCode="-2006285304">
+			<attributes>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="OverlapResult" />
+			</baseclasses>
+			<properties />
+			<functions>
+				<function name="GetReportRigidBody" returntype="SQEX.Luminous.Physics.RigidDynamics.RigidBody" returntype_pointer="True">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+				<function name="GetTargetRigidBody" returntype="SQEX.Luminous.Physics.RigidDynamics.RigidBody" returntype_pointer="True">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+				<function name="GetHitPosition" returntype="Math.VectorA">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+				<function name="GetHitDirection" returntype="Math.VectorA">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+				<function name="GetHitVelocity" returntype="Math.VectorA">
+					<attributes>
+						<attribute name="CSharpInvoke" type="bool">True</attribute>
+					</attributes>
+				</function>
+			</functions>
+			<dependencies>
+				<dependency type="OverlapResult" />
+			</dependencies>
+		</class>
+		<class name="SQEX.Luminous.Physics.RigidDynamics.RigidBody" nameHashCode="1430948740" versionHashCode="1945226237">
+			<attributes>
+				<attribute name="CSharpType" type="bool">True</attribute>
+			</attributes>
+			<baseclasses>
+				<baseclass type="SQEX.Luminous.Core.Object.Object" />
+			</baseclasses>
+			<properties />
+			<dependencies>
+				<dependency type="SQEX.Luminous.Core.Object.Object" />
+			</dependencies>
+		</class>
+	</classes>
+	<typedefs>
+		<typedef name="SQEX.Luminous.Physics.RigidDynamics.OverlapReport.PolygonIndex" type="unsigned short" />
+	</typedefs>
+	<enums />
+</module>

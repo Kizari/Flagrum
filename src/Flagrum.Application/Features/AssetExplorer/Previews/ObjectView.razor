@@ -1,0 +1,88 @@
+﻿@using System.Collections
+
+<div class="row">
+    <div style="flex: 0 0 32px">
+        @if (!IsSimple)
+        {
+            <span class="material-icons cursor-pointer" @onclick="Expand">
+                @(IsExpanded ? "expand_more" : "chevron_right")
+            </span>
+        }
+    </div>
+    <strong style="flex: 1 0 200px">@Name</strong>
+    <div class="text-left" style="flex: 1 1 auto">
+        @if (Object == null)
+        {
+            <span>null</span>
+        }
+        else if (IsSimple)
+        {
+            <span>@(Object is Enum enumeration ? enumeration.ToDisplayString() : Object.ToString())</span>
+        }
+    </div>
+</div>
+@if (IsExpanded && !IsSimple)
+{
+    <div class="flex flex-col" style="margin-left: @(Indent * 10)px">
+        @if (Object is IEnumerable enumerable)
+        {
+            var items = new List<object>();
+            var count = 0;
+            foreach (var item in enumerable)
+            {
+                items.Add(item);
+                count++;
+                if (count > 50)
+                {
+                    count = -1;
+                    break;
+                }
+            }
+
+            if (count == -1)
+            {
+                <span>Too many results to show.</span>
+            }
+            else
+            {
+                var i = 0;
+                foreach (var item in items)
+                {
+                    <ObjectView Name="@($"[{i}]")" Object="item" Indent="Indent + 1"/>
+                    i++;
+                }
+            }
+        }
+        else if (Object != null)
+        {
+            foreach (var property in Object.GetType().GetProperties())
+            {
+                try
+                {
+                    var value = property.GetValue(Object)!;
+                    <ObjectView Name="@property.Name" Object="value" Indent="Indent + 1" />
+                }
+                catch (Exception e)
+                {
+                    <span class="text-error">@e.GetType().FullName</span>
+                }
+            }
+        }
+    </div>
+}
+
+@code
+{
+    [Parameter] public string Name { get; set; }
+    [Parameter] public object Object { get; set; }
+    [Parameter] public int Indent { get; set; } = 1;
+    [Parameter] public bool IsExpanded { get; set; }
+
+    private bool IsSimple => Object != null &&
+                             (Object is string || Object.GetType().IsPrimitive || Object.GetType().IsEnum);
+
+    private void Expand()
+    {
+        IsExpanded = !IsExpanded;
+    }
+}

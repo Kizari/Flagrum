@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>Flagrum</title>
+    <base href="/"/>
+    <link href="app.css" rel="stylesheet"/>
+    <link href="vendor/blazorContextMenu/blazorContextMenu.css" rel="stylesheet"/>
+    <link href="vendor/quilljs/quill.snow.css" rel="stylesheet">
+    <link href="vendor/quilljs/quill.bubble.css" rel="stylesheet">
+
+    <style>
+        .context-menu {
+            background-color: #ff0000;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-left: -5px;
+            margin-right: -5px;
+        }
+
+        .context-menu-item {
+            background-color: #0000ff;
+            color: #00ff00;
+            margin: 0 !important;
+        }
+
+        .context-menu-item:hover {
+            background-color: #00ff00;
+            color: #0000ff;
+        }
+    </style>
+</head>
+
+<body class="font-body" style="background-color: #181512">
+<div id="app"></div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a class="reload font-bold" href="" style="text-decoration: underline">Restart</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<script src="_framework/blazor.webview.js"></script>
+<script src="vendor/blazorContextMenu/blazorContextMenu.js"></script>
+<script src="vendor/quilljs/quill.js"></script>
+<script src="_content/Blazored.TextEditor/quill-blot-formatter.min.js"></script>
+<script src="_content/Blazored.TextEditor/Blazored-BlazorQuill.js"></script>
+<script src="interop.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,349 @@
+﻿@page "/settings"
+@using Flagrum.Abstractions.AssetExplorer
+@using Flagrum.Application.Features.ModManager.Services
+@using Flagrum.Application.Features.Settings.Data
+@implements ILoadingComponent
+
+@inject IPlatformService PlatformService
+@inject IStringLocalizer<SettingsPage> Localizer
+@inject IJSRuntime JSRuntime
+@inject IProfileService Profile
+@inject NavigationManager Navigation
+@inject AppStateService AppState
+@inject ModManagerServiceBase ModManager
+@inject IConfiguration Configuration
+@inject IAuthenticationService Authentication
+@inject ILogger<SettingsPage> Logger
+@inject IFileIndex FileIndex
+@inject IPremiumService Premium
+
+<LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="p-6 h-full">
+
+    @if (Warn)
+    {
+        <div class="bg-error mb-6 p-4">
+            <span class="text-white">
+                @Localizer["PathAutodetectFailed"]
+            </span>
+        </div>
+    }
+
+    <EditForm Model="this" class="h-full flex flex-col">
+
+        <div class="box p-4 mb-6 row">
+            <span class="mr-3">@Localizer["Language"]</span>
+            <select class="input bg-dark-550 flex-grow" @bind="CurrentCulture">
+                <option value="en-GB">@GetLanguageString("English")</option>
+                <option value="ja-JP">@GetLanguageString("Japanese")</option>
+                <option value="zh-Hans">@GetLanguageString("Chinese (Simplified)")</option>
+                <option value="zh-Hant">@GetLanguageString("Chinese (Traditional)")</option>
+            </select>
+            <span class="ml-6 mr-3">@Localizer["Profile"]</span>
+            <select class="input bg-dark-550 flex-grow mr-6" @bind="CurrentProfile">
+                @foreach (var profile in Profile.Profiles)
+                {
+                    <option value="@profile.Id">@profile.Name</option>
+                }
+            </select>
+            @if (!Warn)
+            {
+                <Button Icon="edit" Text="@Localizer["EditProfiles"]"
+                        OnClick="@(() => Navigation.NavigateTo("/settings/profiles"))"/>
+            }
+        </div>
+
+        <div class="box p-4 mb-6">
+            <div class="row mb-3">
+                <span class="mr-3"
+                      style="flex: 0 0 200px;">@Localizer[Profile.Current.Type == LuminousGame.FFXV ? "GamePath" : "ForspokenPath"]</span>
+                <Textbox Size="Textbox.Variant.Stretch" @bind-Value="GamePath" IsReadOnly="true"/>
+                <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4" OnClickAsync="GamePathClicked"/>
+            </div>
+            <small
+                class="text-grey-600">@Localizer[Profile.Current.Type == LuminousGame.FFXV ? "DefaultGamePath" : "DefaultForspokenPath"]</small>
+        </div>
+
+        @if (Profile.Current.Type == LuminousGame.FFXV)
+        {
+            <div class="box p-4 mb-6">
+                <div class="row mb-3">
+                    <span class="mr-3" style="flex: 0 0 200px;">@Localizer["BinmodPath"]</span>
+                    <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Profile.Current.BinmodListPath"
+                             IsReadOnly="true"/>
+                    <Button Icon="folder" Text="@Localizer["Browse"]" CssClass="ml-4"
+                            OnClickAsync="BinmodListPathClicked"/>
+                </div>
+                <small class="text-grey-600">@Localizer["DefaultBinmodPath"]</small>
+            </div>
+        }
+
+        @if (!Warn)
+        {
+            <div class="box p-6 mb-6">
+                <div class="row mb-6">
+                    <h5 class="text-grey-300 flex-grow">General Settings</h5>
+                </div>
+                <div class="row">
+                    <Checkbox IsChecked="AddressBarToggle" OnChange="ToggleAddressBar"/>
+                    <span class="ml-3">Select all text when the address bar is clicked in the Asset Explorer</span>
+                </div>
+                <div class="row mt-6">
+                    <Button Icon="cached" CssStyle="width: 165px;" Text="@Localizer["RegenerateFileIndex"]"
+                            OnClick="() => RegenerateModal?.Open()"/>
+                    <small class="block ml-6">
+                        Use this button to regenerate Flagrum's file index if you suspect your file index is incorrect.
+                        This is best to use after freshly installing the game or verifying your game files through
+                        Steam.
+                    </small>
+                </div>
+                <div class="row mt-4">
+                    <Button Icon="restart_alt" CssStyle="width: 165px;" Text="Force Reset/Cleanup"
+                            OnClick="ForceReset"/>
+                    <small class="block ml-6">
+                        Use this button to unapply all mods from the game and clean up any residual data in the
+                        game files. This will only work properly if your files were clean before using Flagrum.
+                    </small>
+                </div>
+            </div>
+
+            @* Launch Settings Panel *@
+            if (Profile.Current.Type == LuminousGame.FFXV)
+            {
+                <div class="box p-6 mb-6">
+                    <div class="row mb-6">
+                        <h5 class="text-grey-300 flex-grow">Launch Settings</h5>
+                    </div>
+                    <div class="flex flex-col">
+                        <span>
+                            If you would prefer to launch the game through Steam's interface, you can copy the
+                            &quot;Launch Options&quot; below.
+                        </span>
+                        <div class="row">
+                            <Textbox Class="my-4 mr-4"
+                                     @bind-Value="SteamLaunchOptions"
+                                     IsReadOnly="true"
+                                     Size="Textbox.Variant.Stretch"/>
+                            <Button Icon="content_copy"
+                                    Text="Copy"
+                                    OnClick="() => PlatformService.SetClipboardText(SteamLaunchOptions)"/>
+                        </div>
+                        <small>
+                            To apply them, right-click on &quot;FINAL FANTASY XV WINDOWS EDITION&quot; in your Steam
+                            library, select &quot;Properties&quot;, and paste the above text in the
+                            &quot;Launch Options&quot; box at the bottom of the &quot;General&quot; tab.
+                        </small>
+                    </div>
+                </div>
+            }
+
+            @* Flagrum+ Panel *@
+            <PremiumComponent Type="PremiumComponentType.PremiumSettingsPanel"/>
+
+            @* Administration Panel *@
+            <PremiumComponent Type="PremiumComponentType.AdministrationPanel"/>
+
+            @* Fills remaining space to push the following content to the bottom of the page *@
+            <div class="flex-grow"></div>
+
+            @* Patreon Account Panel *@
+            <CascadingValue TValue="ILoadingComponent" Value="this">
+                <PremiumComponent Type="PremiumComponentType.PatreonAccountPanel"/>
+            </CascadingValue>
+
+            @* Padding on parent containers won't work for some reason, so this keeps space below the final panel. *@
+            <div class="pb-6"></div>
+
+            <RegenerateModal @ref="RegenerateModal"/>
+        }
+
+    </EditForm>
+
+</LoadingView>
+
+<PromptModal @ref="RestartPrompt"
+             Title=@Localizer["RestartRequired"]
+             Heading=@Localizer["RestartRequired"]
+             Subtext=@Localizer["RestartPrompt"]
+             OnYes="RestartApplication"
+             OnNo="CancelRestart"/>
+
+<AlertModal @ref="Alert"/>
+
+@code
+{
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
+    [Parameter] public bool Warn { get; set; }
+
+    private string _initialCulture;
+    private string _currentCulture;
+    private string _currentProfile;
+
+    public AlertModal Alert { get; set; }
+    private PromptModal RestartPrompt { get; set; }
+    private LanguageTable LanguageTable { get; set; } = new();
+    private RegenerateModal RegenerateModal { get; set; }
+    private bool AddressBarToggle { get; set; }
+    private bool IsLoading { get; set; }
+    private string LoadingText { get; set; }
+
+    private string SteamLaunchOptions
+    {
+        get => $"\"{Profile.FlagrumDirectory}\\current\\Flagrum.exe\" %COMMAND% --launch";
+        set => _ = value;
+    }
+
+    private string GamePath
+    {
+        get => Profile.Current.GamePath;
+        set
+        {
+            if (Profile.IsGamePathAvailable(value))
+            {
+                Profile.Current.GamePath = value;
+            }
+            else
+            {
+                Alert.Open("Warning", "Game Already in Use", "This game has already been indexed by another profile. Please select another path or use that profile instead.", () =>
+                {
+                    Profile.Current.GamePath = null;
+                    StateHasChanged();
+                });
+            }
+        }
+    }
+
+    private string CurrentCulture
+    {
+        get => _currentCulture;
+        set
+        {
+            if (_currentCulture != value)
+            {
+                _currentCulture = value;
+                RestartPrompt.Open();
+            }
+        }
+    }
+
+    private string CurrentProfile
+    {
+        get => _currentProfile;
+        set
+        {
+            _currentProfile = value;
+            RestartPrompt.Open();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _currentProfile = Profile.Current.Id.ToString();
+        AddressBarToggle = Configuration.Get<bool>(StateKey.AssetExplorerAddressBarSelect);
+
+        var closestCulture = CultureHelper.GetClosestCulture();
+        _initialCulture = closestCulture;
+        _currentCulture = closestCulture;
+    }
+
+    private void ToggleAddressBar(bool newState)
+    {
+        AddressBarToggle = newState;
+        Configuration.Set(StateKey.AssetExplorerAddressBarSelect, newState);
+    }
+
+    private string GetLanguageString(string language)
+    {
+        var currentCultureString = Localizer[language];
+        var nativeCultureString = LanguageTable[language];
+
+        return currentCultureString == nativeCultureString
+            ? nativeCultureString
+            : $"{currentCultureString} ({nativeCultureString})";
+    }
+
+    private void RestartApplication()
+    {
+        if (CurrentProfile != Profile.Current.Id.ToString())
+        {
+            Profile.SetCurrentProfile(CurrentProfile);
+        }
+
+        if (_currentCulture != _initialCulture)
+        {
+            Configuration.Set(StateKey.Language, _currentCulture ?? "en-GB");
+        }
+
+        PlatformService.Restart();
+    }
+
+    private void CancelRestart()
+    {
+        _currentProfile = Profile.Current.Id.ToString();
+        _currentCulture = _initialCulture;
+        StateHasChanged();
+    }
+
+    private async Task GamePathClicked()
+    {
+        await PlatformService.OpenFileDialogAsync(
+            "Application (*.exe)|*.exe",
+            path =>
+            {
+                GamePath = path;
+                InvokeAsync(StateHasChanged);
+                HandlePathState();
+            });
+    }
+
+    private async Task BinmodListPathClicked()
+    {
+        await PlatformService.OpenFileDialogAsync(
+            "Binmod List (*.list)|*.list",
+            path =>
+            {
+                Profile.Current.BinmodListPath = path;
+                InvokeAsync(StateHasChanged);
+                HandlePathState();
+            });
+    }
+
+    private void HandlePathState()
+    {
+        if (Profile.IsReady)
+        {
+            // This will ensure the full UI is loaded if all required paths are now set
+            InvokeAsync(Layout.Refresh);
+
+            // This will ensure file indexing starts if it isn't already done
+            if (FileIndex.IsEmpty)
+            {
+                AppState.LoadNodes();
+            }
+        }
+    }
+
+    private void ForceReset()
+    {
+        ModManager.Reset();
+        Alert.Open("Success", "Reset Complete", "The reset was performed successfully.", null);
+    }
+
+    /// <inheritdoc />
+    public void SetLoading(string text)
+    {
+        LoadingText = text;
+        IsLoading = true;
+        StateHasChanged();
+    }
+
+    /// <inheritdoc />
+    public void ClearLoading()
+    {
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    /// <inheritdoc />
+    public void RefreshState() => StateHasChanged();
+}

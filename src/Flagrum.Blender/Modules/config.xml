@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AttributeParserConfig>
+  <!--LM_ATTRのついていない全Enumの値を出力する-->
+  <AllEnumOutputs>False</AllEnumOutputs>
+  <!--LM_ATTRのついていない全Classの値を出力する-->
+  <AllClassOutputs>False</AllClassOutputs>
+  <!--LM_ATTRのついていないプロパティの値を出力する-->
+  <AllClassPropertyOutputs>False</AllClassPropertyOutputs>
+  <!--Perforceを使用する / 設定はレジストリから取得-->
+  <UsePerforce>True</UsePerforce>
+  <!--CSharpScript(dll)の出力先-->
+  <CSharpDllOutput>%REBLACK_ROOT%/data/csharpscript</CSharpDllOutput>
+  <!--無視するトークン-->
+  <IgnoreTokenWords>
+    <!-- C++11 keywords -->
+    <IgnoreTokenWord>final</IgnoreTokenWord>
+    <IgnoreTokenWord>override</IgnoreTokenWord>
+    <!-- Sal keywords -->
+    <IgnoreTokenWord>_In_</IgnoreTokenWord>
+    <IgnoreTokenWord>_Inout_</IgnoreTokenWord>
+    <IgnoreTokenWord>_Out_</IgnoreTokenWord>
+    <IgnoreTokenWord>_Outptr_</IgnoreTokenWord>
+    <IgnoreTokenWord>_In_opt_</IgnoreTokenWord>
+    <IgnoreTokenWord>_Inout_opt_</IgnoreTokenWord>
+    <IgnoreTokenWord>_Out_opt_</IgnoreTokenWord>
+    <IgnoreTokenWord>_Outptr_opt_</IgnoreTokenWord>
+    <!-- Win32 keywords -->
+    <IgnoreTokenWord>NEAR</IgnoreTokenWord>
+    <IgnoreTokenWord>FAR</IgnoreTokenWord>
+    <IgnoreTokenWord>CALLBACK</IgnoreTokenWord>
+    <IgnoreTokenWord>WINAPI</IgnoreTokenWord>
+    
+    <IgnoreTokenWord>SWFB_PLAYER_ALLOCATOR</IgnoreTokenWord>
+  </IgnoreTokenWords>
+  <IgnoreParameteredTokenWords>
+    <IgnoreParameteredTokenWord>__attribute__</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>__declspec</IgnoreParameteredTokenWord>
+    
+    <IgnoreParameteredTokenWord>EBONY_ALIGNED</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_DECLARE_RESOURCE</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_DECLARE_OBJECT</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_DECLARE_OBJECT_CLASS</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_DECLARE_OBJECT_TYPED</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_ALIGNED_BEGIN</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_ALIGNED_END</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_DEPRECATED</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>LM_DEPRECATED</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>EBONY_STATIC_ASSERT</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>LM_STATIC_ASSERT</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>BLACK_ALIGNED</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>BLACK_STATIC_ASSERT</IgnoreParameteredTokenWord>
+    <IgnoreParameteredTokenWord>BLACK_DECLARE_ALLOCATOR</IgnoreParameteredTokenWord>
+  </IgnoreParameteredTokenWords>
+  <!--使用するマクロ一覧-->
+  <Macros>
+    <Macro Key="EBONY_PARSE">1</Macro>
+    <Macro Key="EBONY_NO_PARSE">0</Macro>
+    <Macro Key="LM_PARSE">1</Macro>
+    <Macro Key="LM_NO_PARSE">0</Macro>
+    <Macro Key="LM_EDITOR_ONLY">1</Macro>
+    <Macro Key="_WIN32">1</Macro>
+    <Macro Key="_MSC_VER">1600</Macro>
+  </Macros>
+  <!-- リプレースするネームスペース AttributeParserで処理はせず、各ツールで処理する必要あり -->
+  <ReplaceNamespacePairs>
+    <!--
+    <ReplaceNamespacePair Key="SQEX.Ebony.Base">SQEX.Luminous.Core</ReplaceNamespacePair>
+    -->
+  </ReplaceNamespacePairs>
+  <BaseObjectClasses>
+    <BaseObjectClass>SQEX.Ebony.Base.Object.BaseObject</BaseObjectClass>
+    <BaseObjectClass>SQEX.Luminous.Base.Object.BaseObject</BaseObjectClass>
+  </BaseObjectClasses>
+  <ObjectClasses>
+    <ObjectClass>SQEX.Ebony.Base.Object.BaseObject</ObjectClass>
+    <ObjectClass>SQEX.Luminous.Base.Object.BaseObject</ObjectClass>
+    <ObjectClass>SQEX.Ebony.Base.Object.Object</ObjectClass>
+    <ObjectClass>SQEX.Luminous.Base.Object.Object</ObjectClass>
+  </ObjectClasses>
+  <SystemReservedClasses>
+    <SystemReservedClass>SQEX.Ebony.Base.Object.BaseObject</SystemReservedClass>
+    <SystemReservedClass>SQEX.Luminous.Base.Object.BaseObject</SystemReservedClass>
+    <SystemReservedClass>SQEX.Ebony.Base.Resource.ResourceNode</SystemReservedClass>
+    <SystemReservedClass>SQEX.Luminous.Base.Resource.ResourceNode</SystemReservedClass>
+    <SystemReservedClass>SQEX.Ebony.Std.DynamicArray</SystemReservedClass>
+    <SystemReservedClass>SQEX.Luminous.Std.DynamicArray</SystemReservedClass>
+    <SystemReservedClass>SQEX.Ebony.Std.IntrusivePointerDynamicArray</SystemReservedClass>
+    <SystemReservedClass>SQEX.Luminous.Std.IntrusivePointerDynamicArray</SystemReservedClass>
+  </SystemReservedClasses>
+</AttributeParserConfig>

@@ -1,0 +1,129 @@
+﻿@inject IPlatformService PlatformService
+@inject IStringLocalizer<Editor> Localizer
+@inject IProfileService Profile
+@using Flagrum.Abstractions.ModManager
+@using Flagrum.Abstractions.ModManager.Instructions
+@using Flagrum.Core.Utilities.Extensions
+@using Flagrum.Application.Features.ModManager.Instructions
+@using Flagrum.Application.Features.ModManager.Instructions.Abstractions
+@implements IModEditorInstructionRow
+
+<CascadingValue TValue="IModEditorInstructionRow" Value="this">
+<div class="flex flex-row items-center px-4 py-2 border-b border-black">
+    <div class="text-right mx-4" style="flex: 0 0 120px;">
+        @switch (Instruction)
+        {
+            case ReplacePackedFileBuildInstruction or ReplaceLooseFileBuildInstruction:
+                <strong>@Localizer["Replace"]:</strong>
+                <br/>
+                <strong>@Localizer["With"]:</strong>
+                break;
+            case RemovePackedFileBuildInstruction:
+                <strong>@Localizer["Remove"]:</strong>
+                break;
+            case AddReferenceBuildInstruction:
+                <strong>@Localizer["AddReference"]:</strong>
+                break;
+            case AddPackedFileBuildInstruction or AddLooseFileBuildInstruction:
+                <strong>@Localizer["AddFile"]:</strong>
+                <br/>
+                <strong>@Localizer["From"]:</strong>
+                break;
+            case AddToPackedTextureArrayBuildInstruction:
+                <strong>Add To:</strong>
+                <br/>
+                <strong>@Localizer["From"]:</strong>
+                break;
+            case EnableHookFeatureBuildInstruction:
+                <strong>Enable Hook:</strong>
+                break;
+        }
+    </div>
+    <div style="flex: 1 1 auto;">
+        @switch (Instruction)
+        {
+            case PackedAssetBuildInstruction or AddLooseFileBuildInstruction or ReplaceLooseFileBuildInstruction:
+                var firstPath = Instruction switch
+                {
+                    PackedAssetBuildInstruction packedAsset => packedAsset.Uri,
+                    AddLooseFileBuildInstruction addLoose => addLoose.RelativePath,
+                    ReplaceLooseFileBuildInstruction replaceLoose => replaceLoose.RelativePath,
+                    _ => throw new Exception("How???")
+                };
+                var secondPath = Instruction switch
+                {
+                    PackedAssetBuildInstruction packedAsset => packedAsset.FilePath,
+                    AddLooseFileBuildInstruction addLoose => addLoose.FilePath,
+                    ReplaceLooseFileBuildInstruction replaceLoose => replaceLoose.FilePath,
+                    _ => throw new Exception("How???")
+                };
+                <div class="truncate-middle select-none" style="max-width: calc(100vw - 820px)">
+                    <div>@string.Join('/', firstPath.Split('/')[..^1])</div>
+                    <div>/@firstPath.Split('/').Last()</div>
+                </div>
+                <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                      @onclick="() => PlatformService.SetClipboardText(firstPath)">
+                    content_copy
+                </span>
+                <br/>
+                <div class="truncate-middle select-none" style="max-width: calc(100vw - 820px)">
+                    <div>@string.Join('\\', secondPath.Split('\\')[..^1])</div>
+                    <div>\@secondPath.Split('\\').Last()</div>
+                    <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                          @onclick="() => PlatformService.SetClipboardText(secondPath)">
+                        content_copy
+                    </span>
+                    <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                          @onclick="() => Parent.LaunchAbsolutePath(secondPath)">
+                        open_in_new
+                    </span>
+                </div>
+                break;
+            case PackedBuildInstruction packed:
+                <div class="truncate-middle select-none" style="max-width: calc(100vw - 820px)">
+                    <div>@string.Join('/', packed.Uri.Split('/')[..^1])</div>
+                    <div>/@packed.Uri.Split('/').Last()</div>
+                    <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                          @onclick="() => PlatformService.SetClipboardText(packed.Uri)">
+                        content_copy
+                    </span>
+                </div>
+                break;
+            case EnableHookFeatureBuildInstruction hookFeature:
+                @hookFeature.Feature.ToString().SpacePascalCase()
+                break;
+        }
+    </div>
+    <div class="ml-8">
+        <PremiumComponent Type="PremiumComponentType.EditorInstructionPackedAssetActions"/>
+        @if (Instruction is PackedAssetBuildInstruction packedAssetBuildInstruction)
+        {
+            <span class="material-icons text-accent1-200 cursor-pointer mr-3"
+                  @onclick="() => UpdateFilePath(packedAssetBuildInstruction)">edit</span>
+        }
+        <span class="material-icons text-accent1-200 cursor-pointer"
+              @onclick="() => Parent.RemoveBuildInstruction(Group, Instruction)">delete</span>
+    </div>
+</div>
+</CascadingValue>
+
+@code
+{
+    [CascadingParameter] public Editor Parent { get; set; }
+
+    [Parameter] public IModEditorInstructionGroup Group { get; set; }
+
+    [Parameter] public IModBuildInstruction Instruction { get; set; }
+
+    private async Task UpdateFilePath(PackedAssetBuildInstruction instruction)
+    {
+        const string filter = "All Files|*.*";
+        await PlatformService.OpenFileDialogAsync(filter, path =>
+        {
+            instruction.FilePath = path;
+            instruction.FileLastModified = 0;
+            Parent.SetHasChanged();
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}

@@ -1,0 +1,83 @@
+﻿@using Flagrum.Abstractions.AssetExplorer
+@using Flagrum.Application.Features.ModManager.Modals
+@using Flagrum.Application.Features.ModManager.Services
+@inject AppStateService AppState
+@inject IStringLocalizer<RegenerateModal> L
+@inject IPlatformService PlatformService
+@inject ILogger<RegenerateModal> Logger
+@inject IConfiguration Configuration
+@inject ModManagerServiceBase ModManager
+@inject IFileIndex FileIndex
+
+<AutosizeModal @ref="Modal" MaxWidth="420px">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@L["Title"]</span>
+        <span class="material-icons cursor-pointer" @onclick="CloseModal">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full">
+            <span class="block mb-6">
+                @L["Description"]
+            </span>
+            @if (ModManager.ModsState.GetAnyActive())
+            {
+                <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4">
+                    @L["ActiveModsWarning"]
+                </div>
+            }
+            else
+            {
+                <Button Icon="refresh" Text="@L["RegenerateIndex"]" OnClickAsync="OnClick"/>
+            }
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+<Flagrum.Application.Features.ModManager.Modals.UnauthorizedAccessModal @ref="UnauthorizedAccessModal"/>
+
+@code
+{
+    [CascadingParameter] public MainLayout MainLayout { get; set; }
+
+    private AutosizeModal Modal { get; set; }
+    private UnauthorizedAccessModal UnauthorizedAccessModal { get; set; }
+
+    public void Open()
+    {
+        if (AppState.Is3DViewerOpen)
+        {
+            PlatformService.Set3DViewportVisibility(false);
+        }
+
+        Modal.Open();
+    }
+
+    private Task OnClick()
+    {
+        try
+        {
+            ModManager.DeleteAllFlagrumCreatedEarcsFromDataDirectory();
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            Logger.LogError(exception, "Failed to delete residual earcs from the game files");
+            UnauthorizedAccessModal.Open();
+            return Task.CompletedTask;
+        }
+
+        Configuration.Set<string>(StateKey.CurrentAssetNode, null);
+        CloseModal();
+
+        return Task.Run(FileIndex.Regenerate);
+    }
+
+    private void CloseModal()
+    {
+        Modal.Close();
+
+        if (AppState.Is3DViewerOpen)
+        {
+            PlatformService.Set3DViewportVisibility(true);
+        }
+    }
+}

@@ -1,0 +1,104 @@
+﻿@inherits ModComponentBase
+
+@inject NavigationManager Navigation
+@inject IPlatformService PlatformService
+@inject ILogger<ModCard> Logger
+
+<style>
+    .corner-pin:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 99;
+        background: linear-gradient(-45deg, transparent 85%, rgba(0, 0, 0, 0.2) 96%, rgba(0, 0, 0, 0.4) 100%);
+    }
+</style>
+
+<ContextMenuTrigger MenuId="modCardContextMenu" @onmouseup="ContextMenuMouseUp">
+    <div
+        class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform"
+        style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
+        @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Identifier}"))">
+        <div class="relative rounded-t mod-card"
+             style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('Images/@(Profile.Current.Id)/@(Mod.Identifier).jpg?@Timestamp')">
+            @if (ModManagerService.ModsState.GetPinned(Mod.Identifier))
+            {
+                <div class="corner-pin"></div>
+                <span class="material-icons text-accent1-200"
+                      style="position: absolute; top: -10px; left: -10px; rotate: -45deg; font-size: 1.5rem; z-index: 100;">
+                    push_pin
+                </span>
+            }
+            @if (!string.IsNullOrWhiteSpace(Mod.Readme) && Mod.Readme.Trim() != "<p><br></p>")
+            {
+                <div
+                    class="absolute bottom-2 right-2 border-2 border-grey-400 text-accent1-200 bg-dark-600 opacity-90 inline-block rounded-full hover:bg-grey-900 hover:border-grey-300 hover:text-white cursor-pointer select-none"
+                    @onclick="ShowReadme"
+                    @onclick:stopPropagation="true"
+                    style="width: 38px; height: 38px; padding: 5px; z-index: 101;">
+                    <span class="material-icons select-none">description</span>
+                </div>
+            }
+        </div>
+        <div class="p-4">
+            <div class="row mb-2">
+                <strong class="block text-grey-200 flex-grow font-display"
+                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px;">@Mod.Name</strong>
+            </div>
+            <div class="block text-grey-200 flex-grow mb-2 flex flex-row items-center">
+                <span class="material-icons text-grey-200 mr-2">person</span>
+                <span class="flex-grow">@Mod.Author</span>
+            </div>
+            <span class="text-sm">
+                @(Mod.Description.Length > 171 ? Mod.Description[..170] + "..." : Mod.Description)
+            </span>
+        </div>
+    </div>
+</ContextMenuTrigger>
+
+<AlertModal @ref="Alert"/>
+
+@code
+{
+    private long Timestamp { get; set; }
+
+    [CascadingParameter] public Index Parent { get; set; }
+
+    [Parameter] public bool IsDisabled { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Timestamp = DateTime.UtcNow.Ticks;
+        Prompt = Parent.Prompt;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (Parent.CheckTimestampUpdate(Mod.Identifier))
+        {
+            Timestamp = DateTime.UtcNow.Ticks;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowReadme()
+    {
+        Parent.ShowReadme(Mod.Readme);
+    }
+
+    public void CallModListStateHasChanged()
+    {
+        Parent.CallStateHasChanged();
+    }
+
+    private void ContextMenuMouseUp(MouseEventArgs e)
+    {
+        if (e.Button == 2)
+        {
+            Parent.SetContextMod(Mod);
+        }
+    }
+}

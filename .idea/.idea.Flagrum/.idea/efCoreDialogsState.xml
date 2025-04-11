@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EfCoreDialogsState">
+    <option name="keyValueStorage">
+      <map>
+        <entry key="Common:4c3303c2-3ca7-4021-8098-e882d8381b23:dbContext" value="Flagrum.Web.Persistence.FlagrumDbContext" />
+        <entry key="Common:buildConfiguration" value="Debug" />
+        <entry key="Common:idempotent" value="false" />
+        <entry key="Common:noBuild" value="false" />
+        <entry key="Common:noTransactions" value="false" />
+        <entry key="Common:outputFilePath" value="script.sql" />
+      </map>
+    </option>
+  </component>
+</project>
