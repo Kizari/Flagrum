@@ -8,7 +8,7 @@
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <BaseVersion>1.6.0</BaseVersion> <!-- Current version of the application -->
-        <Version>$(BaseVersion)-rc.1</Version> <!-- Semantic version to show on GitHub -->
+        <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
         <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
