@@ -108,7 +108,16 @@ public class GameLauncher(
         }
 
         // Allocate memory for DLL path
-        var dllPath = Path.Combine(IOHelper.GetExecutingDirectory(), "runtimes", "win-x64", "native", HookDllName);
+        var dllPath = Path.Combine(IOHelper.GetExecutingDirectory(), HookDllName);
+        if (!File.Exists(dllPath))
+        {
+            dllPath = Path.Combine(IOHelper.GetExecutingDirectory(), "runtimes", "win-x64", "native", HookDllName);
+            if (!File.Exists(dllPath))
+            {
+                throw new FileNotFoundException("Could not find mod loader.");
+            }
+        }
+        
         var pathSize = (uint)((dllPath.Length + 1) * Marshal.SizeOf<char>());
         var pathAddress = Kernel32.VirtualAllocEx(process.Handle, IntPtr.Zero, pathSize,
             Kernel32.AllocationType.Commit | Kernel32.AllocationType.Reserve,
