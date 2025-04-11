@@ -2,22 +2,29 @@
 
 on: workflow_dispatch
 
-jobs:      
+jobs:
   deploy:
     name: Deploy Release
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
-          
-      - name: Get Version from Project File
-        id: get-version
-        shell: bash
-        run: echo "version=$(grep -oE '<Version>[^<]+' Flagrum.Desktop/Flagrum.Desktop.csproj | sed 's/<Version>//')" >> $GITHUB_OUTPUT
+
+      - name: Extract Flagrum Version
+        id: setup
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content src/Flagrum/Flagrum.csproj
+          $baseVersion = $project.Project.PropertyGroup.BaseVersion
+          $version = $project.Project.PropertyGroup.Version
+          $resolved = $version -replace '\$\(.+?\)', $baseVersion
+          "version=$resolved" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Flagrum Version: $resolved"
+          $prerelease = if ($resolved -match "-") { "true" } else { "false" }
+          "prerelease=$prerelease" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           
       - name: Generate metadata.json for Azure Code Signing
+        if: steps.setup.outputs.prerelease == 'false'
         shell: pwsh
         run: |
           $jsonContent = @{
@@ -29,12 +36,14 @@ jobs:
           [System.IO.File]::WriteAllText('metadata.json', $jsonContent, $utf8NoBom)
           
       - name: Install Azure CLI
+        if: steps.setup.outputs.prerelease == 'false'
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLIInstaller.msi
           Start-Process -FilePath .\AzureCLIInstaller.msi -ArgumentList '/quiet' -Wait
           
       - name: Log in to Azure
+        if: steps.setup.outputs.prerelease == 'false'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -45,12 +54,13 @@ jobs:
           dotnet-version: 8.0.x
           
       - name: Add Private Package Source for Premium DLL
-        run: dotnet nuget add source --username Kizari --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kizari/index.json"
+        run: dotnet nuget add source --username Kizari --password ${{ secrets.READ_PACKAGES_PAT }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kizari/index.json"
 
-      - name: Publish Flagrum.Desktop
-        run: dotnet publish Flagrum.Desktop/Flagrum.Desktop.csproj -c Release -o publish -r win-x64 --self-contained true
+      - name: Publish Flagrum
+        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish -r win-x64 --self-contained true
 
       - name: Download Previous Release
+        if: steps.setup.outputs.prerelease == 'false'
         id: download-previous
         uses: robinraju/release-downloader@v1.9
         continue-on-error: true
@@ -65,7 +75,7 @@ jobs:
 
       - name: Delete Previous Setup and Excess Deltas
         id: cleanup-release
-        if: steps.download-previous.outcome == 'success'
+        if: steps.download-previous.outcome == 'success' && steps.setup.outputs.prerelease == 'false'
         shell: bash
         run: |
           set -x
@@ -82,24 +92,34 @@ jobs:
           else
             echo "There are 4 or fewer delta files. No files removed."
           fi
-
-      - name: Create Velopack Release
+          
+      - name: Created Unsigned Velopack Release
+        if: steps.setup.outputs.prerelease == 'true'
         # The --exclude regex replaces the default PDB exclusion, since a blank string will not work
         # While it's not proper, I don't think we need to ever worry about a file with the .zzzzz extension
         run: |
           dotnet tool install -g vpk
-          vpk pack -u Flagrum -v ${{ steps.get-version.outputs.version }} -p publish -e Flagrum.exe -s .github/Images/Splash.png -i Flagrum.Desktop/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --noPortable --azureTrustedSignFile metadata.json --exclude .*\.zzzzz
+          vpk pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish -e Flagrum.exe -s .github/Images/Splash.png -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --noPortable --exclude .*\.zzzzz
+          mv Releases/Flagrum-win-Setup.exe Releases/Setup.exe
+
+      - name: Create Signed Velopack Release
+        if: steps.setup.outputs.prerelease == 'false'
+        # The --exclude regex replaces the default PDB exclusion, since a blank string will not work
+        # While it's not proper, I don't think we need to ever worry about a file with the .zzzzz extension
+        run: |
+          dotnet tool install -g vpk
+          vpk pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish -e Flagrum.exe -s .github/Images/Splash.png -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --noPortable --azureTrustedSignFile metadata.json --exclude .*\.zzzzz
           mv Releases/Flagrum-win-Setup.exe Releases/Setup.exe
 
       - name: Delete Previous '-full' Package
-        if: steps.download-previous.outcome == 'success'
+        if: steps.download-previous.outcome == 'success' && steps.setup.outputs.prerelease == 'false'
         run: rm Releases/${{ steps.cleanup-release.outputs.full }}
         
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1.13.0
         with:
-          tag: v${{ steps.get-version.outputs.version }}
-          name: Flagrum ${{ steps.get-version.outputs.version }}
+          tag: v${{ steps.setup.outputs.version }}
+          name: Flagrum ${{ steps.setup.outputs.version }}
           body: |
             ## English / 英語
 
@@ -114,7 +134,7 @@ jobs:
 
             重要：特定のアセットのインポートとSteamワークショップのMODの作成には、[Blender用のコンパニオンアドオン](https://github.com/Kizari/Flagrum-Blender/releases/latest)が必要です。
           draft: true
-          prerelease: false
+          prerelease: ${{ steps.setup.outputs.prerelease }}
           owner: Kizari
           repo: Flagrum
           token: ${{ secrets.GITHUB_TOKEN }}
