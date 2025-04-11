@@ -1,0 +1,226 @@
+﻿@using Flagrum.Abstractions.ModManager
+@using Flagrum.Abstractions.ModManager.Project
+@using Flagrum.Core.Utilities
+@using Flagrum.Application.Features.ModManager.Data
+@using Flagrum.Application.Features.ModManager.Services
+@implements Flagrum.Abstractions.ModManager.IModCardContextMenu
+@inject ModManagerServiceBase ModManagerService
+@inject NavigationManager Navigation
+@inject IProfileService Profile
+@inject IPlatformService PlatformService
+@inject ILogger<ModCardContextMenu> Logger
+@inject AppStateService AppState
+@inject IServiceProvider Provider
+@inject IAuthenticationService Authentication
+
+<ContextMenu Id="modCardContextMenu"
+             OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
+             OverrideDefaultListCssClass="p-0"
+             @ref="ContextMenu">
+    @if (ModManagerService.ModsState.GetActive(Parent.GetContextMod().Identifier))
+    {
+        <Item OnClick="DisableMod"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">block</span>
+                <span>Disable Mod</span>
+            </div>
+        </Item>
+    }
+    else
+    {
+        <Item OnClick="EnableMod"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">done</span>
+                <span>Enable Mod</span>
+            </div>
+        </Item>
+    }
+
+    <Item OnClick="TogglePin"
+          OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+        <div class="row">
+            <span class="material-icons mr-3"
+                  style="font-size: 0.9rem; rotate: @(ModManagerService.ModsState.GetPinned(Parent.GetContextMod().Identifier) ? "90deg" : "45deg")">push_pin</span>
+            <span>@(ModManagerService.ModsState.GetPinned(Parent.GetContextMod().Identifier) ? "Unpin Mod" : "Pin Mod")</span>
+        </div>
+    </Item>
+
+    <Item OnClick="Parent.ShowModCardModal"
+          OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+        <div class="row">
+            <span class="material-icons mr-3" style="font-size: 0.9rem">edit</span>
+            <span>Edit Mod Card</span>
+        </div>
+    </Item>
+
+    <CascadingValue TValue="IModCardContextMenu" Value="this">
+        <PremiumComponent Type="PremiumComponentType.ModCardContextActions"/>
+    </CascadingValue>
+
+    @if (IsDebug || !OfficialMods.Guids.Contains(Parent.GetContextMod().Identifier))
+    {
+        <Item OnClick="Export"
+              OverrideDefaultCssClass="text-grey-200 text-sm p-3 hover:bg-grey-600 cursor-pointer transition-colors">
+            <div class="row">
+                <span class="material-icons mr-3" style="font-size: 0.9rem">file_download</span>
+                <span>Export...</span>
+            </div>
+        </Item>
+    }
+
+    <Item OnClick="DeleteMod"
+          OverrideDefaultCssClass="text-grey-200 text-sm p-3 bg-error hover:bg-error-highlight cursor-pointer transition-colors">
+        <div class="row">
+            <span class="material-icons mr-3" style="font-size: 0.9rem">delete</span>
+            <span>Delete Mod</span>
+        </div>
+    </Item>
+</ContextMenu>
+
+@code
+{
+    [CascadingParameter] public Index Parent { get; set; }
+
+    private ContextMenu ContextMenu { get; set; }
+
+    private void EnableMod()
+    {
+        if (Profile.IsGameRunning())
+        {
+            Parent.Alert.Open("Error", "The Game is Running", "Flagrum cannot enable or disable mods while the game is running. Please save and close down the game, then try again.", null);
+            return;
+        }
+
+        ThreadHelper.RunOnNewThread(async () =>
+        {
+            await Task.Run(async () =>
+            {
+                await InvokeAsync(() => Parent.SetLoading(true, "Enabling Mod"));
+
+                var mod = Parent.GetContextMod();
+                var deadFiles = ModManagerService.Projects[mod.Identifier].GetDeadFiles();
+                if (deadFiles.Any())
+                {
+                    var message = deadFiles.Aggregate("The mod could not be built as the following files were missing:<ul class='mt-4'>",
+                        (current, file) => current + $"<li>{file}</li>");
+                    await InvokeAsync(() => Parent.Alert.Open("Error", "Missing Files", message + "</ul>", null, 400, 300, true));
+                    await InvokeAsync(() => Parent.SetLoading(false));
+                    return;
+                }
+
+                if (EarlyAccessMods.GuidMap.ContainsKey(mod.Identifier) && !Authentication.IsAuthenticated)
+                {
+                    await InvokeAsync(() => Parent.Alert.Open("Error", "Flagrum+ Required",
+                        "This mod requires Flagrum+ to run. Please ensure you are subscribed to the Flagrum" +
+                        " Patreon and have linked your Patreon account in the Settings tab.",
+                        null));
+                    await InvokeAsync(() => Parent.SetLoading(false));
+                    return;
+                }
+
+                if (!Parent.CheckReferencesValid(mod.Identifier))
+                {
+                    await InvokeAsync(() => Parent.SetLoading(false));
+                    return;
+                }
+
+                var taskId = await Parent.CheckConflicts(mod.Identifier, async () => await ModManagerService.EnableMod(mod));
+                await Parent.TaskCompletionSources[taskId].Task;
+                Parent.TaskCompletionSources.Remove(taskId);
+
+                await InvokeAsync(() => Parent.SetLoading(false));
+            });
+        });
+    }
+
+    private void DisableMod()
+    {
+        if (Profile.IsGameRunning())
+        {
+            Parent.Alert.Open("Error", "The Game is Running", "Flagrum cannot enable or disable mods while the game is running. Please save and close down the game, then try again.", null);
+            return;
+        }
+
+        ThreadHelper.RunOnNewThread(async () =>
+        {
+            await Task.Run(async () =>
+            {
+                await InvokeAsync(() => Parent.SetLoading(true, "DisablingMod"));
+                var mod = Parent.GetContextMod();
+                ModManagerService.DisableMod(mod);
+                await InvokeAsync(() => Parent.SetLoading(false));
+            });
+        });
+    }
+
+    private void TogglePin()
+    {
+        var mod = Parent.GetContextMod();
+        var isPinned = ModManagerService.ModsState.GetPinned(mod.Identifier);
+        ModManagerService.ModsState.SetPinned(mod.Identifier, !isPinned);
+        Parent.CallStateHasChanged();
+    }
+
+    private void DeleteMod()
+    {
+        var mod = Parent.GetContextMod();
+        if (ModManagerService.ModsState.GetActive(mod.Identifier) && Profile.IsGameRunning())
+        {
+            Parent.Alert.Open("Error", "The Game is Running", "Flagrum cannot delete enabled mods while the game is running. Please save and close down the game, then try again.", null);
+            return;
+        }
+
+        Parent.Prompt.Title = "Delete Mod";
+        Parent.Prompt.Heading = "Are you sure?";
+        Parent.Prompt.Subtext = "This action cannot be undone!";
+        Parent.Prompt.YesText = "Delete";
+        Parent.Prompt.NoText = "Cancel";
+        Parent.Prompt.OnNo = null;
+        Parent.Prompt.OnYes = async () => await InvokeAsync(async () =>
+        {
+            Parent.LoadingText = "Deleting Mod";
+            Parent.IsLoading = true;
+            Parent.CallStateHasChanged();
+
+            await Task.Run(async () => await ModManagerService.DeleteMod(mod));
+
+            Parent.IsLoading = false;
+            Parent.CallStateHasChanged();
+        });
+
+        Parent.Prompt.Open();
+    }
+
+    private void Export()
+    {
+        Parent.ExportModal.Open();
+    }
+
+    /// <inheritdoc />
+    public IFlagrumProject GetContextMod() => Parent.GetContextMod();
+
+    /// <inheritdoc />
+    public void RefreshModLibrary() => Parent.CallStateHasChanged();
+
+    /// <inheritdoc />
+    public IFlagrumProject CloneProject(IFlagrumProject original) => Provider.CloneFlagrumProject(original);
+
+    /// <inheritdoc />
+    public void AddProject(IFlagrumProject project)
+    {
+        if (!ModManagerService.ModsState.Contains(project.Identifier))
+        {
+            ModManagerService.ModsState.Add(project.Identifier, new ModState());
+        }
+
+        ModManagerService.Projects[project.Identifier] = project;
+    }
+
+#if DEBUG
+    private bool IsDebug => true;
+#else
+    private bool IsDebug => false;
+#endif
+}

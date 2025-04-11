@@ -1,0 +1,52 @@
+﻿@using Flagrum.Abstractions.ModManager
+@implements IModEditorGroupRow
+@inject IProfileService Profile
+@inject IStringLocalizer<Editor> Localizer
+@inject IPlatformService PlatformService
+@inject IAuthenticationService Authentication
+
+<CascadingValue TValue="IModEditorGroupRow" Value="this">
+    <div class="row border-b border-black px-4 py-3">
+        <span class="material-icons mr-3 cursor-pointer select-none"
+              @onclick="() => { Group.IsExpanded = !Group.IsExpanded; StateHasChanged(); }">
+            @(Group.IsExpanded ? "expand_more" : "chevron_right")
+        </span>
+        <h5 class="text-grey-300">@Group.Text</h5>
+        @if (Group.Type == ModEditorInstructionGroupType.Archive)
+        {
+            <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                  @onclick="() => PlatformService.SetClipboardText(Group.Text)">
+                content_copy
+            </span>
+            <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
+                  @onclick="() => Parent.LaunchRelativePath(Group.Text)">
+                open_in_new
+            </span>
+        }
+        <PremiumComponent Type="PremiumComponentType.EditorInstructionArchiveActions"/>
+    </div>
+</CascadingValue>
+
+@* Detail view *@
+@if (Group.IsExpanded)
+{
+    if (!Group.Instructions.Any())
+    {
+        <div class="px-12 py-4 border-b border-black">
+            @Localizer["NoFileChangesSet"]
+        </div>
+    }
+
+    <Virtualize
+        Items="Group.Instructions.Where(f => Parent.FilterQuery == null || f.FilterableName.Contains(Parent.FilterQuery, StringComparison.OrdinalIgnoreCase)).ToList()"
+        Context="instruction">
+        <EditorInstructionRow Group="Group" Instruction="instruction"/>
+    </Virtualize>
+}
+
+@code
+{
+    [CascadingParameter] public Editor Parent { get; set; }
+
+    [Parameter] public IModEditorInstructionGroup Group { get; set; }
+}

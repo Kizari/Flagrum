@@ -1,0 +1,118 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    @import "reset";
+    @import "typography";
+    @import "Components/node";
+    @import "Components/switch";
+    @import "Components/indicator";
+    @import "Components/truncate";
+    @import "Components/search-select";
+    @import "Components/feature-card";
+}
+
+@layer utilities {
+    .flex-expand {
+        flex: 1 0 auto;
+    }
+
+    .hyperlink {
+        @apply text-accent1-200 mt-2 inline-block underline cursor-pointer hover:text-white;
+    }
+
+    .glow {
+        box-shadow: 0 0 3px 4px #783b4a;
+        -webkit-box-shadow: 0 0 3px 4px #783b4a;
+        -moz-box-shadow: 0 0 3px 4px #783b4a;
+    }
+
+    .row {
+        @apply flex flex-row items-center;
+    }
+
+    .box {
+        @apply bg-dark rounded shadow-md;
+    }
+
+    .input {
+        @apply bg-dark-550 p-2 text-grey-400 rounded-md;
+        outline: none;
+    }
+
+    .validation-message {
+        @apply mt-1 text-error;
+    }
+
+    .min-w-400 {
+        min-width: 400px;
+    }
+
+    .min-h-300 {
+        min-height: 300px;
+    }
+
+    .right-align-all-labels td {
+        text-align: right;
+    }
+
+    div::-webkit-scrollbar {
+        width: 14px;
+    }
+
+    div::-webkit-scrollbar-track {
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #100f0c;
+        @apply rounded-t-full rounded-b-full;
+    }
+
+    div::-webkit-scrollbar-thumb {
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #292524;
+        @apply rounded-t-full rounded-b-full;
+    }
+
+    textarea::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+        width: 10px;
+        @apply bg-dark-550 rounded-t-full rounded-b-full;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+        width: 10px;
+        @apply bg-grey-800 hover:bg-grey-700 rounded-t-full rounded-b-full transition-colors;
+    }
+
+    .scrollbar-light::-webkit-scrollbar {
+        width: 14px;
+    }
+
+    .scrollbar-light::-webkit-scrollbar-track {
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #181512;
+        @apply rounded-t-full rounded-b-full;
+    }
+
+    .scrollbar-light::-webkit-scrollbar-thumb {
+        width: 14px;
+        border: solid 3px transparent;
+        box-shadow: inset 0 0 10px 10px #44403C;
+        @apply rounded-t-full rounded-b-full;
+    }
+
+    .standard-table {
+        width: 100%;
+    }
+
+    .standard-table th, .standard-table td {
+        text-align: left;
+        padding: 10px 20px;
+    }
+}

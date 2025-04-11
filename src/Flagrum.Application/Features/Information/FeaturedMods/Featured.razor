@@ -1,0 +1,96 @@
+﻿@page "/featured"
+
+<div class="pt-6">
+    @* <h3 class="text-grey-300 mb-6 mx-8">Recommended Mods</h3> *@
+    @* <span class="block pb-10 mb-6 mx-8"> *@
+    @*     These mods demonstrate a monumental amount of effort from their *@
+    @*     respective creators, while simultaneously filling a need of the wider community.<br/> *@
+    @* *@
+    @*     For mods to be considered for this page, they must integrate seamlessly with the game in a way that *@
+    @*     makes sense for Final Fantasy XV, while also fitting one of the sections below.<br/> *@
+    @* *@
+    @*     Mods with variants or a similar theme must also be grouped into a single mod pack and mod listing to *@
+    @*     make the installation process simple and painless for users. *@
+    @* </span> *@
+
+    <div class="flex flex-row items-center mb-6 mx-8">
+        <h4 class="text-grey-300 mr-6">Major Content Mods</h4>
+        <small class="text-grey-500">Mods in this section go above and beyond to provide a completely new experience</small>
+    </div>
+    <div class="flex flex-row mx-4">
+        <LargeCard Name="Moogle Chocobo Carnival" Thumbnail="moogle_chocobo_carnival.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/moogle-chocobo-carnival">
+            <strong>The most ambitious Final Fantasy XV mod yet!</strong><br/><br/>
+            <span>
+                An incredible feat that restores the limited time<br/>
+                Moogle Chocobo Carnival event of 2017.<br/><br/>
+                Since this is a port of the PS4 version, the experience is as close to the original as possible
+                with only a few visual discrepancies where compromises had to be made.
+            </span>
+        </LargeCard>
+        <LargeCard Name="Final Fantasy XV: Before the Storm" Thumbnail="before_the_storm.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/before-the-storm">
+            <strong>A return to the game's roots!</strong><br/><br/>
+            <span>
+                Many changes were made to the game after its launch that diverged greatly from the
+                original direction.<br/><br/>
+
+                Fortunately, this mod gives newer players and veterans alike a chance to revisit the game
+                with both the story and mechanics as they were at launch.
+            </span>
+        </LargeCard>
+        <LargeCard Name="Wiz Christmas Post" Thumbnail="wiz_christmas_post.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/wiz-christmas-post">
+            <strong>The first and only fully custom DLC for Final Fantasy XV!</strong><br/><br/>
+            <span>This mod adds a Christmas themed event to Wiz Chocobo Post with many brand new features to enjoy, including:</span>
+            <ul class="list-disc ml-6 mt-2">
+                <li>Final Fantasy XV's first ever custom boss fight</li>
+                <li>Themed weapons balanced around chapter 3</li>
+                <li>A custom festive diner menu</li>
+                <li>Several unique event rewards</li>
+            </ul>
+        </LargeCard>
+    </div>
+    
+    <div class="flex flex-row items-center mb-6 mx-8 mt-0">
+        <h4 class="text-grey-300 mr-6">New and Unique</h4>
+        <small class="text-grey-500">Mods in this section are more recent releases and have a unique quality that makes them stand out</small>
+    </div>
+    <div class="flex flex-row flex-wrap mx-4">
+        <MediumCard Name="DLC Unlocker" Thumbnail="dlc_unlocker.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/lost-treasures"
+                    Description="Many lost treasures exist within the game files just sitting on your computer unused. This mod unlocks these, giving you full access to all of it!"/>
+        <MediumCard Name="Photo Limit Increase" Thumbnail="photo_limit.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/increase-photo-limit"
+                    Description="The game has a very low limit of only 200 photos before the player can't take any more. This mod increases this limit to a generous 9999 so you can save all the photos you like."/>
+        <MediumCard Name="NVIDIA Ansel Unlocker" Thumbnail="ansel_patch.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/nvidia-ansel-unlocker"
+                    Description="By default, Ansel can't be activated during cutscenes, dialogues, and other parts of the game. This handy mod allows photographers to explore a new world by removing this limitation."/>
+        <MediumCard Name="New Music for Old Lestallum" Thumbnail="old_lestallum.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/new-music-for-old-lestallum"
+                    Description="Many outposts in the game reuse the same music tracks, depriving them of their own identity. This track brings a fresh but fitting atmosphere to Old Lestallum to make it feel more unique."/>
+    </div>
+
+    <div class="flex flex-row items-center mb-6 mx-8 mt-0">
+        <h4 class="text-grey-300 mr-6">Quality of Life</h4>
+        <small class="text-grey-500">Mods in this section improve the overall game experience without diverging from the original</small>
+    </div>
+    <div class="flex flex-row flex-wrap mx-4">
+        <MediumCard Name="Community Texture Patch" Thumbnail="community_texture_patch.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/community-texture-patch"
+                    Description="Unfortunately, Final Fantasy XV has many bugged textures in the official release. This collection of community fixes resolves this situation to alleviate these unwanted visuals."/>
+        <MediumCard Name="Photo Contest Removal" Thumbnail="photo_contest_removal.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/photo-contest-removal"
+                    Description="The photo contest ended many years ago, but was never patched out of the game. This mod removes all elements of the photo contest to prevent it breaking immersion while playing the game."/>
+        <MediumCard Name="Galdin Quay Lighting Fix" Thumbnail="galdin_quay_lighting_fix.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/galdin-quay-lighting-fix"
+                    Description="The lighting in The Pearl at Galdin Quay causes terrible visual issues, especially on hair and skin. This mod fixes these issues without compromising on the original look of the area."/>
+        <MediumCard Name="Longer Chocobo Rentals" Thumbnail="longer_chocobo_rentals.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/chocorental"
+                    Description="The maximum Chocobo rental period ends very quickly and makes using Chocobos quite a chore. This mod extends this to a realistic maximum of 30 days to alleviate the burden on the player."/>
+    </div>
+
+    <div class="flex flex-row items-center mb-6 mx-8 mt-0">
+        <h4 class="text-grey-300 mr-6">Modding Resources</h4>
+        <small class="text-grey-500">Mods in this section help modders develop faster by providing extra utility to the game</small>
+    </div>
+    <div class="flex flex-row flex-wrap mx-4">
+        <MediumCard Name="Rinual's Mod Menu" Thumbnail="mod_menu.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/rinuals-mod-menu"
+                    Description="The ultimate mod for all your mod testing needs. This mod includes countless menu options for testing various aspects of the game in a quick and simple manner."/>
+        <MediumCard Name="Prologue Skip" Thumbnail="prologue_skip.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/prologue-skip"
+                    Description="Allows for exceptionally fast creation of new games to let you get straight to the mod testing when a new save is needed."/>
+        <MediumCard Name="Quick Boot" Thumbnail="quick_boot.png" Url="https://www.curseforge.com/final-fantasy-xv/mods/quick-boot"
+                    Description="With multiple configurations to choose from, this mod drastically improves the time it takes to get into the game. This is especially useful when relaunching many times to test mods."/>
+        <MediumCard Name="First Time for Everything" Thumbnail="first_time.jpg" Url="https://www.curseforge.com/final-fantasy-xv/mods/first-time-for-everything"
+                    Description="Enables replayability of several cutscenes/events without the creation of a new save. Perfect for testing mods that affect these!"/>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+﻿<button type="@Type"
+        class="@(IsDisabled ? DisabledClass : BgColor + " hover:" + BgHover + " " + ForegroundColor) @Padding inline-flex flex-row items-center rounded flex-shrink-0 cursor-pointer transition-colors select-none @CssClass"
+        style="@CssStyle"
+        @onclick="HandleClick">
+    <div>
+        <span class="material-icons-outlined @(IsLarge ? "" : "text-sm")">@Icon</span>
+    </div>
+    @if (Text != null)
+    {
+        <div class="flex-grow pl-1 pb-0.5 font-bold @(IsLarge ? "" : "text-sm")">
+            @Text
+        </div>
+    }
+</button>
+
+@code
+{
+    private string Padding => Text == null ? "pl-1.5 pr-2 pt-1 pb-0.5" : "pl-1 pr-2 pt-1 pb-0.5";
+    
+    [Parameter] public string BgColor { get; set; } = "bg-accent2-900";
+
+    [Parameter] public string BgHover { get; set; } = "bg-accent2-700";
+
+    [Parameter] public string ForegroundColor { get; set; } = "text-grey-100";
+
+    private string DisabledClass => DisabledLight ? "bg-grey-700 text-grey-300" : "bg-grey-800 text-grey-400";
+
+    [Parameter] public string Icon { get; set; }
+
+    [Parameter] public string Text { get; set; }
+
+    [Parameter] public Action OnClick { get; set; }
+
+    [Parameter] public Func<Task> OnClickAsync { get; set; }
+
+    [Parameter] public string CssClass { get; set; }
+
+    [Parameter] public string CssStyle { get; set; }
+
+    [Parameter] public bool IsDisabled { get; set; }
+
+    [Parameter] public string Type { get; set; } = "button";
+
+    [Parameter] public bool DisabledLight { get; set; }
+    
+    [Parameter] public bool IsLarge { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (!IsDisabled)
+        {
+            if (OnClickAsync == null)
+            {
+                OnClick?.Invoke();
+            }
+            else
+            {
+                IsDisabled = true;
+                StateHasChanged();
+
+                await OnClickAsync();
+
+                IsDisabled = false;
+                StateHasChanged();
+            }
+        }
+    }
+}

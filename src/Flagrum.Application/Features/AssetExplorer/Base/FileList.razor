@@ -1,0 +1,59 @@
+﻿@using Flagrum.Application.Features.AssetExplorer.Data
+@inherits AssetExplorerComponent
+
+<div class="border-r border-dark-550 overflow-auto" style="flex: 0 0 315px; height: 100%;">
+    @if (CurrentNode != null)
+    {
+        <CascadingValue Value="Parent">
+            @if (AssetExplorer.CurrentLayout == FileListLayout.ListView)
+            {
+                <ExplorerListView Node="CurrentNode"/>
+            }
+            else
+            {
+                <div class="py-2">
+                    <ExplorerTreeView @ref="ExplorerTreeView"/>
+                </div>
+            }
+        </CascadingValue>
+    }
+    else
+    {
+        <span class="block p-3">
+            @if (FileIndex.IsRegenerating)
+            {
+                @Localizer["WaitFileIndexing"]<br/>
+                <br/>
+                <em>@Localizer["PleaseWait"]</em>
+            }
+            else
+            {
+                <div class="row px-2 text-grey-400">
+                    <LoadingIndicator/>
+                    <span class="flex-grow">
+                        Loading Game View
+                    </span>
+                </div>
+            }
+        </span>
+    }
+</div>
+
+@if (AssetExplorer.CurrentLayout == FileListLayout.TreeView)
+{
+    <div class="border-r border-dark-550 overflow-auto" style="flex: 0 0 315px; height: 100%;">
+        @if (CurrentNode != null)
+        {
+            <CascadingValue Value="Parent">
+                <ExplorerListView Node="CurrentNode"/>
+            </CascadingValue>
+        }
+        else
+        {
+            <span class="block py-1 px-3">
+                @Localizer["WaitFileIndexing"]<br/><br/>
+                <em>@Localizer["PleaseWait"]</em>
+            </span>
+        }
+    </div>
+}

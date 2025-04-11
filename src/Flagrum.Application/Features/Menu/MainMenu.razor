@@ -1,0 +1,129 @@
+﻿@using System.IO
+@using Flagrum.Application.Features.Menu.Modals
+@inject IPlatformService PlatformService
+@inject IStringLocalizer<MainMenu> L
+@inject IStringLocalizer<App> AppLocalizer
+@inject IProfileService Profile
+@inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@inject ComponentStateService ComponentState
+
+<CascadingValue Value="this">
+    <Bootstrapper/>
+    <div class="h-full bg-dark flex flex-col border-dark-550 border-r" style="flex: 0 0 195px">
+        <MenuItem Icon="apps" Text="@L["ModManager"]" DefaultActive="true" Uri="/"/>
+        <MenuItem Icon="videogame_asset" Text="@L["AssetExplorer"]" Uri="/assets"/>
+
+        @if (Profile.Current.Type == LuminousGame.FFXV)
+        {
+            <MenuItem Icon="steam" Text=@L["WorkshopMods"] Uri="/mod"/>
+            <MenuItem Icon="star" Text="Featured Mods" Uri="/featured"/>
+            if (!Configuration.Get<bool>(StateKey.HideLucentTab))
+            {
+                <MenuItem Icon="share" Text="Visual Scripting" Uri="/lucent"/>
+            }
+        }
+
+        <div class="flex-grow"></div>
+
+        <MenuItem Icon="menu_book" Text="@L["Wiki"]" Uri="@L["WikiUrl"]"/>
+        <MenuItem Icon="bug_report" Text="Report a Bug" Uri="/bug"/>
+        <MenuItem Icon="info" Text="@L["About"]" Uri="/about"/>
+        <MenuItem Icon="settings" Text="@AppLocalizer["Settings"]" Uri="/settings"/>
+
+        <div class="p-4 row">
+            <small class="text-grey-500 flex-grow mt-2">@L["Version"]@(Version)</small>
+        </div>
+    </div>
+
+    <LauncherInfoModal @ref="LauncherInfoModal"/>
+    <VersionNotesModal @ref="VersionNotesModal"/>
+    <NewsModal @ref="NewsModal"/>
+</CascadingValue>
+
+@code
+{
+    private List<MenuItem> Items { get; set; } = [];
+    private string Version { get; set; }
+    private VersionNotesModal VersionNotesModal { get; set; }
+    private LauncherInfoModal LauncherInfoModal { get; set; }
+    private NewsModal NewsModal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ComponentState.OnRefreshMenu += StateHasChanged;
+        var v = PlatformService.GetVersion();
+        Version = $"{v.Major}.{v.Minor}.{v.Build}";
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Profile.LastVersionNotes != Version)
+            {
+                if (Profile.LastVersion < new Version(1, 5, 17))
+                {
+                    // Show the mod loader modal if the user is coming from a version before its introduction
+                    // This will call OnManualVersionNotesModalClosedAsync when the user closes it
+                    LauncherInfoModal.Open(Profile.LastVersion);
+                }
+                else
+                {
+                    NewsModal.Open(Profile.LastVersion);
+                }
+
+                // Clear build cache in case any build changes have been made in the new version that need to be applied
+                foreach (var file in Directory.EnumerateFiles(Profile.CacheDirectory))
+                {
+                    File.Delete(file);
+                }
+
+                Profile.LastVersionNotes = Version;
+            }
+        }
+    }
+
+    public void ForceFeaturedPage()
+    {
+        var item = Items.First(i => i.Uri == "/featured");
+        SetActiveItem(item);
+        Navigation.NavigateTo("/featured");
+    }
+
+    public Task OnLauncherInfoModalClosedAsync(Version lastSeenVersion)
+    {
+        NewsModal.Open(lastSeenVersion);
+        return Task.CompletedTask;
+    }
+    
+    public Task OnNewsModalClosedAsync(Version lastSeenVersion) =>
+        VersionNotesModal.OpenAsync(lastSeenVersion);
+
+    public void AddItem(MenuItem item)
+    {
+        Items.Add(item);
+    }
+
+    public void SetActiveItem(MenuItem item)
+    {
+        foreach (var i in Items)
+        {
+            if (i == item)
+            {
+                i.Activate();
+            }
+            else
+            {
+                i.Deactivate();
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
+}

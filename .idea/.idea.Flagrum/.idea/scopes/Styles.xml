@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Styles" pattern="file:Flagrum.Web/Styles//*||file:Flagrum.Web/tailwind.config.js" />
+</component>

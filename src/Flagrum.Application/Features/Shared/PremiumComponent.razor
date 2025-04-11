@@ -1,0 +1,19 @@
+﻿@inject IPremiumService PremiumService
+
+@if (_type != null)
+{
+    <DynamicComponent Type="_type" Parameters="Parameters"/>
+}
+
+@code
+{
+    private Type _type;
+
+    [Parameter] public PremiumComponentType Type { get; set; }
+    [Parameter] public IDictionary<string, object> Parameters { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _type = PremiumService.GetComponentType(Type);
+    }
+}

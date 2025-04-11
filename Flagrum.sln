@@ -3,15 +3,101 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Console", "Flagrum.Console\Flagrum.Console.csproj", "{F237CEF5-5F62-4E4F-8442-7EDD7835EF31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Research", "tools\Flagrum.Research\Flagrum.Research.csproj", "{F237CEF5-5F62-4E4F-8442-7EDD7835EF31}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Core", "Flagrum.Core\Flagrum.Core.csproj", "{4243D4A0-CF6F-461B-A3E2-73C5C7C499B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Core", "src\Flagrum.Core\Flagrum.Core.csproj", "{4243D4A0-CF6F-461B-A3E2-73C5C7C499B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Blender", "Flagrum.Blender\Flagrum.Blender.csproj", "{5708282E-1985-49F5-A16F-195A6EF9AF0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum", "src\Flagrum\Flagrum.csproj", "{0D6FD180-1B4E-4B10-8DE3-74FC0CAB3A20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Desktop", "Flagrum.Desktop\Flagrum.Desktop.csproj", "{0D6FD180-1B4E-4B10-8DE3-74FC0CAB3A20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Application", "src\Flagrum.Application\Flagrum.Application.csproj", "{4C3303C2-3CA7-4021-8098-E882D8381B23}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flagrum.Web", "Flagrum.Web\Flagrum.Web.csproj", "{4C3303C2-3CA7-4021-8098-E882D8381B23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flagrum.Test", "tests\Flagrum.Test\Flagrum.Test.csproj", "{AD1CA429-EE77-4F40-B56F-E80C38975533}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flagrum.Generators", "tools\Flagrum.Generators\Flagrum.Generators.csproj", "{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flagrum.Abstractions", "src\Flagrum.Abstractions\Flagrum.Abstractions.csproj", "{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flagrum.Components", "src\Flagrum.Components\Flagrum.Components.csproj", "{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{50887B8D-857C-4F44-ACAA-945B57202A18}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{93875EE7-B324-446E-98FD-60876DEDA51E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{9C32A00E-FD86-4626-B204-7DDE177B176F}"
+	ProjectSection(SolutionItems) = preProject
+		.github\FUNDING.yml = .github\FUNDING.yml
+		.github\README.md = .github\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{770FDA35-07D0-45B4-BEE5-E14E868CC150}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3805D1FB-6420-4451-9F11-76C178229A28}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "changelog", "changelog", "{068444D4-3779-4C12-B03E-CE2AC96682B7}"
+	ProjectSection(SolutionItems) = preProject
+		docs\changelog\Flagrum-1.5.15.md = docs\changelog\Flagrum-1.5.15.md
+		docs\changelog\Flagrum-1.5.16.md = docs\changelog\Flagrum-1.5.16.md
+		docs\changelog\Flagrum-1.5.17.md = docs\changelog\Flagrum-1.5.17.md
+		docs\changelog\Flagrum-1.5.18.md = docs\changelog\Flagrum-1.5.18.md
+		docs\changelog\Flagrum-1.5.19.md = docs\changelog\Flagrum-1.5.19.md
+		docs\changelog\Flagrum-1.5.20.md = docs\changelog\Flagrum-1.5.20.md
+		docs\changelog\Flagrum-1.5.21.md = docs\changelog\Flagrum-1.5.21.md
+		docs\changelog\Flagrum-1.5.22.md = docs\changelog\Flagrum-1.5.22.md
+		docs\changelog\Flagrum-1.5.10.md = docs\changelog\Flagrum-1.5.10.md
+		docs\changelog\Flagrum-1.5.11.md = docs\changelog\Flagrum-1.5.11.md
+		docs\changelog\Flagrum-1.5.12.md = docs\changelog\Flagrum-1.5.12.md
+		docs\changelog\Flagrum-1.5.13.md = docs\changelog\Flagrum-1.5.13.md
+		docs\changelog\Flagrum-1.5.14.md = docs\changelog\Flagrum-1.5.14.md
+		docs\changelog\Flagrum-1.6.0.md = docs\changelog\Flagrum-1.6.0.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{58D08563-2157-4EDA-871E-6F3BA522A1A6}"
+	ProjectSection(SolutionItems) = preProject
+		.github\images\Splash.png = .github\images\Splash.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "readme", "readme", "{FE6330E5-338B-4384-9CC4-BD7B622E46B6}"
+	ProjectSection(SolutionItems) = preProject
+		.github\images\readme\asset.jpg = .github\images\readme\asset.jpg
+		.github\images\readme\bmc-button.png = .github\images\readme\bmc-button.png
+		.github\images\readme\gameplay.jpg = .github\images\readme\gameplay.jpg
+		.github\images\readme\kofi-button.png = .github\images\readme\kofi-button.png
+		.github\images\readme\patreon-button.png = .github\images\readme\patreon-button.png
+		.github\images\readme\paypal-button.png = .github\images\readme\paypal-button.png
+		.github\images\readme\splash_github.svg = .github\images\readme\splash_github.svg
+		.github\images\readme\workshop.jpg = .github\images\readme\workshop.jpg
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{FE39780F-149A-4D77-AF53-270DFD094E73}"
+	ProjectSection(SolutionItems) = preProject
+		.github\ISSUE_TEMPLATE\bug_report.yml = .github\ISSUE_TEMPLATE\bug_report.yml
+		.github\ISSUE_TEMPLATE\config.yml = .github\ISSUE_TEMPLATE\config.yml
+		.github\ISSUE_TEMPLATE\feature_request.yml = .github\ISSUE_TEMPLATE\feature_request.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{BB0E77F7-2C08-4AE5-A572-4A36A6A3ACDB}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\main.yml = .github\workflows\main.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libs", "libs", "{FC6EE63C-649A-4297-9207-D7E382E81DFD}"
+	ProjectSection(SolutionItems) = preProject
+		libs\concrt140.dll = libs\concrt140.dll
+		libs\MicrosoftEdgeWebview2Setup.exe = libs\MicrosoftEdgeWebview2Setup.exe
+		libs\msvcp140.dll = libs\msvcp140.dll
+		libs\msvcp140_1.dll = libs\msvcp140_1.dll
+		libs\msvcp140_2.dll = libs\msvcp140_2.dll
+		libs\msvcp140_atomic_wait.dll = libs\msvcp140_atomic_wait.dll
+		libs\msvcp140_codecvt_ids.dll = libs\msvcp140_codecvt_ids.dll
+		libs\steam_api64.dll = libs\steam_api64.dll
+		libs\Steamworks.NET.dll = libs\Steamworks.NET.dll
+		libs\uuid.dll = libs\uuid.dll
+		libs\vcamp140.dll = libs\vcamp140.dll
+		libs\vccorlib140.dll = libs\vccorlib140.dll
+		libs\vcomp140.dll = libs\vcomp140.dll
+		libs\vcruntime140.dll = libs\vcruntime140.dll
+		libs\vcruntime140_1.dll = libs\vcruntime140_1.dll
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,18 +133,6 @@ Global
 		{4243D4A0-CF6F-461B-A3E2-73C5C7C499B5}.Release|x64.Build.0 = Release|Any CPU
 		{4243D4A0-CF6F-461B-A3E2-73C5C7C499B5}.Release|x86.ActiveCfg = Release|Any CPU
 		{4243D4A0-CF6F-461B-A3E2-73C5C7C499B5}.Release|x86.Build.0 = Release|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Debug|x64.Build.0 = Debug|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Debug|x86.Build.0 = Debug|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Release|x64.ActiveCfg = Release|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Release|x64.Build.0 = Release|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Release|x86.ActiveCfg = Release|Any CPU
-		{5708282E-1985-49F5-A16F-195A6EF9AF0A}.Release|x86.Build.0 = Release|Any CPU
 		{0D6FD180-1B4E-4B10-8DE3-74FC0CAB3A20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D6FD180-1B4E-4B10-8DE3-74FC0CAB3A20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D6FD180-1B4E-4B10-8DE3-74FC0CAB3A20}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -83,11 +157,74 @@ Global
 		{4C3303C2-3CA7-4021-8098-E882D8381B23}.Release|x64.Build.0 = Release|Any CPU
 		{4C3303C2-3CA7-4021-8098-E882D8381B23}.Release|x86.ActiveCfg = Release|Any CPU
 		{4C3303C2-3CA7-4021-8098-E882D8381B23}.Release|x86.Build.0 = Release|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Release|x64.Build.0 = Release|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD1CA429-EE77-4F40-B56F-E80C38975533}.Release|x86.Build.0 = Release|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Debug|x64.Build.0 = Debug|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Debug|x86.Build.0 = Debug|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Release|x64.ActiveCfg = Release|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Release|x64.Build.0 = Release|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Release|x86.ActiveCfg = Release|Any CPU
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E}.Release|x86.Build.0 = Release|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Release|x64.Build.0 = Release|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3}.Release|x86.Build.0 = Release|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Debug|x64.Build.0 = Debug|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Debug|x86.Build.0 = Debug|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Release|x64.ActiveCfg = Release|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Release|x64.Build.0 = Release|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Release|x86.ActiveCfg = Release|Any CPU
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DBF08D59-6FFB-4372-BACF-A46824BF340A}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AD5837AA-22F2-4D57-AC3D-71E046D62AC3} = {50887B8D-857C-4F44-ACAA-945B57202A18}
+		{1B57AEB6-6B01-4D5D-B799-8A2EFF63C0E2} = {50887B8D-857C-4F44-ACAA-945B57202A18}
+		{F237CEF5-5F62-4E4F-8442-7EDD7835EF31} = {93875EE7-B324-446E-98FD-60876DEDA51E}
+		{4243D4A0-CF6F-461B-A3E2-73C5C7C499B5} = {50887B8D-857C-4F44-ACAA-945B57202A18}
+		{0D6FD180-1B4E-4B10-8DE3-74FC0CAB3A20} = {50887B8D-857C-4F44-ACAA-945B57202A18}
+		{4FD0EB3B-FCE1-4159-9BCF-C577D8D26E4E} = {93875EE7-B324-446E-98FD-60876DEDA51E}
+		{AD1CA429-EE77-4F40-B56F-E80C38975533} = {3805D1FB-6420-4451-9F11-76C178229A28}
+		{4C3303C2-3CA7-4021-8098-E882D8381B23} = {50887B8D-857C-4F44-ACAA-945B57202A18}
+		{068444D4-3779-4C12-B03E-CE2AC96682B7} = {770FDA35-07D0-45B4-BEE5-E14E868CC150}
+		{58D08563-2157-4EDA-871E-6F3BA522A1A6} = {9C32A00E-FD86-4626-B204-7DDE177B176F}
+		{FE6330E5-338B-4384-9CC4-BD7B622E46B6} = {58D08563-2157-4EDA-871E-6F3BA522A1A6}
+		{FE39780F-149A-4D77-AF53-270DFD094E73} = {9C32A00E-FD86-4626-B204-7DDE177B176F}
+		{BB0E77F7-2C08-4AE5-A572-4A36A6A3ACDB} = {9C32A00E-FD86-4626-B204-7DDE177B176F}
 	EndGlobalSection
 EndGlobal

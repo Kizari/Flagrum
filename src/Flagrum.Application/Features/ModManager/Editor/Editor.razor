@@ -1,0 +1,94 @@
+﻿@page "/earc/editor"
+@page "/earc/editor/{ModId}"
+@inherits ModComponentBase
+@using Flagrum.Abstractions.AssetExplorer
+@using Flagrum.Abstractions.ModManager
+@using Flagrum.Abstractions.ModManager.Instructions
+@using Flagrum.Abstractions.ModManager.Project
+@using Flagrum.Application.Features.ModManager.Modals
+@using Flagrum.Application.Features.ModManager.Services
+@implements Flagrum.Abstractions.ModManager.IModEditor
+
+@inject NavigationManager Navigation
+@inject IPlatformService PlatformService
+@inject IStringLocalizer<Editor> Localizer
+@inject IModBuildInstructionFactory InstructionFactory
+@inject IServiceProvider Provider
+@inject ModManagerServiceBase ModManager
+@inject IAuthenticationService Authentication
+@inject IFileIndex FileIndex
+
+<LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="h-full">
+    <CascadingValue TValue="IModEditor" Value="this">
+        <div class="p-6 flex flex-row h-full">
+            <div class="flex-grow h-full flex flex-col">
+
+                @* Header bar *@
+                <div class="box p-6 mb-6 flex flex-row items-center">
+                    <h4 class="text-grey-200 flex-grow">@Mod.Name</h4>
+                    <PremiumComponent Type="PremiumComponentType.ProjectActions"/>
+                    <Button Icon="save" Text="@Localizer["Save"]" CssClass="mr-3" OnClick="Save"/>
+                    @if (ModManagerService.HasAnyCachedFiles(Mod))
+                    {
+                        <Button Icon="folder_off" Text="@Localizer["ClearCache"]" OnClick="ClearCache" CssClass="mr-3"/>
+                    }
+                    <Button Icon="cancel" Text="@Localizer["Cancel"]" OnClick="@(() => Navigation.NavigateTo("/"))"/>
+                </div>
+
+                @* Build list bar *@
+                <div class="box flex flex-row items-center p-6 border-b border-black">
+                    <h5 class="text-grey-200 flex-grow">@Localizer["BuildList"]</h5>
+                    @if (Authentication.IsAuthenticated)
+                    {
+                        <PremiumComponent Type="PremiumComponentType.BuildListActions"/>
+                    }
+                    else
+                    {
+                        <Button Icon="folder" Text="@Localizer["ReplaceAsset"]" CssClass="mr-3"
+                                OnClick="OpenReplaceModal"/>
+                        <Button Icon="block" Text="@Localizer["RemoveAsset"]" OnClick="OpenRemoveModal"/>
+                    }
+                </div>
+
+                @* Statistics bar *@
+                <PremiumComponent Type="PremiumComponentType.EditorInstructionCountBar"/>
+
+                @* Filter bar *@
+                <div class="box flex flex-row items-center px-4 py-2 border-b border-black">
+                    <span class="material-icons text-accent1-200 mr-3">filter_alt</span>
+                    <EditForm Model="this" class="flex-grow">
+                        <Textbox @bind-Value="FilterQuery" Size="Textbox.Variant.Stretch"/>
+                    </EditForm>
+                </div>
+
+                @* Build list container *@
+                <div class="flex-grow box overflow-auto">
+
+                    <CascadingValue Value="this">
+                        <Virtualize
+                            Items="InstructionGroups.Where(g => (g.Instructions.Any() || g.Archive?.Type == ModChangeType.Create) && (FilterQuery == null || g.Text.Contains(FilterQuery, StringComparison.OrdinalIgnoreCase) || g.Instructions.Any(i => i.FilterableName.Contains(FilterQuery, StringComparison.OrdinalIgnoreCase)))).ToList()">
+                            <EditorGroupRow Group="context"/>
+                        </Virtualize>
+                    </CascadingValue>
+
+                    @* No files set message *@
+                    @if (!InstructionGroups.Any())
+                    {
+                        <div class="rounded-md bg-accent1-900 border border-accent1-500 text-accent1-300 p-4 mt-4 mx-4">
+                            @Localizer["NoFileChangesSet"]
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </CascadingValue>
+</LoadingView>
+
+<CascadingValue Value="this">
+    <UriSelectModal @ref="Modal" />
+    <PremiumComponent Type="PremiumComponentType.ModEditorModals"/>
+</CascadingValue>
+
+<AlertModal @ref="Alert"/>
+<PromptModal @ref="Prompt"/>

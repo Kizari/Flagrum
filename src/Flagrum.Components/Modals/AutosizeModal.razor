@@ -1,0 +1,77 @@
+﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50"
+     style="background-color: rgba(0, 0, 0, 0.8)">
+    <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto @CssClass"
+         style="min-width: @MinWidth; max-width: @MaxWidth; max-height: 90vh;">
+        @if (HeaderView != null)
+        {
+            <div class="rounded-t-lg bg-grey-700 p-3 row">
+                @HeaderView
+            </div>
+        }
+        <div
+            class="@(FooterView == null ? "rounded-b-lg" : "") @(HeaderView == null ? "rounded-t-lg" : "") p-@Padding scrollbar-light"
+            style="max-height: @BodyMaxHeight; overflow-y: auto; overflow-x: hidden">
+            @BodyView
+        </div>
+        @if (FooterView != null)
+        {
+            <div class="rounded-b-lg bg-grey-700 p-3 row">
+                @FooterView
+            </div>
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment HeaderView { get; set; }
+    [Parameter] public RenderFragment BodyView { get; set; }
+    [Parameter] public RenderFragment FooterView { get; set; }
+    [Parameter] public int Width { get; set; } = 400;
+    [Parameter] public int Height { get; set; } = 300;
+    [Parameter] public int Padding { get; set; } = 6;
+    [Parameter] public string MaxWidth { get; set; } = "90%";
+    [Parameter] public string MinWidth { get; set; } = "0";
+    [Parameter] public string CssClass { get; set; }
+
+    protected string Display { get; set; } = "hidden";
+    protected string Opacity { get; set; } = "opacity-0";
+
+    private int FrameHeight => (HeaderView == null ? 0 : 60) + (FooterView == null ? 0 : 60);
+    private string BodyMaxHeight => $"calc(90vh - {FrameHeight}px)";
+
+    public async void Open()
+    {
+        Display = "flex";
+        StateHasChanged();
+
+        await Task.Delay(50);
+
+        Opacity = "opacity-100";
+        StateHasChanged();
+    }
+
+    public virtual async void Close(Action? onClose = null)
+    {
+        Opacity = "opacity-0";
+        StateHasChanged();
+
+        onClose?.Invoke();
+
+        await Task.Delay(200);
+        Display = "hidden";
+        StateHasChanged();
+    }
+
+    public virtual async void Close(Func<Task> onClose)
+    {
+        Opacity = "opacity-0";
+        StateHasChanged();
+
+        await onClose.Invoke();
+
+        await Task.Delay(200);
+        Display = "hidden";
+        StateHasChanged();
+    }
+}

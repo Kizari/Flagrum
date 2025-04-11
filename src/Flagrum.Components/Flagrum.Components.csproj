@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Modals\PromptModal.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>PromptModal.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="Vendor\BlazorContextMenuLibrary\Components\ContextMenu.razor"/>
+        <AdditionalFiles Include="Vendor\BlazorContextMenuLibrary\Components\Item.razor"/>
+        <AdditionalFiles Include="Vendor\BlazorContextMenuLibrary\Components\Seperator.razor"/>
+        <AdditionalFiles Include="Vendor\BlazorContextMenuLibrary\Components\SubMenu.razor"/>
+        <AdditionalFiles Include="Vendor\BlazorContextMenuLibrary\Components\_Imports.razor"/>
+    </ItemGroup>
+
+</Project>

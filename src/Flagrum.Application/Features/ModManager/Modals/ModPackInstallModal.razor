@@ -1,0 +1,62 @@
+﻿@using Flagrum.Application.Features.ModManager.Mod.Legacy
+@using Flagrum.Application.Features.ModManager.Mod
+<ResultModal TResult="IEnumerable<FlagrumMod>" @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">Install Mod Pack</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div>
+            <strong class="block mb-4">Please select the mods you wish to install.</strong>
+            @foreach (var mod in _mods)
+            {
+                <div class="row mb-2">
+                    <Checkbox IsChecked="_selectedMods.Contains(mod)" OnChange="state => SetModState(mod, state)"/>
+                    <span class="block ml-3">
+                        @mod.Metadata.Name
+                    </span>
+                </div>
+            }
+            <Button Text="Install Selected Mods"
+                    OnClick="ConfirmSelection"
+                    IsDisabled="_selectedMods.Count < 1"
+                    DisabledLight="true"
+                    CssClass="mt-4"/>
+        </div>
+    </BodyView>
+</ResultModal>
+
+@code
+{
+    private IEnumerable<FlagrumMod> _mods = new List<FlagrumMod>();
+    private List<FlagrumMod> _selectedMods = new();
+
+    private ResultModal<IEnumerable<FlagrumMod>> Modal { get; set; }
+
+    private void ConfirmSelection()
+    {
+        Modal.SetResult(_selectedMods);
+        Modal.Close();
+    }
+
+    public Task<bool> TryGetResult(IEnumerable<FlagrumMod> mods, out IEnumerable<FlagrumMod> result)
+    {
+        _selectedMods = new List<FlagrumMod>();
+        _mods = mods;
+        return Modal.TryGetResult(out result);
+    }
+
+    private void SetModState(FlagrumMod mod, bool state)
+    {
+        if (state)
+        {
+            _selectedMods.Add(mod);
+        }
+        else
+        {
+            _selectedMods.Remove(mod);
+        }
+
+        StateHasChanged();
+    }
+}

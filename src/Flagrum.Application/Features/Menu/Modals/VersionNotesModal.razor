@@ -1,0 +1,164 @@
+﻿@using System.Text
+@using System.Text.RegularExpressions
+@using MarkdownSharp
+@using Newtonsoft.Json.Linq
+@inject IStringLocalizer<MainMenu> Localizer
+@inject IPlatformService Platform
+
+<style>
+    .patch-notes h1, .patch-notes h2, .patch-notes h3, .patch-notes h4, .patch-notes h5, .patch-notes h6 {
+        color: #a4a8a0;
+        margin-bottom: 10px;
+        margin-top: 20px;
+    }
+
+    .patch-notes h1, .patch-notes h2, .patch-notes h3, .patch-notes h4, .patch-notes h5, .patch-notes h6 {
+        color: #a4a8a0;
+        margin-bottom: 10px;
+        margin-top: 20px;
+        position: relative;
+    }
+    
+    .patch-notes .new {
+        position: relative;
+        font-weight: bold;
+        color: whitesmoke;
+    }
+    
+    .patch-notes .new::before {
+        content: "NEW";
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        background-color: #90803c;
+        padding: 3px 6px;
+        border-radius: 4px;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+
+    .patch-notes h1, .patch-notes h2 {
+        border-bottom: 1px solid #747870;
+        margin-bottom: 15px;
+    }
+
+    .patch-notes a {
+        color: #d2c693;
+    }
+    
+    .patch-notes li {
+        margin-left: 1.5em;
+        list-style: disc;
+    }
+
+    .patch-notes p {
+        margin-bottom: 20px;
+    }
+
+    .patch-notes blockquote {
+        background-color: #1c1917;
+        border: 1px solid #615c5c;
+        margin-top: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 20px;
+    }
+</style>
+
+<AutosizeModal @ref="Modal" Padding="0">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Localizer["SoftwareUpdate"]</span>
+        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+    </HeaderView>
+    <BodyView>
+        <div class="h-full px-6 pb-6 scrollbar-light patch-notes" style="max-height: 100%; overflow-y: auto">
+            @((MarkupString)ReleaseNotes)
+        </div>
+    </BodyView>
+    <FooterView>
+        <Hyperlink Text="See Full Changelog" 
+                   Uri="@ChangelogUrl" 
+                   CssClass="mx-auto"/>
+    </FooterView>
+</AutosizeModal>
+
+@code
+{
+    private const string ChangelogDirectory = "docs/changelog";
+    private const string ChangelogUrl = $"https://github.com/Kizari/Flagrum/{ChangelogDirectory}";
+    private const string ChangelogApiUrl = $"https://api.github.com/repos/Kizari/Flagrum/contents/{ChangelogDirectory}";
+    private const string UrlRef = ""; // Use "?ref=branch-name" to test against a specific branch
+    
+    private AutosizeModal Modal { get; set; }
+    private string ReleaseNotes { get; set; }
+
+    /// <summary>
+    /// Initializes and displays the automatic version notes modal.
+    /// </summary>
+    /// <param name="lastSeenVersion">Version number of the application at the time the user last used it.</param>
+    public async Task OpenAsync(Version lastSeenVersion)
+    {
+        try
+        {
+            // Get a list of all changelog versions
+            var versions = (await GetVersionFileNames())
+                .Select(f => new Version(f[8..^3])) // Truncate "Flagrum-" and ".md" to get the version number
+                .ToArray();
+
+            // Get notes for the latest 5 versions
+            var builder = new StringBuilder();
+            foreach (var version in versions.OrderByDescending(f => f).Take(5))
+            {
+                var content = await GetVersionFileContents(version);
+                builder.AppendLine(new Markdown().Transform(content));
+                builder.AppendLine("<br />");
+            }
+
+            // Add appropriate classes to version headings
+            const string pattern = @"<h2>(?:Flagrum\s)(\d+\.\d+\.\d+)</h2>";
+            var markup = Regex.Replace(builder.ToString(), pattern, match =>
+            {
+                var versionString = match.Groups[1].Value;
+                return new Version(versionString) > lastSeenVersion 
+                    ? $"<h2 class=\"new border-b border-grey-500\">Flagrum {versionString}</h2>" 
+                    : $"<h2 class=\"border-b border-grey-500\">Flagrum {versionString}</h2>";
+            });
+
+            ReleaseNotes = markup.Replace("<a ", "<a target=\"_blank\" ");
+        }
+        catch
+        {
+            ReleaseNotes = "<br/>An error occurred trying to fetch the release notes for this version.<br/>" +
+                           "You can find the release notes " +
+                           $"<a target=\"_blank\" href=\"{ChangelogUrl}\">here</a> instead.";
+        }
+
+        Modal.Open();
+    }
+
+    private async Task<List<string>> GetVersionFileNames()
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+
+        var response = await client.GetAsync($"{ChangelogApiUrl}{UrlRef}");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        var files = JArray.Parse(json);
+
+        return files.Select(file => file["name"]!.ToString()).ToList();
+    }
+
+    private async Task<string> GetVersionFileContents(Version version)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
+        var url = $"{ChangelogApiUrl}/Flagrum-{version}.md{UrlRef}";
+
+        var response = await client.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        var file = JObject.Parse(json);
+        return Encoding.UTF8.GetString(Convert.FromBase64String(file["content"]!.ToString()));
+    }
+}

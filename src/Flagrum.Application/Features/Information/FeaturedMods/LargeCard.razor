@@ -1,0 +1,51 @@
+﻿@using System.Diagnostics
+@inject IProfileService Profile
+
+<div class="feature-card relative flex flex-col bg-grey-800 shadow-lg mb-10 mx-4 w-100 hover:shadow-xl hover:scale-105 transition-transform transition-shadow duration-200 transform" style="flex: 0 1 444px;">
+    <div>
+        <img alt="Thumbnail" src="@($"pictures/featured/{Thumbnail}")"/>
+    </div>
+    <div class="p-4">
+        <h5 class="text-grey-300">@Name</h5>
+        @* <span>@Mod.Description</span> *@
+    </div>
+    <div class="feature-card-overlay transition-opacity duration-500">
+
+    </div>
+    <div class="feature-card-detail transition-opacity duration-500 flex flex-col">
+        <div class="text-white block flex-grow p-4">
+            @ChildContent
+        </div>
+        <div class="bg-black p-4">
+            <div class="row rounded text-sm font-bold text-curseforge pl-1 pr-1.5 pt-1 pb-1 cursor-pointer select-none"
+                 style="width: 215px; background-color: black"
+                 @onclick="OnClick">
+                <img alt="CurseForge" src="/branding/curseforge-logo.png" style="width: 25px; height: 16px;"/>
+                <span class="ml-2">Download from CurseForge</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public string Thumbnail { get; set; }
+
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string Url { get; set; }
+
+    private void OnClick()
+    {
+        Process.Start(new ProcessStartInfo(Url)
+        {
+            UseShellExecute = true
+        });
+    }
+}

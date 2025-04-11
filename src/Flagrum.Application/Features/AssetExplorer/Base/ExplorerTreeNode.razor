@@ -1,0 +1,11 @@
+﻿@foreach (var child in Node.Children.Where(n => n.Type == ExplorerItemType.Directory))
+{
+    <ExplorerTreeRow Node="child" Indent="Indent + 2"/>
+}
+
+@code
+{
+    [Parameter] public int Indent { get; set; }
+
+    [Parameter] public IAssetExplorerNode Node { get; set; }
+}

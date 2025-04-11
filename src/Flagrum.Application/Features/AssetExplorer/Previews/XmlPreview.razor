@@ -1,0 +1,39 @@
+﻿@using System.Text
+@using Flagrum.Core.Entities
+<div class="p-6 h-full" style="max-height: 100%; max-width: 100%;">
+    <div class="box p-4 h-full overflow-auto">
+        <Virtualize Items="Lines">
+            <span @key="context.Index" class="block" style="white-space: nowrap">@context.Line</span>
+        </Virtualize>
+    </div>
+</div>
+
+@code
+{
+    private IAssetExplorerNode _previousItem;
+
+    private List<(int Index, string Line)> Lines { get; set; }
+
+    [Parameter] public IAssetExplorerNode Item { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_previousItem == Item)
+        {
+            return;
+        }
+
+        _previousItem = Item;
+
+        var counter = 0;
+        var result = Encoding.UTF8.GetString(EbonyXmlHelper.ToXml(Item.Data));
+
+        Lines = result
+            .Replace(" ", "\u00A0")
+            .Split('\n')
+            .Select(l => (counter++, l))
+            .ToList();
+
+        StateHasChanged();
+    }
+}

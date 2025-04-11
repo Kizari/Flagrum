@@ -1,0 +1,58 @@
+﻿@using System.Diagnostics
+@inject IStringLocalizer<MainMenu> Localizer
+@inject NavigationManager Navigation
+@inject AppStateService AppState
+
+<AutosizeModal @ref="Modal" Padding="0" CssClass="shadow-lg rounded-lg shadow-black">
+    <BodyView>
+        <div class="relative">
+            @* <img alt="Visual Scripting" src="/pictures/visual_scripting.jpg" class="mx-auto" style="width: 1200px; height: auto;"/> *@
+            <div class="row py-6">
+                <span class="material-icons text-accent1-200 mx-auto block" style="font-size: 10rem;">volunteer_activism</span>
+            </div>
+            <span class="material-icons block absolute top-2 right-2 text-grey-300 cursor-pointer select-none"
+                  @onclick="CloseAsync">close</span>
+        </div>
+        <div class="px-6 pt-6 pb-10 flex flex-col text-center">
+            <h2 class="text-accent1-200 block mb-6">
+                Flagrum returns to the public domain!
+            </h2>
+            <span class="block">
+                I am pleased to announce that Flagrum is once again fully open-source!<br/><br/>
+                Prior to now, the public codebase had not been updated for quite some time due to the implementation<br/>
+                of Patreon benefits, and the need to protect that code from malicious actors. I finally found the time<br/>
+                to perform a large scale rewrite to separate these benefits from the main codebase.<br/><br/>
+                
+                As intended, Flagrum has now been returned to the public domain to continue serving the modding community.<br/>
+                You can find the <Hyperlink Text="Flagrum codebase" Uri="https://github.com/Kizari/Flagrum"/> on GitHub
+                where it has always been, now fully up-to-date!
+            </span>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    private Version _lastSeenVersion;
+    
+    [CascadingParameter] public MainMenu Parent { get; set; }
+
+    private AutosizeModal Modal { get; set; }
+
+    public void Open(Version lastSeenVersion)
+    {
+        _lastSeenVersion = lastSeenVersion;
+        Modal.Open();
+    }
+
+    private Task CloseAsync()
+    {
+        Modal.Close();
+        return Parent.OnNewsModalClosedAsync(_lastSeenVersion);
+    }
+
+    private void VisitPatreon()
+    {
+        Process.Start(new ProcessStartInfo("https://patreon.com/Kizari") {UseShellExecute = true});
+    }
+}

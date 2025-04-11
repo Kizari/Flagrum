@@ -1,0 +1,125 @@
+﻿@using Flagrum.Core.Utilities.Extensions
+@using Flagrum.Application.Features.AssetExplorer.Data
+@using Flagrum.Application.Features.Settings.Data
+@inject IPlatformService PlatformService
+@inject AppStateService AppState
+@inject IStringLocalizer<ModelPreviewSettingsModal> Localizer
+@inject IStringLocalizer<App> AppLocalizer
+@inject IConfiguration Configuration
+
+<AutosizeModal @ref="Modal">
+    <HeaderView>
+        <span class="text-grey-300 flex-grow">@Localizer["Title"]</span>
+        <span class="material-icons cursor-pointer" @onclick="Cancel">close</span>
+    </HeaderView>
+    <BodyView>
+        <div>
+            <div class="row mb-3">
+                <h5 class="text-accent1-200">Key Bindings</h5>
+            </div>
+            <div class="row mb-3">
+                <label class="text-right pr-3" style="width: 190px">@Localizer["Rotate"]</label>
+                <select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
+                    @foreach (var key in ModifierKeys)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+                <strong class="mx-3">+</strong>
+                <select @bind="RotateMouseAction" class="input bg-dark-550 w-full">
+                    @foreach (var key in MouseActions)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+            </div>
+            <div class="row mb-8">
+                <label class="text-right pr-3" style="width: 190px">@Localizer["Pan"]</label>
+                <select @bind="PanModifierKey" class="input bg-dark-550 w-full">
+                    @foreach (var key in ModifierKeys)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+                <strong class="mx-3">+</strong>
+                <select @bind="PanMouseAction" class="input bg-dark-550 w-full">
+                    @foreach (var key in MouseActions)
+                    {
+                        <option value="@key">@key.SpacePascalCase()</option>
+                    }
+                </select>
+            </div>
+            <div class="row mb-3">
+                <h5 class="text-accent1-200">Texture Settings</h5>
+            </div>
+            <div class="row mb-8">
+                <label class="text-right pr-3">Texture Fidelity</label>
+                <EditForm Model="this">
+                    <EnumSelect TEnum="ModelViewerTextureFidelity" @bind-Value="TextureFidelity"/>
+                </EditForm>
+            </div>
+            <Button Icon="save" Text=@AppLocalizer["Save"] OnClick="Save"/>
+        </div>
+    </BodyView>
+</AutosizeModal>
+
+@code
+{
+    [CascadingParameter] public ModelPreview Parent { get; set; }
+
+    private AutosizeModal Modal { get; set; }
+
+    private ModifierKeys RotateModifierKey { get; set; }
+    private MouseAction RotateMouseAction { get; set; }
+    private ModifierKeys PanModifierKey { get; set; }
+    private MouseAction PanMouseAction { get; set; }
+    private List<string> ModifierKeys { get; set; } = new();
+    private List<string> MouseActions { get; set; } = new();
+    private ModelViewerTextureFidelity TextureFidelity { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ModifierKeys = Enum.GetNames<ModifierKeys>().ToList();
+        MouseActions = Enum.GetNames<MouseAction>().ToList();
+    }
+
+    public void Open()
+    {
+        RotateModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportRotateModifierKey);
+        RotateMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportRotateMouseAction);
+        PanModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportPanModifierKey);
+        PanMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportPanMouseAction);
+        var textureFidelity = Configuration.Get<int>(StateKey.ViewportTextureFidelity);
+        TextureFidelity = textureFidelity == -1 ? ModelViewerTextureFidelity.Low : (ModelViewerTextureFidelity)textureFidelity;
+
+        AppState.IsModalOpen = true;
+        PlatformService.Set3DViewportVisibility(false);
+        Modal.Open();
+    }
+
+    private void Cancel()
+    {
+        Modal.Close();
+        AppState.IsModalOpen = false;
+
+        if (AppState.Is3DViewerOpen)
+        {
+            PlatformService.Set3DViewportVisibility(true);
+        }
+    }
+
+    private void Save()
+    {
+        Configuration.Set(StateKey.ViewportRotateModifierKey, RotateModifierKey);
+        Configuration.Set(StateKey.ViewportRotateMouseAction, RotateMouseAction);
+        Configuration.Set(StateKey.ViewportPanModifierKey, PanModifierKey);
+        Configuration.Set(StateKey.ViewportPanMouseAction, PanMouseAction);
+        Configuration.Set(StateKey.ViewportTextureFidelity, (int)TextureFidelity);
+
+        PlatformService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
+
+        Cancel();
+
+        Parent.CallStateHasChanged();
+    }
+}

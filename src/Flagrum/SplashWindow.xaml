@@ -1,0 +1,50 @@
+﻿<Window x:Class="Flagrum.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:Flagrum"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Height="500"
+        Width="640"
+        Background="transparent">
+    <Window.Resources>
+        <FontFamily x:Key="Play">Resources/#Play</FontFamily>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:SplashViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="120" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border Grid.Row="1" Background="#181512" BorderThickness="3" BorderBrush="Black">
+            <Grid>
+                <StackPanel Margin="20, 160, 20, 20">
+                    <!-- <TextBlock Foreground="WhiteSmoke" FontSize="16" HorizontalAlignment="Center"> -->
+                    <!--     Huge thanks to the top-tier Patrons for helping keep the dream alive ♥ -->
+                    <!-- </TextBlock> -->
+                    <!-- <TextBlock Foreground="Gold" Margin="0, 20, 0, 0" FontWeight="Bold" FontSize="24" -->
+                    <!--            HorizontalAlignment="Center" FontFamily="{StaticResource Play}"> -->
+                    <!--     Daniel Welch -->
+                    <!-- </TextBlock> -->
+                    <TextBlock Foreground="WhiteSmoke" FontSize="28" Margin="0, 20, 0, 0" HorizontalAlignment="Center">
+                        Flagrum is Now Loading
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Bottom">
+                    <TextBlock Foreground="#e1d9b7" FontSize="18" HorizontalAlignment="Center" Margin="20, 20, 20, 0"
+                               FontFamily="{StaticResource Play}" Text="{Binding LoadingText}" />
+                    <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" Background="#0e0d0b"
+                                 Foreground="#e1d9b7" BorderThickness="0" Height="20" Margin="20" />
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Image Grid.Row="0" Grid.RowSpan="2" Source="Resources/logo_outlined.png" Width="240" Height="240"
+               HorizontalAlignment="Center" VerticalAlignment="Top" />
+    </Grid>
+</Window>

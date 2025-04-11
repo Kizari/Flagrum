@@ -1,0 +1,57 @@
+﻿@page "/assets"
+@using Flagrum.Application.Features.AssetExplorer.Base
+@using Flagrum.Application.Features.AssetExplorer.FileSystem
+@using Flagrum.Application.Features.AssetExplorer.GameView
+@using Flagrum.Application.Features.Settings.Data
+@implements IAssetExplorerParent
+
+@inject IConfiguration Configuration
+
+<CascadingValue Value="this">
+    @switch (CurrentView)
+    {
+        case AssetExplorerView.GameView:
+            <AssetExplorer @ref="AssetExplorer">
+                <AddressBarTemplate>
+                    <GameViewAddressBar @ref="AssetExplorer.AddressBar"/>
+                </AddressBarTemplate>
+                <FileListTemplate>
+                    <GameViewFileList @ref="AssetExplorer.FileList"/>
+                </FileListTemplate>
+            </AssetExplorer>
+            break;
+        case AssetExplorerView.FileSystem:
+            <AssetExplorer @ref="AssetExplorer">
+                <AddressBarTemplate>
+                    <FileSystemAddressBar @ref="AssetExplorer.AddressBar"/>
+                </AddressBarTemplate>
+                <FileListTemplate>
+                    <FileSystemFileList @ref="AssetExplorer.FileList"/>
+                </FileListTemplate>
+            </AssetExplorer>
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+
+</CascadingValue>
+
+<AlertModal @ref="Alert"/>
+
+@code
+{
+    public AlertModal Alert { get; set; }
+    public AssetExplorer AssetExplorer { get; set; }
+
+    public AssetExplorerView CurrentView { get; set; }
+
+    public void CallStateHasChanged()
+    {
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        CurrentView = Configuration.Get<AssetExplorerView>(StateKey.CurrentAssetExplorerView);
+    }
+}

@@ -1,0 +1,46 @@
+﻿@using System.Diagnostics
+
+<div class="feature-card flex flex-col bg-grey-800 shadow-lg mb-10 mx-4 hover:shadow-xl hover:scale-105 transition-transform transition-shadow duration-200 transform">
+    <div class="flex-shrink-0" style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('@($"pictures/featured/{Thumbnail}")')">
+        <div class="feature-card-overlay transition-opacity duration-500">
+
+        </div>
+        <div class="feature-card-detail transition-opacity duration-500 flex flex-col">
+            <span class="text-white block flex-grow p-4">
+                @Description
+            </span>
+            <div class="bg-black p-4">
+                <div class="row rounded text-sm font-bold text-curseforge pl-1 pr-1.5 pt-1 pb-1 cursor-pointer select-none"
+                     style="width: 215px; background-color: black"
+                     @onclick="OnClick">
+                    <img alt="CurseForge" src="/branding/curseforge-logo.png" style="width: 25px; height: 16px;"/>
+                    <span class="ml-2">Download from CurseForge</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h6 class="text-grey-300 p-3">@Name</h6>
+</div>
+
+@code
+{
+    [Parameter]
+    public string Thumbnail { get; set; }
+
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public string Description { get; set; }
+    
+    [Parameter]
+    public string Url { get; set; }
+
+    private void OnClick()
+    {
+        Process.Start(new ProcessStartInfo(Url)
+        {
+            UseShellExecute = true
+        });
+    }
+}

@@ -1,0 +1,130 @@
+.v-select-wrapper {
+    position: relative;
+    user-select: none;
+    width: 100%;
+
+    .v-select {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        border-width: 0 1px 0 1px;
+        border-style: solid;
+        border-color: #333333;
+
+        .v-select-trigger {
+            @apply bg-dark-550;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0.8rem;
+            font-size: 1rem;
+            color: #333333;
+            height: 2.5rem;
+            line-height: 2.5rem;
+            cursor: pointer;
+            border-width: 1px 0 1px 0;
+            border-style: solid;
+            border-color: #333333;
+
+            span {
+                width: 100%;
+                display: flex;
+                align-items: center;
+            }
+
+            .arrow {
+                position: relative;
+                height: 15px;
+                width: 15px;
+
+                &::before,
+                &::after {
+                    content: "";
+                    position: absolute;
+                    bottom: 0;
+                    width: 0.15rem;
+                    height: 100%;
+                    transition: all 0.3s;
+                }
+
+                &::before {
+                    left: -5px;
+                    transform: rotate(45deg);
+                    background-color: #333333;
+                }
+
+                &::after {
+                    left: 5px;
+                    transform: rotate(-45deg);
+                    background-color: #333333;
+                }
+
+            }
+        }
+
+        .v-options {
+            @apply bg-dark-550;
+            position: absolute;
+            display: block;
+            top: 100%;
+            left: -1px;
+            right: -2px;
+            border: 1px solid #333333;
+            border-top: 0;
+            transition: all 0.3s;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            z-index: 2;
+            max-height: 300px;
+            overflow-y: auto;
+
+            &.auto {
+                right: unset;
+            }
+
+            .v-option {
+                @apply text-grey-400;
+                position: relative;
+                display: flex;
+                padding: 0 1rem 0 1rem;
+                font-size: 1rem;
+                line-height: 3rem;
+                cursor: pointer;
+                transition: all 0.3s;
+
+                &:hover {
+                    cursor: pointer;
+                    background-color: #333333;
+                }
+
+                &.selected {
+                    color: #ffffff;
+                    background-color: #333333;
+                }
+
+            }
+        }
+
+        &.open {
+
+            .v-options {
+                opacity: 1;
+                visibility: visible;
+                pointer-events: all;
+            }
+
+            .arrow::before {
+                left: -5px;
+                transform: rotate(-45deg);
+            }
+
+            .arrow::after {
+                left: 5px;
+                transform: rotate(45deg);
+            }
+
+        }
+    }
+}
