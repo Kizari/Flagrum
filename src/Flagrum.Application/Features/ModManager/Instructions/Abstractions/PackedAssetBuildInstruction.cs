@@ -12,11 +12,11 @@ namespace Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 public abstract class PackedAssetBuildInstruction : PackedBuildInstruction, IPackedAssetBuildInstruction
 {
     [FactoryInject] protected AssetConverter AssetConverter { get; set; }
+    
+    public string FilePath { get; set; }
     public long FileLastModified { get; set; }
 
     [MemoryPackIgnore] public string DataSource { get; set; }
-
-    public string FilePath { get; set; }
 
     public virtual Task<FmodFragment> Build(EbonyArchive sourceArchive, ConcurrentDictionary<string, byte[]> imageMap)
     {
