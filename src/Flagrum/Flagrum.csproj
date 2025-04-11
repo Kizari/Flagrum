@@ -7,10 +7,12 @@
         <UseWPF>true</UseWPF>
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
-        <AssemblyName>Flagrum</AssemblyName>
-        <AssemblyVersion>1.6.0</AssemblyVersion>
-        <FileVersion>1.6.0</FileVersion>
-        <Version>1.6.0</Version>
+        <BaseVersion>1.6.0</BaseVersion> <!-- Current version of the application -->
+        <Version>$(BaseVersion)-rc.1</Version> <!-- Semantic version to show on GitHub -->
+        <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
+        <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
+        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,8 +37,13 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Velopack" Version="0.0.320"/>
-        <PackageReference Include="Drautos" Version="1.0.0" />
+        <PackageReference Include="Drautos" Version="1.0.0"/>
     </ItemGroup>
+
+    <!-- Temporarily fail builds if not running on GitHub Actions to prevent CI from completing if this variable isn't actually set as expected -->
+    <Target Name="EnsureGitHubActions" BeforeTargets="Build">
+        <Error Condition="'$(GITHUB_ACTIONS)' == ''" Text="Build failed: Not running in GitHub Actions!" />
+    </Target>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
     <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -160,11 +167,6 @@
         <ApplicationDefinition Remove="App.xaml"/>
         <Page Include="App.xaml"/>
     </ItemGroup>
-
-    <PropertyGroup>
-        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
-    </PropertyGroup>
 
     <Target Name="CopyDependencies" AfterTargets="Publish">
         <ItemGroup>
