@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Flagrum" src="Images/Readme/splash_github.svg" width=500" /><br/>
+    <img alt="Flagrum" src="images/readme/splash_github.svg" width=500" /><br/>
     &nbsp;
 </p>
 
@@ -30,7 +30,7 @@
 
 <h1 align="center">Asset Management</h1>
 
-![Asset Management](Images/Readme/asset.jpg)
+![Asset Management](images/readme/asset.jpg)
 
 <pre align="center">
 <h3>    ● Browse and preview game files without extracting anything<br/>
@@ -42,7 +42,7 @@
 
 <h1 align="center">Gameplay Mods</h1>
 
-![Gameplay Mods](Images/Readme/gameplay.jpg)
+![Gameplay Mods](images/readme/gameplay.jpg)
 
 <pre align="center">
 <h3>    ● Install, manage, create, edit, and toggle mods at will<br/>
@@ -54,7 +54,7 @@
 
 <h1 align="center">Steam Workshop Mods</h1>
 
-![Steam Workshop Mods](Images/Readme/workshop.jpg)
+![Steam Workshop Mods](images/readme/workshop.jpg)
 
 <pre align="center">
 <h3>    ● View and manage your Steam Workshop mods and limits<br/>
@@ -80,9 +80,9 @@
 <p align="center">
 These tools take a monumental amount of time and effort to develop.<br/>
 If you want to support the ongoing development of Flagrum and my other XV projects, please consider donating.<br/><br/><br/>
-<a href="https://www.patreon.com/Kizari"><img height="40" src="Images/Readme/patreon-button.png" alt="Patreon" /></a>&nbsp;&nbsp;
-<a href="https://ko-fi.com/Kizari"><img height="40" src="Images/Readme/kofi-button.png" alt="Ko-Fi" /></a>&nbsp;&nbsp;
-<a href="https://buymeacoffee.com/Kizari"><img height="40" src="Images/Readme/bmc-button.png" alt="Buy Me a Coffee" /></a>
+<a href="https://www.patreon.com/Kizari"><img height="40" src="images/readme/patreon-button.png" alt="Patreon" /></a>&nbsp;&nbsp;
+<a href="https://ko-fi.com/Kizari"><img height="40" src="images/readme/kofi-button.png" alt="Ko-Fi" /></a>&nbsp;&nbsp;
+<a href="https://buymeacoffee.com/Kizari"><img height="40" src="images/readme/bmc-button.png" alt="Buy Me a Coffee" /></a>
 </p>
 <p><br/></p>
 &nbsp;
