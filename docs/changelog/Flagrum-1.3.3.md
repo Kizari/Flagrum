@@ -1,4 +1,4 @@
-## Flagrum 1.3.3 and 1.3.4
+## Flagrum 1.3.3
 
 _Released 22 December 2022_
 
