@@ -321,6 +321,7 @@ public static class ArchiveHelper
                 "vfx",
                 "vhlist",
                 "vlink",
+                "dx11.vfxbin",
                 "vs.sb",
                 "win.config",
                 "win.mab",
