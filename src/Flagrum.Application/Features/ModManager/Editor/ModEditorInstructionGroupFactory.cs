@@ -1,4 +1,5 @@
-﻿using Flagrum.Abstractions.ModManager;
+﻿using System.Linq;
+using Flagrum.Abstractions.ModManager;
 using Flagrum.Abstractions.ModManager.Project;
 using Injectio.Attributes;
 
@@ -19,6 +20,7 @@ public class ModEditorInstructionGroupFactory : IModEditorInstructionGroupFactor
             Text = name,
             Archive = archive,
             Type = type,
-            IsExpanded = isExpanded
+            IsExpanded = isExpanded,
+            Instructions = archive.Instructions.Where(i => i.ShouldShowInBuildList)
         };
 }
