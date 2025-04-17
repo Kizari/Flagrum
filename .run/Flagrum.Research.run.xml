@@ -1,5 +1,5 @@
 ﻿<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Flagrum.Console" type="DotNetProject" factoryName=".NET Project">
+  <configuration default="false" name="Flagrum.Research" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/tools/Flagrum.Research/bin/Debug/net8.0/Flagrum.Research.exe" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools/Flagrum.Research/bin/Debug/net8.0" />
