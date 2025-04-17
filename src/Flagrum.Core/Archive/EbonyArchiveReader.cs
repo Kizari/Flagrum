@@ -63,7 +63,11 @@ public partial class EbonyArchive
             file.IsDataEncrypted = file.Flags.HasFlag(EbonyArchiveFileFlags.Encrypted);
             file.SetRawData(_stream);
 
-            result[file.Id] = file;
+            // This is being recomputed via the AssetId constructor as a band-aid fix for a bigger problem for now
+            // See https://github.com/Kizari/Flagrum/issues/192
+            // Ideally this would simply use "file.Id" as the key, but due to differences between different builds
+            // of the game, this causes issues with the demos, PS4 retail, and possibly other older versions
+            result[new AssetId(file.Uri)] = file;
         }
 
         return result;

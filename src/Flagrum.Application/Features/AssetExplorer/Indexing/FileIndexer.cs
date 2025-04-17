@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Flagrum.Abstractions;
 using Flagrum.Abstractions.Archive;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
@@ -15,6 +14,19 @@ namespace Flagrum.Application.Features.AssetExplorer.Indexing;
 
 public partial class FileIndex
 {
+    /// <summary>
+    /// File extensions of loose game files (those not contained in archives) that are allowed to be indexed.
+    /// </summary>
+    private readonly HashSet<string> _allowedLooseFileExtensions =
+    [
+        ".bk2",
+        ".heb",
+        ".hephysx",
+        ".pfp",
+        ".mab",
+        ".sab"
+    ];
+    
     /// <inheritdoc />
     public void Regenerate()
     {
@@ -204,8 +216,9 @@ public partial class FileIndex
         {
             var relativePath = Path.GetRelativePath(_profile.GameDataDirectory, file)
                 .Replace('\\', '/');
+            var extension = Path.GetExtension(file).ToLower();
 
-            if (Path.GetExtension(file).Equals(".earc", StringComparison.OrdinalIgnoreCase))
+            if (extension == ".earc")
             {
                 using var archive = new EbonyArchive(file);
 
@@ -222,9 +235,9 @@ public partial class FileIndex
                     });
                 }
             }
-            else if (!file.EndsWith(".backup") && !file.EndsWith(".bak"))
+            else if (_allowedLooseFileExtensions.Contains(extension))
             {
-                var uri = $"data://{relativePath}";
+                var uri = $"data://{relativePath}".ToLower();
                 looseFiles.Add(new FileIndexerItem
                 {
                     FilePath = relativePath,
