@@ -12,14 +12,13 @@ public partial class AlertServiceModal
     /// <summary>
     /// Reference to the global <see cref="AlertModal" />.
     /// </summary>
-    private AlertModal Alert { get; set; } = null!;
-
-    /// <summary>
-    /// Sets the global <see cref="AlertModal" /> reference in <see cref="IAlertService" /> when
-    /// the component finishes initializing.
-    /// </summary>
-    protected override void OnInitialized()
+    private AlertModal Alert
     {
-        ((AlertService)AlertService).SetModalComponent(Alert);
-    }
+        get;
+        set
+        {
+            field = value;
+            ((AlertService)AlertService).SetModalComponent(Alert);
+        }
+    } = null!;
 }
