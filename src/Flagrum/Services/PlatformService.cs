@@ -20,7 +20,7 @@ public class PlatformService : IPlatformService
     public MainViewModel Main { get; set; } = null!;
     public ViewportViewModel Viewport { get; set; } = null!;
 
-    public async Task OpenFileDialogAsync(string filter, Action<string> onFileSelected)
+    public async Task OpenFileDialogAsync(string filter, Func<string, Task> onFileSelected)
     {
         var dialog = new OpenFileDialog
         {
@@ -31,11 +31,11 @@ public class PlatformService : IPlatformService
 
         if (result == true)
         {
-            onFileSelected(dialog.FileName);
+            await onFileSelected(dialog.FileName);
         }
     }
 
-    public async Task OpenFolderDialogAsync(string initialDirectory, Action<string> onFolderSelected)
+    public async Task OpenFolderDialogAsync(string initialDirectory, Func<string, Task> onFolderSelected)
     {
         var dialog = new CommonOpenFileDialog
         {
@@ -47,11 +47,11 @@ public class PlatformService : IPlatformService
 
         if (result == CommonFileDialogResult.Ok)
         {
-            onFolderSelected(dialog.FileName);
+            await onFolderSelected(dialog.FileName);
         }
     }
 
-    public async Task OpenSaveFileDialogAsync(string defaultName, string filter, Action<string> onFileSelected)
+    public async Task OpenSaveFileDialogAsync(string defaultName, string filter, Func<string, Task> onFileSelected)
     {
         var dialog = new SaveFileDialog
         {
@@ -63,7 +63,7 @@ public class PlatformService : IPlatformService
 
         if (result == true)
         {
-            onFileSelected(dialog.FileName);
+            await onFileSelected(dialog.FileName);
         }
     }
 

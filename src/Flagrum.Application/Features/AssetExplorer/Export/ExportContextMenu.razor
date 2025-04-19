@@ -138,7 +138,7 @@
             _ => defaultFileName
         };
 
-        await PlatformService.OpenSaveFileDialogAsync(defaultFileName, filter, path =>
+        await PlatformService.OpenSaveFileDialogAsync(defaultFileName, filter, async path =>
         {
             byte[] data;
 
@@ -164,24 +164,9 @@
                 case ExplorerItemType.Xml:
                 {
                     var extension = path.Split('.').Last();
-                    if (extension == "xml")
-                    {
-                        data = EbonyXmlHelper.ToXml(item.Data);
-                    }
-                    else
-                    {
-                        data = item.Data;
-                    }
-
+                    data = extension == "xml" ? EbonyXmlHelper.ToXml(item.Data) : item.Data;
                     break;
                 }
-                case ExplorerItemType.Unspecified:
-                case ExplorerItemType.Unsupported:
-                case ExplorerItemType.Directory:
-                case ExplorerItemType.Material:
-                case ExplorerItemType.Model:
-                case ExplorerItemType.Text:
-                case ExplorerItemType.AnimationPackage:
                 default:
                     path = path.Replace("." + trueExtension, "");
                     path += "." + trueExtension;
@@ -189,7 +174,7 @@
                     break;
             }
 
-            File.WriteAllBytes(path, data);
+            await File.WriteAllBytesAsync(path, data);
         });
     }
 

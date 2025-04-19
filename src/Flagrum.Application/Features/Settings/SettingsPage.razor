@@ -288,10 +288,10 @@
     {
         await PlatformService.OpenFileDialogAsync(
             "Application (*.exe)|*.exe",
-            path =>
+            async path =>
             {
                 GamePath = path;
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
                 HandlePathState();
             });
     }
@@ -300,10 +300,10 @@
     {
         await PlatformService.OpenFileDialogAsync(
             "Binmod List (*.list)|*.list",
-            path =>
+            async path =>
             {
                 Profile.Current.BinmodListPath = path;
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
                 HandlePathState();
             });
     }

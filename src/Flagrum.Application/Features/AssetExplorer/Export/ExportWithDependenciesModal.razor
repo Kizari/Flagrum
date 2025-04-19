@@ -80,9 +80,9 @@
         var defaultName = item.Name + ".gfxbin";
         const string filter = "Game Model|*.gmdl.gfxbin";
 
-        await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, path =>
+        await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async path =>
         {
-            InvokeAsync(() =>
+            await InvokeAsync(() =>
             {
                 Parent.SetLoading(true, "Exporting");
                 Close();
@@ -154,7 +154,7 @@
                 }
             }
 
-            File.WriteAllBytes(path, gfxbin);
+            await File.WriteAllBytesAsync(path, gfxbin);
 
             var gpubinUris = model.Dependencies
                 .Where(d => d.Value.EndsWith(".gpubin"))
@@ -166,7 +166,7 @@
                 if (gpubinData.Length > 0)
                 {
                     var gpubinPath = $@"{root}\{gpubinUri.Split('/').Last()}";
-                    File.WriteAllBytes(gpubinPath, gpubinData);
+                    await File.WriteAllBytesAsync(gpubinPath, gpubinData);
                 }
             }
 
@@ -174,17 +174,17 @@
             {
                 var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}.gfxbin";
                 IOHelper.EnsureDirectoriesExistForFilePath(materialPath);
-                File.WriteAllBytes(materialPath, data);
+                await File.WriteAllBytesAsync(materialPath, data);
             }
 
             foreach (var (uri, data) in highMaterials)
             {
                 var materialPath = $"{materialsDirectory}\\{uri.Split('/').Last()}";
                 IOHelper.EnsureDirectoriesExistForFilePath(materialPath);
-                File.WriteAllBytes(materialPath, data);
+                await File.WriteAllBytesAsync(materialPath, data);
             }
 
-            InvokeAsync(() => Parent.SetLoading(false));
+            await InvokeAsync(() => Parent.SetLoading(false));
         });
     }
 
@@ -245,7 +245,7 @@
             return highTexturePack;
         }
 
-        return Array.Empty<byte>();
+        return [];
     }
 
     private bool CommonCheck(string uri) =>
