@@ -154,7 +154,7 @@ public class FileTypeResearch
         {
             if (uriToPathExtensionMap.TryGetValue(uri, out var result) && result != path)
             {
-                Console.WriteLine($"ERROR (uri->path): Conflicting extension {path} for extension {uri}.");
+                Console.WriteLine($"ERROR (uri->path): Extension \"{path}\" conflicts with \"{result}\" for extension \"{uri}\".");
             }
         }
 
@@ -163,7 +163,7 @@ public class FileTypeResearch
         {
             if (pathExtensionMap.TryGetValue(uri, out var result) && result != path)
             {
-                Console.WriteLine($"ERROR (relative): Conflicting extension {path} for extension {uri}.");
+                Console.WriteLine($"ERROR (relative): Extension \"{path}\" conflicts with \"{result}\" for extension \"{uri}\".");
             }
         }
         
