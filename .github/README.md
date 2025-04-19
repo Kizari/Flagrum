@@ -9,9 +9,8 @@
 ---
 <p align="center">
 <a href="https://github.com/Kizari/Flagrum/releases"><img src="https://img.shields.io/github/release/Kizari/Flagrum.svg?style=flat&maxAge=3600" alt="Release"></img></a>
-<a href="https://www.patreon.com/Kizari"><img src="https://img.shields.io/badge/patreon-Flagrum-orange?logo=patreon&logoColor=white" alt="Become a Patron"></img></a>
+<a href="https://www.patreon.com/Kizari"><img src="https://img.shields.io/badge/patreon-Kizari-orange?logo=patreon&logoColor=white" alt="Become a Patron"></img></a>
 <a href="#support-the-continued-development-of-ffxv-tools"><img src="https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white" alt="Support Me"></img></a>
-<a href="https://twitter.com/KizariXV"><img src="https://img.shields.io/badge/twitter-%40KizariXV-blue.svg?style=flat&logo=twitter&logoColor=white" alt="Follow on Twitter"></img></a>
 </p>
 &nbsp;  
 &nbsp;
