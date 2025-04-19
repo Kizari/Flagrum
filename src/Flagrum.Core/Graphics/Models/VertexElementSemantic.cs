@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Flagrum.Core.Utilities.Types;
 
 namespace Flagrum.Core.Graphics.Models;
@@ -31,12 +32,39 @@ public class VertexElementSemantic : Enum<string>
     public static VertexElementSemantic Binormal1 => new("BINORMAL1");
     public static VertexElementSemantic Normal2Factors => new("NORMAL2FACTORS0");
     public static VertexElementSemantic Normal4Factors => new("NORMAL4FACTORS0");
+    
+    /// <remarks>
+    /// Only known to be present in Episode Duscae.
+    /// </remarks>
+    public static VertexElementSemantic TangentFactor0 => new("TANGENTFACTOR0");
+    
+    /// <remarks>
+    /// Only known to be present in Episode Duscae.
+    /// </remarks>
+    public static VertexElementSemantic TangentFactor1 => new("TANGENTFACTOR1");
+    
+    /// <remarks>
+    /// Only known to be present in Episode Duscae.
+    /// </remarks>
+    public static VertexElementSemantic BinormalFactor0 => new("BINORMALFACTOR0");
+    
+    /// <remarks>
+    /// Only known to be present in Episode Duscae.
+    /// </remarks>
+    public static VertexElementSemantic BinormalFactor1 => new("BINORMALFACTOR1");
+    
     public static VertexElementSemantic FogCoord0 => new("FOGCOORD0");
     public static VertexElementSemantic PSize0 => new("PSIZE0");
 
     public static explicit operator VertexElementSemantic(string name)
     {
-        return GetAll<VertexElementSemantic>().First(e => e.Value == name);
+        var result = GetAll<VertexElementSemantic>().FirstOrDefault(e => e.Value == name);
+        if (result == null)
+        {
+            throw new ArgumentException($"Unknown {nameof(VertexElementSemantic)} \"{name}\".", nameof(name));
+        }
+
+        return result;
     }
 
     public static explicit operator string(VertexElementSemantic semantic)
