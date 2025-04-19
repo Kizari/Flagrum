@@ -274,7 +274,8 @@
     {
         if (Parent.CurrentView == AssetExplorerView.GameView)
         {
-            await PlatformService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), folder => { Task.Run(() => InvokeAsync(() => DoExport(folder))); });
+            await PlatformService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                async folder => await InvokeAsync(() => DoExport(folder)));
         }
         else
         {

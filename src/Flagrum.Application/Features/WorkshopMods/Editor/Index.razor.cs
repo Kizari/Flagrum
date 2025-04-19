@@ -182,6 +182,8 @@ public partial class Index : ComponentBase
                     ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
                     await InvokeAsync(StateHasChanged);
                 });
+
+                return Task.CompletedTask;
             });
     }
 
@@ -197,6 +199,8 @@ public partial class Index : ComponentBase
                     ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
                     await InvokeAsync(StateHasChanged);
                 });
+
+                return Task.CompletedTask;
             });
     }
 
@@ -370,7 +374,7 @@ public partial class Index : ComponentBase
     {
         await PlatformService.OpenFileDialogAsync(
             "Flagrum Model Data (*.fmd)|*.fmd",
-            path =>
+            async path =>
             {
                 FmdFileNames[index] = path.Split('\\', '/').Last();
                 WorkshopModBuildContext.ProcessFmd(index, path);
@@ -393,14 +397,14 @@ public partial class Index : ComponentBase
                     var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
                     var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";
                     File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
-                    var thumbnailBytes = File.ReadAllBytes(defaultThumbnailPath);
+                    var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
                     WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
 
                     // This jank is required or the UI won't update the image if the value hasn't changed
                     ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
                 }
 
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
             });
     }
 }

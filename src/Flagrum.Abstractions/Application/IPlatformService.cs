@@ -4,9 +4,9 @@ namespace Flagrum.Abstractions;
 
 public interface IPlatformService
 {
-    Task OpenFileDialogAsync(string filter, Action<string> onFileSelected);
-    Task OpenFolderDialogAsync(string initialDirectory, Action<string> onFolderSelected);
-    Task OpenSaveFileDialogAsync(string defaultName, string filter, Action<string> onFileSelected);
+    Task OpenFileDialogAsync(string filter, Func<string, Task> onFileSelected);
+    Task OpenFolderDialogAsync(string initialDirectory, Func<string, Task> onFolderSelected);
+    Task OpenSaveFileDialogAsync(string defaultName, string filter, Func<string, Task> onFileSelected);
     Version GetVersion();
     void Restart();
     void Resize3DViewport(int left, int top, int width, int height);

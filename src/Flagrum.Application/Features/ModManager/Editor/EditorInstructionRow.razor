@@ -123,7 +123,7 @@
             instruction.FilePath = path;
             instruction.FileLastModified = 0;
             Parent.SetHasChanged();
-            InvokeAsync(StateHasChanged);
+            return InvokeAsync(StateHasChanged);
         });
     }
 }
