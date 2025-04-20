@@ -56,7 +56,7 @@
         Version = $"{v.Major}.{v.Minor}.{v.Build}";
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
@@ -68,9 +68,13 @@
                     // This will call OnManualVersionNotesModalClosedAsync when the user closes it
                     LauncherInfoModal.Open(Profile.LastVersion);
                 }
-                else
+                else if (Profile.LastVersion < new Version(1, 6, 0))
                 {
                     NewsModal.Open(Profile.LastVersion);
+                }
+                else
+                {
+                    await VersionNotesModal.OpenAsync(Profile.LastVersion);
                 }
 
                 // Clear build cache in case any build changes have been made in the new version that need to be applied
