@@ -1,0 +1,13 @@
+# Exclude documentation from language statistics
+docs/* linguist-documentation
+
+# Exclude third-party code from language statistics
+libs/* linguist-vendored
+src/Flagrum/wwwroot/vendor/* linguist-vendored
+src/Flagrum.Components/Vendor/* linguist-vendored
+src/Flagrum.Core/Graphics/Textures/Scarlet/* linguist-vendored
+
+# Exclude generated files from language statistics
+.idea/* linguist-generated
+.run/* linguist-generated
+src/Flagrum/wwwroot/app.css linguist-generated
