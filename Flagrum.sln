@@ -51,6 +51,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "changelog", "changelog", "{
 		docs\changelog\Flagrum-1.5.13.md = docs\changelog\Flagrum-1.5.13.md
 		docs\changelog\Flagrum-1.5.14.md = docs\changelog\Flagrum-1.5.14.md
 		docs\changelog\Flagrum-1.6.0.md = docs\changelog\Flagrum-1.6.0.md
+		docs\changelog\Flagrum-1.6.1.md = docs\changelog\Flagrum-1.6.1.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{58D08563-2157-4EDA-871E-6F3BA522A1A6}"
