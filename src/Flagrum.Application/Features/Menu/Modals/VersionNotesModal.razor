@@ -18,13 +18,13 @@
         margin-top: 20px;
         position: relative;
     }
-    
+
     .patch-notes .new {
         position: relative;
         font-weight: bold;
         color: whitesmoke;
     }
-    
+
     .patch-notes .new::before {
         content: "NEW";
         font-size: 12px;
@@ -45,7 +45,7 @@
     .patch-notes a {
         color: #d2c693;
     }
-    
+
     .patch-notes li {
         margin-left: 1.5em;
         list-style: disc;
@@ -76,8 +76,8 @@
         </div>
     </BodyView>
     <FooterView>
-        <Hyperlink Text="See Full Changelog" 
-                   Uri="@ChangelogUrl" 
+        <Hyperlink Text="See Full Changelog"
+                   Uri="@ChangelogUrl"
                    CssClass="mx-auto"/>
     </FooterView>
 </AutosizeModal>
@@ -85,10 +85,9 @@
 @code
 {
     private const string ChangelogDirectory = "docs/changelog";
-    private const string ChangelogUrl = $"https://github.com/Kizari/Flagrum/{ChangelogDirectory}";
+    private const string ChangelogUrl = $"https://github.com/Kizari/Flagrum/tree/main/{ChangelogDirectory}";
     private const string ChangelogApiUrl = $"https://api.github.com/repos/Kizari/Flagrum/contents/{ChangelogDirectory}";
-    private const string UrlRef = ""; // Use "?ref=branch-name" to test against a specific branch
-    
+
     private AutosizeModal Modal { get; set; }
     private string ReleaseNotes { get; set; }
 
@@ -119,8 +118,8 @@
             var markup = Regex.Replace(builder.ToString(), pattern, match =>
             {
                 var versionString = match.Groups[1].Value;
-                return new Version(versionString) > lastSeenVersion 
-                    ? $"<h2 class=\"new border-b border-grey-500\">Flagrum {versionString}</h2>" 
+                return new Version(versionString) > lastSeenVersion
+                    ? $"<h2 class=\"new border-b border-grey-500\">Flagrum {versionString}</h2>"
                     : $"<h2 class=\"border-b border-grey-500\">Flagrum {versionString}</h2>";
             });
 
@@ -141,7 +140,7 @@
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
 
-        var response = await client.GetAsync($"{ChangelogApiUrl}{UrlRef}");
+        var response = await client.GetAsync(ChangelogApiUrl);
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         var files = JArray.Parse(json);
@@ -153,7 +152,7 @@
     {
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
-        var url = $"{ChangelogApiUrl}/Flagrum-{version}.md{UrlRef}";
+        var url = $"{ChangelogApiUrl}/Flagrum-{version}.md";
 
         var response = await client.GetAsync(url);
         response.EnsureSuccessStatusCode();
