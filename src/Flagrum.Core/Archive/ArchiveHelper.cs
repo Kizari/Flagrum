@@ -137,10 +137,10 @@ public class UriHelper : IUriHelper
         {"win32.bins", "win32.bins"},
         {"win32.msgbin", "win32.msgbin"},
         {"wth2", "wth2b"},
-        {"wthcl", "wthcl"},
-        {"wthex", "wthex"},
-        {"wthpe", "wthpe"},
-        {"wthsky", "wthsky"},
+        {"wthcl", "wthclb"},
+        {"wthex", "wthexb"},
+        {"wthpe", "wthpeb"},
+        {"wthsky", "wthskyb"},
         {"xml", "xml"}
     };
 
