@@ -59,6 +59,7 @@ public class UriHelper : IUriHelper
         {"dx11.fntbin", "dx11.fntbin"},
         {"dx11.vfxbin", "dx11.vfxbin"},
         {"dyn", "dyn"},
+        {"elbin", "elbin" },
         {"ebex@", "earc"},
         {"ebex@.earcref", "earc"},
         {"htpk", "earc"},
@@ -112,6 +113,7 @@ public class UriHelper : IUriHelper
         {"tms", "tmsbin"},
         {"tnav", "tnav"},
         {"tpd", "tpdbin"},
+        {"tmpdbin","tmpdbin"},
         {"tspack", "tspack"},
         {"txt", "txt"},
         {"uam", "uam"},
@@ -131,6 +133,10 @@ public class UriHelper : IUriHelper
         {"win32.bins", "win32.bins"},
         {"win32.msgbin", "win32.msgbin"},
         {"wth2", "wth2b"},
+        {"wthcl", "wthcl"},
+        {"wthex", "wthex"},
+        {"wthpe", "wthpe"},
+        {"wthsky", "wthsky"},
         {"xml", "xml"}
     };
 
@@ -177,7 +183,7 @@ public partial class RelativeExtensionMap
         {"png.copy", "png"},
         {"ccf", "ccb"},
         {"ebex", "exml"},
-        {"ebex@", "earc"},	
+        {"ebex@", "earc"},
         {"ebex@.earcref", "earc"},
         {"htpk", "earc"},
         {"prefab", "exml"},
@@ -264,7 +270,8 @@ public static class ArchiveHelper
                 "dx11.fntbin",
                 "dx11.vfxbin",
                 "dyn",
-                "earc",	  
+                "earc",
+                "elbin",
                 "elx",
                 "exml",
                 "folgbin",
@@ -313,6 +320,7 @@ public static class ArchiveHelper
                 "tcd",
                 "tcm",
                 "tcophysx",
+                "tmpdbin",
                 "tmsbin",
                 "tnav",
                 "tpd",
@@ -327,7 +335,7 @@ public static class ArchiveHelper
                 "vfuncs",
                 "vfx",
                 "vhlist",
-                "vlink",               
+                "vlink",
                 "vs.sb",
                 "win.config",
                 "win.mab",
@@ -336,6 +344,10 @@ public static class ArchiveHelper
                 "win32.bins",
                 "win32.msgbin",
                 "wth2b",
+                "wthcl",
+                "wthex",
+                "wthpe",
+                "wthsky",
                 "xml"
             ];
         }
