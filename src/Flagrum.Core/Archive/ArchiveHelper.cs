@@ -352,10 +352,10 @@ public static class ArchiveHelper
                 "win32.bins",
                 "win32.msgbin",
                 "wth2b",
-                "wthcl",
-                "wthex",
-                "wthpe",
-                "wthsky",
+                "wthclb",
+                "wthexb",
+                "wthpeb",
+                "wthskyb",
                 "xml"
             ];
         }
