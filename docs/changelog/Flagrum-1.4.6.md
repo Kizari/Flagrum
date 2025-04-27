@@ -17,8 +17,12 @@ _Released 5 April 2023_
 
 - Fixed bug where models without UV maps were crashing the 3D viewer
 - Fixed bug where some file names were showing incorrectly due to the extension name being in the file name
-- Fixed bug where mods could enter a bad state when editing conflicting mods— [#49](https://github.com/Kizari/Flagrum/issues/49)
-- Fixed issue where thumbnails would rarely go missing— [#50](https://github.com/Kizari/Flagrum/issues/50)
-- Fixed issue where individual prefabs would export incorrectly— [#51](https://github.com/Kizari/Flagrum/issues/51)
-- Fixed bug where mods could not be deleted if one or more FFG files are missing— [#46](https://github.com/Kizari/Flagrum/issues/46)
+- Fixed bug where mods could enter a bad state when editing conflicting mods—
+  [#49](https://github.com/Kizari/Flagrum/issues/49)
+- Fixed issue where thumbnails would rarely go missing—
+  [#50](https://github.com/Kizari/Flagrum/issues/50)
+- Fixed issue where individual prefabs would export incorrectly—
+  [#51](https://github.com/Kizari/Flagrum/issues/51)
+- Fixed bug where mods could not be deleted if one or more FFG files are missing—
+  [#46](https://github.com/Kizari/Flagrum/issues/46)
 - Fixed issue where Workshop mod thumbnails were not being updated after saving until restart

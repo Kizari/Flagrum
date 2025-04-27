@@ -4,7 +4,8 @@ _Released 15 February 2023_
 
 ### New Features
 
-- A popup now appears when a mod fails to disable, instructing the user of potential corruption and providing an option to force disable the affected mod
+- A popup now appears when a mod fails to disable, instructing the user of potential corruption  
+  and providing an option to force disable the affected mod
 
 ### Bug Fixes
 

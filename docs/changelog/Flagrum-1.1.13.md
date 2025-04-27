@@ -3,9 +3,12 @@
 _Released 20 April 2022_
 
 ### Changes
-- A link is now displayed at the top of the file preview window showing the location of the EARC that file is located in on disk. Clicking this link will open that folder in explorer
+
+- A link is now displayed at the top of the file preview window showing the location of the EARC that file is  
+  located in on disk. Clicking this link will open that folder in explorer
 - Material locations are now displayed in the preview window for each mesh when selecting a gmdl.gfxbin file
-- Environment Exporter/Importer has been updated to setup nodes for UV scaling (will require a full export and import to apply)
+- Environment Exporter/Importer has been updated to set up nodes for UV scaling  
+  (will require a full export and import to apply)
 
 ### Bug Fixes
 

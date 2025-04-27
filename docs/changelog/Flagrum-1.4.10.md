@@ -2,13 +2,15 @@
 
 _Released 18 May 2023_
 
+> **ANNOUNCEMENT**  
+> Due to ongoing issues with ModWorkshop's platform as a suitable host for FFXV mods,  
+> we've decided to move to CurseForge. This is not a decision we made lightly.  
+> If you're interested in why we've moved and why we chose CurseForge, please read
+> [this page](https://github.com/Kizari/Flagrum/wiki/We-have-moved-to-CurseForge).
+
 ### New Features
 
-- **Updates to the Mod Manager** - Mods can now be exported in mod packs, which gives you the ability to export multiple mod cards in a single FMOD
-- We have moved to CurseForge! 
-
-> **NOTE**  
-> Due to ongoing issues with ModWorkshop's platform as a suitable host for FFXV mods, we've decided to move to CurseForge. This is not a decision we made lightly. If you're interested in why we've moved and why we chose CurseForge, please read [this page](https://github.com/Kizari/Flagrum/wiki/We-have-moved-to-CurseForge).
+- Mods can now be exported in mod packs, which gives you the ability to export multiple mod cards in a single FMOD
 
 ### Changes
 

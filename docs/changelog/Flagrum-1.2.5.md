@@ -7,7 +7,7 @@ _Released 10 September 2022_
 - All text now has Japanese localisation
 - Ability to change the client language has been added to the Settings page
 - Flagrum now checks for the presence of WebView2 and warns the user appropriately if it is unavailable
-- Additional donation options have been added for those who were unable to use BuyMeACoffee (thank you for your support!)
+- Additional donation options have been added for those who were unable to use BuyMeACoffee—thank you for your support!
 
 ### Changes
 
@@ -16,4 +16,5 @@ _Released 10 September 2022_
 
 ### Bug Fixes
 
-- Fixed another bug that could cause Flagrum to crash rarely while using the Mod Manager— [#3](https://github.com/Kizari/Flagrum/issues/3)
+- Fixed another bug that could cause Flagrum to crash rarely while using the Mod Manager— 
+  [#3](https://github.com/Kizari/Flagrum/issues/3)

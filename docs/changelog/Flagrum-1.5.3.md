@@ -4,7 +4,7 @@ _Released 28 October 2023_
 
 ### New Features
 
-- **Lucent** - Visual scripting tool release information added to the side bar
+- Lucent (visual scripting tool) release information added to the sidebar
 - Added ability to reference new archives added within the same mod
 
 ### Changes

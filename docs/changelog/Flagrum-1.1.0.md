@@ -6,7 +6,7 @@ _Released 4 January 2022_
 
 - Asset Explorer has been added and can be used to view FFXV assets from your local file sytem
 
->**NOTE**
+> **NOTE**  
 > Curently the Asset Explorer supports the ability to:
 > - Preview game textures
 > - Inspect game materials (useful for adjusting Flagrum Materials in Blender)
@@ -15,4 +15,5 @@ _Released 4 January 2022_
 
 ### Changes
 
-- Preview images will now be automatically compressed with the highest possible quality before uploading to Steam Workshop if the current preview image exceeds the size limit
+- Preview images will now be automatically compressed with the highest possible quality before uploading  
+  to Steam Workshop if the current preview image exceeds the size limit

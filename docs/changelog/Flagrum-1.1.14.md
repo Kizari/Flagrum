@@ -9,9 +9,13 @@ _Released 28 April 2022_
 - Asset list can now be navigated with the up/down arrows
 
 ### Bug Fixes
+
 - Fixed bug where Environment Import would sometimes fail due to UV scaling
 - Fixed bug where Environment Exporter would occasionally crash Flagrum
 - Fixed bug where multiple extensions would sometimes appear on exported models
->**Note**
->You will need to re-export any environments if you want the extra moving props (should that environment have any to export).   
->You will not need to re-export to take advantage of the normal maps changes or UV scaling fix, but you will need to re-import.
+
+> **NOTE**  
+> - You will need to re-export any environments if you want the extra moving props  
+>   (should that environment have any to export).   
+> - You will not need to re-export to take advantage of the normal maps changes or UV scaling fix,  
+>   but you will need to re-import.

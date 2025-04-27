@@ -13,7 +13,7 @@ _Released 8 August 2022_
 ### Bug Fixes
 
 - XML now exports correctly on devices that use a comma decimal separator
-- Menu graphics are no longer deep fried when automatically converted to BTEX by the Mod Manager
+- Menu graphics are no longer deep-fried when automatically converted to BTEX by the Mod Manager
 - Fixed issue where legacy mods with multiple conflicts would fail to install after selecting the first item to keep
 - Mods that target files you do not have will no longer potentially leave your files in a bad state
 - Delete button no longer shows on New EARC Mod page (use the cancel button instead)
@@ -22,4 +22,4 @@ _Released 8 August 2022_
 - Fixed bug where Flagrum would rarely crash randomly when using the Mod Manager due to database thread collision
 - Mod thumbnails now update correctly when switching between different EARC mods
 - Mod thumbnails now update correctly on the mod card after changing the image
-- Fixed a rare issue where Workshop Mods would not show up due to case sensitive file paths
+- Fixed a rare issue where Workshop Mods would not show up due to case-sensitive file paths

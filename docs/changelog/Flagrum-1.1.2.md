@@ -14,10 +14,12 @@ _Released 8 January 2022_
 
 ### Bug Fixes
 
-- Fixed a bug where parts of rigging could break on outfit mods when equipped on the older version of the main characters
+- Fixed a bug where parts of rigging could break on outfit mods when equipped on the older  
+  version of the main characters
 
 > **Recommended Action**  
-> If you have created any outfit mods, consider rebuilding them by opening the existing mod, selecting "Change Model," picking the same FMD you created the mod with, then clicking "Save" to rebuild.
+> If you have created any outfit mods, consider rebuilding them by opening the existing mod,  
+> selecting "Change Model," picking the same FMD you created the mod with, then clicking "Save" to rebuild.
 
 - Fixed an issue where after updating, Flagrum would no longer nest under its shortcut icon when pinned to the taskbar
 

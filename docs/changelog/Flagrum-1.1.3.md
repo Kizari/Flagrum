@@ -4,4 +4,5 @@ _Released 10 January 2022_
 
 ### Changes
 
-- Support for increased [vertex weight limits](https://github.com/Kizari/Flagrum/wiki/Vertex-Weight-Limitations) on meshes with materials that support it
+- Support for increased [vertex weight limits](https://github.com/Kizari/Flagrum/wiki/Vertex-Weight-Limitations) 
+  on meshes with materials that support it

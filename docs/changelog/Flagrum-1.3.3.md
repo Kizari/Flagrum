@@ -7,7 +7,8 @@ _Released 22 December 2022_
 - Address bar navigation is now available in the Mod Manager popup Asset Explorer
 - Files can now be switched in the Mod Manager build list without creating a new build instruction
 - Build list instructions in the Mod Manager can now be filtered by a search query
-- An icon has been added at the top of Asset Explorer while in the root folder to allow bulk export directly from data://
+- An icon has been added at the top of Asset Explorer while in the root folder  
+  to allow bulk export directly from data://
 - Texture settings have been added to the 3D viewer so the user can decide on the load speed versus quality trade-off
 - Tree view is now available in Asset Explorer's Game View for those that prefer this style
 - List view is now available in Asset Explorer's File System for those that prefer this style
@@ -26,11 +27,16 @@ _Released 22 December 2022_
 
 ### Bug Fixes
 
-- Fixed a bug where non-Flagrum Workshop mods were being corrupted when altering the stats—[#10](https://github.com/Kizari/Flagrum/issues/10)
+- Fixed a bug where non-Flagrum Workshop mods were being corrupted when altering the stats—
+  [#10](https://github.com/Kizari/Flagrum/issues/10)
 - Fixed BTEX converter crash when replacing textures with non-compressed pixel formats
 - Fixed a bug where file association for FMOD was bound to older versions of Flagrum
-- Fixed a glitch with the Asset Explorer for model replacement presets— [#32](https://github.com/Kizari/Flagrum/issues/32)
-- Fixed a rare bug where changing model previews could crash Flagrum— [#33](https://github.com/Kizari/Flagrum/issues/33)
-- Fixed a rare bug where Flagrum could crash when switching to Asset Explorer— [#21](https://github.com/Kizari/Flagrum/issues/21)
-- Fixed a bug where some broken models would crash the 3D viewer— [#18](https://github.com/Kizari/Flagrum/issues/18)
+- Fixed a glitch with the Asset Explorer for model replacement presets—
+  [#32](https://github.com/Kizari/Flagrum/issues/32)
+- Fixed a rare bug where changing model previews could crash Flagrum—
+  [#33](https://github.com/Kizari/Flagrum/issues/33)
+- Fixed a rare bug where Flagrum could crash when switching to Asset Explorer—
+  [#21](https://github.com/Kizari/Flagrum/issues/21)
+- Fixed a bug where some broken models would crash the 3D viewer—
+  [#18](https://github.com/Kizari/Flagrum/issues/18)
 - Fixed bug where loading indicator would not show when switching between model previews
