@@ -13,4 +13,5 @@ _Released 7 February 2025_
 
 ### Bug Fixes
 
-* Resolved another mod card persistence issue— [#182](https://github.com/Kizari/Flagrum/issues/182)
+* Resolved another mod card persistence issue—
+  [#182](https://github.com/Kizari/Flagrum/issues/182)

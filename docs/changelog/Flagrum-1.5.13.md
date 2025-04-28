@@ -10,10 +10,13 @@ _Released 15 June 2024_
 ### Bug Fixes
 
 - Fix colorSet2 regression for workshop mods
-- Resolve misnaming issue for Forspoken— [#151](https://github.com/Kizari/Flagrum/issues/151)
-- Resolve file index duplicates
-  issue— [#150](https://github.com/Kizari/Flagrum/issues/150), [#152](https://github.com/Kizari/Flagrum/issues/152)
+- Resolve misnaming issue for Forspoken—
+  [#151](https://github.com/Kizari/Flagrum/issues/151)
+- Resolve file index duplicates issue—
+  [#150](https://github.com/Kizari/Flagrum/issues/150), [#152](https://github.com/Kizari/Flagrum/issues/152)
 - Add missing PS4 sound extensions
-- Prevent crash when deleting uncached mods— [#141](https://github.com/Kizari/Flagrum/issues/141)
+- Prevent crash when deleting uncached mods—
+  [#141](https://github.com/Kizari/Flagrum/issues/141)
 - Repair file index inconsistencies
-- Solve environment export texture resolution—[#149](https://github.com/Kizari/Flagrum/issues/149)
+- Solve environment export texture resolution—
+  [#149](https://github.com/Kizari/Flagrum/issues/149)

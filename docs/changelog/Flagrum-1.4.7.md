@@ -16,6 +16,9 @@ _Released 17 April 2023_
 
 ### Bug Fixes
 
-- Fixed bug where textures weren't showing in 3D viewer on new profiles- [#54](https://github.com/Kizari/Flagrum/issues/54)
-- Fixed unknown bug leading to file corruption- [#57](https://github.com/Kizari/Flagrum/issues/57)
-- Fixed bug where some model replacement mods would crash Flagrum when opened- [#59](https://github.com/Kizari/Flagrum/issues/59)
+- Fixed bug where textures weren't showing in 3D viewer on new profiles—
+  [#54](https://github.com/Kizari/Flagrum/issues/54)
+- Fixed unknown bug leading to file corruption—
+  [#57](https://github.com/Kizari/Flagrum/issues/57)
+- Fixed bug where some model replacement mods would crash Flagrum when opened—
+  [#59](https://github.com/Kizari/Flagrum/issues/59)

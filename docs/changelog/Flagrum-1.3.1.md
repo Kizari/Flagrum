@@ -8,7 +8,8 @@ _Released 2 December 2022_
 
 ### Changes
 
-- Flagrum now uses much less memory when converting images and building mods, this should make certain actions quicker and more stable
+- Flagrum now uses much less memory when converting images and building mods,  
+  this should make certain actions quicker and more stable
 
 ### Bug Fixes
 

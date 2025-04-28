@@ -7,14 +7,14 @@ _Released 24 January 2025_
 ### Bug Fixes
 
 * FFXV is now launched through Flagrum to ensure mods are loaded consistently and on time—
-[#103](https://github.com/Kizari/Flagrum/issues/103),
-[#106](https://github.com/Kizari/Flagrum/issues/106),
-[#110](https://github.com/Kizari/Flagrum/issues/110),
-[#115](https://github.com/Kizari/Flagrum/issues/115),
-[#121](https://github.com/Kizari/Flagrum/issues/121),
-[#139](https://github.com/Kizari/Flagrum/issues/139),
-[#144](https://github.com/Kizari/Flagrum/issues/144),
-[#160](https://github.com/Kizari/Flagrum/issues/160)
+  [#103](https://github.com/Kizari/Flagrum/issues/103),
+  [#106](https://github.com/Kizari/Flagrum/issues/106),
+  [#110](https://github.com/Kizari/Flagrum/issues/110),
+  [#115](https://github.com/Kizari/Flagrum/issues/115),
+  [#121](https://github.com/Kizari/Flagrum/issues/121),
+  [#139](https://github.com/Kizari/Flagrum/issues/139),
+  [#144](https://github.com/Kizari/Flagrum/issues/144),
+  [#160](https://github.com/Kizari/Flagrum/issues/160)
 
 ### New Features
 

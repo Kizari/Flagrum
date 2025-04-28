@@ -4,11 +4,13 @@ _Released 13 June 2022_
 
 ### New Features
 
-- Additional information has been added to legacy mod installation errors to help understand why the mod will not install
+- Additional information has been added to legacy mod installation errors to  
+  help understand why the mod will not install
 
 ### Changes
 
-- XML preview and export will now automatically encode reserved symbols—this fixes issues where certain EXML files would cause the game to crash when put back into the game
+- XML preview and export will now automatically encode reserved symbols—this fixes issues where  
+  certain EXML files would cause the game to crash when put back into the game
 
 ### Bug Fixes
 

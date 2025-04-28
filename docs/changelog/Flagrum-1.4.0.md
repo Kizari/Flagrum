@@ -18,5 +18,7 @@ _Released 13 February 2023_
 
 ### Bug Fixes
 
-- Fixed issue where Flagrum could get stuck indexing game files indefinitely for some users— [#39](https://github.com/Kizari/Flagrum/issues/39)
-- Fixed issues with the Model Replacements section under Steam Workshop mods— [#41](https://github.com/Kizari/Flagrum/issues/41)
+- Fixed issue where Flagrum could get stuck indexing game files indefinitely for some users—
+  [#39](https://github.com/Kizari/Flagrum/issues/39)
+- Fixed issues with the Model Replacements section under Steam Workshop mods—
+  [#41](https://github.com/Kizari/Flagrum/issues/41)
