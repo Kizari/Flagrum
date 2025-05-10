@@ -42,7 +42,7 @@
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
     <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-        <PackageReference Include="Flagrum.Premium" Version="1.0.3"/>
+        <PackageReference Include="Flagrum.Premium" Version="1.0.4"/>
     </ItemGroup>
 
     <ItemGroup>
