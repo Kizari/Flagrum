@@ -80,7 +80,7 @@ public partial class FlagrumModInstaller
                 "You already have the following mods installed. If you wish to reinstall them, please " +
                 "delete the copies you already have first and try again.<br/><br/>" +
                 duplicates.Aggregate("", (previous, next) =>
-                    $"{previous}<strong>{next.Metadata.Name}</strong><br/>"));
+                    $"{previous}<strong>{_modManager.Projects[next.Metadata.Guid].Name}</strong><br/>"));
         }
 
         var result = new ModInstallationResult(ModInstallationStatus.Success);
