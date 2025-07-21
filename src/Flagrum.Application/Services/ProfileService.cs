@@ -244,9 +244,17 @@ public class ProfileService : IProfileService
 
             if (directory != null && fileName != null)
             {
-                return Process.GetProcessesByName(fileName)
-                    .Any(p => p.MainModule?.FileName?.StartsWith(directory, StringComparison.OrdinalIgnoreCase) ==
-                              true);
+                try
+                {
+                    return Process.GetProcessesByName(fileName)
+                        .Any(p => p.MainModule?.FileName
+                                      .StartsWith(directory, StringComparison.OrdinalIgnoreCase) == true);
+                }
+                catch
+                {
+                    // Failure should not prevent Flagrum from doing what it needs to, so assume the game is closed
+                    return false;
+                }
             }
         }
 
