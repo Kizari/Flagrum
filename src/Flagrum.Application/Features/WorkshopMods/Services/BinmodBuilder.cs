@@ -202,29 +202,6 @@ public class BinmodBuilder(
         var replacer = new ModelReplacer(model, fmd.Gpubin);
         model = replacer.Replace((WorkshopModType)_mod.Type);
 
-        // TODO: Idiotproofing is nice and all, but this is preventing multi-part weapons like guns from being made
-        if (_mod.Type is (int)WorkshopModType.Weapon or (int)WorkshopModType.Multi_Weapon)
-        {
-            foreach (var bone in model.Bones)
-            {
-                bone.Name = "C_Body";
-                bone.LodIndex = 4294967295;
-            }
-
-            foreach (var mesh in model.MeshObjects[0].Meshes)
-            {
-                mesh.BoneIds = [0u];
-                for (var index = 0; index < mesh.Semantics[VertexElementSemantic.BlendIndices0].Count; index++)
-                {
-                    var weightArray = (uint[])mesh.Semantics[VertexElementSemantic.BlendIndices0][index]!;
-                    for (var i = 0; i < weightArray.Length; i++)
-                    {
-                        weightArray[i] = 0;
-                    }
-                }
-            }
-        }
-
         AddFile(GetDataPath($"{modelName}.gpubin"), model.WriteGpubin());
         AddFile(GetDataPath($"{modelName}.gmdl"), model.Write());
     }
