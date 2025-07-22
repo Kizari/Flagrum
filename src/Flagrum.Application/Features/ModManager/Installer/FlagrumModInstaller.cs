@@ -79,8 +79,7 @@ public partial class FlagrumModInstaller
             return new ModInstallationResult("Error", "Duplicate Mods Detected",
                 "You already have the following mods installed. If you wish to reinstall them, please " +
                 "delete the copies you already have first and try again.<br/><br/>" +
-                duplicates.Aggregate("", (previous, next) =>
-                    $"{previous}<strong>{next.Metadata.Name}</strong><br/>"));
+                duplicates.Aggregate("", (previous, next) => $"{previous}{GetDuplicateText(next)}"));
         }
 
         var result = new ModInstallationResult(ModInstallationStatus.Success);
@@ -135,5 +134,26 @@ public partial class FlagrumModInstaller
         }
 
         return result;
+    }
+    
+    /// <summary>
+    /// Gets the line of text to display in the mod installation modal if a mod with the same
+    /// GUID as the target mod is already installed.
+    /// </summary>
+    /// <param name="target">The mod to generate duplicate text for.</param>
+    private string GetDuplicateText(FlagrumMod target)
+    {
+        // Name of the new mod in bold
+        var result = $"<strong>{target.Metadata.Name}</strong>";
+        
+        // Append the name of the conflicting installed mod if it isn't the same as the new mod
+        var installed = _modManager.Projects[target.Metadata.Guid];
+        if (!installed.Name.Equals(target.Metadata.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            result += $" (installed as {installed.Name})";
+        }
+
+        // Append line break
+        return result + "<br/>";
     }
 }
