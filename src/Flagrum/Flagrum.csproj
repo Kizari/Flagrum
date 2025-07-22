@@ -163,11 +163,4 @@
         <Page Include="App.xaml"/>
     </ItemGroup>
 
-    <Target Name="CopyDependencies" AfterTargets="Publish">
-        <ItemGroup>
-            <ExternalDependencies Include="$(SolutionDir)\libs\**\*.*"/>
-        </ItemGroup>
-        <Copy SourceFiles="@(ExternalDependencies)" DestinationFiles="@(ExternalDependencies->'$(PublishDir)\%(RecursiveDir)%(Filename)%(Extension)')"/>
-    </Target>
-
 </Project>

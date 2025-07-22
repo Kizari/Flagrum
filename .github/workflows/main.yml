@@ -58,6 +58,9 @@ jobs:
 
       - name: Publish Flagrum
         run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish -r win-x64 --self-contained true
+        
+      - name: Copy External Dependencies
+        run: xcopy libs\* publish\ /Y
 
       - name: Download Previous Release
         if: steps.setup.outputs.prerelease == 'false'
