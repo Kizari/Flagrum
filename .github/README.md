@@ -1,13 +1,11 @@
 <p align="center">
-    <img alt="Flagrum" src="images/readme/splash_github.svg" width=500" /><br/>
-    &nbsp;
+    <img alt="Flagrum" src="images/readme/splash_github.svg" width=500" />
 </p>
 
----
 <h3 align="center">An all-in-one solution for modders, artists, and players of Final Fantasy XV</h3>
 
----
 <p align="center">
+    <br/>
 <a href="https://github.com/Kizari/Flagrum/releases"><img src="https://img.shields.io/github/release/Kizari/Flagrum.svg?style=flat&maxAge=3600" alt="Release"></img></a>
 <a href="https://www.patreon.com/Kizari"><img src="https://img.shields.io/badge/patreon-Kizari-orange?logo=patreon&logoColor=white" alt="Become a Patron"></img></a>
 <a href="#support-the-continued-development-of-ffxv-tools"><img src="https://img.shields.io/badge/support-donate-pink?logo=kofi&logoColor=white" alt="Support Me"></img></a>
@@ -15,14 +13,11 @@
 &nbsp;  
 &nbsp;
 
-<h3 align="center">Lucent, a visual scripting tool for FFXV is now available on Patreon!</h3>
+---
 
-![Logo](https://github.com/Kizari/Flagrum/assets/25322543/d41df31c-7d3c-4364-9bf3-08afbc7c83a8)
-![Screenshot](https://github.com/Kizari/Flagrum/assets/25322543/e4c73a8e-8310-4466-b3ba-c7f753eb783b)
-
-<p align="center">
-<a href="https://www.patreon.com/posts/visual-scripting-91823536">Learn more about Lucent</a>
-</p>
+<h3 align="center">
+Instructions for running <a href="https://github.com/Kizari/Flagrum/wiki/Running-Flagrum-on-Linux">Flagrum on Linux</a> via Proton are now available on the wiki!
+</h3>
 
 ---
 &nbsp;
