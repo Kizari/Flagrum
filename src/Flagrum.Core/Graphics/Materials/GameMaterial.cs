@@ -355,9 +355,19 @@ public class GameMaterial : GraphicsBinary
     {
         ValueBuffer = new ValueBuffer(ValueBufferSize);
 
-        foreach (var buffer in Buffers.Where(b => b.UniformIndex < UniformCount))
+        for (var i = 0; i < TotalUniformCount; i++)
         {
-            ValueBuffer.Put(buffer.Offset, buffer.Values);
+            var uniform = Uniforms[i];
+
+            if ((uniform.Flags & 1) == 0)
+            {
+                continue;
+            }
+
+            foreach (var buffer in Buffers.Where(b => b.UniformIndex == i))
+            {
+                ValueBuffer.Put(Uniforms[buffer.UniformIndex].Offset + buffer.Offset, buffer.Values);
+            }
         }
     }
 }
