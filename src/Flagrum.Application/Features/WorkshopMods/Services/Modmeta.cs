@@ -77,7 +77,14 @@ public class Modmeta
 
         if (mod.Model2Name == null)
         {
-            builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
+            if (mod.Type == (int)WorkshopModType.Weapon && mod.Target == (int)WeaponTarget.Shield)
+            {
+                builder.AppendLine($"modify_gmdl[1]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
+            }
+            else
+            {
+                builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
+            }
         }
         else
         {

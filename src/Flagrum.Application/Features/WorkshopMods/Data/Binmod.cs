@@ -224,7 +224,9 @@ public class Binmod
                 }
                 else
                 {
-                    if (property is "modify_gmdl[0]")
+                    // Shields (and possibly some other mod types) use the second model slot instead of the first
+                    // See https://github.com/Kizari/Flagrum/issues/209
+                    if (property is "modify_gmdl[0]" or "modify_gmdl[1]")
                     {
                         mod.ModelExtension = value.EndsWith(".fbx") ? "fbx" : "gmdl";
                         mod.ModDirectoryName = value.Split('/')[1];
