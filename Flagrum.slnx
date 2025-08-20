@@ -1,0 +1,178 @@
+﻿<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/.github/">
+    <File Path=".github\FUNDING.yml" />
+  </Folder>
+  <Folder Name="/.github/images/">
+    <File Path=".github\images\Splash.png" />
+  </Folder>
+  <Folder Name="/.github/images/readme/">
+    <File Path=".github\images\readme\asset.jpg" />
+    <File Path=".github\images\readme\bmc-button.png" />
+    <File Path=".github\images\readme\gameplay.jpg" />
+    <File Path=".github\images\readme\kofi-button.png" />
+    <File Path=".github\images\readme\patreon-button.png" />
+    <File Path=".github\images\readme\paypal-button.png" />
+    <File Path=".github\images\readme\splash_github.svg" />
+    <File Path=".github\images\readme\workshop.jpg" />
+  </Folder>
+  <Folder Name="/.github/ISSUE_TEMPLATE/">
+    <File Path=".github\ISSUE_TEMPLATE\bug_report.yml" />
+    <File Path=".github\ISSUE_TEMPLATE\config.yml" />
+    <File Path=".github\ISSUE_TEMPLATE\feature_request.yml" />
+  </Folder>
+  <Folder Name="/.github/workflows/">
+    <File Path=".github\workflows\main.yml" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs\distribution.md" />
+  </Folder>
+  <Folder Name="/docs/changelog/">
+    <File Path="docs\changelog\Flagrum-1.0.0.md" />
+    <File Path="docs\changelog\Flagrum-1.1.0.md" />
+    <File Path="docs\changelog\Flagrum-1.1.1.md" />
+    <File Path="docs\changelog\Flagrum-1.1.2.md" />
+    <File Path="docs\changelog\Flagrum-1.1.3.md" />
+    <File Path="docs\changelog\Flagrum-1.1.4.md" />
+    <File Path="docs\changelog\Flagrum-1.1.5.md" />
+    <File Path="docs\changelog\Flagrum-1.1.6.md" />
+    <File Path="docs\changelog\Flagrum-1.1.7.md" />
+    <File Path="docs\changelog\Flagrum-1.1.8.md" />
+    <File Path="docs\changelog\Flagrum-1.1.9.md" />
+    <File Path="docs\changelog\Flagrum-1.1.10.md" />
+    <File Path="docs\changelog\Flagrum-1.1.11.md" />
+    <File Path="docs\changelog\Flagrum-1.1.12.md" />
+    <File Path="docs\changelog\Flagrum-1.1.13.md" />
+    <File Path="docs\changelog\Flagrum-1.1.14.md" />
+    <File Path="docs\changelog\Flagrum-1.2.0.md" />
+    <File Path="docs\changelog\Flagrum-1.2.1.md" />
+    <File Path="docs\changelog\Flagrum-1.2.2.md" />
+    <File Path="docs\changelog\Flagrum-1.2.3.md" />
+    <File Path="docs\changelog\Flagrum-1.2.4.md" />
+    <File Path="docs\changelog\Flagrum-1.2.5.md" />
+    <File Path="docs\changelog\Flagrum-1.2.6.md" />
+    <File Path="docs\changelog\Flagrum-1.3.0.md" />
+    <File Path="docs\changelog\Flagrum-1.3.1.md" />
+    <File Path="docs\changelog\Flagrum-1.3.2.md" />
+    <File Path="docs\changelog\Flagrum-1.3.3.md" />
+    <File Path="docs\changelog\Flagrum-1.3.4.md" />
+    <File Path="docs\changelog\Flagrum-1.3.5.md" />
+    <File Path="docs\changelog\Flagrum-1.4.0.md" />
+    <File Path="docs\changelog\Flagrum-1.4.1.md" />
+    <File Path="docs\changelog\Flagrum-1.4.2.md" />
+    <File Path="docs\changelog\Flagrum-1.4.3.md" />
+    <File Path="docs\changelog\Flagrum-1.4.4.md" />
+    <File Path="docs\changelog\Flagrum-1.4.5.md" />
+    <File Path="docs\changelog\Flagrum-1.4.6.md" />
+    <File Path="docs\changelog\Flagrum-1.4.7.md" />
+    <File Path="docs\changelog\Flagrum-1.4.8.md" />
+    <File Path="docs\changelog\Flagrum-1.4.9.md" />
+    <File Path="docs\changelog\Flagrum-1.4.10.md" />
+    <File Path="docs\changelog\Flagrum-1.4.11.md" />
+    <File Path="docs\changelog\Flagrum-1.4.12.md" />
+    <File Path="docs\changelog\Flagrum-1.5.0.md" />
+    <File Path="docs\changelog\Flagrum-1.5.1.md" />
+    <File Path="docs\changelog\Flagrum-1.5.2.md" />
+    <File Path="docs\changelog\Flagrum-1.5.3.md" />
+    <File Path="docs\changelog\Flagrum-1.5.4.md" />
+    <File Path="docs\changelog\Flagrum-1.5.5.md" />
+    <File Path="docs\changelog\Flagrum-1.5.6.md" />
+    <File Path="docs\changelog\Flagrum-1.5.7.md" />
+    <File Path="docs\changelog\Flagrum-1.5.8.md" />
+    <File Path="docs\changelog\Flagrum-1.5.9.md" />
+    <File Path="docs\changelog\Flagrum-1.5.15.md" />
+    <File Path="docs\changelog\Flagrum-1.5.16.md" />
+    <File Path="docs\changelog\Flagrum-1.5.17.md" />
+    <File Path="docs\changelog\Flagrum-1.5.18.md" />
+    <File Path="docs\changelog\Flagrum-1.5.19.md" />
+    <File Path="docs\changelog\Flagrum-1.5.20.md" />
+    <File Path="docs\changelog\Flagrum-1.5.21.md" />
+    <File Path="docs\changelog\Flagrum-1.5.22.md" />
+    <File Path="docs\changelog\Flagrum-1.5.10.md" />
+    <File Path="docs\changelog\Flagrum-1.5.11.md" />
+    <File Path="docs\changelog\Flagrum-1.5.12.md" />
+    <File Path="docs\changelog\Flagrum-1.5.13.md" />
+    <File Path="docs\changelog\Flagrum-1.5.14.md" />
+    <File Path="docs\changelog\Flagrum-1.6.0.md" />
+    <File Path="docs\changelog\Flagrum-1.6.1.md" />
+    <File Path="docs\changelog\Flagrum-1.6.2.md" />
+    <File Path="docs\changelog\Flagrum-1.6.3.md" />
+    <File Path="docs\changelog\Flagrum-1.6.4.md" />
+    <File Path="docs\changelog\Flagrum-1.6.5.md" />
+  </Folder>
+  <Folder Name="/libs/">
+    <File Path="libs\concrt140.dll" />
+    <File Path="libs\MicrosoftEdgeWebview2Setup.exe" />
+    <File Path="libs\msvcp140.dll" />
+    <File Path="libs\msvcp140_1.dll" />
+    <File Path="libs\msvcp140_2.dll" />
+    <File Path="libs\msvcp140_atomic_wait.dll" />
+    <File Path="libs\msvcp140_codecvt_ids.dll" />
+    <File Path="libs\steam_api64.dll" />
+    <File Path="libs\Steamworks.NET.dll" />
+    <File Path="libs\uuid.dll" />
+    <File Path="libs\vcamp140.dll" />
+    <File Path="libs\vccorlib140.dll" />
+    <File Path="libs\vcomp140.dll" />
+    <File Path="libs\vcruntime140.dll" />
+    <File Path="libs\vcruntime140_1.dll" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src\Flagrum.Abstractions\Flagrum.Abstractions.csproj" Type="Classic C#">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+    <Project Path="src\Flagrum.Application\Flagrum.Application.csproj">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+    <Project Path="src\Flagrum.Components\Flagrum.Components.csproj" Type="Classic C#">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+    <Project Path="src\Flagrum.Core\Flagrum.Core.csproj">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+    <Project Path="src\Flagrum\Flagrum.csproj">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\Flagrum.Test\Flagrum.Test.csproj" Type="Classic C#">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools\Flagrum.Generators\Flagrum.Generators.csproj" Type="Classic C#">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+    <Project Path="tools\Flagrum.Research\Flagrum.Research.csproj">
+      <Configuration Solution="Debug|x64" Project="Debug|Any CPU" />
+      <Configuration Solution="Debug|x86" Project="Debug|Any CPU" />
+      <Configuration Solution="Release|x64" Project="Release|Any CPU" />
+      <Configuration Solution="Release|x86" Project="Release|Any CPU" />
+    </Project>
+  </Folder>
+</Solution>
