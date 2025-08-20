@@ -1,5 +1,6 @@
 ﻿@page "/mod/presets/{Mode}/{PresetId}/{IsDefault}"
-@using Flagrum.Application.Persistence.Entities
+@using Flagrum.Application.Features.WorkshopMods.Services
+@using ModelReplacementPreset = Flagrum.Application.Features.WorkshopMods.Data.ModelReplacementPreset
 
 @inject NavigationManager Navigation
 @inject ModelReplacementPresets ModelReplacementPresets

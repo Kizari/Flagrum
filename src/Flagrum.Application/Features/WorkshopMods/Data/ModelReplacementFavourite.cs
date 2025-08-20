@@ -1,6 +1,6 @@
 ﻿using MemoryPack;
 
-namespace Flagrum.Application.Persistence.Entities;
+namespace Flagrum.Application.Features.WorkshopMods.Data;
 
 [MemoryPackable]
 public partial class ModelReplacementFavourite

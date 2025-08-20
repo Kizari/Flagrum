@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Abstractions;
+using Flagrum.Application.Features.WorkshopMods.Data;
+using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Archive.Mod;
-using Flagrum.Core.Gfxbin.Gmdl;
-using Flagrum.Core.Gfxbin.Gmdl.Templates;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Graphics.Models;
 using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Application.Features.WorkshopMods.Data;
-using Flagrum.Application.Features.WorkshopMods.Data.Model;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Services;
 
 public class BinmodBuilder(
     EntityPackageBuilder entityPackageBuilder,

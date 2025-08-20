@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Flagrum.Application.Features.WorkshopMods.Services;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Archive.Mod;
 using Microsoft.Extensions.Logging;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Data;
 
 public class Binmod
 {

@@ -1,24 +1,18 @@
 ﻿using System.Text;
+using Flagrum.Application.Features.WorkshopMods.Data;
 using Flagrum.Core.Archive.Mod;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Services;
 
-public class Modmeta
+public class Modmeta(BinmodTypeHelper binmodType)
 {
-    private readonly BinmodTypeHelper _binmodType;
-
-    public Modmeta(BinmodTypeHelper binmodType)
-    {
-        _binmodType = binmodType;
-    }
-
     public byte[] Build(Binmod mod)
     {
         var type = (WorkshopModType)mod.Type;
 
         var builder = new StringBuilder();
         builder.AppendLine("[meta]");
-        builder.AppendLine($"modtype={_binmodType.GetModmetaTypeName(mod.Type)}");
+        builder.AppendLine($"modtype={binmodType.GetModmetaTypeName(mod.Type)}");
 
         switch (type)
         {
@@ -73,7 +67,7 @@ public class Modmeta
 
     private void AddWeaponInfo(Binmod mod, StringBuilder builder)
     {
-        builder.AppendLine($"type={_binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
+        builder.AppendLine($"type={binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
 
         if (mod.Model2Name == null)
         {
@@ -116,7 +110,7 @@ public class Modmeta
 
         builder.AppendLine($"modify_gmdl[0]=mod/{mod.ModDirectoryName}/{mod.ModelName}.{mod.ModelExtension}");
         builder.AppendLine($"count_original_gmdls={mod.OriginalGmdls.Count}");
-        builder.AppendLine($"type={_binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
+        builder.AppendLine($"type={binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
 
         AddModInfo(mod, builder);
         AddWorkshopInfo(mod, builder);
@@ -124,7 +118,7 @@ public class Modmeta
 
     private void AddMultiOutfitInfo(Binmod mod, StringBuilder builder)
     {
-        builder.AppendLine($"type={_binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
+        builder.AppendLine($"type={binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
         builder.AppendLine($"thumbnail1=mod/{mod.ModDirectoryName}/default.png");
         builder.AppendLine($"thumbnail2=mod/{mod.ModDirectoryName}/default.png");
 
@@ -150,7 +144,7 @@ public class Modmeta
     {
         AddModInfo(mod, builder);
 
-        builder.AppendLine($"type={_binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
+        builder.AppendLine($"type={binmodType.GetModmetaTargetName(mod.Type, mod.Target)}");
 
         AddWorkshopInfo(mod, builder);
 

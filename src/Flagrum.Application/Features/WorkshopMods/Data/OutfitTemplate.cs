@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Core.Graphics.Models;
 using Flagrum.Core.Mathematics;
 using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Application.Features.WorkshopMods.Data.Model;
 
-namespace Flagrum.Core.Gfxbin.Gmdl.Templates;
+namespace Flagrum.Application.Features.WorkshopMods.Data;
 
 public static class OutfitTemplate
 {

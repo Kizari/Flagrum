@@ -2,28 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Core.Archive.Mod;
 using Flagrum.Core.Graphics.Models;
 using Flagrum.Core.Mathematics;
-using Flagrum.Application.Features.WorkshopMods.Data.Model;
 
-namespace Flagrum.Core.Gfxbin.Gmdl;
+namespace Flagrum.Application.Features.WorkshopMods.Data;
 
 /// <summary>
 /// Temporary class to handle placing mesh data into an existing GFXBIN
 /// to avoid manually filling out every piece of data
 /// </summary>
-public class ModelReplacer
+public class ModelReplacer(GameModel originalModel, BinmodModelData replacementData)
 {
-    private readonly BinmodModelData _gpubin;
-    private readonly GameModel _model;
-
-    public ModelReplacer(GameModel originalModel, BinmodModelData replacementData)
-    {
-        _model = originalModel;
-        _gpubin = replacementData;
-    }
-
     public GameModel Replace(WorkshopModType modType)
     {
         var isModelReplacement = modType == WorkshopModType.Character;
@@ -32,14 +23,17 @@ public class ModelReplacer
         // Weapon model replacements (usually only have 1 or 2 bones) don't seem to work correctly on the
         // same system as other model replacements, so we'll just let it use the standard bone system
         // if we have detected this armature
-        if (_gpubin.BoneTable.Count < 6 && _gpubin.BoneTable.Any(b => b.Value == "C_Body"))
+        if (replacementData.BoneTable.Count <= 10 
+            && replacementData.BoneTable.Any(b => b.Value == "C_Body"))
         {
             isModelReplacement = false;
         }
 
-        foreach (var mesh in _model.MeshObjects[0].Meshes)
+        foreach (var mesh in originalModel.MeshObjects[0].Meshes)
         {
-            var match = _gpubin.Meshes.FirstOrDefault(m => m.Name == mesh.Name);
+            var match = replacementData.Meshes
+                .FirstOrDefault(m => m.Name == mesh.Name);
+            
             if (match != null)
             {
                 mesh.VertexCount = (uint)match.VertexPositions.Count;
@@ -270,8 +264,9 @@ public class ModelReplacer
                 }
                 else
                 {
-                    mesh.BoneIds = _gpubin.BoneTable.Count > 1
-                        ? Enumerable.Range(0, _gpubin.BoneTable.Max(m => m.Key) - 1).Select(i => (uint)i).ToList()
+                    mesh.BoneIds = replacementData.BoneTable.Count > 1
+                        ? Enumerable.Range(0, replacementData.BoneTable.Max(m => m.Key) - 1)
+                            .Select(i => (uint)i).ToList()
                         : new[] {0u};
                 }
 
@@ -288,7 +283,7 @@ public class ModelReplacer
             var indexMap = usedIndices.ToDictionary(i => i, i => count++);
 
             // Update each weight index in the mesh to match the new index map
-            foreach (var mesh in _model.MeshObjects[0].Meshes)
+            foreach (var mesh in originalModel.MeshObjects[0].Meshes)
             {
                 var weightIndices = new List<IList<uint[]>>
                     {(IList<uint[]>)mesh.Semantics[VertexElementSemantic.BlendIndices0]};
@@ -310,7 +305,7 @@ public class ModelReplacer
             }
 
             // Generate the fixed bone table and apply it to the model
-            _model.Bones = _gpubin.BoneTable
+            originalModel.Bones = replacementData.BoneTable
                 .Where(d => usedIndices.Contains((ushort)d.Key))
                 .Select(kvp => new GameModelBone
                 {
@@ -322,7 +317,7 @@ public class ModelReplacer
         }
         else
         {
-            _model.Bones = _gpubin.BoneTable
+            originalModel.Bones = replacementData.BoneTable
                 .Select(kvp =>
                 {
                     var (boneIndex, boneName) = kvp;
@@ -333,7 +328,7 @@ public class ModelReplacer
                 .ToList();
         }
 
-        return _model;
+        return originalModel;
     }
 
     private void UpdateVertexStreams(GameModelMesh mesh, BinmodModelDataMesh binmodMesh)

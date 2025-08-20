@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Timers;
 using Flagrum.Abstractions;
+using Flagrum.Application.Features.WorkshopMods.Data;
+using Flagrum.Application.Services;
 using Flagrum.Core.Archive;
 using Microsoft.Extensions.Logging;
 using Steamworks;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Services;
 
 public class WorkshopItemDetails
 {

@@ -8,6 +8,7 @@ using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
 using Flagrum.Application.Features.AssetExplorer.Indexing;
+using Flagrum.Application.Features.WorkshopMods.Data;
 using FileIndexNode = Flagrum.Application.Features.AssetExplorer.Indexing.FileIndexNode;
 
 namespace Flagrum.Application.Services;

@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Flagrum.Generators;
 using Flagrum.Application.Features.WorkshopMods.Data;
-using Flagrum.Application.Utilities;
 using Injectio.Attributes;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Services;
 
 public class ModelReplacementTarget
 {

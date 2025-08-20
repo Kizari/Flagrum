@@ -1,17 +1,11 @@
 ﻿using System.Text;
+using Flagrum.Application.Features.WorkshopMods.Data;
 using Flagrum.Core.Archive.Mod;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Services;
 
-public class EntityPackageBuilder
+public class EntityPackageBuilder(BinmodTypeHelper binmodType)
 {
-    private readonly BinmodTypeHelper _binmodType;
-
-    public EntityPackageBuilder(BinmodTypeHelper binmodType)
-    {
-        _binmodType = binmodType;
-    }
-
     public byte[] BuildExml(Binmod mod)
     {
         var type = (WorkshopModType)mod.Type;
@@ -24,7 +18,7 @@ public class EntityPackageBuilder
                 : BuildMultiModelMultiPreview(mod);
         }
 
-        return _binmodType.GetModelCount(mod.Type, mod.Target) > 1
+        return binmodType.GetModelCount(mod.Type, mod.Target) > 1
             ? BuildMultiModelSinglePreview(mod)
             : BuildSingleModelSinglePreview(mod);
     }

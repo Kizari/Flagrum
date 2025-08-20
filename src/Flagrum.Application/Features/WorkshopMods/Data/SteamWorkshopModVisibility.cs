@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Application.Services;
+﻿namespace Flagrum.Application.Features.WorkshopMods.Data;
 
 public enum SteamWorkshopModVisibility
 {

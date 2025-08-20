@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using CsvHelper;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Data;
 
+// ReSharper disable once ClassNeverInstantiated.Global (used by CsvHelper)
 public class ModlistEntry
 {
     public string Path { get; set; }

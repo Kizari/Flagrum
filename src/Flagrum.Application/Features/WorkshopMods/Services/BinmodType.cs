@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Flagrum.Core.Archive.Mod;
 
-namespace Flagrum.Application.Services;
+namespace Flagrum.Application.Features.WorkshopMods.Services;
 
 public class BinmodTypeHelper
 {
