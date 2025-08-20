@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -7,7 +8,6 @@ using Flagrum.Generators;
 using Flagrum.Migrations;
 using Flagrum.Utilities;
 using Flagrum.Application.Features.ModManager.Launcher;
-using Flagrum.Application.Features.Settings.Data;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Versioning;
 using Velopack;
@@ -35,6 +35,7 @@ internal static class Program
         // Initialize Velopack
         VelopackApp.Build()
             .WithFirstRun(OnFreshInstall)
+            .WithBeforeUninstallFastCallback(OnBeforeUninstall)
             .Run();
 
         // Handle commandline arguments
@@ -91,5 +92,22 @@ internal static class Program
         // Ensure that past data migrations are set as completed to prevent them running
         var configuration = Services.GetRequiredService<IConfiguration>();
         configuration.OnFreshInstall(SteppedMigrationHelper.ApplicationSteps, SteppedMigrationHelper.ProfileSteps);
+    }
+
+    /// <summary>
+    /// Cleans up residual data when the user uninstalls Flagrum.
+    /// </summary>
+    private static void OnBeforeUninstall(SemanticVersion version)
+    {
+        var profile = Services.GetRequiredService<IProfileService>();
+        
+        try
+        {
+            Directory.Delete(profile.TemporaryDirectory, true);
+        }
+        catch
+        {
+            // Too late to recover from this and try to resolve it, nothing more to do
+        }
     }
 }

@@ -14,7 +14,20 @@ public interface IProfileService : IDisposable
     string FileIndexPath { get; }
     string ImagesDirectory { get; }
     string ModThumbnailWebDirectory { get; }
+    
+    /// <summary>
+    /// Directory within temporary local application data that holds temporary files for Flagrum.
+    /// </summary>
+    string TemporaryDirectory { get; }
+    
+    /// <summary>
+    /// Temporary directory that holds cached mod build files.
+    /// </summary>
     string CacheDirectory { get; }
+    
+    /// <summary>
+    /// Temporary directory that holds files while constructing mod archives.
+    /// </summary>
     string ModStagingDirectory { get; }
 
     /// <summary>
@@ -29,14 +42,6 @@ public interface IProfileService : IDisposable
 
     string EarcModThumbnailDirectory { get; }
     string EarcModBackupsDirectory { get; }
-
-    /// <summary>
-    /// Folder inside the main Flagrum directory for holding temporary files.
-    /// </summary>
-    /// <remarks>
-    /// Nothing in here is cleaned up automatically, so must be handled by the consumer.
-    /// </remarks>
-    string TemporaryDirectory { get; }
 
     /// <summary>
     /// The absolute path to the Steam executable.

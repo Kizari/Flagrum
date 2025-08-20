@@ -129,36 +129,25 @@ public class ProfileService : IProfileService
     public string ImagesDirectory => $@"{IOHelper.GetWebRoot()}\images\{Current.Id}";
     public string ModThumbnailWebDirectory => $@"{IOHelper.GetWebRoot()}\EarcMods\{Current.Id}";
 
-    public string CacheDirectory =>
-        $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Temp\Flagrum\{Current.Id}\cache";
+    /// <inheritdoc />
+    public string TemporaryDirectory => Path.Combine(IOHelper.LocalApplicationData, "Temp", "Flagrum");
+    
+    /// <inheritdoc />
+    public string CacheDirectory => Path.Combine(TemporaryDirectory, Current.Id.ToString(), "cache");
+    
+    /// <inheritdoc />
+    public string ModStagingDirectory => Path.Combine(TemporaryDirectory, Current.Id.ToString(), "staging");
 
-    public string ModStagingDirectory =>
-        $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Temp\Flagrum\{Current.Id}\staging";
-
-    /// <summary>
-    /// Absolute path to the patch folder inside the game's data directory.
-    /// </summary>
+    /// <inheritdoc />
     public string PatchDirectory => Path.Combine(GameDataDirectory, "patch");
 
-    /// <summary>
-    /// Absolute path to the directory that holds mod project files for the current profile.
-    /// </summary>
+    /// <inheritdoc />
     public string ModFilesDirectory => $@"{FlagrumDirectory}\earc\{Current.Id}";
 
     public string EarcModThumbnailDirectory => $@"{ModFilesDirectory}\thumbnails";
     public string EarcModBackupsDirectory => $@"{ModFilesDirectory}\backup";
 
-    /// <summary>
-    /// Folder inside the main Flagrum directory for holding temporary files.
-    /// </summary>
-    /// <remarks>
-    /// Nothing in here is cleaned up automatically, so must be handled by the consumer.
-    /// </remarks>
-    public string TemporaryDirectory => Path.Combine(FlagrumDirectory, "tmp");
-
-    /// <summary>
-    /// The absolute path to the Steam executable.
-    /// </summary>
+    /// <inheritdoc />
     public string SteamExePath { get; private set; }
 
     public string BinmodDirectory => $"{Path.GetDirectoryName(Current.BinmodListPath)}";
