@@ -11,6 +11,7 @@ namespace Flagrum.Application.Features.ModManager.Launcher.PInvoke;
 public static class Kernel32
 {
     public const int ERROR_ACCESS_DENIED = 5;
+    public const uint INFINITE = 0xFFFFFFFF;
     
     [Flags]
     public enum AllocationType : uint
@@ -76,7 +77,7 @@ public static class Kernel32
 
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer,
-        uint dwSize, out IntPtr lpNumberOfBytesWritten);
+        uint dwSize, out UIntPtr lpNumberOfBytesWritten);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize,

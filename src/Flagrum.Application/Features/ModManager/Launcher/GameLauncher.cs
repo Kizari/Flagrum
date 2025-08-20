@@ -10,13 +10,11 @@ using System.Text;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.ModManager;
 using Flagrum.Core.Utilities;
-using Flagrum.Generators;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Instructions;
 using Flagrum.Application.Features.ModManager.Launcher.PInvoke;
 using Flagrum.Application.Features.ModManager.Services;
 using Injectio.Attributes;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Flagrum.Application.Features.ModManager.Launcher;
 
@@ -98,13 +96,13 @@ public class GameLauncher(
     /// <param name="process">The game process to inject the DLL into.</param>
     private void Inject(Process process)
     {
-        // Get address of LoadLibraryA
+        // Get address of LoadLibraryW
         var kernel32 = Kernel32.GetModuleHandle("kernel32.dll");
-        var loadLibraryAddress = Kernel32.GetProcAddress(kernel32, "LoadLibraryA");
+        var loadLibraryAddress = Kernel32.GetProcAddress(kernel32, "LoadLibraryW");
         if (loadLibraryAddress == IntPtr.Zero)
         {
             var errorCode = Marshal.GetLastWin32Error();
-            throw new ApplicationException($"Failed to get address of LoadLibraryA. (0x{errorCode:x})");
+            throw new Win32Exception(errorCode);
         }
 
         // Allocate memory for DLL path
@@ -118,24 +116,29 @@ public class GameLauncher(
             }
         }
         
-        var pathSize = (uint)((dllPath.Length + 1) * Marshal.SizeOf<char>());
-        var pathAddress = Kernel32.VirtualAllocEx(process.Handle, IntPtr.Zero, pathSize,
+        var dllPathBuffer = Encoding.Unicode.GetBytes(dllPath + '\0');
+        var pathAddress = Kernel32.VirtualAllocEx(process.Handle, IntPtr.Zero, (uint)dllPathBuffer.Length,
             Kernel32.AllocationType.Commit | Kernel32.AllocationType.Reserve,
             Kernel32.MemoryProtection.ReadWrite);
 
         if (pathAddress == IntPtr.Zero)
         {
             var errorCode = Marshal.GetLastWin32Error();
-            throw new ApplicationException($"Failed to allocate memory for DLL path. (0x{errorCode:x})");
+            throw new Win32Exception(errorCode);
         }
 
         // Write DLL path into memory in the host process
-        var buffer = Encoding.Default.GetBytes(dllPath);
-        if (!Kernel32.WriteProcessMemory(process.Handle, pathAddress, buffer, pathSize, out var bytesWritten)
-            || bytesWritten.ToInt32() != buffer.Length + 1)
+        if (!Kernel32.WriteProcessMemory(process.Handle, pathAddress, dllPathBuffer, (uint)dllPathBuffer.Length,
+                out var bytesWritten))
         {
             var errorCode = Marshal.GetLastWin32Error();
-            throw new ApplicationException($"Failed to write the DLL path. (0x{errorCode:x})");
+            throw new Win32Exception(errorCode);
+        }
+
+        if (bytesWritten.ToUInt64() != (ulong)dllPathBuffer.Length)
+        {
+            throw new ApplicationException($"Failed to write DLL path {dllPath}." +
+                                           $"Only wrote {bytesWritten.ToUInt64()}/{dllPathBuffer.Length} bytes.");
         }
 
         // Create thread in host process to load the DLL
@@ -148,7 +151,7 @@ public class GameLauncher(
         }
 
         // Wait for the remote thread to complete
-        Kernel32.WaitForSingleObject(remoteThreadHandle, 0xFFFFFFFF);
+        Kernel32.WaitForSingleObject(remoteThreadHandle, Kernel32.INFINITE);
         Kernel32.CloseHandle(remoteThreadHandle);
     }
 
