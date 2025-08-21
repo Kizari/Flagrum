@@ -86,12 +86,13 @@ jobs:
           rm Setup.exe
           
           echo "full=$(ls | grep 'Flagrum-.*-full.nupkg')" >> $GITHUB_OUTPUT
-          DELTA_FILES=$(ls | grep 'Flagrum-.*-delta.nupkg' | sort -V) || true
+          
+          readarray -t DELTA_FILES < <(ls | grep 'Flagrum-.*-delta.nupkg' | sort -V) || DELTA_FILES=()
 
-          if [ ${#DELTA_FILES[@]} -gt 4 ]; then
-            REMOVE_FILES=(${DELTA_FILES[@]:0:${#DELTA_FILES[@]}-4})
+          if [ ${#DELTA_FILES[@]} -gt 5 ]; then
+            REMOVE_FILES=("${DELTA_FILES[@]:0:${#DELTA_FILES[@]}-5}")
             echo "Removing old delta files: ${REMOVE_FILES[@]}"
-            rm ${REMOVE_FILES[@]}
+            rm "${REMOVE_FILES[@]}"
           else
             echo "There are 4 or fewer delta files. No files removed."
           fi
