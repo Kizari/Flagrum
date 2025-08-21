@@ -20,7 +20,6 @@ using HelixToolkit.SharpDX.Core.Model.Scene;
 using HelixToolkit.Wpf.SharpDX;
 using Microsoft.Extensions.DependencyInjection;
 using SharpDX;
-using Configuration = Flagrum.Application.Features.Settings.Data.Configuration;
 
 namespace Flagrum.Main;
 
@@ -63,7 +62,8 @@ public partial class ViewportHelper
 
         // Find the gpubin locations
         var gpubins = gpubinUris.Select(uri => gmdlNode.Parent.Children
-                .Single(c => c.Path.EndsWith(uri.Split('\\', '/').Last(), StringComparison.OrdinalIgnoreCase)))
+                .Single(c => c.Path.Split('\\', '/').Last()
+                    .Equals(uri.Split('\\', '/').Last(), StringComparison.OrdinalIgnoreCase)))
             .OrderBy(f => f.Name)
             .Select(gpubin => gpubin.Data)
             .ToList();
