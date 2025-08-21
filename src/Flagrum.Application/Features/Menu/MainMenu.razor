@@ -17,6 +17,7 @@
         @if (Profile.Current.Type == LuminousGame.FFXV)
         {
             <MenuItem Icon="steam" Text=@L["WorkshopMods"] Uri="/mod"/>
+            <MenuItem Icon="camera_alt" Text="Snap Manager" Uri="/ebonysnapsmanager"/>
             <MenuItem Icon="star" Text="Featured Mods" Uri="/featured"/>
             if (!Configuration.Get<bool>(StateKey.HideLucentTab))
             {
