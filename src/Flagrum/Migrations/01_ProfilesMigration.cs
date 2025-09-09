@@ -6,6 +6,7 @@ using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
+using Flagrum.ApplicationHost;
 
 namespace Flagrum.Migrations;
 

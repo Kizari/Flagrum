@@ -1,0 +1,17 @@
+﻿<shell:CustomShellWindow x:Class="Flagrum.ApplicationHost.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:application="clr-namespace:Flagrum.Application;assembly=Flagrum.Application"
+        xmlns:shell="clr-namespace:Flagrum.ApplicationHost.Shell"
+        xmlns:webView="clr-namespace:Flagrum.ApplicationHost.WebView"
+        mc:Ignorable="d"
+        Title="Flagrum"
+        WindowStartupLocation="CenterScreen"
+        Background="#181512"
+        TitleBarBackground="#181512">
+        <Grid>
+                <webView:BlazorWebView Selector="#app" RootComponent="{x:Type application:App}"/>
+        </Grid>
+</shell:CustomShellWindow>

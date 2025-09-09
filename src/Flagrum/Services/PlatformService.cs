@@ -2,13 +2,11 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
-using Flagrum.Main;
+using MainViewModel = Flagrum.ApplicationHost.MainViewModel;
 using ModifierKeys = Flagrum.Abstractions.AssetExplorer.ModifierKeys;
 using MouseAction = Flagrum.Abstractions.AssetExplorer.MouseAction;
 
@@ -34,7 +32,7 @@ public class PlatformService : IPlatformService
 
         if (result.Count > 0)
         {
-            await onFileSelected(result[0].Path.AbsolutePath);
+            await onFileSelected(result[0].Path.LocalPath);
         }
     }
 
@@ -47,7 +45,7 @@ public class PlatformService : IPlatformService
 
         if (result.Count > 0)
         {
-            await onFolderSelected(result[0].Path.AbsolutePath);
+            await onFolderSelected(result[0].Path.LocalPath);
         }
     }
 
@@ -62,7 +60,7 @@ public class PlatformService : IPlatformService
 
         if (result != null)
         {
-            await onFileSelected(result.Path.AbsolutePath);
+            await onFileSelected(result.Path.LocalPath);
         }
     }
 

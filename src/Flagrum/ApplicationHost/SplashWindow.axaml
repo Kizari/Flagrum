@@ -1,9 +1,9 @@
-﻿<Window x:Class="Flagrum.SplashWindow"
+﻿<Window x:Class="Flagrum.ApplicationHost.SplashWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Flagrum"
+        xmlns:applicationHost="clr-namespace:Flagrum.ApplicationHost"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
@@ -11,9 +11,9 @@
         Height="500"
         Width="640"
         Background="transparent"
-        x:DataType="local:SplashViewModel">
+        x:DataType="applicationHost:SplashViewModel">
     <Window.DataContext>
-        <local:SplashViewModel />
+        <applicationHost:SplashViewModel />
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
@@ -43,7 +43,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <Image Grid.Row="0" Grid.RowSpan="2" Source="Assets/logo_outlined.png" Width="240" Height="240"
+        <Image Grid.Row="0" Grid.RowSpan="2" Source="/Assets/logo_outlined.png" Width="240" Height="240"
                HorizontalAlignment="Center" VerticalAlignment="Top" />
     </Grid>
 </Window>

@@ -19,13 +19,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Assets\**\*.*"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
         <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.HtmlRenderer" Version="11.2.0" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
         <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -38,8 +37,10 @@
 <!--        <PackageReference Include="HotAvalonia" Version="3.0.0" PrivateAssets="All" Publish="True"/>-->
         <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
         <PackageReference Include="Velopack" Version="0.0.320"/>
         <PackageReference Include="Drautos" Version="1.0.0"/>
+        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.0.3"/>
     </ItemGroup>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
@@ -102,14 +103,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Resource Include="Assets\Play-Regular.ttf">
+        <Resource Include="Assets\patreon.png">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <Resource Include="flagrum-titlebar.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <Resource Include="patreon.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <Resource Include="Assets\Play-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
         <None Remove="Resources\logo.png" />
         <Resource Include="Resources\logo.png">
@@ -158,6 +156,23 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
         </Compile>
+        <Compile Update="ApplicationHost\App.axaml.cs">
+          <DependentUpon>App.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="ApplicationHost\MainWindow.axaml.cs">
+          <DependentUpon>MainWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="ApplicationHost\SplashWindow.axaml.cs">
+          <DependentUpon>SplashWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="ApplicationHost\Shell\CustomShellWindow.axaml" />
+      <AdditionalFiles Include="ApplicationHost\Shell\PlasmaShellButton.axaml" />
     </ItemGroup>
 
 </Project>

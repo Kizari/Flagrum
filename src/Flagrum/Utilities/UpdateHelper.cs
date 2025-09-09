@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Flagrum.ApplicationHost;
 using Velopack;
 using Velopack.Sources;
 

@@ -8,6 +8,7 @@ using Flagrum.Generators;
 using Flagrum.Application.Features.ModManager.Project;
 using Flagrum.Application.Features.ModManager.Services;
 using Flagrum.Application.Services;
+using Flagrum.ApplicationHost;
 
 namespace Flagrum.Migrations;
 

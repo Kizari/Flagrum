@@ -6,7 +6,7 @@ using Flagrum.Abstractions;
 using Flagrum.Core.Utilities;
 using Flagrum.Services;
 
-namespace Flagrum.Main;
+namespace Flagrum.ApplicationHost;
 
 public partial class MainViewModel : ObservableObject
 {

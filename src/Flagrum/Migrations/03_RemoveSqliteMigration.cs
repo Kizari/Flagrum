@@ -19,6 +19,7 @@ using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Application.Utilities;
+using Flagrum.ApplicationHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,7 +82,7 @@ public partial class RemoveSqliteMigration
     [MigrationStep(1, "9904759b-cdc3-4381-8362-47519e0a8323", MigrationScope.Application)]
     private async Task MigrateWorkshopModelReplacementPresets()
     {
-        SplashViewModel.Instance.SetLoadingText("Migrating Workshop model replacement presets");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Migrating Workshop model replacement presets");
         
         // Ensure the DB is up to date
         await _context.Database.MigrateAsync();
@@ -123,7 +124,7 @@ public partial class RemoveSqliteMigration
     [MigrationStep(3, "748726d9-b1f4-4de7-a2f2-071a9439b5fb", MigrationScope.Profile, MigrationStepMode.Warn, ReindexWarning)]
     private async Task IndexLooseFiles()
     {
-        SplashViewModel.Instance.SetLoadingText("Temporarily disabling active mods");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Temporarily disabling active mods");
         
         // Disable all mods so the file indexer doesn't index any mod files
         var modsToEnable = new List<IFlagrumProject>();
@@ -135,11 +136,11 @@ public partial class RemoveSqliteMigration
         }
         
         // Regenerate the file index
-        SplashViewModel.Instance.SetLoadingText("Indexing loose files");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Indexing loose files");
         _fileIndex.Regenerate();
         
         // Reenable all mods now that the index has regenerated
-        SplashViewModel.Instance.SetLoadingText("Reenabling active mods");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Reenabling active mods");
         foreach (var project in modsToEnable)
         {
             await _modManager.EnableMod(project);

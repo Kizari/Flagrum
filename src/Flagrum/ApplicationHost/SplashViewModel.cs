@@ -1,7 +1,7 @@
 ﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Flagrum;
+namespace Flagrum.ApplicationHost;
 
 public partial class SplashViewModel : ObservableObject
 {

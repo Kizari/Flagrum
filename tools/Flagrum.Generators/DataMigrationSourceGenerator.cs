@@ -135,8 +135,9 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
                 {
                     var catchBody = m.Mode == MigrationStepMode.Warn
                         ? $"""
-                                           await MessageBoxManager.GetMessageBoxStandard("Warning",
-                                               "{m.Warning}", ButtonEnum.Ok, Icon.Warning).ShowAsync();
+                                           await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                                               MessageBox.ShowAsync("Warning", "{m.Warning}", Icon.Warning)
+                                           );
                                                
                                            // Warned migrations won't be retried
                                            {Service(m)}.SetMigrated({m.MethodName}Id);
@@ -171,8 +172,8 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
 
                            using System.Threading.Tasks;
                            using System.Collections.Generic;
-                           using MsBox.Avalonia;
                            using MsBox.Avalonia.Enums;
+                           using Flagrum.Utilities;
 
                            namespace {{nameSpace}};
 

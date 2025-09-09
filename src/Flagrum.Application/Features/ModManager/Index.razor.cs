@@ -91,7 +91,7 @@ public sealed partial class Index : ModComponentBase
         var category = Configuration.Get<int>(StateKey.CurrentEarcCategory);
         Category = category;
 
-        foreach (var file in Directory.EnumerateFiles($@"{IOHelper.GetWebRoot()}\EarcMods"))
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(IOHelper.GetWebRoot(), "EarcMods")))
         {
             var id = file.Split('\\').Last().Replace(".png", "");
             var guid = new Guid(id);

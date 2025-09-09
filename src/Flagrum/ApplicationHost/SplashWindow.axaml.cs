@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace Flagrum;
+namespace Flagrum.ApplicationHost;
 
 public partial class SplashWindow : Window
 {

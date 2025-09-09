@@ -9,6 +9,7 @@ using Flagrum.Generators;
 using Flagrum.Migrations;
 using Flagrum.Utilities;
 using Flagrum.Application.Features.ModManager.Launcher;
+using Flagrum.ApplicationHost;
 using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -23,6 +24,11 @@ internal static class Program
     /// The dependency injection service container for the application.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
+    
+    /// <summary>
+    /// Identifier for the program's main (UI) thread.
+    /// </summary>
+    public static int MainThreadId { get; private set; }
 
     /// <summary>
     /// Main entry point for the application.
@@ -32,10 +38,9 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         // Program setup
+        MainThreadId = Environment.CurrentManagedThreadId;
         CrashHelper.Initialize();
         Services = ServiceHelper.ConfigureServices();
-        
-        OnFreshInstall(new SemanticVersion(1, 6, 5));
 
         // Initialize Velopack
         VelopackApp.Build()

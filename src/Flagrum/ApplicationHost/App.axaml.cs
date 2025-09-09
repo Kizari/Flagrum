@@ -10,20 +10,19 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Flagrum.Abstractions;
-using Flagrum.Core.Utilities;
-using Flagrum.Main;
-using Flagrum.Migrations;
-using Flagrum.Utilities;
 using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Application.Services;
+using Flagrum.Core.Utilities;
+using Flagrum.Migrations;
 using Flagrum.Services;
+using Flagrum.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using Serilog;
 
-namespace Flagrum;
+namespace Flagrum.ApplicationHost;
 
 /// <summary>
 /// Main Avalonia application for Flagrum.
@@ -61,7 +60,7 @@ public partial class App : Avalonia.Application
     {
         AvaloniaXamlLoader.Load(this);
     }
-    
+
     /// <summary>
     /// Creates and shows the main window when Avalonia is ready.
     /// </summary>

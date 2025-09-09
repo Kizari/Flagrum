@@ -24,6 +24,7 @@ using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Application.Utilities;
+using Flagrum.ApplicationHost;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flagrum.Migrations;
@@ -114,7 +115,7 @@ public partial class FileIndexMigration
             ((FileIndex)_fileIndex).Archives.Add(Cryptography.Hash64(archive.RelativePath), archive);
         }
 
-        SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
 
         _fileIndex.Save(_profile.FileIndexPath);
         _context.SetString(StateKey.CurrentAssetNode, null);
@@ -129,7 +130,7 @@ public partial class FileIndexMigration
     [MigrationStep(1, "6e57fe99-40e1-4e47-aabe-59ffcb21fafb", MigrationScope.Profile)]
     private async Task MigrateProjects()
     {
-        SplashViewModel.Instance.SetLoadingText("Migrating mod projects");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Migrating mod projects");
 
         var guids = new List<string>();
         var modsToEnable = new List<Guid>();
@@ -295,7 +296,7 @@ public partial class FileIndexMigration
             }
         }
 
-        SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
 
         // Delete the old thumbnail directories
         Directory.Delete(_profile.ModThumbnailWebDirectory, true);
@@ -326,7 +327,7 @@ public partial class FileIndexMigration
         // Delete all backup files as the new system doesn't need to backup files due to using patch archives
         Directory.Delete(_profile.EarcModBackupsDirectory, true);
 
-        SplashViewModel.Instance.SetLoadingText("Reenabling mods");
+        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Reenabling mods");
 
         // Now that everything is migrated, we need to enable any mods that were disabled for the migration
         foreach (var project in modsToEnable.Select(m => _modManager.Projects[m]))

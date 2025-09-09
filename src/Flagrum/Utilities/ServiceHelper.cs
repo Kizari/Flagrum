@@ -9,7 +9,10 @@ using Flagrum.Generators;
 using Flagrum.Migrations;
 using Flagrum.Services;
 using Flagrum.Application.Services;
+using Flagrum.ApplicationHost;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
 using Serilog.Events;
 
@@ -29,13 +32,17 @@ public static class ServiceHelper
             .CreateLogger();
 
         // Populate the service collection
-        var services = new ServiceCollection();
-        services.AddLogging(l => l.AddSerilog());
-        services.AddSingleton<IProfileService, ProfileService>();
-        services.AddSingleton<AppStateService>();
-        services.AddSingleton<IPlatformService, PlatformService>();
-        services.AddFlagrum();
-        services.AddFlagrumApplicationManual();
+        var services = new ServiceCollection()
+            .AddLogging(l => l.AddSerilog())
+            .AddSingleton<IProfileService, ProfileService>()
+            .AddSingleton<AppStateService>()
+            .AddSingleton<IPlatformService, PlatformService>()
+            .AddSingleton<JSComponentConfigurationStore>()
+            .AddSingleton<IFileProvider>(_ => new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
+            .AddBlazorWebView()
+            .AddFlagrum()
+            .AddFlagrumApplicationManual();
 
         // Automatically add all ViewModels to the DI container via reflection
         var viewModels = Assembly.GetAssembly(typeof(App))!.GetTypes()
