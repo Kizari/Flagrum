@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using Flagrum.Core.Utilities;
 
 namespace Flagrum.Utilities;
@@ -45,11 +44,11 @@ public static class CrashHelper
     [Conditional("RELEASE")]
     public static void InitializeApplication()
     {
-        App.Current.DispatcherUnhandledException += (_, e) =>
-        {
-            DumpCrashLog(e.Exception, false);
-            throw new OffMainThreadException();
-        };
+        // App.Current.DispatcherUnhandledException += (_, e) =>
+        // {
+        //     DumpCrashLog(e.Exception, false);
+        //     throw new OffMainThreadException();
+        // };
     }
 
     [Conditional("RELEASE")]
@@ -62,8 +61,8 @@ public static class CrashHelper
             {
                 if (fromMainThread)
                 {
-                    MessageBox.Show("Flagrum has encountered a fatal error and must now close.",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // MessageBox.Show("Flagrum has encountered a fatal error and must now close.",
+                    //     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 return;
@@ -107,7 +106,7 @@ public static class CrashHelper
             {
                 if (fromMainThread)
                 {
-                    MessageBox.Show("Failed to save crash log.\n\n" + e.Message);
+                    //MessageBox.Show("Failed to save crash log.\n\n" + e.Message);
                 }
             }
         }
@@ -115,8 +114,8 @@ public static class CrashHelper
         {
             if (fromMainThread)
             {
-                MessageBox.Show("Flagrum has encountered a fatal error and must now close.", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // MessageBox.Show("Flagrum has encountered a fatal error and must now close.", 
+                //     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

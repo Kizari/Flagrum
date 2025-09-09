@@ -1,12 +1,16 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Flagrum.Core.Utilities;
 
 public static class IOHelper
 {
-    public static string LocalApplicationData =>
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    public static string LocalApplicationData
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    }
 
     public static string GetExecutingDirectory()
     {
@@ -20,32 +24,18 @@ public static class IOHelper
 
     public static void EnsureDirectoryExists(string path)
     {
-        path = path.Replace('/', '\\');
-        var directories = path.Split('\\');
-        var currentPath = "";
-        foreach (var directory in directories)
+        if (!Directory.Exists(path))
         {
-            currentPath += directory + '\\';
-            if (!Directory.Exists(currentPath))
-            {
-                Directory.CreateDirectory(currentPath);
-            }
+            Directory.CreateDirectory(path);
         }
     }
 
     public static void EnsureDirectoriesExistForFilePath(string path)
     {
-        path = path.Replace('/', '\\');
-        path = path[..path.LastIndexOf('\\')];
-        var directories = path.Split('\\');
-        var currentPath = "";
-        foreach (var directory in directories)
+        var directory = Path.GetDirectoryName(path);
+        if (!Directory.Exists(directory))
         {
-            currentPath += directory + '\\';
-            if (!Directory.Exists(currentPath))
-            {
-                Directory.CreateDirectory(currentPath);
-            }
+            Directory.CreateDirectory(directory!);
         }
     }
 

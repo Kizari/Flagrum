@@ -6,7 +6,7 @@ public interface IProfileService : IDisposable
     string ClientId { get; }
     IProfile Current { get; }
     string LastVersionNotes { get; set; }
-    Version LastVersion { get; }
+    Version? LastVersion { get; }
     bool DidMigrateThisSession { get; }
     bool IsReady { get; }
     string FlagrumDirectory { get; }

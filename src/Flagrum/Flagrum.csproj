@@ -2,40 +2,42 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <UseWPF>true</UseWPF>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <AvaloniaVersion>11.3.5</AvaloniaVersion>
         <BaseVersion>1.6.5</BaseVersion> <!-- Current version of the application -->
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
         <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="loading.gif"/>
+        <AvaloniaResource Include="Assets\**"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="boilerplatezero" Version="2.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.HtmlRenderer" Version="11.2.0" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
         <PackageReference Include="FontAwesome5" Version="2.1.6"/>
-        <PackageReference Include="HelixToolkit.SharpDX.Assimp" Version="2.22.0"/>
-        <PackageReference Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.22.0"/>
-        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349"/>
+<!--        <PackageReference Include="HotAvalonia" Version="3.0.0" PrivateAssets="All" Publish="True"/>-->
+        <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2"/>
-        <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="Velopack" Version="0.0.320"/>
         <PackageReference Include="Drautos" Version="1.0.0"/>
     </ItemGroup>
@@ -94,26 +96,26 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <None Remove="Resources\Play-Regular.ttf"/>
-        <Resource Include="Resources\Play-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <Resource Include="Assets\logo_outlined.png">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
     </ItemGroup>
 
     <ItemGroup>
+        <Resource Include="Assets\Play-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Resource>
         <Resource Include="flagrum-titlebar.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
         <Resource Include="patreon.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <None Remove="Resources\logo.png"/>
+        <None Remove="Resources\logo.png" />
         <Resource Include="Resources\logo.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <None Remove="Resources\logo_outlined.png"/>
-        <Resource Include="Resources\logo_outlined.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
+        <None Remove="Resources\logo_outlined.png" />
     </ItemGroup>
 
     <ItemGroup>
@@ -156,11 +158,6 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
         </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ApplicationDefinition Remove="App.xaml"/>
-        <Page Include="App.xaml"/>
     </ItemGroup>
 
 </Project>

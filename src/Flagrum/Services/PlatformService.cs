@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Main;
-using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Input_ModifierKeys = System.Windows.Input.ModifierKeys;
-using Input_MouseAction = System.Windows.Input.MouseAction;
 using ModifierKeys = Flagrum.Abstractions.AssetExplorer.ModifierKeys;
 using MouseAction = Flagrum.Abstractions.AssetExplorer.MouseAction;
 
@@ -17,53 +16,53 @@ namespace Flagrum.Services;
 
 public class PlatformService : IPlatformService
 {
+    private IStorageProvider? _storageProvider;
+    
     public MainViewModel Main { get; set; } = null!;
-    public ViewportViewModel Viewport { get; set; } = null!;
+
+    public void SetStorageProvider(IStorageProvider storageProvider)
+    {
+        _storageProvider = storageProvider;
+    }
 
     public async Task OpenFileDialogAsync(string filter, Func<string, Task> onFileSelected)
     {
-        var dialog = new OpenFileDialog
+        var result = await _storageProvider!.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Filter = filter
-        };
+            FileTypeFilter = [new FilePickerFileType(filter)]
+        });
 
-        var result = await App.Current.Dispatcher.InvokeAsync(() => dialog.ShowDialog());
-
-        if (result == true)
+        if (result.Count > 0)
         {
-            await onFileSelected(dialog.FileName);
+            await onFileSelected(result[0].Path.AbsolutePath);
         }
     }
 
     public async Task OpenFolderDialogAsync(string initialDirectory, Func<string, Task> onFolderSelected)
     {
-        var dialog = new CommonOpenFileDialog
+        var result = await _storageProvider!.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            InitialDirectory = initialDirectory,
-            IsFolderPicker = true
-        };
+            SuggestedStartLocation = await _storageProvider.TryGetFolderFromPathAsync(initialDirectory)
+        });
 
-        var result = await App.Current.Dispatcher.InvokeAsync(() => dialog.ShowDialog());
-
-        if (result == CommonFileDialogResult.Ok)
+        if (result.Count > 0)
         {
-            await onFolderSelected(dialog.FileName);
+            await onFolderSelected(result[0].Path.AbsolutePath);
         }
     }
 
     public async Task OpenSaveFileDialogAsync(string defaultName, string filter, Func<string, Task> onFileSelected)
     {
-        var dialog = new SaveFileDialog
+        var result = await _storageProvider!.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Filter = filter,
-            FileName = defaultName
-        };
+            SuggestedFileName = defaultName,
+            FileTypeChoices = [new FilePickerFileType(filter)],
+            ShowOverwritePrompt = true
+        });
 
-        var result = await App.Current.Dispatcher.InvokeAsync(() => dialog.ShowDialog());
-
-        if (result == true)
+        if (result != null)
         {
-            await onFileSelected(dialog.FileName);
+            await onFileSelected(result.Path.AbsolutePath);
         }
     }
 
@@ -71,41 +70,38 @@ public class PlatformService : IPlatformService
 
     public void Restart()
     {
-        App.Current.Shutdown(0);
+        var executablePath = Path.Combine(Directory.GetCurrentDirectory(), "Flagrum");
+        if (!File.Exists(executablePath))
+        {
+            executablePath += ".exe";
+        }
+
+        ((IClassicDesktopStyleApplicationLifetime)Avalonia.Application.Current!.ApplicationLifetime!).Shutdown();
 
         // Changed from System.Windows.Forms.Application.Restart() to solve https://github.com/Kizari/Flagrum/issues/81
         // Keeping this comment here because it's worth noting that Application.Restart would replay the startup args
-        Process.Start(System.Windows.Forms.Application.ExecutablePath);
+        Process.Start(executablePath);
     }
 
     public void Resize3DViewport(int left, int top, int width, int height)
     {
-        Viewport.ViewportLeft = left;
-        Viewport.ViewportTop = top;
-        Viewport.ViewportWidth = width;
-        Viewport.ViewportHeight = height;
+        throw new NotImplementedException();
     }
 
     public void Update3DViewportBindings(ModifierKeys rotateModifierKey, MouseAction rotateMouseAction,
         ModifierKeys panModifierKey,
         MouseAction panMouseAction)
     {
-        Viewport.ViewportRotateGesture = new MouseGesture(
-            (Input_MouseAction)rotateMouseAction,
-            (Input_ModifierKeys)rotateModifierKey);
-
-        Viewport.ViewportPanGesture = new MouseGesture(
-            (Input_MouseAction)panMouseAction,
-            (Input_ModifierKeys)panModifierKey);
+        throw new NotImplementedException();
     }
 
     public void Set3DViewportVisibility(bool isVisible)
     {
-        Viewport.IsViewportVisible = isVisible;
+        throw new NotImplementedException();
     }
 
     public int ChangeModel(IAssetExplorerNode gmdlNode, AssetExplorerView view, int lodLevel) =>
-        Viewport.ViewportHelper!.ChangeModel(gmdlNode, view, lodLevel);
+        throw new NotImplementedException();
 
     public string? GetFmodPath() => Main.FmodPath;
 
@@ -116,7 +112,7 @@ public class PlatformService : IPlatformService
 
     public void SetClipboardText(string text)
     {
-        Clipboard.SetText(text);
+        throw new NotImplementedException();
     }
 
     public void RefreshPatreonButton()

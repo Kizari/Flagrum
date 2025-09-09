@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Input;
 using Flagrum.Abstractions;
 using Flagrum.Core.Utilities;
 using Flagrum.Services;
-using PropertyChanged.SourceGenerator;
 
 namespace Flagrum.Main;
 
@@ -13,20 +12,17 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly IConfiguration _configuration;
 
-    [Notify] private bool _hasInitializationStarted;
-    [Notify] private bool _hasWebView2Runtime;
-    [Notify] private bool _isMigratingFinished;
-    [Notify] private bool _showPatreonButton;
-    [Notify] private ViewportViewModel _viewportViewModel = null!;
+    [ObservableProperty] private bool _hasInitializationStarted;
+    [ObservableProperty] private bool _hasWebView2Runtime;
+    [ObservableProperty] private bool _isMigratingFinished;
+    [ObservableProperty] private bool _showPatreonButton;
 
     public MainViewModel(
         IPlatformService platformService,
-        ViewportViewModel viewportViewModel,
         IConfiguration configuration)
     {
         _configuration = configuration;
         ((PlatformService)platformService).Main = this;
-        ViewportViewModel = viewportViewModel;
         RefreshPatreonButton();
     }
 

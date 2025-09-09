@@ -106,7 +106,7 @@ public partial class SteppedMigrationUpgrader
     /// </summary>
     private void ResetUpgradeFlags()
     {
-        if (_profile.LastVersion < new Version(1, 5, 10))
+        if (_profile.LastVersion != null && _profile.LastVersion < new Version(1, 5, 10))
         {
             // Reset flag for all profiles
             foreach (var profile in _configuration.Profiles)

@@ -241,6 +241,7 @@ public partial class Configuration : IConfiguration
         foreach (var profile in Profiles)
         {
             profile.SetMigratedNoSave(profileSteps);
+            profile.HasUpgradedToSteppedMigrations = true;
         }
         
         Save();

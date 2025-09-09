@@ -2,13 +2,16 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using System.Threading.Tasks;
+using Avalonia;
 using Flagrum.Abstractions;
 using Flagrum.Generators;
 using Flagrum.Migrations;
 using Flagrum.Utilities;
 using Flagrum.Application.Features.ModManager.Launcher;
 using Microsoft.Extensions.DependencyInjection;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 using NuGet.Versioning;
 using Velopack;
 
@@ -26,11 +29,13 @@ internal static class Program
     /// </summary>
     /// <param name="args">Commandline arguments that Flagrum was launched with.</param>
     [STAThread]
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         // Program setup
         CrashHelper.Initialize();
         Services = ServiceHelper.ConfigureServices();
+        
+        OnFreshInstall(new SemanticVersion(1, 6, 5));
 
         // Initialize Velopack
         VelopackApp.Build()
@@ -59,7 +64,8 @@ internal static class Program
                     _ => throw new NotSupportedException($"Did not recognize launch result {result}.")
                 };
 
-                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await MessageBoxManager.GetMessageBoxStandard("Error", message, ButtonEnum.Ok, Icon.Error)
+                    .ShowAsync();
             }
 
             // Flagrum was invoked only to launch the game, so terminate here
@@ -70,18 +76,20 @@ internal static class Program
         Services.GetRequiredService<SteppedMigrationUpgrader>().Run();
 
         // Run the application
-        RunApp();
+        RunApp(args);
     }
 
     /// <summary>
     /// Runs the WPF application until shutdown is requested.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    private static void RunApp()
+    private static void RunApp(string[] args)
     {
-        var app = new App();
-        app.InitializeComponent();
-        app.Run();
+        AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace()
+            .StartWithClassicDesktopLifetime(args);
     }
 
     /// <summary>

@@ -61,8 +61,7 @@ public class ProfileService : IProfileService
             var ffxvDirectory = Path.GetDirectoryName(Current.GamePath);
             var commonFolder = Path.GetDirectoryName(ffxvDirectory);
             var steamAppsFolder = Path.GetDirectoryName(commonFolder);
-
-            return $@"{steamAppsFolder}\workshop\appworkshop_637650.acf";
+            return Path.Combine(steamAppsFolder!, "workshop", "appworkshop_637650.acf");
         }
     }
 
@@ -121,13 +120,12 @@ public class ProfileService : IProfileService
         }
     }
 
-    public string FlagrumDirectory =>
-        $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum";
+    public string FlagrumDirectory => Path.Combine(IOHelper.LocalApplicationData, "Flagrum");
 
-    public string DatabasePath => $@"{FlagrumDirectory}\profiles\{Current.Id}\flagrum.db";
+    public string DatabasePath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "flagrum.db");
     public string FileIndexPath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "file_index.zstd");
-    public string ImagesDirectory => $@"{IOHelper.GetWebRoot()}\images\{Current.Id}";
-    public string ModThumbnailWebDirectory => $@"{IOHelper.GetWebRoot()}\EarcMods\{Current.Id}";
+    public string ImagesDirectory => Path.Combine(IOHelper.GetWebRoot(), "images", Current.Id.ToString());
+    public string ModThumbnailWebDirectory => Path.Combine(IOHelper.GetWebRoot(), "EarcMods", Current.Id.ToString());
 
     /// <inheritdoc />
     public string TemporaryDirectory => Path.Combine(IOHelper.LocalApplicationData, "Temp", "Flagrum");
@@ -142,18 +140,18 @@ public class ProfileService : IProfileService
     public string PatchDirectory => Path.Combine(GameDataDirectory, "patch");
 
     /// <inheritdoc />
-    public string ModFilesDirectory => $@"{FlagrumDirectory}\earc\{Current.Id}";
+    public string ModFilesDirectory => Path.Combine(FlagrumDirectory, "earc", Current.Id.ToString());
 
-    public string EarcModThumbnailDirectory => $@"{ModFilesDirectory}\thumbnails";
-    public string EarcModBackupsDirectory => $@"{ModFilesDirectory}\backup";
+    public string EarcModThumbnailDirectory => Path.Combine(ModFilesDirectory, "thumbnails");
+    public string EarcModBackupsDirectory => Path.Combine(ModFilesDirectory, "backup");
 
     /// <inheritdoc />
     public string SteamExePath { get; private set; }
 
-    public string BinmodDirectory => $"{Path.GetDirectoryName(Current.BinmodListPath)}";
-    public string WorkshopDirectory => $@"{Path.GetDirectoryName(WorkshopPath)}\content\637650";
-    public string GameDataDirectory => $@"{Path.GetDirectoryName(Current.GamePath)}\datas";
-    public string GameDirectory => Path.GetDirectoryName(Current.GamePath);
+    public string BinmodDirectory => Path.GetDirectoryName(Current.BinmodListPath)!;
+    public string WorkshopDirectory => Path.Combine(Path.GetDirectoryName(WorkshopPath)!, "content", "637650");
+    public string GameDataDirectory => Path.Combine(Path.GetDirectoryName(Current.GamePath)!, "datas");
+    public string GameDirectory => Path.GetDirectoryName(Current.GamePath)!;
     public string ModStatePath => Path.Combine(FlagrumDirectory, "Profiles", Current.Id.ToString(), "mod_state.zstd");
 
     public void Dispose()

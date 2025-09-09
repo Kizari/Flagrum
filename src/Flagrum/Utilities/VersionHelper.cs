@@ -89,22 +89,31 @@ public class VersionHelper
 
     private void SetVersionInRegistry(string version)
     {
+        // TODO: Rework this
+        return;
         Registry.SetValue(VersionKey, "", version.ToBase64());
     }
 
     private string? GetVersionFromRegistry()
     {
+        // TODO: Rework this
+        return "v1.6.5";
         var result = (string?)Registry.GetValue(VersionKey, "", null);
         return result?.FromBase64();
     }
 
     private void SetVersionTimeInRegistry(DateTime time)
     {
+        // TODO: Rework this
+        return;
         Registry.SetValue(VersionTimeKey, "", time.Ticks.ToString());
     }
 
     private DateTime? GetVersionTimeFromRegistry()
     {
+        // TODO: Rework this
+        return null;
+        
         var time = (string?)Registry.GetValue(VersionTimeKey, "", null);
         if (time != null && long.TryParse(time, out var ticks))
         {
