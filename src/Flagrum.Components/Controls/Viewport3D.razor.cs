@@ -55,6 +55,4 @@ public sealed partial class Viewport3D : ComponentBase, IAsyncDisposable
     {
         await _module!.InvokeVoidAsync("frameModel", minX, minY, minZ, maxX, maxY, maxZ);
     }
-
-    public async Task AnimateAsync() => await _module!.InvokeVoidAsync("animate");
 }
