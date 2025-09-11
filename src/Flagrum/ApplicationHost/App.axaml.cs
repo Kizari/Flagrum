@@ -147,8 +147,9 @@ public partial class App : Avalonia.Application
         {
             var desktop = (IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!;
             desktop.MainWindow = new MainWindow(fmodPath);
-            ((PlatformService)Program.Services.GetRequiredService<IPlatformService>())
-                .SetStorageProvider(desktop.MainWindow.StorageProvider);
+            var platform = (PlatformService)Program.Services.GetRequiredService<IPlatformService>();
+            platform.SetStorageProvider(desktop.MainWindow.StorageProvider);
+            platform.SetClipboard(desktop.MainWindow.Clipboard!);
             desktop.MainWindow.Show();
             splash.Close();
         });

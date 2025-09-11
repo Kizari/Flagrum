@@ -59,7 +59,6 @@
     {
         ContextNode = contextNode;
         AppState.IsModalOpen = true;
-        PlatformService.Set3DViewportVisibility(false);
         Modal.Open();
     }
 
@@ -67,11 +66,6 @@
     {
         Modal.Close();
         AppState.IsModalOpen = false;
-
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(true);
-        }
     }
 
     private async Task Export()

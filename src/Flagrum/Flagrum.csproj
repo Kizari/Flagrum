@@ -34,8 +34,8 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
         <PackageReference Include="FontAwesome5" Version="2.1.6"/>
-<!--        <PackageReference Include="HotAvalonia" Version="3.0.0" PrivateAssets="All" Publish="True"/>-->
-        <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
+        <!--        <PackageReference Include="HotAvalonia" Version="3.0.0" PrivateAssets="All" Publish="True"/>-->
+        <PackageReference Include="MessageBox.Avalonia" Version="3.2.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
         <PackageReference Include="Velopack" Version="0.0.320"/>
@@ -98,22 +98,25 @@
         </Content>
         <None Remove="Resources\Play-Regular.ttf"/>
         <Resource Include="Assets\logo_outlined.png">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
+        <None Update="libnvtt.so.30205">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
         <Resource Include="Assets\patreon.png">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
         <Resource Include="Assets\Play-Regular.ttf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <None Remove="Resources\logo.png" />
+        <None Remove="Resources\logo.png"/>
         <Resource Include="Resources\logo.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <None Remove="Resources\logo_outlined.png" />
+        <None Remove="Resources\logo_outlined.png"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -157,22 +160,22 @@
             <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
         </Compile>
         <Compile Update="ApplicationHost\App.axaml.cs">
-          <DependentUpon>App.axaml</DependentUpon>
-          <SubType>Code</SubType>
+            <DependentUpon>App.axaml</DependentUpon>
+            <SubType>Code</SubType>
         </Compile>
         <Compile Update="ApplicationHost\MainWindow.axaml.cs">
-          <DependentUpon>MainWindow.axaml</DependentUpon>
-          <SubType>Code</SubType>
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
         </Compile>
         <Compile Update="ApplicationHost\SplashWindow.axaml.cs">
-          <DependentUpon>SplashWindow.axaml</DependentUpon>
-          <SubType>Code</SubType>
+            <DependentUpon>SplashWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="ApplicationHost\Shell\CustomShellWindow.axaml" />
-      <AdditionalFiles Include="ApplicationHost\Shell\PlasmaShellButton.axaml" />
+        <AdditionalFiles Include="ApplicationHost\Shell\CustomShellWindow.axaml"/>
+        <AdditionalFiles Include="ApplicationHost\Shell\PlasmaShellButton.axaml"/>
     </ItemGroup>
 
 </Project>

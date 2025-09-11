@@ -5,15 +5,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using DirectXTexNet;
 using Flagrum.Abstractions;
+using Flagrum.Application.Features.ModManager.Data;
+using Flagrum.Application.Utilities;
 using Flagrum.Core.Graphics.Terrain;
 using Flagrum.Core.Graphics.Textures;
 using Flagrum.Core.Graphics.Textures.DirectX;
 using Flagrum.Core.Graphics.Textures.Luminous;
 using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Application.Features.ModManager.Data;
-using Flagrum.Application.Services;
-using Flagrum.Application.Utilities;
 
 namespace Flagrum.Application.Features.Shared;
 
@@ -97,24 +96,9 @@ public class TextureConverter(IProfileService profile)
         return stream.ToArray();
     }
 
-    public byte[] ToJpeg(byte[] btex) => ToJpegs(btex).First();
-
-    public byte[] ToPng(byte[] btex) => ToPngs(btex).First();
+    public byte[] ToJpeg(byte[] btex) => throw new NotImplementedException();
 
     public byte[] ToTarga(byte[] btex) => ToTargas(btex).First();
-
-    public IEnumerable<byte[]> ToJpegs(byte[] btex)
-    {
-        var image = BtexToScratchImage(btex);
-        var metadata = image.GetMetadata();
-
-        for (var i = 0; i < image.GetImageCount(); i += metadata.MipLevels)
-        {
-            yield return image.ToJpeg(i);
-        }
-
-        image.Dispose();
-    }
 
     public IEnumerable<byte[]> ToPngs(byte[] btex)
     {

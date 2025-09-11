@@ -3,25 +3,22 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Flagrum.Abstractions;
-using Flagrum.Abstractions.AssetExplorer;
 using MainViewModel = Flagrum.ApplicationHost.MainViewModel;
-using ModifierKeys = Flagrum.Abstractions.AssetExplorer.ModifierKeys;
-using MouseAction = Flagrum.Abstractions.AssetExplorer.MouseAction;
 
 namespace Flagrum.Services;
 
 public class PlatformService : IPlatformService
 {
     private IStorageProvider? _storageProvider;
+    private IClipboard? _clipboard;
     
     public MainViewModel Main { get; set; } = null!;
 
-    public void SetStorageProvider(IStorageProvider storageProvider)
-    {
-        _storageProvider = storageProvider;
-    }
+    public void SetClipboard(IClipboard clipboard) => _clipboard = clipboard;
+    public void SetStorageProvider(IStorageProvider storageProvider) => _storageProvider = storageProvider;
 
     public async Task OpenFileDialogAsync(string filter, Func<string, Task> onFileSelected)
     {
@@ -81,26 +78,6 @@ public class PlatformService : IPlatformService
         Process.Start(executablePath);
     }
 
-    public void Resize3DViewport(int left, int top, int width, int height)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Update3DViewportBindings(ModifierKeys rotateModifierKey, MouseAction rotateMouseAction,
-        ModifierKeys panModifierKey,
-        MouseAction panMouseAction)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Set3DViewportVisibility(bool isVisible)
-    {
-        throw new NotImplementedException();
-    }
-
-    public int ChangeModel(IAssetExplorerNode gmdlNode, AssetExplorerView view, int lodLevel) =>
-        throw new NotImplementedException();
-
     public string? GetFmodPath() => Main.FmodPath;
 
     public void ClearFmodPath()
@@ -108,10 +85,7 @@ public class PlatformService : IPlatformService
         Main.FmodPath = null;
     }
 
-    public void SetClipboardText(string text)
-    {
-        throw new NotImplementedException();
-    }
+    public Task SetClipboardTextAsync(string text) => _clipboard!.SetTextAsync(text);
 
     public void RefreshPatreonButton()
     {

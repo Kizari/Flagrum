@@ -15,7 +15,7 @@
         @if (Group.Type == ModEditorInstructionGroupType.Archive)
         {
             <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                  @onclick="() => PlatformService.SetClipboardText(Group.Text)">
+                  @onclick="() => PlatformService.SetClipboardTextAsync(Group.Text)">
                 content_copy
             </span>
             <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"

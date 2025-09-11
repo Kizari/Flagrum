@@ -1,6 +1,8 @@
-﻿@using System.IO
-@inject IProfileService Profile
-@inject TextureConverter TextureConverter
+﻿@inject IProfileService Profile
+@using System.IO
+@using Flagrum.Core.Graphics.Textures
+@using Flagrum.Core.Graphics.Textures.Luminous
+@implements IDisposable
 
 <div class="flex-grow flex flex-col">
     <div class="flex-grow flex flex-row items-center">
@@ -16,7 +18,7 @@
         }
         <img alt="Texture Preview" src="images/@Profile.Current.Id/@ImageName" class="mx-auto select-none"
              style="max-width: 70%; max-height: 90%;"/>
-        @if (CurrentIndex < Images.Count - 1)
+        @if (CurrentIndex < Texture.ImageCount - 1)
         {
             <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none"
                   @onclick="() => SetImage(CurrentIndex + 1)">arrow_forward_ios</span>
@@ -27,10 +29,10 @@
         }
     </div>
 
-    @if (Images.Count > 1)
+    @if (Texture.ImageCount > 1)
     {
         <div class="text-center mb-6">
-            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @Images.Count</span>
+            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @Texture.ImageCount</span>
         </div>
     }
 </div>
@@ -43,7 +45,7 @@
 
     private string ImageName { get; set; } = "asset_preview.jpg";
 
-    private IList<byte[]> Images { get; set; }
+    private SurfaceSet Texture { get; set; }
     private int CurrentIndex { get; set; }
 
     protected override void OnParametersSet()
@@ -51,7 +53,9 @@
         if (_previousItem != Item)
         {
             _previousItem = Item;
-            Images = TextureConverter.ToJpegs(Item.Data).ToList();
+
+            Texture?.Dispose();
+            Texture = BlackTexture.Deserialize(Item.Data, Profile.Current.Type).ToSurfaceSet();
             SetImage(0);
         }
     }
@@ -59,11 +63,14 @@
     private void SetImage(int index)
     {
         CurrentIndex = index;
-        File.WriteAllBytes(Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg"), Images[index]);
-
-        // Jank to trick the UI into updating
-        ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
-
+        var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
+        Texture.SaveJpg(index, 0, path);
+        ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces img update on state change
         StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        Texture?.Dispose();
     }
 }

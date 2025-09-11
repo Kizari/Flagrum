@@ -1,53 +1,54 @@
-﻿@using Flagrum.Core.Utilities.Extensions
-@using Flagrum.Application.Features.AssetExplorer.Base
-@using Flagrum.Application.Features.Settings.Data
-@implements IDisposable
+﻿@using Flagrum.Application.Features.AssetExplorer.Base
+@using Flagrum.Core.Graphics.Materials
+@using Flagrum.Core.Graphics.Models
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Utilities.Extensions
 
-@inject IPlatformService PlatformService
-@inject JSInterop Interop
 @inject AppStateService AppState
 @inject IStringLocalizer<App> AppLocalizer
 @inject IConfiguration Configuration
+@inject IAlertService Alert
+@inject IProfileService Profile
 
-<div class="flex flex-row items-center p-2 sticky top-0 z-40 bg-grey-900">
-    <span class="material-icons ml-2 mr-2 text-grey-200 text-sm">360</span>
-    <span class="text-grey-200 text-sm">
-        @{
-            var rotateModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportRotateModifierKey).ToString();
-            var rotateMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportRotateMouseAction).ToString().SpacePascalCase();
-        }
-        @($"{(rotateModifierKey is null or "None" ? "" : rotateModifierKey + " + ")}{rotateMouseAction}")
-    </span>
-    <span class="material-icons ml-10 mr-2 text-grey-200 text-sm">pan_tool</span>
-    <span class="text-grey-200 flex-grow text-sm">
-        @{
-            var panModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportPanModifierKey).ToString();
-            var panMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportPanMouseAction).ToString().SpacePascalCase();
-        }
-        @($"{(panModifierKey is null or "None" ? "" : panModifierKey + " + ")}{panMouseAction}")
-    </span>
-    <span
-        class="@("material-icons pr-2 text-grey-200 cursor-pointer select-none " + (LodLevel <= 0 || IsLoading ? "invisible" : ""))"
-        @onclick="PreviousLod">
-        chevron_left
-    </span>
-    <span class="text-grey-200">LOD @LodLevel / @(LodLevels - 1)</span>
-    <span
-        class="@("material-icons pl-2 pr-6 text-grey-200 cursor-pointer select-none " + (LodLevel >= LodLevels - 1 || IsLoading ? "invisible" : ""))"
-        @onclick="NextLod">
-        chevron_right
-    </span>
-    <Button Icon="settings" Text="@AppLocalizer["Settings"]" OnClick="OpenSettingsModal"
-            CssClass="@(IsLoading ? "invisible" : "")"/>
-</div>
-<div id="viewportContainer" class="h-full bg-grey-700 row">
-    @if (IsLoading)
-    {
-        <div class="flex flex-col items-center w-full">
+<div class="flex flex-col h-full">
+    <div class="flex flex-row items-center p-2 bg-grey-900" style="height: 46px;">
+        <span class="material-icons ml-2 mr-2 text-grey-200 text-sm">360</span>
+        <span class="text-grey-200 text-sm">
+            @{
+                var rotateModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportRotateModifierKey).ToString();
+                var rotateMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportRotateMouseAction).ToString().SpacePascalCase();
+            }
+            @($"{(rotateModifierKey is null or "None" ? "" : rotateModifierKey + " + ")}{rotateMouseAction}")
+        </span>
+        <span class="material-icons ml-10 mr-2 text-grey-200 text-sm">pan_tool</span>
+        <span class="text-grey-200 flex-grow text-sm">
+            @{
+                var panModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportPanModifierKey).ToString();
+                var panMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportPanMouseAction).ToString().SpacePascalCase();
+            }
+            @($"{(panModifierKey is null or "None" ? "" : panModifierKey + " + ")}{panMouseAction}")
+        </span>
+        <span
+            class="@("material-icons pr-2 text-grey-200 cursor-pointer select-none " + (LodLevel <= 0 || IsLoading ? "invisible" : ""))"
+            @onclick="PreviousLod">
+            chevron_left
+        </span>
+        <span class="text-grey-200">LOD @LodLevel / @(LodLevels - 1)</span>
+        <span
+            class="@("material-icons pl-2 pr-6 text-grey-200 cursor-pointer select-none " + (LodLevel >= LodLevels - 1 || IsLoading ? "invisible" : ""))"
+            @onclick="NextLod">
+            chevron_right
+        </span>
+        <Button Icon="settings" Text="@AppLocalizer["Settings"]" OnClick="OpenSettingsModal"
+                CssClass="@(IsLoading ? "invisible" : "")"/>
+    </div>
+    <div class="bg-grey-700 row" style="height: calc(100% - 46px);">
+        <div class="flex flex-col items-center w-full" style="@(IsLoading ? "" : "display: none;")">
             <div class="continuous-3"></div>
             <span class="block text-accent1-200 font-display font-bold mt-4 mr-2">Loading Model</span>
         </div>
-    }
+        <Viewport3D @ref="Viewport" IsVisible="!IsLoading" OnReady="OnParametersSetAsync"/>
+    </div>
 </div>
 
 <CascadingValue Value="this">
@@ -61,60 +62,120 @@
     [Parameter] public IAssetExplorerNode Item { get; set; }
 
     private IAssetExplorerNode _lastItem;
-    private bool _isRendered;
     private bool IsLoading { get; set; }
     private ModelPreviewSettingsModal ModelPreviewSettingsModal { get; set; }
     private int LodLevel { get; set; }
-    private int LodLevels { get; set; } = 1;
+    private int LodLevels { get; } = 1;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            IsLoading = true;
-            StateHasChanged();
-
-            await Interop.ObserveElementResize(DotNetObjectReference.Create(this), "viewportContainer");
-
-            try
-            {
-                var left = await Interop.GetElementLeftOffset("viewportContainer");
-                var top = await Interop.GetElementTopOffset("viewportContainer");
-                var width = await Interop.GetElementWidth("viewportContainer");
-                var height = await Interop.GetElementHeight("viewportContainer");
-                PlatformService.Resize3DViewport((int)left, (int)top, (int)width, (int)height);
-            }
-            catch
-            {
-                // See https://github.com/Kizari/Flagrum/issues/33
-                // This prevents an edge case, no catch logic is required to continue normal operation
-            }
-
-            PlatformService.Set3DViewportVisibility(true);
-            LodLevels = PlatformService.ChangeModel(Item, Parent.CurrentView, 0);
-
-            _lastItem = Item;
-            _isRendered = true;
-            AppState.Is3DViewerOpen = true;
-
-            IsLoading = false;
-            StateHasChanged();
-        }
-    }
+    private Viewport3D Viewport { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (_isRendered && Item.Path != _lastItem.Path)
+        if (Viewport != null && Item.Path != _lastItem?.Path)
         {
             LodLevel = 0;
             IsLoading = true;
             StateHasChanged();
 
-            PlatformService.Set3DViewportVisibility(false);
+            // Remove existing meshes from scene if any
+            await Viewport.ClearMeshesAsync();
 
-            await Task.Run(() => { return InvokeAsync(() => { LodLevels = PlatformService.ChangeModel(Item, Parent.CurrentView, 0); }); });
+            // Read the model metadata
+            var model = new GameModel();
+            model.Read(Item.Data);
 
-            PlatformService.Set3DViewportVisibility(true);
+            // Get the GPU binaries for the model
+            var gpubinUris = model.Dependencies.Values
+                .Where(d => d.EndsWith(".gpubin"))
+                .ToArray();
+
+            // Warn user and abort if unable to locate gpubin file
+            if (!gpubinUris.Any())
+            {
+                Alert.Open("Warning", "Missing Model Data",
+                    "This model doesn't appear to have a corresponding .gpubin file, so there is nothing to show.");
+                IsLoading = false;
+                StateHasChanged();
+                return;
+            }
+
+            // Read the GPU binaries
+            model.ReadVertexData(gpubinUris
+                .Select(uri => Item.Parent.Children
+                    .Single(c => c.Path.Split('\\', '/').Last()
+                        .Equals(uri.Split('\\', '/').Last(), StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(f => f.Name)
+                .Select(gpubin => gpubin.Data)
+                .ToArray());
+
+            // Add the meshes to the scene
+            foreach (var mesh in model.MeshObjects.SelectMany(mo => mo.Meshes
+                         .Where(m => m.LodNear == 0)))
+            {
+                var positions = (IList<float[]>)mesh.Semantics[VertexElementSemantic.Position0];
+                var normals = (IList<float[]>)mesh.Semantics[VertexElementSemantic.Normal0];
+                var uvs = (IList<float[]>)mesh.Semantics[VertexElementSemantic.TexCoord0];
+                
+                var indices = new uint[mesh.FaceIndexCount];
+                for (var i = 0; i < indices.Length / 3; i++)
+                {
+                    indices[i * 3 + 0] = mesh.FaceIndices[i, 2];
+                    indices[i * 3 + 1] = mesh.FaceIndices[i, 1];
+                    indices[i * 3 + 2] = mesh.FaceIndices[i, 0];
+                }
+                
+                byte[] diffuse = null;
+                byte[] normalMap = null;
+                
+                var uri = model.Dependencies[mesh.MaterialHash.ToString()];
+                var materialData = AppState.GetFileByUri(uri);
+                if (materialData.Length != 0)
+                {
+                    var material = new GameMaterial();
+                    material.Read(materialData);
+                    
+                    var diffuseUri = material.Textures
+                        .FirstOrDefault(t =>
+                            t.ShaderGenName.Contains("BaseColor0") || t.ShaderGenName.Contains("BaseColorTexture0"))
+                        ?.Uri;
+
+                    var normalUri = material.Textures
+                        .FirstOrDefault(t =>
+                            t.ShaderGenName.Contains("Normal0") || t.ShaderGenName.Contains("NormalTexture0"))
+                        ?.Uri;
+
+                    var btexData = AppState.GetFileByUri(diffuseUri.Replace(".tif", "_$h.tif"));
+                    if (btexData != null)
+                    {
+                        var texture = new BlackTexture(Profile.Current.Type);
+                        texture.Read(btexData);
+                        using var surfaceSet = texture.ToSurfaceSet();
+                        diffuse = surfaceSet[0, 0].SavePng();
+                    }
+                    
+                    btexData = AppState.GetFileByUri(normalUri.Replace(".tif", "_$h.tif"));
+                    if (btexData != null)
+                    {
+                        var texture = new BlackTexture(Profile.Current.Type);
+                        texture.Read(btexData);
+                        using var surfaceSet = texture.ToSurfaceSet();
+                        normalMap = surfaceSet[0, 0].SavePng();
+                    }
+                }
+
+                await Viewport.AddMeshAsync(
+                    positions.SelectMany(x => x).ToArray(),
+                    indices,
+                    normals.SelectMany(x => x.Take(3)).ToArray(),
+                    uvs.SelectMany(uv => new[] {uv[0], 1 - uv[1]}).ToArray(),
+                    diffuse,
+                    normalMap);
+            }
+
+            var min = model.AxisAlignedBoundingBox.Start;
+            var max = model.AxisAlignedBoundingBox.End;
+            await Viewport.FrameModelAsync(min.X, min.Y, min.Z, max.X, max.Y, max.Z);
+            await Viewport.AnimateAsync();
 
             _lastItem = Item;
             IsLoading = false;
@@ -132,26 +193,10 @@
         LodLevel = lodLevel;
         StateHasChanged();
 
-        PlatformService.Set3DViewportVisibility(false);
-
-        await Task.Run(() => { return InvokeAsync(() => { PlatformService.ChangeModel(Item, Parent.CurrentView, lodLevel); }); });
-
-        PlatformService.Set3DViewportVisibility(true);
+        //await Task.Run(() => { return InvokeAsync(() => { PlatformService.ChangeModel(Item, Parent.CurrentView, lodLevel); }); });
 
         IsLoading = false;
         StateHasChanged();
-    }
-
-    [JSInvokable]
-    public void OnResize(double left, double top, double width, double height)
-    {
-        PlatformService.Resize3DViewport((int)left, (int)top, (int)width, (int)height);
-    }
-
-    public void Dispose()
-    {
-        PlatformService.Set3DViewportVisibility(false);
-        AppState.Is3DViewerOpen = false;
     }
 
     private void OpenSettingsModal()

@@ -1,9 +1,7 @@
 ﻿@using Flagrum.Abstractions.AssetExplorer
 @using Flagrum.Application.Features.ModManager.Modals
 @using Flagrum.Application.Features.ModManager.Services
-@inject AppStateService AppState
 @inject IStringLocalizer<RegenerateModal> L
-@inject IPlatformService PlatformService
 @inject ILogger<RegenerateModal> Logger
 @inject IConfiguration Configuration
 @inject ModManagerServiceBase ModManager
@@ -44,11 +42,6 @@
 
     public void Open()
     {
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(false);
-        }
-
         Modal.Open();
     }
 
@@ -74,10 +67,5 @@
     private void CloseModal()
     {
         Modal.Close();
-
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(true);
-        }
     }
 }

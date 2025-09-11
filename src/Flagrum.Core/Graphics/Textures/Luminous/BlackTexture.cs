@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Flagrum.Abstractions;
 using Flagrum.Core.Data.Binary;
 using Flagrum.Core.Graphics.Textures.DirectX;
@@ -144,6 +145,9 @@ public class BlackTexture : SectionDataBinary
             PixelData = data.PixelData
         };
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SurfaceSet ToSurfaceSet() => new(this);
 
     /// WARNING: Only works for FFXV Windows Edition textures
     public void AppendTextureToArray(BlackTexture textureToAppend)

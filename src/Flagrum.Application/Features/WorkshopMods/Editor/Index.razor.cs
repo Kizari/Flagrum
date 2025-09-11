@@ -91,9 +91,9 @@ public partial class Index : ComponentBase
         IsNew = true;
         WorkshopModBuildContext.Flags |=
             WorkshopModBuildContextFlags.NeedsBuild | WorkshopModBuildContextFlags.PreviewImageChanged;
-
-        var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
-        var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+        
+        var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "preview.png");
+        var currentPreviewPath = Path.Combine(IOHelper.GetWebRoot(), "images", "current_preview.png");
         File.Copy(defaultPreviewPath, currentPreviewPath, true);
         var previewBytes = File.ReadAllBytes(defaultPreviewPath);
         WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
@@ -103,8 +103,8 @@ public partial class Index : ComponentBase
             Uuid = Guid.NewGuid().ToString(),
             IsApplyToGame = true
         };
-
-        Mod.Path = $"{Profile.BinmodDirectory}\\{Mod.Uuid}.ffxvbinmod";
+        
+        Mod.Path = Path.Combine(Profile.BinmodDirectory, $"{Mod.Uuid}.ffxvbinmod");
     }
 
     private void InitializeExistingMod()

@@ -19,7 +19,7 @@ public static class IOHelper
 
     public static string GetWebRoot()
     {
-        return $"{GetExecutingDirectory()}\\wwwroot";
+        return Path.Combine(GetExecutingDirectory(), "wwwroot");
     }
 
     public static void EnsureDirectoryExists(string path)
@@ -72,8 +72,8 @@ public static class IOHelper
     /// <returns>True if files are in the same directory</returns>
     public static bool AreInSameDirectory(string path1, string path2)
     {
-        path1 = Path.GetDirectoryName(path1.Replace('/', '\\').Trim().TrimEnd('\\').ToLower());
-        path2 = Path.GetDirectoryName(path2.Replace('/', '\\').Trim().TrimEnd('\\').ToLower());
+        path1 = Path.GetDirectoryName(path1.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
+        path2 = Path.GetDirectoryName(path2.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
         return path1 == path2;
     }
 

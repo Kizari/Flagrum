@@ -5,10 +5,8 @@
 @using Flagrum.Core.Graphics.Textures
 @using Flagrum.Application.Features.AssetExplorer.Base
 @inject IPlatformService PlatformService
-@inject ILogger<ExportContextMenu> Logger
 @inject TerrainPacker TerrainPacker
 @inject IStringLocalizer<ExportContextMenu> Localizer
-@inject AppStateService AppState
 @inject IProfileService Profile
 @inject TextureConverter TextureConverter
 @inject EnvironmentPacker EnvironmentPacker
@@ -16,7 +14,7 @@
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
              OverrideDefaultListCssClass="p-0"
-             OnAppearing="OnAppearing"
+             OnAppearing="e => AssetExplorer.ContextNode = (IAssetExplorerNode)e.Data"
              OnHiding="OnHiding"
              @ref="ContextMenu">
     @if (AssetExplorer.ContextNode?.Type == ExplorerItemType.Directory)
@@ -223,22 +221,9 @@
             });
     }
 
-    private void OnAppearing()
-    {
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(false);
-        }
-    }
-
     private void OnHiding()
     {
         AssetExplorer.ContextNode = null;
         AssetExplorer.CallStateHasChanged();
-
-        if (AppState.Is3DViewerOpen && !AppState.IsModalOpen)
-        {
-            PlatformService.Set3DViewportVisibility(true);
-        }
     }
 }

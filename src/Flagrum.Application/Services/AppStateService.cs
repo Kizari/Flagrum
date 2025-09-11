@@ -37,7 +37,6 @@ public class AppStateService
     public int ActiveCategoryFilter { get; set; }
     public int ActiveModTypeFilter { get; set; } = -1;
 
-    public bool Is3DViewerOpen { get; set; }
     public bool IsModalOpen { get; set; }
 
     public string GetCurrentAssetExplorerPath()

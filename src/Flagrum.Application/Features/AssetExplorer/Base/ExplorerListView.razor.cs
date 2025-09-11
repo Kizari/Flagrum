@@ -70,17 +70,4 @@ public partial class ExplorerListView
             }
         }
     }
-
-    private void SetContextNode(IAssetExplorerNode node)
-    {
-        Parent.ContextNode = node;
-    }
-
-    private void ContextMenuMouseUp(MouseEventArgs e, IAssetExplorerNode node)
-    {
-        if (e.Button == 2)
-        {
-            SetContextNode(node);
-        }
-    }
 }

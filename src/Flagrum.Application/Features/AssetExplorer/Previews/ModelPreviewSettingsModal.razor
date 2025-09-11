@@ -93,7 +93,6 @@
         TextureFidelity = textureFidelity == -1 ? ModelViewerTextureFidelity.Low : (ModelViewerTextureFidelity)textureFidelity;
 
         AppState.IsModalOpen = true;
-        PlatformService.Set3DViewportVisibility(false);
         Modal.Open();
     }
 
@@ -101,11 +100,6 @@
     {
         Modal.Close();
         AppState.IsModalOpen = false;
-
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(true);
-        }
     }
 
     private void Save()
@@ -115,8 +109,6 @@
         Configuration.Set(StateKey.ViewportPanModifierKey, PanModifierKey);
         Configuration.Set(StateKey.ViewportPanMouseAction, PanMouseAction);
         Configuration.Set(StateKey.ViewportTextureFidelity, (int)TextureFidelity);
-
-        PlatformService.Update3DViewportBindings(RotateModifierKey, RotateMouseAction, PanModifierKey, PanMouseAction);
 
         Cancel();
 

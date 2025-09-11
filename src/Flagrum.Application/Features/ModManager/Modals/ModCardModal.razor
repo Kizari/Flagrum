@@ -31,7 +31,7 @@
             <EditForm Model="Mod" OnValidSubmit="Submit" class="shadow-md flex-shrink-0">
                 <DataAnnotationsValidator/>
                 <img alt="Mod Thumbnail" class="relative rounded-t" style="display: block; width: 330px; height: 180px;"
-                     src="images/@Profile.Current.Id/@(ImageName).png"/>
+                     src="images/@Profile.Current.Id/@(ImageName)"/>
                 <div class="p-4 flex-grow flex flex-col">
                     <small class="text-center mb-4">Recommended thumbnail size 326x170</small>
                     <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name"
@@ -96,12 +96,12 @@
     public async Task Open(Guid modId)
     {
         Mod = new ModCardViewModel();
-        var currentPreviewPath = $@"{Profile.ImagesDirectory}\current_earc_preview.png";
+        var currentPreviewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");
 
         if (modId == Guid.Empty)
         {
             Identifier = Guid.Empty;
-            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+            var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "earc.png");
             File.Copy(defaultPreviewPath, currentPreviewPath, true);
             await Editor.LoadHTMLContent(null);
         }
@@ -124,13 +124,12 @@
             }
             else
             {
-                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+                var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "earc.png");
                 File.Copy(defaultPreviewPath, currentPreviewPath, true);
             }
         }
 
-        // This jank is required or the UI won't update the image if the value hasn't changed
-        ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+        ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
         StateHasChanged();
         Modal.Open();
     }
@@ -143,8 +142,7 @@
             {
                 var processedImage = TextureConverter.WicToEarcThumbnailJpeg(await File.ReadAllBytesAsync(path));
                 await File.WriteAllBytesAsync($@"{Profile.ImagesDirectory}\current_earc_preview.png", processedImage);
-                // This jank is required or the UI won't update the image if the value hasn't changed
-                ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+                ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
                 await InvokeAsync(StateHasChanged);
             });
     }

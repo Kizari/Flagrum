@@ -230,7 +230,7 @@ public class GameModel : GraphicsBinary
         ReadVertexData(new List<byte[]> {gpubin});
     }
 
-    public void ReadVertexData(List<byte[]> gpubins)
+    public void ReadVertexData(IList<byte[]> gpubins)
     {
         Parallel.ForEach(MeshObjects, meshObject =>
         {

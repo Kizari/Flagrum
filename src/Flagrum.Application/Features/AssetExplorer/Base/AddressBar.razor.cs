@@ -46,11 +46,6 @@ public abstract partial class AddressBar
 
     private void OnViewChanged(int view)
     {
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(false);
-        }
-
         Parent.CurrentView = (AssetExplorerView)view;
         Configuration.Set(StateKey.CurrentAssetExplorerView, view);
         Parent.CallStateHasChanged();

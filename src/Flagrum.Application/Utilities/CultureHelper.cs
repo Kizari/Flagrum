@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Flagrum.Application.Utilities;
@@ -32,6 +33,16 @@ public static class CultureHelper
         }
 
         return SupportedCultures.English;
+    }
+
+    /// <summary>
+    /// Generates a plain number based on the current time that can be appended to a resource
+    /// in markup to ensure the changes reflect on the page.
+    /// </summary>
+    public static string GetVersionTimestamp()
+    {
+        var now = DateTime.Now;
+        return $"{now.Year}{now.Month}{now.Day}{now.Hour}{now.Minute}{now.Second}{now.Millisecond}";
     }
 
     private static string GetClosestCulture(CultureInfo culture)

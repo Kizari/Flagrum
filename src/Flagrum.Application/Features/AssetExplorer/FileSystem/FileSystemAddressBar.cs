@@ -33,18 +33,7 @@ public class FileSystemAddressBar : AddressBar
         }
         else
         {
-            if (AppState.Is3DViewerOpen)
-            {
-                PlatformService.Set3DViewportVisibility(false);
-            }
-
-            Parent.Alert.Open("Error", "Invalid Path", "Nothing was found at the given path.", () =>
-            {
-                if (AppState.Is3DViewerOpen)
-                {
-                    PlatformService.Set3DViewportVisibility(true);
-                }
-            });
+            Parent.Alert.Open("Error", "Invalid Path", "Nothing was found at the given path.", null);
             return;
         }
 

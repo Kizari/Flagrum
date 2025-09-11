@@ -75,9 +75,7 @@
         if (Images.Count > 0)
         {
             File.WriteAllBytes(Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg"), Images[index]);
-
-            // Jank to trick the UI into updating
-            ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
+            ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces update on state change
         }
 
         StateHasChanged();

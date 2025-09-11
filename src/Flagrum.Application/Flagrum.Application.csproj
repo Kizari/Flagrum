@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <DebugType>embedded</DebugType>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,12 +15,7 @@
         <PackageReference Include="Injectio" Version="3.3.0"/>
         <PackageReference Include="MarkdownSharp" Version="2.0.5"/>
         <PackageReference Include="MessagePack" Version="2.5.124"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.*" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9"/>
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7"/>
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.4"/>
@@ -42,7 +39,7 @@
         <_ContentIncludedByDefault Remove="Components\Graph\StandardGroupRenderer.razor"/>
         <_ContentIncludedByDefault Remove="Components\Graph\StandardNodeRenderer.razor"/>
         <_ContentIncludedByDefault Remove="Components\Graph\StandardPortRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Properties\launchSettings.json" />
+        <_ContentIncludedByDefault Remove="Properties\launchSettings.json"/>
     </ItemGroup>
 
 
