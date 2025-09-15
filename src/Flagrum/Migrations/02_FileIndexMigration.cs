@@ -30,24 +30,21 @@ using Microsoft.EntityFrameworkCore;
 namespace Flagrum.Migrations;
 
 [SteppedDataMigration(2)]
-public partial class FileIndexMigration
+public partial class FileIndexMigration(
+    FlagrumDbContext context,
+    IModBuildInstructionFactory factory,
+    LegacyModManagerServiceBase legacyModManager,
+    ModManagerServiceBase modManager,
+    IProfileService profile,
+    IFileIndex fileIndex)
 {
-    [Inject] private readonly AppStateService _appState;
-    [Inject] private readonly FlagrumDbContext _context;
-    [Inject] private readonly IModBuildInstructionFactory _factory;
-    [Inject] private readonly LegacyModManagerServiceBase _legacyModManager;
-    [Inject] private readonly ModManagerServiceBase _modManager;
-    [Inject] private readonly IProfileService _profile;
-    [Inject] private readonly IConfiguration _configuration;
-    [Inject] private readonly IFileIndex _fileIndex;
-
     [MigrationStep(0, "d2e4e56c-6e5b-4b57-9d33-11ccb8d3878e", MigrationScope.Profile)]
     private async Task MigrateFileIndex()
     {
         SplashViewModel.Instance.SetLoadingText("Migrating file index");
 
         // Load the node tree from the DB
-        var nodeTree = _context.AssetExplorerNodes
+        var nodeTree = context.AssetExplorerNodes
             .AsNoTracking()
             .ToList()
             .ToDictionary(n => n.Id, n => n);
@@ -80,11 +77,11 @@ public partial class FileIndexMigration
 
         var root = new FileIndexNode {Name = rootNode.Name};
         ProcessNodesRecursive(rootNode, root);
-        _fileIndex.RootNode = root;
-        ((FileIndex)_fileIndex).Archives = [];
-        ((FileIndex)_fileIndex).Files = [];
+        fileIndex.RootNode = root;
+        ((FileIndex)fileIndex).Archives = [];
+        ((FileIndex)fileIndex).Files = [];
 
-        var archiveLocations = _context.ArchiveLocations
+        var archiveLocations = context.ArchiveLocations
             .Select(a => new
             {
                 a.Path,
@@ -109,22 +106,22 @@ public partial class FileIndexMigration
                 };
 
                 archive.Files.Add(file);
-                ((FileIndex)_fileIndex).AddFile(new AssetId(assetUri), file);
+                ((FileIndex)fileIndex).AddFile(new AssetId(assetUri), file);
             }
 
-            ((FileIndex)_fileIndex).Archives.Add(Cryptography.Hash64(archive.RelativePath), archive);
+            ((FileIndex)fileIndex).Archives.Add(Cryptography.Hash64(archive.RelativePath), archive);
         }
 
         ApplicationHost.SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
 
-        _fileIndex.Save(_profile.FileIndexPath);
-        _context.SetString(StateKey.CurrentAssetNode, null);
-        await _context.AssetExplorerNodes.ExecuteDeleteAsync();
-        await _context.AssetUris.ExecuteDeleteAsync();
-        await _context.ArchiveLocations.ExecuteDeleteAsync();
+        fileIndex.Save(profile.FileIndexPath);
+        context.SetString(StateKey.CurrentAssetNode, null);
+        await context.AssetExplorerNodes.ExecuteDeleteAsync();
+        await context.AssetUris.ExecuteDeleteAsync();
+        await context.ArchiveLocations.ExecuteDeleteAsync();
 
         // Clear the old state node as it uses IDs instead of URIs and won't work
-        _context.SetString(StateKey.CurrentAssetNode, null);
+        context.SetString(StateKey.CurrentAssetNode, null);
     }
 
     [MigrationStep(1, "6e57fe99-40e1-4e47-aabe-59ffcb21fafb", MigrationScope.Profile)]
@@ -135,7 +132,7 @@ public partial class FileIndexMigration
         var guids = new List<string>();
         var modsToEnable = new List<Guid>();
 
-        foreach (var mod in _context.EarcMods
+        foreach (var mod in context.EarcMods
                      .Include(earcMod => earcMod.Earcs).ThenInclude(earcModEarc => earcModEarc.Files)
                      .Include(earcMod => earcMod.LooseFiles)
                      .ToList())
@@ -144,12 +141,12 @@ public partial class FileIndexMigration
             foreach (var file in mod.Earcs.SelectMany(e => e.Files.Where(f => f.ReplacementFilePath != null)))
             {
                 var filePath = file.ReplacementFilePath;
-                if (filePath.StartsWith(_profile.ModFilesDirectory) && !filePath.StartsWith($@"{_profile.ModFilesDirectory}\{mod.Id}\"))
+                if (filePath.StartsWith(profile.ModFilesDirectory) && !filePath.StartsWith($@"{profile.ModFilesDirectory}\{mod.Id}\"))
                 {
-                    var oldFolder = filePath.Replace(_profile.ModFilesDirectory + '\\', "")
+                    var oldFolder = filePath.Replace(profile.ModFilesDirectory + '\\', "")
                         .Split('\\')[0];
-                    var newPath = filePath.Replace($@"{_profile.ModFilesDirectory}\{oldFolder}\",
-                        $@"{_profile.ModFilesDirectory}\{mod.Id}\");
+                    var newPath = filePath.Replace($@"{profile.ModFilesDirectory}\{oldFolder}\",
+                        $@"{profile.ModFilesDirectory}\{mod.Id}\");
                     IOHelper.EnsureDirectoriesExistForFilePath(newPath);
                     File.Move(filePath, newPath, true);
                     file.ReplacementFilePath = newPath;
@@ -159,12 +156,12 @@ public partial class FileIndexMigration
             foreach (var file in mod.LooseFiles)
             {
                 var filePath = file.FilePath;
-                if (filePath.StartsWith(_profile.ModFilesDirectory) && !filePath.StartsWith($@"{_profile.ModFilesDirectory}\{mod.Id}\"))
+                if (filePath.StartsWith(profile.ModFilesDirectory) && !filePath.StartsWith($@"{profile.ModFilesDirectory}\{mod.Id}\"))
                 {
-                    var oldFolder = filePath.Replace(_profile.ModFilesDirectory + '\\', "")
+                    var oldFolder = filePath.Replace(profile.ModFilesDirectory + '\\', "")
                         .Split('\\')[0];
-                    var newPath = filePath.Replace($@"{_profile.ModFilesDirectory}\{oldFolder}\",
-                        $@"{_profile.ModFilesDirectory}\{mod.Id}\");
+                    var newPath = filePath.Replace($@"{profile.ModFilesDirectory}\{oldFolder}\",
+                        $@"{profile.ModFilesDirectory}\{mod.Id}\");
                     IOHelper.EnsureDirectoriesExistForFilePath(newPath);
                     File.Move(filePath, newPath, true);
                     file.FilePath = newPath;
@@ -176,15 +173,15 @@ public partial class FileIndexMigration
             guids.Add(guid.ToString());
 
             // If the mod is currently enabled, it needs to be disabled if it is for FFXV
-            if (_profile.Current.Type == LuminousGame.FFXV && mod.IsActive)
+            if (profile.Current.Type == LuminousGame.FFXV && mod.IsActive)
             {
                 modsToEnable.Add(guid);
-                _legacyModManager.DisableMod(mod.Id);
+                legacyModManager.DisableMod(mod.Id);
             }
 
             // Rename mod directory to match the guid
-            var originalDirectory = Path.Combine(_profile.ModFilesDirectory, mod.Id.ToString());
-            var newDirectory = Path.Combine(_profile.ModFilesDirectory, guid.ToString());
+            var originalDirectory = Path.Combine(profile.ModFilesDirectory, mod.Id.ToString());
+            var newDirectory = Path.Combine(profile.ModFilesDirectory, guid.ToString());
 
             if (Directory.Exists(originalDirectory))
             {
@@ -196,16 +193,16 @@ public partial class FileIndexMigration
             }
 
             // Copy thumbnail to the mod directory and images directory
-            var thumbnailPath = Path.Combine(_profile.EarcModThumbnailDirectory, $"{mod.Id}.png");
+            var thumbnailPath = Path.Combine(profile.EarcModThumbnailDirectory, $"{mod.Id}.png");
             if (!File.Exists(thumbnailPath))
             {
-                thumbnailPath = Path.Combine(_profile.ModThumbnailWebDirectory, $"{mod.Id}.png");
+                thumbnailPath = Path.Combine(profile.ModThumbnailWebDirectory, $"{mod.Id}.png");
             }
 
             if (File.Exists(thumbnailPath))
             {
-                File.Copy(thumbnailPath, Path.Combine(_profile.ImagesDirectory, $"{guid}.jpg"), true);
-                File.Move(thumbnailPath, Path.Combine(_profile.ModFilesDirectory, guid.ToString(), "thumbnail.jpg"),
+                File.Copy(thumbnailPath, Path.Combine(profile.ImagesDirectory, $"{guid}.jpg"), true);
+                File.Move(thumbnailPath, Path.Combine(profile.ModFilesDirectory, guid.ToString(), "thumbnail.jpg"),
                     true);
             }
 
@@ -227,13 +224,13 @@ public partial class FileIndexMigration
                     {
                         PackedBuildInstruction instruction = f.Type switch
                         {
-                            LegacyModBuildInstruction.AddReference => _factory.Create<AddReferenceBuildInstruction>(),
-                            LegacyModBuildInstruction.AddPackedFile => _factory.Create<AddPackedFileBuildInstruction>(),
-                            LegacyModBuildInstruction.RemovePackedFile => _factory
+                            LegacyModBuildInstruction.AddReference => factory.Create<AddReferenceBuildInstruction>(),
+                            LegacyModBuildInstruction.AddPackedFile => factory.Create<AddPackedFileBuildInstruction>(),
+                            LegacyModBuildInstruction.RemovePackedFile => factory
                                 .Create<RemovePackedFileBuildInstruction>(),
-                            LegacyModBuildInstruction.ReplacePackedFile => _factory
+                            LegacyModBuildInstruction.ReplacePackedFile => factory
                                 .Create<ReplacePackedFileBuildInstruction>(),
-                            LegacyModBuildInstruction.AddToPackedTextureArray => _factory
+                            LegacyModBuildInstruction.AddToPackedTextureArray => factory
                                 .Create<AddToPackedTextureArrayBuildInstruction>(),
                             _ => throw new Exception($"Can't migrate build instruction {f.Type}")
                         };
@@ -243,8 +240,8 @@ public partial class FileIndexMigration
 
                         if (instruction is PackedAssetBuildInstruction asset)
                         {
-                            var comparison = $@"{_profile.Current.Id}\{mod.Id}\";
-                            var replacement = $@"{_profile.Current.Id}\{guid}\";
+                            var comparison = $@"{profile.Current.Id}\{mod.Id}\";
+                            var replacement = $@"{profile.Current.Id}\{guid}\";
                             asset.FilePath = f.ReplacementFilePath.Replace(comparison, replacement);
                             asset.FileLastModified = f.FileLastModified;
                         }
@@ -256,29 +253,29 @@ public partial class FileIndexMigration
                 {
                     LooseAssetBuildInstruction instruction = f.Type switch
                     {
-                        ModChangeType.Change => _factory.Create<ReplaceLooseFileBuildInstruction>(),
-                        ModChangeType.Create => _factory.Create<AddLooseFileBuildInstruction>(),
+                        ModChangeType.Change => factory.Create<ReplaceLooseFileBuildInstruction>(),
+                        ModChangeType.Create => factory.Create<AddLooseFileBuildInstruction>(),
                         _ => throw new Exception($"Can't migrate loose build instruction {f.Type}")
                     };
 
-                    var comparison = $@"{_profile.Current.Id}\{mod.Id}\";
-                    var replacement = $@"{_profile.Current.Id}\{guid}\";
+                    var comparison = $@"{profile.Current.Id}\{mod.Id}\";
+                    var replacement = $@"{profile.Current.Id}\{guid}\";
                     instruction.FilePath = f.FilePath.Replace(comparison, replacement);
                     instruction.RelativePath = f.RelativePath.Replace('\\', '/');
                     return (ModBuildInstruction)instruction;
                 }).Cast<IModBuildInstruction>().ToList()
             };
 
-            await project.Save(Path.Combine(_profile.ModFilesDirectory, guid.ToString(), "project.fproj"));
-            _modManager.Projects.Add(guid, project);
+            await project.Save(Path.Combine(profile.ModFilesDirectory, guid.ToString(), "project.fproj"));
+            modManager.Projects.Add(guid, project);
 
             // Set the mod state accordingly (IsActive to false since all mods were disabled)
-            _modManager.ModsState.Add(guid, new ModState {IsPinned = mod.IsFavourite});
+            modManager.ModsState.Add(guid, new ModState {IsPinned = mod.IsFavourite});
 
             // Update active Forspoken mods
-            if (mod.IsActive && _profile.Current.Type == LuminousGame.Forspoken)
+            if (mod.IsActive && profile.Current.Type == LuminousGame.Forspoken)
             {
-                using var archive = new EbonyArchive($@"{_profile.GameDataDirectory}\c000.earc");
+                using var archive = new EbonyArchive($@"{profile.GameDataDirectory}\c000.earc");
 
                 // Change the reference path to use the new guid
                 archive.RemoveFile($"data://mods/{mod.Id}.ebex@");
@@ -287,8 +284,8 @@ public partial class FileIndexMigration
                 archive.WriteToSource(LuminousGame.Forspoken);
 
                 // Rename the earc to match the new guid
-                var modPath = Path.Combine(_profile.GameDataDirectory, "mods", $"{mod.Id}.earc");
-                var newModPath = Path.Combine(_profile.GameDataDirectory, "mods", $"{guid}.earc");
+                var modPath = Path.Combine(profile.GameDataDirectory, "mods", $"{mod.Id}.earc");
+                var newModPath = Path.Combine(profile.GameDataDirectory, "mods", $"{guid}.earc");
                 if (File.Exists(modPath))
                 {
                     File.Move(modPath, newModPath);
@@ -299,11 +296,11 @@ public partial class FileIndexMigration
         ApplicationHost.SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
 
         // Delete the old thumbnail directories
-        Directory.Delete(_profile.ModThumbnailWebDirectory, true);
-        Directory.Delete(_profile.EarcModThumbnailDirectory, true);
+        Directory.Delete(profile.ModThumbnailWebDirectory, true);
+        Directory.Delete(profile.EarcModThumbnailDirectory, true);
 
         // Delete any unused mod folders
-        foreach (var directory in Directory.EnumerateDirectories(_profile.ModFilesDirectory))
+        foreach (var directory in Directory.EnumerateDirectories(profile.ModFilesDirectory))
         {
             var name = directory.Split('\\', '/').Last();
             if (name != "backup" && !guids.Contains(name))
@@ -313,28 +310,28 @@ public partial class FileIndexMigration
         }
 
         // Clear cache as none of the file names will be valid anymore
-        foreach (var file in Directory.EnumerateFiles(_profile.CacheDirectory))
+        foreach (var file in Directory.EnumerateFiles(profile.CacheDirectory))
         {
             File.Delete(file);
         }
 
         // Clear mod tables in DB
-        await _context.EarcModReplacements.ExecuteDeleteAsync();
-        await _context.EarcModEarcs.ExecuteDeleteAsync();
-        await _context.EarcModLooseFile.ExecuteDeleteAsync();
-        await _context.EarcMods.ExecuteDeleteAsync();
+        await context.EarcModReplacements.ExecuteDeleteAsync();
+        await context.EarcModEarcs.ExecuteDeleteAsync();
+        await context.EarcModLooseFile.ExecuteDeleteAsync();
+        await context.EarcMods.ExecuteDeleteAsync();
 
         // Delete all backup files as the new system doesn't need to backup files due to using patch archives
-        Directory.Delete(_profile.EarcModBackupsDirectory, true);
+        Directory.Delete(profile.EarcModBackupsDirectory, true);
 
         ApplicationHost.SplashViewModel.Instance.SetLoadingText("Reenabling mods");
 
         // Now that everything is migrated, we need to enable any mods that were disabled for the migration
-        foreach (var project in modsToEnable.Select(m => _modManager.Projects[m]))
+        foreach (var project in modsToEnable.Select(m => modManager.Projects[m]))
         {
             if (project.AreReferencesValid())
             {
-                await _modManager.EnableMod(project);
+                await modManager.EnableMod(project);
             }
         }
     }
@@ -343,9 +340,9 @@ public partial class FileIndexMigration
     private void Cleanup()
     {
         // Delete the mod staging directory and all its contents as it isn't used in 1.5+
-        if (Directory.Exists(_profile.ModStagingDirectory))
+        if (Directory.Exists(profile.ModStagingDirectory))
         {
-            Directory.Delete(_profile.ModStagingDirectory, true);
+            Directory.Delete(profile.ModStagingDirectory, true);
         }
     }
 

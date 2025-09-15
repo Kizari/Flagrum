@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Application.Features.AssetExplorer.Data;
 using Flagrum.Application.Features.ModManager.Data;
@@ -16,7 +15,6 @@ using Flagrum.Core.Graphics.Textures.DirectX;
 using Flagrum.Core.Graphics.Textures.Luminous;
 using Flagrum.Core.Graphics.Textures.Luminous.Builder;
 using Flagrum.Core.Graphics.Textures.Luminous.DataSources;
-using Flagrum.Generators;
 using Injectio.Attributes;
 using SixLabors.ImageSharp;
 
@@ -25,11 +23,9 @@ namespace Flagrum.Application.Features.ModManager.Services;
 /// <summary>
 /// Converts standard assets to Luminous file formats.
 /// </summary>
-[RegisterScoped]
+[RegisterScoped<AssetConverter>]
 public partial class AssetConverter
 {
-    [Inject] private readonly IProfileService _profile;
-
     /// <summary>
     /// Maps texture filename suffixes to the respective <see cref="TextureType" />.
     /// </summary>

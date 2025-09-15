@@ -2,76 +2,74 @@
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
-using Flagrum.Core.Utilities;
-using Flagrum.Generators;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
-using Microsoft.Extensions.DependencyInjection;
+using Flagrum.Core.Utilities;
+using Injectio.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Migrations;
 
-[InjectableDependency(ServiceLifetime.Scoped)]
-public partial class SteppedMigrationUpgrader
+[RegisterScoped<SteppedMigrationUpgrader>]
+public partial class SteppedMigrationUpgrader(
+    IConfiguration configuration,
+    FlagrumDbContext context,
+    ILogger<SteppedMigrationUpgrader> logger,
+    MigrationService migrations,
+    IProfileService profile)
 {
-    [Inject] private readonly IConfiguration _configuration;
-    [Inject] private readonly FlagrumDbContext _context;
-    [Inject] private readonly ILogger<SteppedMigrationUpgrader> _logger;
-    [Inject] private readonly MigrationService _migrations;
-    [Inject] private readonly IProfileService _profile;
-
     public void Run()
     {
         ResetUpgradeFlags();
 
-        if (!_profile.Current.HasUpgradedToSteppedMigrations)
+        if (!profile.Current.HasUpgradedToSteppedMigrations)
         {
             MergeMigrationFile();
             CheckMigration00();
             CheckMigration01();
             CheckMigration02();
-            _profile.Current.HasUpgradedToSteppedMigrations = true;
-            _configuration.Save();
+            profile.Current.HasUpgradedToSteppedMigrations = true;
+            configuration.Save();
         }
     }
 
     private void CheckMigration00()
     {
-        if (!_migrations.Completed.Contains(BackupsMigration.ClearBackupsTableId))
+        if (!migrations.Completed.Contains(BackupsMigration.ClearBackupsTableId))
         {
-            if (_migrations.Completed.Contains(RemoveSqliteMigration.DestroyDatabaseId)
-                || !_context.DoesTableExist(nameof(_context.StatePairs))
-                || _context.GetBool(StateKey.HasMigratedBackups))
+            if (migrations.Completed.Contains(RemoveSqliteMigration.DestroyDatabaseId)
+                || !context.DoesTableExist(nameof(context.StatePairs))
+                || context.GetBool(StateKey.HasMigratedBackups))
             {
-                _configuration.SetMigratedNoSave(BackupsMigration.ApplicationSteps);
-                _profile.Current.SetMigratedNoSave(BackupsMigration.ProfileSteps);
+                configuration.SetMigratedNoSave(BackupsMigration.ApplicationSteps);
+                profile.Current.SetMigratedNoSave(BackupsMigration.ProfileSteps);
             }
         }
     }
 
     private void CheckMigration01()
     {
-        if (!_migrations.Completed.Contains(ProfilesMigration.MigrateId))
+        if (!migrations.Completed.Contains(ProfilesMigration.MigrateId))
         {
-            if (!_profile.DidMigrateThisSession)
+            if (!profile.DidMigrateThisSession)
             {
-                _configuration.SetMigratedNoSave(ProfilesMigration.ApplicationSteps);
-                _profile.Current.SetMigratedNoSave(ProfilesMigration.ProfileSteps);
+                configuration.SetMigratedNoSave(ProfilesMigration.ApplicationSteps);
+                profile.Current.SetMigratedNoSave(ProfilesMigration.ProfileSteps);
             }
         }
     }
 
     private void CheckMigration02()
     {
-        if (!_migrations.Completed.Contains(FileIndexMigration.CleanupId))
+        if (!migrations.Completed.Contains(FileIndexMigration.CleanupId))
         {
-            if (File.Exists(_profile.FileIndexPath)
-                || _migrations.Completed.Contains(RemoveSqliteMigration.DestroyDatabaseId)
-                || !_context.DoesTableExist(nameof(_context.AssetExplorerNodes))
-                || !_context.AssetExplorerNodes.Any())
+            if (File.Exists(profile.FileIndexPath)
+                || migrations.Completed.Contains(RemoveSqliteMigration.DestroyDatabaseId)
+                || !context.DoesTableExist(nameof(context.AssetExplorerNodes))
+                || !context.AssetExplorerNodes.Any())
             {
-                _configuration.SetMigratedNoSave(FileIndexMigration.ApplicationSteps);
-                _profile.Current.SetMigratedNoSave(FileIndexMigration.ProfileSteps);
+                configuration.SetMigratedNoSave(FileIndexMigration.ApplicationSteps);
+                profile.Current.SetMigratedNoSave(FileIndexMigration.ProfileSteps);
             }
         }
     }
@@ -82,20 +80,20 @@ public partial class SteppedMigrationUpgrader
     /// </summary>
     private void MergeMigrationFile()
     {
-        _configuration.SetMigratedNoSave(
-            RemoveSqliteMigration.ApplicationSteps.Where(s => _migrations.Completed.Contains(s)));
-        _profile.Current.SetMigratedNoSave(
-            RemoveSqliteMigration.ProfileSteps.Where(s => _migrations.Completed.Contains(s)));
-        _configuration.Save();
+        configuration.SetMigratedNoSave(
+            RemoveSqliteMigration.ApplicationSteps.Where(s => migrations.Completed.Contains(s)));
+        profile.Current.SetMigratedNoSave(
+            RemoveSqliteMigration.ProfileSteps.Where(s => migrations.Completed.Contains(s)));
+        configuration.Save();
 
         try
         {
-            _migrations.Delete();
+            migrations.Delete();
         }
         catch (Exception exception)
         {
             // Not a huge deal if this tiny file is left behind so just log it and move on
-            _logger.LogError(exception, "Failed to delete migration file");
+            logger.LogError(exception, "Failed to delete migration file");
         }
     }
 
@@ -106,15 +104,15 @@ public partial class SteppedMigrationUpgrader
     /// </summary>
     private void ResetUpgradeFlags()
     {
-        if (_profile.LastVersion != null && _profile.LastVersion < new Version(1, 5, 10))
+        if (profile.LastVersion != null && profile.LastVersion < new Version(1, 5, 10))
         {
             // Reset flag for all profiles
-            foreach (var profile in _configuration.Profiles)
+            foreach (var profile in configuration.Profiles)
             {
                 profile.HasUpgradedToSteppedMigrations = false;
             }
 
-            _configuration.Save();
+            configuration.Save();
 
             // Clean up these old files because they're annoying
             try
@@ -127,7 +125,7 @@ public partial class SteppedMigrationUpgrader
             catch (Exception exception)
             {
                 // Not a huge deal if some txt files are left behind so just let it fail and move on
-                _logger.LogError(exception, "Failed to delete old log files");
+                logger.LogError(exception, "Failed to delete old log files");
             }
         }
     }

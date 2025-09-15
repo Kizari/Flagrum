@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.ModManager;
+using Flagrum.ApplicationHost;
 using Flagrum.Generators;
 using Flagrum.Migrations;
 using Flagrum.Utilities;
-using Flagrum.Application.Features.ModManager.Launcher;
-using Flagrum.ApplicationHost;
 using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
@@ -24,7 +24,7 @@ internal static class Program
     /// The dependency injection service container for the application.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
-    
+
     /// <summary>
     /// Identifier for the program's main (UI) thread.
     /// </summary>
@@ -45,22 +45,24 @@ internal static class Program
         // Initialize Velopack
         VelopackApp.Build()
             .WithFirstRun(OnFreshInstall)
+#if WINDOWS
             .WithBeforeUninstallFastCallback(OnBeforeUninstall)
+#endif
             .Run();
 
         // Handle commandline arguments
         if (args.Any(a => a == "--launch"))
         {
-            var launcher = Services.GetRequiredService<GameLauncher>();
+            var launcher = Services.GetRequiredService<IGameLauncher>();
             var result = launcher.TryLaunch(false);
             if (result != GameLaunchResult.Success)
             {
                 var message = result switch
                 {
-                    GameLaunchResult.GameAlreadyRunning => 
+                    GameLaunchResult.GameAlreadyRunning =>
                         "Flagrum detected that the game is already running, " +
                         "so it cannot launch again until the game is closed.",
-                    GameLaunchResult.UnsupportedExecutable => 
+                    GameLaunchResult.UnsupportedExecutable =>
                         "Flagrum did not recognize the FFXV executable, " +
                         "the mod loader only supports the latest Steam release of the game.",
                     GameLaunchResult.AccessDenied =>
@@ -113,7 +115,7 @@ internal static class Program
     private static void OnBeforeUninstall(SemanticVersion version)
     {
         var profile = Services.GetRequiredService<IProfileService>();
-        
+
         try
         {
             Directory.Delete(profile.TemporaryDirectory, true);

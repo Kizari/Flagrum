@@ -5,6 +5,7 @@
       <map>
         <entry key="src/Flagrum/App.axaml" value="src/Flagrum/Flagrum.csproj" />
         <entry key="src/Flagrum/App.xaml" value="src/Flagrum/Flagrum.csproj" />
+        <entry key="src/Flagrum/ApplicationHost/MainWindow.axaml" value="src/Flagrum/Flagrum.csproj" />
         <entry key="src/Flagrum/ApplicationHost/SplashWindow.axaml" value="src/Flagrum/Flagrum.csproj" />
         <entry key="src/Flagrum/Main/BrowserView.axaml" value="src/Flagrum/Flagrum.csproj" />
         <entry key="src/Flagrum/Main/MainWindow.axaml" value="src/Flagrum/Flagrum.csproj" />

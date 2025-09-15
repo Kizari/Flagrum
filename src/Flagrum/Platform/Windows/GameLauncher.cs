@@ -9,34 +9,28 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.ModManager;
-using Flagrum.Core.Utilities;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Instructions;
-using Flagrum.Application.Features.ModManager.Launcher.PInvoke;
 using Flagrum.Application.Features.ModManager.Services;
+using Flagrum.Core.Utilities;
+using Flagrum.Platform.Windows.Interop;
 using Injectio.Attributes;
 
-namespace Flagrum.Application.Features.ModManager.Launcher;
+namespace Flagrum.Platform.Windows;
 
-/// <summary>
-/// Handles launching the game and injecting the hook DLL.
-/// </summary>
-[RegisterSingleton]
+/// <inheritdoc />
+[RegisterSingleton<IGameLauncher>]
 public class GameLauncher(
     IProfileService profile,
     IPremiumService premium,
-    ModManagerServiceBase modManager)
+    ModManagerServiceBase modManager) : IGameLauncher
 {
     private const string HookDllName = "Drautos.dll";
 
-    /// <summary>
-    /// Launches the game and injects the hook DLL.
-    /// </summary>
-    /// <param name="isDebug">Whether debug options should be enabled in the DLL configuration before injecting.</param>
+    /// <inheritdoc />
     /// <exception cref="Win32Exception">
     /// Thrown if any Windows errors occur during the launch or injection process.
     /// </exception>
-    /// <returns><c>false</c> if the game was already running, otherwise <c>true</c>.</returns>
     public GameLaunchResult TryLaunch(bool isDebug)
     {
         // Don't launch if the game is already running

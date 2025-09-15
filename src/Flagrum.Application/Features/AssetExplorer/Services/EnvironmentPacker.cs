@@ -7,17 +7,14 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Core.Entities.Xml2;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Graphics.Models;
-using Flagrum.Core.Graphics.Textures;
 using Flagrum.Core.Graphics.Textures.Luminous;
 using Flagrum.Core.Graphics.Textures.Shared;
 using Flagrum.Core.Utilities;
-using Flagrum.Generators;
 using Injectio.Attributes;
 using Newtonsoft.Json;
 
@@ -34,14 +31,14 @@ public class EnvironmentModelMetadata
     public List<float[]> PrefabRotations { get; set; }
 }
 
-[RegisterScoped]
-public partial class EnvironmentPacker
+[RegisterScoped<EnvironmentPacker>]
+public partial class EnvironmentPacker(
+    AppStateService appState,
+    IFileIndex fileIndex)
 {
-    [Inject] private readonly AppStateService _appState;
-    [Inject] private readonly IFileIndex _fileIndex;
     private readonly ConcurrentBag<EnvironmentModelMetadata> _models = new();
     private readonly ConcurrentBag<string> _nodeTypes = new();
-    [Inject] private readonly IProfileService _profile;
+
 
     private readonly List<string> _staticModelTypes = new()
     {
@@ -77,7 +74,7 @@ public partial class EnvironmentPacker
         IOHelper.EnsureDirectoryExists(_texturesDirectory);
 
         // Recurse through the scripts
-        GetPathsRecursively(uri, _appState.GetFileByUri(uri),
+        GetPathsRecursively(uri, appState.GetFileByUri(uri),
             null,
             null,
             1.0f,
@@ -97,7 +94,7 @@ public partial class EnvironmentPacker
 
         Parallel.ForEach(_textures, kvp =>
         {
-            var btexData = _appState.GetFileByUri(kvp.Key);
+            var btexData = appState.GetFileByUri(kvp.Key);
             var tgaData = new BlackTexture(btexData).Save(0, ImageFileFormat.Targa);
             var fileName = kvp.Key.Split('/').Last();
             var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
@@ -116,9 +113,9 @@ public partial class EnvironmentPacker
 
     private void PackModel(string uri, string directory, int index)
     {
-        var gfxbin = _appState.GetFileByUri(uri);
+        var gfxbin = appState.GetFileByUri(uri);
         var gpubinUri = uri.Replace(".gmdl", ".gpubin");
-        var gpubin = _appState.GetFileByUri(gpubinUri);
+        var gpubin = appState.GetFileByUri(gpubinUri);
 
         if (gfxbin.Length < 1 || gpubin.Length < 1)
         {
@@ -153,7 +150,7 @@ public partial class EnvironmentPacker
                         .FirstOrDefault(d => d.Key == m.MaterialHash.ToString())
                         !.Value;
 
-                    var materialData = _appState.GetFileByUri(materialUri);
+                    var materialData = appState.GetFileByUri(materialUri);
                     GameMaterial material;
                     try
                     {
@@ -276,7 +273,7 @@ public partial class EnvironmentPacker
         string[] uris = [highest, high];
         foreach (var resolution in uris)
         {
-            if (_fileIndex.Contains(resolution))
+            if (fileIndex.Contains(resolution))
             {
                 return resolution;
             }
@@ -402,7 +399,7 @@ public partial class EnvironmentPacker
                 var uriUri = new Uri(uri.Replace("data://", "data://data/"));
                 var combinedUri = new Uri(uriUri, relativeUri);
                 var combinedUriString = combinedUri.ToString().Replace("data://data/", "data://");
-                var innerXmb2 = _appState.GetFileByUri(combinedUriString);
+                var innerXmb2 = appState.GetFileByUri(combinedUriString);
 
                 if (innerXmb2.Length > 0)
                 {

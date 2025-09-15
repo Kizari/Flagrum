@@ -43,7 +43,7 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
           }
 
           public enum MigrationScope { Application, Profile }
-          
+
           public enum MigrationStepMode { Mandatory, Retry, Warn }
 
           [System.AttributeUsage(System.AttributeTargets.Method)]
@@ -79,7 +79,7 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
     {
         var orders = new List<int>();
         var allSteps = new List<MigrationStep>();
-        
+
         foreach (var classDeclaration in classDeclarations)
         {
             var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
@@ -180,7 +180,7 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
                            public partial class {{className}} : IDataMigration
                            {
                                {{string.Join("\r\n    ", methods.Select(m => $"public static System.Guid {m.MethodName}Id = new(\"{m.Guid}\");"))}}
-                           
+
                                public static HashSet<System.Guid> ApplicationSteps =>
                                [
                                    {{string.Join(",\r\n        ", methods.Where(m => m.Scope == MigrationScope.Application).Select(m => $"{m.MethodName}Id"))}}
@@ -190,9 +190,9 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
                                [
                                    {{string.Join(",\r\n        ", methods.Where(m => m.Scope == MigrationScope.Profile).Select(m => $"{m.MethodName}Id"))}}
                                ];
-                           
+
                                public int Order => {{order}};
-                           
+
                                public bool ShouldRun => !({{shouldRun}});
                                
                                public {{(hasTasks ? "async " : "")}}Task RunAsync()
@@ -291,7 +291,7 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
     }
 
     private static string Service(MigrationStep step) =>
-        step.Scope == MigrationScope.Application ? "_configuration" : "_profile.Current";
+        step.Scope == MigrationScope.Application ? "configuration" : "profile.Current";
 
     private class MigrationStep
     {

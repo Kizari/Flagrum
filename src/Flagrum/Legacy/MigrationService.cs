@@ -1,30 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Flagrum.Core.Persistence;
-using Flagrum.Core.Utilities;
-using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Generators;
 using Flagrum.Application.Features.Settings.Data;
-using Flagrum.Application.Services;
+using Flagrum.Core.Utilities;
+using Injectio.Attributes;
 using MemoryPack;
-using Microsoft.Extensions.DependencyInjection;
 using ZstdSharp;
 
 namespace Flagrum.Migrations;
 
 [MemoryPackable]
-[InjectableDependency(ServiceLifetime.Singleton)]
+[RegisterSingleton<MigrationService>]
 public partial class MigrationService
 {
-    private static string FilePath => Path.Combine(IOHelper.LocalApplicationData, "Flagrum", "migrations.fms");
-
-    [MemoryPackInclude] public HashSet<Guid> Completed { get; set; } = [];
-    
     [MemoryPackConstructor]
     public MigrationService() { }
-    
+
     public MigrationService(DummyService dummy)
     {
         if (File.Exists(FilePath))
@@ -36,6 +27,10 @@ public partial class MigrationService
                 MemoryPackSerializerOptions.Utf8);
         }
     }
+
+    private static string FilePath => Path.Combine(IOHelper.LocalApplicationData, "Flagrum", "migrations.fms");
+
+    [MemoryPackInclude] public HashSet<Guid> Completed { get; set; } = [];
 
     public void Delete()
     {

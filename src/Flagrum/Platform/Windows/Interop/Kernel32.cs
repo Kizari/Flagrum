@@ -3,7 +3,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace Flagrum.Application.Features.ModManager.Launcher.PInvoke;
+namespace Flagrum.Platform.Windows.Interop;
 
 /// <summary>
 /// Platform invocation methods for invoking methods from kernel32.dll.

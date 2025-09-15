@@ -1,12 +1,11 @@
 ﻿@page "/"
 @inherits ModComponentBase
 @using Flagrum.Abstractions.ModManager
-@using Flagrum.Application.Features.ModManager.Launcher
 @using Flagrum.Application.Features.ModManager.Modals
-@implements Flagrum.Abstractions.ModManager.IModLibrary
+@implements IModLibrary
 
 @inject IPlatformService PlatformService
-@inject GameLauncher Launcher
+@inject IGameLauncher Launcher
 
 <style>
     .rte-container h1, .rte-container h2, .rte-container h3, .rte-container h4, .rte-container h5, .rte-container h6 {

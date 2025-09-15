@@ -17,10 +17,30 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <LangVersion>preview</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <SelfContained>true</SelfContained>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>WINDOWS</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <DefineConstants>LINUX</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**\*.*"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <Compile Remove="Platform\Linux\**\*.cs"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <Compile Remove="Platform\Windows\**\*.cs"/>
+        <Content Include="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -54,6 +74,7 @@
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj"/>
+        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -177,6 +198,11 @@
     <ItemGroup>
         <AdditionalFiles Include="ApplicationHost\Shell\CustomShellWindow.axaml"/>
         <AdditionalFiles Include="ApplicationHost\Shell\PlasmaShellButton.axaml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json"/>
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
     </ItemGroup>
 
 </Project>

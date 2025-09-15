@@ -8,27 +8,26 @@ using Flagrum.Abstractions;
 using Flagrum.Abstractions.Archive;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Abstractions.ModManager.Instructions;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Utilities;
-using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Generators;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Installer;
 using Flagrum.Application.Features.ModManager.Instructions;
 using Flagrum.Application.Features.ModManager.Project;
 using Flagrum.Application.Features.ModManager.Services;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Extensions;
 using Injectio.Attributes;
 using Microsoft.Extensions.Localization;
 
 namespace Flagrum.Application.Features.ModManager.Legacy;
 
-[RegisterScoped]
-public partial class LegacyModInstaller
+[RegisterScoped<LegacyModInstaller>]
+public partial class LegacyModInstaller(
+    IFileIndex _fileIndex,
+    IModBuildInstructionFactory _instructionFactory,
+    ModManagerServiceBase _modManager,
+    IProfileService _profile)
 {
-    [Inject] private readonly IFileIndex _fileIndex;
-    [Inject] private readonly IModBuildInstructionFactory _instructionFactory;
-    [Inject] private readonly ModManagerServiceBase _modManager;
-    [Inject] private readonly IProfileService _profile;
     private IStringLocalizer<Index> _localizer;
 
     public async Task<ModInstallationResult> Install(ModInstallationRequest request)
