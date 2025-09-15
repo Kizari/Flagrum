@@ -1,8 +1,10 @@
 ﻿using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Flagrum.Core.Data;
 
-public class ResourceId
+[StructLayout(LayoutKind.Sequential)]
+public struct ResourceId
 {
     public uint Type { get; set; }
     public uint Primary { get; set; }

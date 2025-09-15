@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Core.Ps4;
+﻿namespace Flagrum.Core.Graphics.Textures.Luminous;
 
 public enum BlackTexturePlatform : byte
 {

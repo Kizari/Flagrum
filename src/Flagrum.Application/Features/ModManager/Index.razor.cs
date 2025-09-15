@@ -8,15 +8,14 @@ using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Abstractions.ModManager.Instructions;
 using Flagrum.Abstractions.ModManager.Project;
-using Flagrum.Components.Modals;
-using Flagrum.Core.Utilities;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Installer;
 using Flagrum.Application.Features.ModManager.Instructions.Builders;
 using Flagrum.Application.Features.ModManager.Launcher;
 using Flagrum.Application.Features.ModManager.Modals;
 using Flagrum.Application.Features.ModManager.Services;
-using Flagrum.Application.Features.Shared;
+using Flagrum.Components.Modals;
+using Flagrum.Core.Utilities;
 using Microsoft.AspNetCore.Components;
 
 namespace Flagrum.Application.Features.ModManager;
@@ -26,7 +25,6 @@ public sealed partial class Index : ModComponentBase
     private IFlagrumProject _contextMod;
 
     [Inject] private IConfiguration Configuration { get; set; }
-    [Inject] private TextureConverter TextureConverter { get; set; }
     [Inject] private DataIndexBinaryDifferenceBuilder DifferenceBuilder { get; set; }
     [Inject] private IModBuildInstructionFactory InstructionFactory { get; set; }
     [Inject] private ModInstaller ModInstaller { get; set; }

@@ -1,170 +1,401 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Flagrum.Abstractions;
+using System.Runtime.InteropServices;
+using CommunityToolkit.HighPerformance.Buffers;
 using Flagrum.Core.Data.Binary;
 using Flagrum.Core.Graphics.Textures.DirectX;
-using Flagrum.Core.Ps4;
+using Flagrum.Core.Graphics.Textures.Gnf;
+using Flagrum.Core.Graphics.Textures.Luminous.DataSources;
+using Flagrum.Core.Graphics.Textures.NvidiaTextureTools;
+using Flagrum.Core.Graphics.Textures.Shared;
+using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Extensions;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Tga;
 
 namespace Flagrum.Core.Graphics.Textures.Luminous;
 
-public class BlackTexture : SectionDataBinary
+/// <summary>
+/// Represents the <c>.btex</c> format.
+/// </summary>
+public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
 {
-    private readonly LuminousGame _game;
+    private readonly ReadOnlyMemory<byte> _buffer;
+    private readonly IPixelFormatStrategy _strategy;
 
-    public BlackTexture(LuminousGame game)
+    public unsafe BlackTexture(ReadOnlyMemory<byte> buffer)
     {
-        _game = game;
-        Subtype = "btex".ToCharArray();
+        _buffer = buffer;
+        var span = buffer.Span;
+
+        ref var start = ref MemoryMarshal.GetReference(span);
+        SedbHeader = ref Unsafe.As<byte, SectionDataBinaryHeader>(ref start);
+
+        var pBtexHeader = SedbHeader.Offset;
+        BtexHeader = ref Unsafe.As<byte, BlackTextureHeader>(ref Unsafe.Add(ref start, pBtexHeader));
+
+        if (BtexHeader.ImageCount > 1)
+        {
+            throw new NotSupportedException("Textures with multiple images not supported.");
+        }
+
+        var pImageHeader = pBtexHeader + BtexHeader.ImageHeaderOffset;
+        ImageHeader = ref Unsafe.As<byte, BlackTextureImageHeader>(ref Unsafe.Add(ref start, pImageHeader));
+
+        Name = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(
+            (byte*)Unsafe.AsPointer(ref Unsafe.Add(ref start, pImageHeader + ImageHeader.NameOffset)));
+
+        if (BtexHeader.Platform == BlackTexturePlatform.PLATFORM_WIIU)
+        {
+            var pSurfaces = pImageHeader + ImageHeader.SurfaceHeaderOffset;
+            Surfaces = MemoryMarshal.Cast<byte, BlackTextureSurfaceHeader>(span.Slice((int)pSurfaces,
+                Unsafe.SizeOf<BlackTextureSurfaceHeader>() * ImageHeader.SurfaceCount));
+
+            var pData = pBtexHeader + BtexHeader.HeaderSize;
+            Data = _buffer[(int)pData..];
+        }
+        else if (BtexHeader.Platform == BlackTexturePlatform.PLATFORM_PS4)
+        {
+            var pGnfHeader = pBtexHeader + BtexHeader.HeaderSize;
+            GnfHeader = ref Unsafe.As<byte, GnfHeader>(ref Unsafe.Add(ref start, pGnfHeader));
+            var pData = pGnfHeader + 256;
+            Data = _buffer[(int)pData..];
+        }
+
+        _strategy = PixelFormatStrategyFactory.Create(ImageHeader.Format);
     }
 
-    public char[] Magic { get; set; } = "BTEX".ToCharArray();
-    public uint HeaderSize { get; set; }
-    public uint ImageDataSize { get; set; }
-    public BlackTextureVersion Version { get; set; } = BlackTextureVersion.VERSION_LATEST;
-    public BlackTexturePlatform Platform { get; set; } = BlackTexturePlatform.PLATFORM_WIIU;
-    public BlackTextureFlags Flags { get; set; } = BlackTextureFlags.FLAG_COMPOSITED_IMAGE;
-    public ushort ImageCount { get; set; } = 1;
-    public ushort ImageHeaderStride { get; set; } = 56;
-    public uint ImageHeaderOffset { get; set; } = 32;
+    public readonly ref SectionDataBinaryHeader SedbHeader;
+    public readonly ref BlackTextureHeader BtexHeader;
+    public readonly ref BlackTextureImageHeader ImageHeader;
+    public readonly ref GnfHeader GnfHeader;
 
-    public List<BlackTextureImageData> ImageData { get; set; } = new();
+    public ReadOnlySpan<byte> Name { get; }
+    public ReadOnlySpan<BlackTextureSurfaceHeader> Surfaces { get; }
+    public ReadOnlyMemory<byte> Data { get; }
 
-    public static BlackTexture Deserialize(byte[] buffer, LuminousGame game = LuminousGame.FFXV)
+    /// <summary>
+    /// Gets the size of all data preceding the raw pixel information for a texture targeting the PC game.
+    /// </summary>
+    /// <param name="name">Name of the texture that is stored in the header.</param>
+    /// <param name="arrayCount">Number of images in the texture.</param>
+    /// <param name="mipmapCount">Number of mipmaps per image.</param>
+    /// <returns>Total size of the metadata and padding, in bytes.</returns>
+    public static int GetMetadataSizePC(string name, int arrayCount, int mipmapCount) =>
+        (128 // SEDB header + alignment
+         + Unsafe.SizeOf<BlackTextureHeader>()
+         + Unsafe.SizeOf<BlackTextureImageHeader>()
+         + Unsafe.SizeOf<BlackTextureSurfaceHeader>() * arrayCount * mipmapCount
+         + name.Length + 1) // Null-terminator
+        .AlignTo(128);
+
+    /// <summary>
+    /// Retrieves a collection of data sources for each surface in this texture.
+    /// </summary>
+    /// <returns>
+    /// A list of lists. The outer list represents one image in the texture, while
+    /// the inner list has a data source for each mip in that texture.
+    /// </returns>
+    public List<List<IBlackTextureDataSource>> GetImageDataSources()
     {
-        var texture = new BlackTexture(game);
-        texture.Read(buffer);
-        return texture;
+        var result = new List<List<IBlackTextureDataSource>>((int)ImageHeader.ArrayCount);
+        for (var i = 0; i < ImageHeader.ArrayCount; i++)
+        {
+            result[i] = new List<IBlackTextureDataSource>(ImageHeader.MipMapCount);
+        }
+
+        foreach (var surface in this)
+        {
+            result[surface.ArrayIndex].Add(new RawPixelDataSource(
+                surface.Data,
+                surface.Width,
+                surface.Height,
+                ImageHeader.Format));
+        }
+
+        return result;
     }
 
-    public override void Read(Stream stream)
+    /// <summary>
+    /// Creates an equivalent DDS file from this <see cref="BlackTexture" />.
+    /// </summary>
+    /// <returns>In-memory DDS file.</returns>
+    public byte[] ToDds()
     {
-        if (_game != LuminousGame.Forspoken)
+        using var stream = new MemoryStream();
+        
+        // Create a properly sized buffer and write the DDS header to it
+        var ddsMetadataSize =
+            sizeof(uint) + Unsafe.SizeOf<DirectDrawSurfaceHeader>() + Unsafe.SizeOf<DirectX10Header>();
+        var ddsBuffer = new byte[ddsMetadataSize];
+        var ddsSpan = new Span<byte>(ddsBuffer);
+        WriteDdsHeader(ddsSpan);
+        stream.Write(ddsSpan);
+        
+        // Write the pixel data
+        if (ImageHeader.Flags.HasFlag(BlackTextureImageFlags.SWIZZLE))
         {
-            base.Read(stream);
-            stream.Align(Offset);
-        }
-
-        using var reader = new BinaryReader(stream);
-
-        Magic = reader.ReadChars(4);
-        HeaderSize = reader.ReadUInt32();
-        ImageDataSize = reader.ReadUInt32();
-        Version = (BlackTextureVersion)reader.ReadUInt16();
-        Platform = (BlackTexturePlatform)reader.ReadByte();
-        Flags = (BlackTextureFlags)reader.ReadByte();
-        ImageCount = reader.ReadUInt16();
-        ImageHeaderStride = reader.ReadUInt16();
-        ImageHeaderOffset = reader.ReadUInt32();
-        _ = reader.ReadUInt64(); // Padding
-
-        for (var i = 0; i < ImageCount; i++)
-        {
-            var imageData = new BlackTextureImageData(_game, Platform);
-            imageData.Read(reader);
-            ImageData.Add(imageData);
-        }
-    }
-
-    public override void Write(Stream stream)
-    {
-        if (_game != LuminousGame.Forspoken) // Forspoken doesn't have SEDBbtex header
-        {
-            base.Write(stream);
-        }
-
-        using var writer = new BinaryWriter(stream);
-        writer.Align(128, 0x00);
-
-        writer.Write(Magic);
-
-        var sizesOffset = writer.BaseStream.Position;
-        writer.Write(0u); // Will come back and write these later
-        writer.Write(0u);
-
-        writer.Write((ushort)Version);
-        writer.Write((byte)Platform);
-        writer.Write((byte)Flags);
-        writer.Write(ImageCount);
-        writer.Write(ImageHeaderStride);
-        writer.Write(ImageHeaderOffset);
-        writer.Write(0UL); // Padding
-
-        if (ImageCount > 1)
-        {
-            throw new Exception("BTEX converter doesn't support multiple images currently");
-        }
-
-        var (metadataSize, pixelDataSize) = ImageData[0].Write(writer);
-        HeaderSize = 32 + metadataSize;
-        ImageDataSize = pixelDataSize;
-
-        var returnAddress = writer.BaseStream.Position;
-        writer.BaseStream.Seek(sizesOffset, SeekOrigin.Begin);
-        writer.Write(HeaderSize);
-        writer.Write(ImageDataSize);
-        writer.BaseStream.Seek(returnAddress, SeekOrigin.Begin);
-        writer.Align(Offset, 0x00);
-
-        if (_game != LuminousGame.Forspoken)
-        {
-            // Calculate size and write it back in the SEDB header
-            var size = stream.Position;
-            writer.Seek(16, SeekOrigin.Begin);
-            writer.Write(size);
-        }
-    }
-
-    public DirectDrawSurface ToDds()
-    {
-        if (ImageCount > 1)
-        {
-            throw new Exception("BTEX converter doesn't support multiple images currently");
-        }
-
-        var data = ImageData[0];
-        return new DirectDrawSurface
-        {
-            Height = data.Height,
-            Width = data.Width,
-            Pitch = data.Pitch,
-            Depth = data.Depth,
-            MipCount = data.MipCount,
-            Flags = DirectDrawSurfaceFlags.Texture | DirectDrawSurfaceFlags.Pitch | DirectDrawSurfaceFlags.Depth |
-                    DirectDrawSurfaceFlags.MipMapCount,
-            Format = new DirectDrawSurfacePixelFormat(),
-            DirectX10Header = new DirectDrawSurfaceDirectX10Header
+            // Rent a buffer for each mip size
+            var buffers = new MemoryOwner<byte>[ImageHeader.MipMapCount];
+            foreach (var surface in this)
             {
-                ArraySize = data.ArrayCount,
-                Format = TexturePixelFormatMap.Instance[data.Format],
-                ResourceDimension = data.DimensionCount + 1u
-            },
-            PixelData = data.PixelData
-        };
-    }
+                buffers[surface.MipLevel] = MemoryOwner<byte>.Allocate(surface.Size);
+                if (surface.MipLevel == ImageHeader.MipMapCount)
+                {
+                    break;
+                }
+            }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SurfaceSet ToSurfaceSet() => new(this);
+            // Deswizzle each surface into the respective buffer and write it to the output stream
+            foreach (var surface in this)
+            {
+                var buffer = buffers[surface.MipLevel];
+                var span = buffer.Span;
 
-    /// WARNING: Only works for FFXV Windows Edition textures
-    public void AppendTextureToArray(BlackTexture textureToAppend)
-    {
-        // Update metadata
-        ImageData[0].ArrayCount++;
-        ImageData[0].Mips.Add(textureToAppend.ImageData[0].Mips[0].Select(m => new BlackTextureMipData
+                _strategy.DeswizzleSurface(
+                    surface.Data.Span,
+                    span,
+                    surface.Width,
+                    surface.Height);
+
+                stream.Write(span);
+            }
+            
+            // Dispose temporary buffers
+            foreach (var buffer in buffers)
+            {
+                buffer.Dispose();
+            }
+        }
+        else
         {
-            Offset = (uint)(m.Offset + ImageData[0].PixelData.Length),
-            Size = m.Size
-        }).ToList());
+            // Write each surface to the output stream
+            foreach (var surface in this)
+            {
+                stream.Write(surface.Data.Span);
+            }
+        }
 
-        // Append texture data
-        var data = new byte[ImageData[0].PixelData.Length + textureToAppend.ImageData[0].PixelData.Length];
-        Array.Copy(ImageData[0].PixelData, 0, data, 0, ImageData[0].PixelData.Length);
-        Array.Copy(textureToAppend.ImageData[0].PixelData, 0, data, ImageData[0].PixelData.Length,
-            textureToAppend.ImageData[0].PixelData.Length);
-        ImageData[0].PixelData = data;
+        return stream.ToArray();
     }
+
+    /// <summary>
+    /// Saves one image from this texture to memory in the desired format.
+    /// </summary>
+    /// <param name="imageIndex">Index of the image to save.</param>
+    /// <param name="format">File format to convert the image to.</param>
+    /// <returns>Buffer containing the image file.</returns>
+    /// <exception cref="IndexOutOfRangeException">Thrown if image index is not in the valid range.</exception>
+    public byte[] Save(int imageIndex, ImageFileFormat format)
+    {
+        if (imageIndex < 0 || imageIndex >= ImageHeader.ArrayCount)
+        {
+            throw new IndexOutOfRangeException(
+                $"Expected index between 0 and {ImageHeader.ArrayCount}. Got {imageIndex}.");
+        }
+
+        using var enumerator = (ITextureSurfaceEnumerator)GetEnumerator();
+        using var stream = new MemoryStream();
+        WriteOther(stream, enumerator, imageIndex, format);
+        return stream.ToArray();
+    }
+
+    /// <summary>
+    /// Saves each image in this texture to disk.
+    /// </summary>
+    /// <param name="path">Absolute file path to save the file to.</param>
+    /// <param name="format">File format to save the file as.</param>
+    /// <param name="arrayFileNameSelector">
+    /// Defines how to name each file when saving a texture array to a format that does
+    /// not support texture arrays. Input parameters are image index and the file name portion
+    /// of <paramref name="path" /> respectively.
+    /// If null, the default scheme of "filename.1001" will be used. Extension is appended automatically.
+    /// </param>
+    /// <exception cref="NotSupportedException">
+    /// Thrown if the given file format is not supported.
+    /// </exception>
+    /// <remarks>
+    /// BTEX and DDS will retain original pixel format and mipmaps.
+    /// Other formats will only take the highest resolution mipmap from each image.
+    /// If there are multiple images in the texture and the format is not BTEX or DDS,
+    /// multiple files will be saved in a folder named for <paramref name="path" />.
+    /// </remarks>
+    public void Save(string path, ImageFileFormat format,
+        Func<int, string, string>? arrayFileNameSelector = null)
+    {
+        arrayFileNameSelector ??= (i, name) => $"{name}.1{(i + 1).WithLeadingZeroes(3)}";
+        var pathNoExtension = path[..path.LastIndexOf('.')];
+
+        // ReSharper disable twice PossibleUnintendedReferenceComparison
+        if (format == ImageFileFormat.Btex)
+        {
+            var finalPath = $"{pathNoExtension}.{format}";
+            IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+            using var stream = new FileStream(finalPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            WriteBtex(stream);
+        }
+        else if (format == ImageFileFormat.Dds)
+        {
+            var finalPath = $"{pathNoExtension}.{format}";
+            IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+            using var stream = new FileStream(finalPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            WriteDds(stream);
+        }
+        else
+        {
+            using var enumerator = (ITextureSurfaceEnumerator)GetEnumerator();
+            var name = pathNoExtension.Split(Path.DirectorySeparatorChar)[^1];
+
+            for (var i = 0; i < ImageHeader.ArrayCount; i++)
+            {
+                var finalPath = ImageHeader.ArrayCount > 1
+                    ? Path.Combine(pathNoExtension, $"{arrayFileNameSelector(i, name)}.{format}")
+                    : $"{pathNoExtension}.{format}";
+                IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+                using var stream = new FileStream(finalPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                WriteOther(stream, enumerator, i, format);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes the BTEX file directly to the stream.
+    /// </summary>
+    /// <param name="destination">Stream to write the texture to.</param>
+    /// <remarks>
+    /// Will deswizzle pixels prior to writing if the texture is swizzled.
+    /// </remarks>
+    private void WriteBtex(Stream destination)
+    {
+        if (ImageHeader.Flags.HasFlag(BlackTextureImageFlags.SWIZZLE))
+        {
+            throw new NotImplementedException("Haven't implemented deswizzling for BTEX export yet.");
+        }
+
+        destination.Write(_buffer.Span);
+    }
+
+    /// <summary>
+    /// Converts the texture to the Direct Draw Surface (DDS) format.
+    /// </summary>
+    /// <param name="destination">Stream to write the converted texture to.</param>
+    private void WriteDds(Stream destination)
+    {
+        // Write a DDS header for this texture to a new buffer, then write that to the stream
+        using var ddsBuffer = MemoryOwner<byte>.Allocate(
+            DirectDrawSurfaceHeader.StructSize, AllocationMode.Clear);
+        WriteDdsHeader(ddsBuffer.Span);
+        destination.Write(ddsBuffer.Span);
+
+        // Iterate each surface in the texture
+        foreach (var surface in this)
+        {
+            var surfaceSpan = surface.Data.Span;
+
+            // Deswizzle if needed
+            if (ImageHeader.Flags.HasFlag(BlackTextureImageFlags.SWIZZLE))
+            {
+                var deswizzledBuffer = new byte[surface.Size];
+                var deswizzled = new Span<byte>(deswizzledBuffer);
+                _strategy.DeswizzleSurface(surfaceSpan, deswizzled, surface.Width, surface.Height);
+                surfaceSpan = deswizzled;
+            }
+
+            // Write the surface to the stream
+            // Deliberately not aligning surface to BlockSize like BTEX does, as this is not standard for DDS
+            destination.Write(surfaceSpan);
+        }
+    }
+
+    /// <summary>
+    /// Converts one image in the texture to a standard image format.
+    /// </summary>
+    /// <param name="destination">Stream to write the converted image to.</param>
+    /// <param name="enumerator">Surface enumerator.</param>
+    /// <param name="index">Index of the image to convert.</param>
+    /// <param name="format">Image format to convert to.</param>
+    /// <exception cref="NotSupportedException">
+    /// Thrown if the <paramref name="format" /> is not JPEG, PNG, or TGA.
+    /// </exception>
+    private void WriteOther(Stream destination, ITextureSurfaceEnumerator enumerator, int index, ImageFileFormat format)
+    {
+        var element = enumerator.ElementAt(index, 0);
+        var surfaceSpan = element.Data.Span;
+
+        if (ImageHeader.Flags.HasFlag(BlackTextureImageFlags.SWIZZLE))
+        {
+            var deswizzledBuffer = new byte[element.Size];
+            var deswizzled = new Span<byte>(deswizzledBuffer);
+            _strategy.DeswizzleSurface(surfaceSpan, deswizzled, element.Width, element.Height);
+            surfaceSpan = deswizzled;
+        }
+
+        using var surface = new NvttSurface(surfaceSpan,
+            ImageHeader.Format,
+            ImageHeader.Width,
+            ImageHeader.Height);
+        surface.Save(destination, format == ImageFileFormat.Jpeg
+            ? new JpegEncoder()
+            : format == ImageFileFormat.Png
+                ? new PngEncoder()
+                : format == ImageFileFormat.Targa
+                    ? new TgaEncoder()
+                    : throw new NotSupportedException($"Unsupported image format {format}"));
+    }
+
+    /// <summary>
+    /// Writes a DDS header with the correct properties for this texture.
+    /// </summary>
+    /// <param name="destination">Buffer to write the header to.</param>
+    private void WriteDdsHeader(Span<byte> destination)
+    {
+        ref var start = ref MemoryMarshal.GetReference(destination);
+        ref var magic = ref Unsafe.As<byte, uint>(ref start);
+        magic = DirectDrawSurfaceHeader.MagicValue;
+
+        ref var ddsHeader = ref Unsafe.As<byte, DirectDrawSurfaceHeader>(ref Unsafe.Add(ref start, sizeof(uint)));
+        ddsHeader.Size = (uint)DirectDrawSurfaceHeader.StructSize;
+        ddsHeader.Width = ImageHeader.Width;
+        ddsHeader.Height = ImageHeader.Height;
+        ddsHeader.Pitch = ImageHeader.Pitch;
+        ddsHeader.Depth = ImageHeader.Depth;
+        ddsHeader.MipMapCount = ImageHeader.MipMapCount;
+        ddsHeader.Flags = DirectDrawSurfaceFlags.Texture
+                          | DirectDrawSurfaceFlags.Pitch
+                          | DirectDrawSurfaceFlags.Depth
+                          | DirectDrawSurfaceFlags.MipMapCount;
+        ddsHeader.PixelFormat = DirectDrawSurfacePixelFormat.Default;
+        ddsHeader.Caps = DirectDrawSurfaceCaps.Texture;
+
+        ref var dx10Header = ref Unsafe.As<byte, DirectX10Header>(ref Unsafe.Add(ref start,
+            sizeof(uint) + Unsafe.SizeOf<DirectDrawSurfaceHeader>()));
+        dx10Header.ArraySize = ImageHeader.ArrayCount;
+        dx10Header.Format = ImageHeader.Flags.HasFlag(BlackTextureImageFlags.SRGB)
+            ? PixelFormatMap.GetSrgb(ImageHeader.Format)
+            : PixelFormatMap.Get(ImageHeader.Format);
+        dx10Header.ResourceDimension = (DirectX10ResourceDimension)(ImageHeader.DimensionCount + 1u);
+        dx10Header.MiscFlags = 0;
+        dx10Header.MiscFlags2 = DirectX10MiscFlags2.Unknown;
+    }
+
+    /// <inheritdoc />
+    public IEnumerator<TextureSurface> GetEnumerator()
+    {
+        var configuration = new TextureSurfaceEnumeratorConfiguration(
+            ImageHeader.ArrayCount,
+            ImageHeader.MipMapCount,
+            ImageHeader.Width,
+            ImageHeader.Height,
+            Data,
+            BtexHeader.Platform == BlackTexturePlatform.PLATFORM_PS4 ? 512 : null);
+        return _strategy.GetEnumerator(configuration);
+    }
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

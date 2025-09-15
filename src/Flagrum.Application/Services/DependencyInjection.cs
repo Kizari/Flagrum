@@ -1,16 +1,15 @@
 ﻿using Flagrum.Abstractions;
 using Flagrum.Abstractions.Utilities;
-using Flagrum.Components;
-using Flagrum.Core.Archive;
 using Flagrum.Application.Features.AssetExplorer.Indexing;
 using Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 using Flagrum.Application.Features.ModManager.Project;
 using Flagrum.Application.Features.ModManager.Services;
 using Flagrum.Application.Features.Settings.Data;
-using Flagrum.Application.Features.Shared;
 using Flagrum.Application.Features.WorkshopMods.Services;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Utilities;
+using Flagrum.Components;
+using Flagrum.Core.Archive;
 using MemoryPack;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +50,6 @@ public static class DependencyInjection
             .AddScoped<EntityPackageBuilder>()
             .AddScoped<Modmeta>()
             .AddScoped<TerrainPacker>()
-            .AddScoped<TextureConverter>()
             .AddSingleton<IConfiguration, Configuration>()
             .AddSingleton<IUriHelper, UriHelper>(_ => UriHelper.Instance)
             .AddBlazorContextMenu()

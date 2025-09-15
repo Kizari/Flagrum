@@ -16,6 +16,7 @@
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <LangVersion>preview</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -100,7 +101,7 @@
         <Resource Include="Assets\logo_outlined.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Resource>
-        <None Update="libnvtt.so.30205">
+        <None Update="libnvtt.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

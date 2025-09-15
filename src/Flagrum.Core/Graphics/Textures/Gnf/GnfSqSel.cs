@@ -1,4 +1,4 @@
-﻿namespace Flagrum.Core.Ps4;
+﻿namespace Flagrum.Core.Graphics.Textures.Gnf;
 
 public enum GnfSqSel : byte
 {

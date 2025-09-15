@@ -32,5 +32,5 @@ public interface IAssetExplorerNode
 
     void Traverse(Action<IAssetExplorerNode> visitor);
     IAssetExplorerNode GetRoot();
-    object ToObject();
+    object? ToObject();
 }

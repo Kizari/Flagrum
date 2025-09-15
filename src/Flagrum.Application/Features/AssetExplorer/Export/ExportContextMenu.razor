@@ -1,14 +1,16 @@
 ﻿@using System.IO
+@using Flagrum.Application.Features.AssetExplorer.Base
 @using Flagrum.Core.Animation.Package
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Entities
+@using Flagrum.Core.Graphics.Terrain
 @using Flagrum.Core.Graphics.Textures
-@using Flagrum.Application.Features.AssetExplorer.Base
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Graphics.Textures.Shared
 @inject IPlatformService PlatformService
 @inject TerrainPacker TerrainPacker
 @inject IStringLocalizer<ExportContextMenu> Localizer
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 @inject EnvironmentPacker EnvironmentPacker
 
 <ContextMenu Id="assetExplorerMenu"
@@ -145,13 +147,14 @@
                 case ExplorerItemType.Texture:
                 {
                     var extension = path.Split('.').Last();
-                    TextureConverter.ExportTexture(path, (ImageFormat)extension, item.Data);
+                    new BlackTexture(item.Data).Save(path, (ImageFileFormat)extension);
                     return;
                 }
                 case ExplorerItemType.TerrainTexture:
                 {
                     var extension = path.Split('.').Last();
-                    if (!TextureConverter.ExportTerrainTexture(path, (ImageFormat)extension, item.Data))
+                    var heb = new HeightEntityBinary(item.Data);
+                    if (!heb.TrySave(path, (ImageFileFormat)extension))
                     {
                         Alert.Open("Warning", "Nothing to Export",
                             "The selected HEB file does not contain any images, so nothing was exported.", null);

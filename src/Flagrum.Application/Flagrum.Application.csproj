@@ -6,12 +6,12 @@
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Blazored.TextEditor" Version="1.0.8"/>
         <PackageReference Include="CsvHelper" Version="30.0.1"/>
-        <PackageReference Include="DirectXTexNet" Version="1.0.3"/>
         <PackageReference Include="Injectio" Version="3.3.0"/>
         <PackageReference Include="MarkdownSharp" Version="2.0.5"/>
         <PackageReference Include="MessagePack" Version="2.5.124"/>

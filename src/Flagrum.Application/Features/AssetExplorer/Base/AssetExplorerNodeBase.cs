@@ -5,8 +5,6 @@ using Flagrum.Core.Animation.Package;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Graphics.Models;
-using Flagrum.Core.Graphics.Terrain;
-using Flagrum.Core.Graphics.Textures.Luminous;
 
 namespace Flagrum.Application.Features.AssetExplorer.Base;
 
@@ -88,13 +86,11 @@ public interface IAssetExplorerNodeBase : IAssetExplorerNode
 
     IAssetExplorerNode IAssetExplorerNode.GetRoot() => Parent == null ? this : Parent.GetRoot();
 
-    object IAssetExplorerNode.ToObject() => Type switch
+    object? IAssetExplorerNode.ToObject() => Type switch
     {
         ExplorerItemType.Material => GameMaterial.Deserialize(Data),
-        ExplorerItemType.Texture => BlackTexture.Deserialize(Data),
         ExplorerItemType.Model => GameModel.Deserialize(Data),
         ExplorerItemType.AnimationPackage => AnimationPackage.FromData(Data),
-        ExplorerItemType.TerrainTexture => HeightEntityBinary.FromData(Data),
         _ => null
     };
 }

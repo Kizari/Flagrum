@@ -1,10 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
-using Flagrum.Core.Archive;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities.ModManager;
-using Flagrum.Application.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flagrum.Application.Features.ModManager.Services;
@@ -16,7 +14,6 @@ public abstract class LegacyModManagerServiceBase(
     protected readonly FlagrumDbContext _context = context;
     protected readonly IProfileService _profile = profile;
 
-    public abstract Task BuildAndApplyMod(EarcMod mod, EbonyArchiveManager archiveManager);
     public abstract Task RevertMod(EarcMod mod);
 
     public void DisableMod(int modId)

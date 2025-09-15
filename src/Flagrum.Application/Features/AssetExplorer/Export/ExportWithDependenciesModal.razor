@@ -1,16 +1,17 @@
 ﻿@using System.IO
 @using System.Text
+@using Flagrum.Application.Features.AssetExplorer.Base
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Graphics.Materials
 @using Flagrum.Core.Graphics.Models
 @using Flagrum.Core.Graphics.Textures
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Graphics.Textures.Shared
 @using Flagrum.Core.Utilities
-@using Flagrum.Application.Features.AssetExplorer.Base
 @inject IPlatformService PlatformService
 @inject IStringLocalizer<ExportWithDependenciesModal> L
 @inject AppStateService AppState
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 @inject IFileIndex FileIndex
 
 <Modal @ref="Modal">
@@ -252,8 +253,7 @@
     {
         var fileName = uri.Split('/').Last();
         fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
-        var texturePath = $"{directory}\\{fileName}";
-
-        TextureConverter.ExportTexture(texturePath, (ImageFormat)Extension, btex);
+        var texturePath = Path.Combine(directory, fileName);
+        new BlackTexture(btex).Save(texturePath, (ImageFileFormat)Extension);
     }
 }

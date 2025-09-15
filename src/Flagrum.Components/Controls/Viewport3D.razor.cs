@@ -8,9 +8,18 @@ public sealed partial class Viewport3D : ComponentBase, IAsyncDisposable
     private IJSObjectReference? _module;
 
     [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
-    
+
     [Parameter] public Func<Task>? OnReady { get; set; }
     [Parameter] public bool IsVisible { get; set; }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.InvokeVoidAsync("dispose");
+            await _module.DisposeAsync();
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -26,22 +35,13 @@ public sealed partial class Viewport3D : ComponentBase, IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
-    {
-        if (_module != null)
-        {
-            await _module.InvokeVoidAsync("dispose");
-            await _module.DisposeAsync();
-        }
-    }
-
     public async Task AddMeshAsync(
-        float[] vertices, 
-        uint[] faceIndices, 
+        float[] vertices,
+        uint[] faceIndices,
         float[] normals,
         float[] uvs,
-        byte[] diffuse,
-        byte[] normalMap)
+        byte[]? diffuse,
+        byte[]? normalMap)
     {
         await _module!.InvokeVoidAsync("addMesh", vertices, faceIndices, normals, uvs, diffuse, normalMap);
     }

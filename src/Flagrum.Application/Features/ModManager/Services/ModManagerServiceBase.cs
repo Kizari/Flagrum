@@ -4,20 +4,21 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Abstractions.ModManager.Project;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Graphics.Textures.Luminous;
-using Flagrum.Core.Persistence;
-using Flagrum.Core.Utilities;
-using Flagrum.Core.Utilities.Extensions;
 using Flagrum.Application.Features.AssetExplorer.Data;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Instructions;
 using Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 using Flagrum.Application.Utilities;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Graphics.Textures.Luminous;
+using Flagrum.Core.Persistence;
+using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Extensions;
 
 namespace Flagrum.Application.Features.ModManager.Services;
 
@@ -185,7 +186,7 @@ public abstract class ModManagerServiceBase
         var imageMap = new ConcurrentDictionary<string, byte[]>();
 
         // Get metadata for replacement textures
-        var textureMetadata = new ConcurrentDictionary<string, BlackTexture>();
+        var textureMetadata = new ConcurrentDictionary<string, ExistingTextureMetadata>();
         var replacementTextures = mod.Archives
             .SelectMany(e => e.Instructions
                 .Where(i => i is ReplacePackedFileBuildInstruction replace
@@ -219,9 +220,14 @@ public abstract class ModManagerServiceBase
 
             var archive = archiveManager.Open(path);
             var data = archive[file.Uri].GetReadableData();
-            var binary = new BlackTexture(_profile.Current.Type);
-            binary.Read(data);
-            textureMetadata[file.Uri] = binary;
+            var binary = new BlackTexture(data);
+            textureMetadata[file.Uri] = new ExistingTextureMetadata
+            {
+                Name = Encoding.UTF8.GetString(binary.Name),
+                Format = binary.ImageHeader.Format,
+                Flags = binary.ImageHeader.Flags,
+                MipCount = binary.ImageHeader.MipMapCount
+            };
         });
 
         _assetConverter.SetTextureMetadata(textureMetadata);

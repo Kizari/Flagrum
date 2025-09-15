@@ -1,145 +1,102 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Flagrum.Core.Graphics.Textures.DirectX;
-using Flagrum.Core.Graphics.Textures.Luminous;
-using Flagrum.Core.Serialization;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Flagrum.Core.Graphics.Textures;
+using Flagrum.Core.Graphics.Textures.NvidiaTextureTools;
+using Flagrum.Core.Graphics.Textures.Shared;
+using Flagrum.Core.Utilities;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Flagrum.Core.Graphics.Terrain;
 
-public class HeightEntityBinary
+// TODO: Assuming PS4 HEBs are also swizzled, they need to be deswizzled like in BTEX
+
+public ref struct HeightEntityBinary
 {
-    public uint ImageHeadersOffset { get; set; }
-    public ushort ImageHeaderSize { get; set; }
-    public ushort ImageCount { get; set; }
-    public List<HeightEntityBinaryImage> ImageHeaders { get; set; } = new();
+    private readonly ReadOnlySpan<byte> _buffer;
 
-    public static HeightEntityBinary FromData(byte[] data)
+    public HeightEntityBinary(ReadOnlySpan<byte> buffer)
     {
-        using var stream = new MemoryStream(data);
-        using var reader = new BinaryReader(stream, Encoding.UTF8);
-        var header = new HeightEntityBinary();
+        _buffer = buffer;
 
-        // Read HebHeader properties in Big Endian
-        var imageHeadersOffsetBigEndian = reader.ReadBytes(4);
-        Array.Reverse(imageHeadersOffsetBigEndian);
-        header.ImageHeadersOffset = BitConverter.ToUInt32(imageHeadersOffsetBigEndian);
-
-        var imageHeaderSizeBigEndian = reader.ReadBytes(2);
-        Array.Reverse(imageHeaderSizeBigEndian);
-        header.ImageHeaderSize = BitConverter.ToUInt16(imageHeaderSizeBigEndian);
-
-        var imageCountBigEndian = reader.ReadBytes(2);
-        Array.Reverse(imageCountBigEndian);
-        header.ImageCount = BitConverter.ToUInt16(imageCountBigEndian);
-
-        // Skip padding
-        stream.Seek(24, SeekOrigin.Current);
-
-        // Read each image header
-        for (var i = 0; i < header.ImageCount; i++)
-        {
-            var imageHeader = new HeightEntityBinaryImage
-            {
-                Flags = reader.ReadByte(),
-                Type = (HeightEntityBinaryImageType)reader.ReadByte(),
-                TypeIndex = reader.ReadByte(),
-                MipCount = reader.ReadByte(),
-                TextureDataOffsetOffset = stream.Position,
-                TextureDataOffset = reader.ReadUInt32(),
-                AverageHeight = reader.ReadSingle(),
-                TextureFormat = (BlackTexturePixelFormat)reader.ReadByte(),
-                TileMode = (HeightEntityBinaryImageTileMode)reader.ReadByte(),
-                Reserved1 = reader.ReadUInt16(),
-                MinValue = reader.ReadUInt16(),
-                MaxValue = reader.ReadUInt16(),
-                TextureSizeBytes = reader.ReadUInt32(),
-                TextureWidth = reader.ReadUInt32(),
-                TextureHeight = reader.ReadUInt32()
-            };
-
-            // Read image data
-            imageHeader.DdsData = new byte[imageHeader.TextureSizeBytes];
-            var returnAddress = stream.Position;
-            stream.Seek(imageHeader.TextureDataOffsetOffset + imageHeader.TextureDataOffset, SeekOrigin.Begin);
-            reader.Read(imageHeader.DdsData);
-            stream.Seek(returnAddress, SeekOrigin.Begin);
-            header.ImageHeaders.Add(imageHeader);
-        }
-
-        return header;
+        ref var start = ref MemoryMarshal.GetReference(buffer);
+        Header = ref Unsafe.As<byte, HeightEntityBinaryHeader>(ref start);
+        Images = MemoryMarshal.Cast<byte, HeightEntityBinaryImageHeader>(buffer.Slice(
+            (int)Header.ImageHeadersOffset,
+            HeightEntityBinaryImageHeader.Size * Header.ImageCount));
+        var pData = HeightEntityBinaryHeader.Size + HeightEntityBinaryImageHeader.Size * Header.ImageCount;
+        Data = buffer[pData..];
     }
 
-    public static byte[] ToData(HeightEntityBinary heb)
+    public ref HeightEntityBinaryHeader Header;
+    public ReadOnlySpan<HeightEntityBinaryImageHeader> Images { get; }
+    public ReadOnlySpan<byte> Data { get; }
+
+    /// <summary>
+    /// Gets the pixel data for an image in this binary.
+    /// </summary>
+    /// <param name="index">Index of the image in <see cref="Images" />.</param>
+    public ReadOnlySpan<byte> GetPixelData(int index)
     {
-        using var memoryStream = new MemoryStream();
-        using var writer = new BinaryWriter(memoryStream, Encoding.UTF8);
+        var header = Images[index];
+        var dataOffset = HeightEntityBinaryHeader.Size + HeightEntityBinaryImageHeader.Size * index
+                                                       + 4 + (int)header.TextureDataOffset;
+        return Data.Slice(dataOffset, (int)header.TextureSizeBytes);
+    }
 
-        var imageHeadersOffsetBigEndian = BitConverter.GetBytes(heb.ImageHeadersOffset);
-        Array.Reverse(imageHeadersOffsetBigEndian);
-        writer.Write(imageHeadersOffsetBigEndian);
+    public bool TrySave(string path, ImageFileFormat format)
+    {
+        var pathNoExtension = path[..path.LastIndexOf('.')];
 
-        var imageHeaderSizeBigEndian = BitConverter.GetBytes(heb.ImageHeaderSize);
-        Array.Reverse(imageHeaderSizeBigEndian);
-        writer.Write(imageHeaderSizeBigEndian);
-
-        var imageCountBigEndian = BitConverter.GetBytes((ushort)heb.ImageHeaders.Count);
-        Array.Reverse(imageCountBigEndian);
-        writer.Write(imageCountBigEndian);
-
-        // Padding
-        writer.Write(new byte[24]);
-
-        var totalDataSize = 256u;
-
-        // Write each image header
-        foreach (var image in heb.ImageHeaders)
+        // ReSharper disable twice PossibleUnintendedReferenceComparison
+        if (format == ImageFileFormat.Heb)
         {
-            writer.Write(image.Flags);
-            writer.Write((byte)image.Type);
-            writer.Write(image.TypeIndex);
-            writer.Write(image.MipCount);
-            image.TextureDataOffsetOffset = memoryStream.Position;
-            image.TextureDataOffset = totalDataSize - (uint)memoryStream.Position;
-            writer.Write(image.TextureDataOffset);
-            writer.Write(image.AverageHeight);
-            writer.Write((byte)image.TextureFormat);
-            writer.Write((byte)image.TileMode);
-            writer.Write(image.Reserved1);
-            writer.Write(image.MinValue);
-            writer.Write(image.MaxValue);
-            image.TextureSizeBytes = (uint)image.DdsData.Length;
-            writer.Write(image.TextureSizeBytes);
-            writer.Write(image.TextureWidth);
-            writer.Write(image.TextureHeight);
-            totalDataSize += image.TextureSizeBytes;
-            var endOfData = 256u + totalDataSize;
-            var blockSize = 256u;
-            var alignment = SerializationHelper.GetAlignment(endOfData, blockSize);
-            var paddingSize = alignment - endOfData;
-            if (paddingSize != blockSize)
+            var finalPath = $"{pathNoExtension}.{format}";
+            IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
+            using var stream = new FileStream(finalPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            stream.Write(_buffer);
+        }
+        else
+        {
+            // TODO: Implement conversion for DDS, PNG, TGA
+            //       See BlackTexture.Save for similar method to replicate
+            throw new NotImplementedException();
+
+            if (Header.ImageCount > 1)
             {
-                totalDataSize += paddingSize;
-                var newData = new byte[image.DdsData.Length + paddingSize];
-                Array.Copy(image.DdsData, 0, newData, 0, image.DdsData.Length);
-                image.DdsData = newData;
+                // Export texture array
+            }
+            else if (Header.ImageCount > 0)
+            {
+                // Export single
+            }
+            else
+            {
+                return false;
             }
         }
 
-        // Padding
-        var padding = 256 - memoryStream.Position;
-        if (padding > 0)
-        {
-            writer.Write(new byte[padding]);
-        }
+        return true;
+    }
 
-        // Write each image
-        foreach (var image in heb.ImageHeaders)
-        {
-            writer.Write(image.DdsData);
-        }
+    public unsafe byte[] Convert(int imageIndex, IImageEncoder encoder)
+    {
+        var imageHeader = Images[imageIndex];
+        var surfaceSpan = GetPixelData(imageIndex);
 
-        return memoryStream.ToArray();
+        using var surface = new NvttSurface(surfaceSpan, imageHeader.Format,
+            (int)imageHeader.Width, (int)imageHeader.Height);
+        using var image = Image.WrapMemory<RgbaVector>(
+            surface.Data.ToPointer(),
+            (int)(imageHeader.Width * imageHeader.Height * 4 * sizeof(float)),
+            (int)imageHeader.Width,
+            (int)imageHeader.Height);
+
+        using var stream = new MemoryStream();
+        image.Save(stream, encoder);
+        return stream.ToArray();
     }
 }

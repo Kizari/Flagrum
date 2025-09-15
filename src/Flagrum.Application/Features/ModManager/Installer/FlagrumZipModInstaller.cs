@@ -6,19 +6,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.ModManager.Instructions;
-using Flagrum.Core.Utilities;
-using Flagrum.Generators;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Instructions;
 using Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 using Flagrum.Application.Features.ModManager.Mod;
 using Flagrum.Application.Features.ModManager.Project;
 using Flagrum.Application.Features.ModManager.Services;
-using Flagrum.Application.Features.Shared;
-using Flagrum.Application.Services;
+using Flagrum.Application.Utilities;
+using Flagrum.Core.Utilities;
+using Flagrum.Generators;
 using Injectio.Attributes;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp;
 
 namespace Flagrum.Application.Features.ModManager.Installer;
 
@@ -28,7 +27,6 @@ public partial class FlagrumZipModInstaller
     [Inject] private readonly IModBuildInstructionFactory _instructionFactory;
     [Inject] private readonly ModManagerServiceBase _modManager;
     [Inject] private readonly IProfileService _profile;
-    [Inject] private readonly TextureConverter _textureConverter;
 
     public async Task<ModInstallationResult> Install(ModInstallationRequest request)
     {
@@ -53,10 +51,9 @@ public partial class FlagrumZipModInstaller
 
         var thumbnailEntry = zip.GetEntry("flagrum.png")!;
         await using var thumbnailStream = thumbnailEntry.Open();
-        await using var thumbnailMemoryStream = new MemoryStream();
-        await thumbnailStream.CopyToAsync(thumbnailMemoryStream);
-        var newThumbnail = _textureConverter.WicToEarcThumbnailJpeg(thumbnailMemoryStream.ToArray());
-        await File.WriteAllBytesAsync(Path.Combine(directory, "thumbnail.jpg"), newThumbnail);
+        using var image = await Image.LoadAsync(thumbnailStream);
+        image.ResizeFill(326, 170);
+        await image.SaveAsJpegAsync(Path.Combine(directory, "thumbnail.jpg"));
         File.Copy(Path.Combine(directory, "thumbnail.jpg"),
             Path.Combine(_profile.ImagesDirectory, $"{project.Identifier}.jpg"));
 

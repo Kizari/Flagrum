@@ -56,7 +56,7 @@ export function initialize() {
 
 /**
  * Adds a mesh to the scene.
- * 
+ *
  * @param vertices 1D array of vertex positions (X, Y, Z, X, Y, Z ...)
  * @param indices 1D array of vertex indices for triangle faces.
  * @param normals 1D array of per-vertex normals (X, Y, Z, X, Y, Z ...)
@@ -66,41 +66,55 @@ export function initialize() {
  */
 export function addMesh(vertices, indices, normals, uvs, diffuse, normalMap) {
     const geometry = new THREE.BufferGeometry();
-    
+    const textureLoader = new THREE.TextureLoader();
+    const promises = [];
+    const materialParams = {};
+
     // Set up geometry
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
     geometry.setIndex(indices);
     geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
     geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-    
-    // Set up material
-    let material;
+
+    // Load diffuse texture
     if (diffuse) {
         const diffuseBlob = new Blob([diffuse], {type: "image/png"});
-        const url = URL.createObjectURL(diffuseBlob);
-        const textureLoader = new THREE.TextureLoader();
+        const diffuseUrl = URL.createObjectURL(diffuseBlob);
+        promises.push(new Promise(resolve => {
+            textureLoader.load(diffuseUrl, texture => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                materialParams.map = texture;
+                URL.revokeObjectURL(diffuseUrl);
+                resolve();
+            });
+        }));
+    }
+
+    // Load normal texture
+    if (normalMap) {
         const normalBlob = new Blob([normalMap], {type: "image/png"});
         const normalUrl = URL.createObjectURL(normalBlob);
-        textureLoader.load(url, texture => {
-            texture.colorSpace = THREE.SRGBColorSpace;
-            textureLoader.load(normalUrl, normalTexture => {
-                material = new THREE.MeshStandardMaterial({
-                    map: texture,
-                    normalMap: normalTexture
-                });
-                const mesh = new THREE.Mesh(geometry, material);
-                scene.add(mesh);
-                currentMeshes.push(mesh);
-                URL.revokeObjectURL(url);
+        promises.push(new Promise(resolve => {
+            textureLoader.load(normalUrl, texture => {
+                materialParams.normalMap = texture;
                 URL.revokeObjectURL(normalUrl);
+                resolve();
             });
-        });
-    } else {
-        material = new THREE.MeshStandardMaterial({color: 0xcccccc});
+        }));
+    }
+
+    // Wait for texture loading to complete
+    Promise.all(promises).then(() => {
+        // Create the material
+        const material = Object.keys(materialParams).length > 0
+            ? new THREE.MeshStandardMaterial(materialParams)
+            : new THREE.MeshStandardMaterial({color: 0xcccccc});
+
+        // Add the mesh to the scene
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
         currentMeshes.push(mesh);
-    }
+    });
 }
 
 /**
@@ -176,7 +190,7 @@ function onResize() {
     if (container.offsetHeight === 0) {
         return;
     }
-    
+
     camera.aspect = container.offsetWidth / container.offsetHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.offsetWidth, container.offsetHeight, false);

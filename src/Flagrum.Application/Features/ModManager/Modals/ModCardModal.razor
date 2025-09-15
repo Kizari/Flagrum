@@ -1,19 +1,17 @@
 ﻿@using System.IO
 @using Blazored.TextEditor
-@using Flagrum.Core.Utilities
 @using Flagrum.Application.Features.ModManager.Editor
 @using Flagrum.Application.Features.ModManager.Project
 @using Flagrum.Application.Features.ModManager.Services
+@using Flagrum.Core.Utilities
+@using SixLabors.ImageSharp
 @using Index = Index
 @inject IStringLocalizer<Editor> EditorLocalizer
 @inject IStringLocalizer<ModCardModal> Localizer
-@inject IStringLocalizer<Index> IndexLocalizer
 @inject IPlatformService PlatformService
 @inject NavigationManager Navigation
 @inject IProfileService Profile
 @inject ModManagerServiceBase ModManagerService
-@inject TextureConverter TextureConverter
-@inject AppStateService AppState
 
 <style>
     .rte-container h1, .rte-container h2, .rte-container h3, .rte-container h4, .rte-container h5, .rte-container h6 {
@@ -140,8 +138,11 @@
             "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
             async path =>
             {
-                var processedImage = TextureConverter.WicToEarcThumbnailJpeg(await File.ReadAllBytesAsync(path));
-                await File.WriteAllBytesAsync($@"{Profile.ImagesDirectory}\current_earc_preview.png", processedImage);
+                var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");
+                using var image = await Image.LoadAsync(path);
+                image.ResizeFill(326, 170);
+                await image.SaveAsJpegAsync(previewPath);
+
                 ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
                 await InvokeAsync(StateHasChanged);
             });

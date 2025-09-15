@@ -7,15 +7,15 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using DirectXTexNet;
 using Flagrum.Abstractions;
 using Flagrum.Core.Entities.Xml2;
 using Flagrum.Core.Graphics.Terrain;
 using Flagrum.Core.Graphics.Textures;
-using Flagrum.Core.Graphics.Textures.DirectX;
-using Flagrum.Application.Features.Shared;
+using Flagrum.Core.Graphics.Textures.Luminous;
+using Flagrum.Core.Graphics.Textures.Shared;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp.Formats.Tga;
 
 namespace Flagrum.Application.Services;
 
@@ -27,10 +27,10 @@ public class TerrainMetadata
     public HeightMap HeightMap { get; set; }
 }
 
+// TODO: A lot of file paths that are not platform-agnostic in this file
 public class TerrainPacker(
     ILogger<TerrainPacker> logger,
     IProfileService profile,
-    TextureConverter textureConverter,
     AppStateService appState)
 {
     private readonly ConcurrentBag<TerrainMetadata> _tiles = [];
@@ -78,7 +78,7 @@ public class TerrainPacker(
             if (dimensions >= 256)
             {
                 var diffuseHeb =
-                    HeightEntityBinary.FromData(
+                    new HeightEntityBinary(
                         File.ReadAllBytes($@"{hebDirectory}\diffuse\{tile.Name}.{dimensions}.heb"));
                 var diffuse = HebToImages(diffuseHeb).FirstOrDefault();
                 if (diffuse != null)
@@ -101,7 +101,7 @@ public class TerrainPacker(
             if (dimensions >= 256)
             {
                 var normalHeb =
-                    HeightEntityBinary.FromData(
+                    new HeightEntityBinary(
                         File.ReadAllBytes($@"{hebDirectory}\normal\{tile.Name}.{dimensions}.heb"));
                 var normal = HebToImages(normalHeb).FirstOrDefault();
                 if (normal != null)
@@ -127,13 +127,12 @@ public class TerrainPacker(
             }
 
             var lodHeb =
-                HeightEntityBinary.FromData(File.ReadAllBytes($@"{hebDirectory}\lod0{lodIndex}\{tile.Name}.heb"));
-            var textures = HebToImages(lodHeb, new[]
-            {
+                new HeightEntityBinary(File.ReadAllBytes($@"{hebDirectory}\lod0{lodIndex}\{tile.Name}.heb"));
+            var textures = HebToImages(lodHeb, [
                 HeightEntityBinaryImageType.HEIGHT_MAP,
                 HeightEntityBinaryImageType.MERGED_MASK_MAP,
                 HeightEntityBinaryImageType.SLOPE_MAP
-            });
+            ]);
 
             foreach (var texture in textures)
             {
@@ -248,12 +247,8 @@ public class TerrainPacker(
     private void ExportTextureArray(string outputDirectory, string uri)
     {
         var btex = appState.GetFileByUri(uri);
-        var targas = textureConverter.ToTargas(btex).ToList();
-
-        for (var i = 0; i < targas.Count; i++)
-        {
-            File.WriteAllBytes($@"{outputDirectory}\{i}.tga", targas[i]);
-        }
+        var texture = new BlackTexture(btex);
+        texture.Save($"{outputDirectory}.tga", ImageFileFormat.Targa, (i, _) => $"{i}.tga");
     }
 
     private string GetTileDirectory(string tileName)
@@ -325,90 +320,58 @@ public class TerrainPacker(
         });
     }
 
-    public IEnumerable<HeightEntityBinaryImageDataBase> HebToImages(HeightEntityBinary heb,
-        IEnumerable<HeightEntityBinaryImageType> allowTypes = null)
+    public List<HeightEntityBinaryImageDataBase> HebToImages(HeightEntityBinary heb,
+        HashSet<HeightEntityBinaryImageType>? allowTypes = null)
     {
         const float magic = 0.000015259022f;
-        allowTypes ??= Enum.GetValues<HeightEntityBinaryImageType>();
+        allowTypes ??= [..Enum.GetValues<HeightEntityBinaryImageType>()];
 
-        foreach (var header in heb.ImageHeaders.Where(h => allowTypes.Contains(h.Type)))
+        var results = new List<HeightEntityBinaryImageDataBase>();
+        for (var index = 0; index < heb.Images.Length; index++)
         {
+            var header = heb.Images[index];
+            if (!allowTypes.Contains(header.Type))
+            {
+                continue;
+            }
+
             if (header.Type == HeightEntityBinaryImageType.HEIGHT_MAP)
             {
-                var buffer = new float[header.TextureWidth * header.TextureHeight];
+                var buffer = new float[header.Width * header.Height];
+                var ddsData = heb.GetPixelData(index);
+                var ddsSpan = MemoryMarshal.Cast<byte, ushort>(ddsData);
 
-                for (var i = 0; i < header.TextureWidth * header.TextureHeight; i++)
+                for (var i = 0; i < header.Width * header.Height; i++)
                 {
-                    var ushortValue = BitConverter.ToUInt16(header.DdsData, i * 2);
-                    var value = ushortValue * magic * 4000f - 500f;
-                    buffer[i] = value;
+                    buffer[i] = ddsSpan[i] * magic * 4000f - 500f;
                 }
 
                 var heightMap = new HeightMap
                 {
-                    Width = header.TextureWidth,
-                    Height = header.TextureHeight,
+                    Width = header.Width,
+                    Height = header.Height,
                     Altitudes = buffer
                 };
 
-                yield return new HeightMapData
+                results.Add(new HeightMapData
                 {
-                    Index = heb.ImageHeaders.IndexOf(header),
+                    Index = index,
                     Extension = "json",
                     Data = heightMap
-                };
+                });
             }
-            else if (header.TextureFormat > 0)
+            else if (header.Format > 0)
             {
-                var dds = new DirectDrawSurface
-                {
-                    Height = header.TextureHeight,
-                    Width = header.TextureWidth,
-                    Pitch = header.TextureSizeBytes,
-                    Depth = 1,
-                    MipCount = header.MipCount > 0 ? header.MipCount : 1u,
-                    Flags = DirectDrawSurfaceFlags.Texture | DirectDrawSurfaceFlags.Pitch |
-                            DirectDrawSurfaceFlags.Depth | DirectDrawSurfaceFlags.MipMapCount,
-                    Format = new DirectDrawSurfacePixelFormat(),
-                    DirectX10Header = new DirectDrawSurfaceDirectX10Header
-                    {
-                        ArraySize = 1,
-                        Format = TexturePixelFormatMap.Instance[header.TextureFormat],
-                        ResourceDimension = 3
-                    },
-                    PixelData = header.DdsData
-                };
-
-                var ddsData = dds.Write();
-                var pinnedData = GCHandle.Alloc(ddsData, GCHandleType.Pinned);
-                var pointer = pinnedData.AddrOfPinnedObject();
-
-                var image = TexHelper.Instance.LoadFromDDSMemory(pointer, ddsData.Length, DDS_FLAGS.NONE);
-
-                pinnedData.Free();
-
-                // This is required to prevent an access violation exception from DirectXTexNet
-                // When converting a large number of textures at once
-                GC.Collect();
-
-                var metadata = image.GetMetadata();
-                if (metadata.Format != DXGI_FORMAT.R8G8B8A8_UNORM)
-                {
-                    image = image.Decompress(DXGI_FORMAT.R8G8B8A8_UNORM);
-                }
-
-                using var stream = new MemoryStream();
-                using var ddsStream = image.SaveToTGAMemory(0);
-                //image.SaveToWICMemory(0, WIC_FLAGS.FORCE_SRGB, TexHelper.Instance.GetWICCodec(WICCodecs.PNG));
-                ddsStream.CopyTo(stream);
-                yield return new HeightEntityBinaryImageData
+                results.Add(new HeightEntityBinaryImageData
                 {
                     Type = header.Type,
-                    Index = heb.ImageHeaders.IndexOf(header),
+                    Index = index,
                     Extension = "tga",
-                    Data = stream.ToArray()
-                };
+                    Data = heb.Convert(index, new TgaEncoder())
+                });
             }
         }
+
+        return results;
     }
 }

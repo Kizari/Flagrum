@@ -1,20 +1,22 @@
 ﻿@using System.Collections.Concurrent
 @using System.IO
 @using System.Text
+@using Flagrum.Application.Features.AssetExplorer.Base
+@using Flagrum.Application.Features.AssetExplorer.Data
 @using Flagrum.Core.Animation.Package
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Entities
 @using Flagrum.Core.Entities.Xml2
+@using Flagrum.Core.Graphics.Terrain
 @using Flagrum.Core.Graphics.Textures
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Graphics.Textures.Shared
 @using Flagrum.Core.Utilities
-@using Flagrum.Application.Features.AssetExplorer.Base
-@using Flagrum.Application.Features.AssetExplorer.Data
 @using FileIndexNode = Flagrum.Application.Features.AssetExplorer.Indexing.FileIndexNode
 @inject IPlatformService PlatformService
 @inject IStringLocalizer<ExportFolderModal> Localizer
 @inject AppStateService AppState
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 @inject IFileIndex FileIndex
 
 <AutosizeModal @ref="Modal" Padding="4" MinWidth="405px">
@@ -292,7 +294,7 @@
                 {
                     foreach (var (extension, _) in ExportContext.TextureFormats.Where(f => f.Value))
                     {
-                        TextureConverter.ExportTexture(node.Path.Replace(".btex", $".{extension}"), (ImageFormat)extension, data);
+                        new BlackTexture(data).Save(node.Path.Replace(".btex", $".{extension}"), (ImageFileFormat)extension);
                     }
                 }
 
@@ -462,7 +464,7 @@
                                 texturesToProcess.Add(() =>
                                 {
                                     var data = GetData(kvp, uri, false);
-                                    TextureConverter.ExportTexture(finalAbsolutePath, (ImageFormat)extension, data);
+                                    new BlackTexture(data).Save(finalAbsolutePath, (ImageFileFormat)extension);
                                 });
                             }
 
@@ -476,7 +478,7 @@
                                 texturesToProcess.Add(() =>
                                 {
                                     var data = GetData(kvp, uri, false);
-                                    TextureConverter.ExportTerrainTexture(finalAbsolutePath, (ImageFormat)extension, data);
+                                    new HeightEntityBinary(data).TrySave(finalAbsolutePath, (ImageFileFormat)extension);
                                 });
                             }
 

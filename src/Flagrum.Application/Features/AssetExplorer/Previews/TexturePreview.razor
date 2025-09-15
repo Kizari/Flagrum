@@ -1,8 +1,8 @@
-﻿@inject IProfileService Profile
-@using System.IO
+﻿@using System.IO
 @using Flagrum.Core.Graphics.Textures
 @using Flagrum.Core.Graphics.Textures.Luminous
-@implements IDisposable
+@using Flagrum.Core.Graphics.Textures.NvidiaTextureTools
+@inject IProfileService Profile
 
 <div class="flex-grow flex flex-col">
     <div class="flex-grow flex flex-row items-center">
@@ -18,7 +18,7 @@
         }
         <img alt="Texture Preview" src="images/@Profile.Current.Id/@ImageName" class="mx-auto select-none"
              style="max-width: 70%; max-height: 90%;"/>
-        @if (CurrentIndex < Texture.ImageCount - 1)
+        @if (CurrentIndex < ImageCount - 1)
         {
             <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none"
                   @onclick="() => SetImage(CurrentIndex + 1)">arrow_forward_ios</span>
@@ -29,10 +29,10 @@
         }
     </div>
 
-    @if (Texture.ImageCount > 1)
+    @if (ImageCount > 1)
     {
         <div class="text-center mb-6">
-            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @Texture.ImageCount</span>
+            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @ImageCount</span>
         </div>
     }
 </div>
@@ -45,32 +45,43 @@
 
     private string ImageName { get; set; } = "asset_preview.jpg";
 
-    private SurfaceSet Texture { get; set; }
+    private byte[] Texture { get; set; }
     private int CurrentIndex { get; set; }
+    private uint ImageCount { get; set; } = 1;
 
     protected override void OnParametersSet()
     {
         if (_previousItem != Item)
         {
             _previousItem = Item;
-
-            Texture?.Dispose();
-            Texture = BlackTexture.Deserialize(Item.Data, Profile.Current.Type).ToSurfaceSet();
+            Texture = Item.Data;
             SetImage(0);
         }
     }
 
     private void SetImage(int index)
     {
+        // var texture = BlackTexture.Deserialize(Texture);
+        // ImageCount = texture.ImageData[0].ArrayCount;
+        // CurrentIndex = index;
+        // var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
+        // using var surfaceSet = new SurfaceSet(texture);
+        // surfaceSet.SaveJpg(0, 0, path);
+        // ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces img update on state change
+        // StateHasChanged();
+        // return;
+
+
+        var texture = new BlackTexture(Texture);
+        ImageCount = texture.ImageHeader.ArrayCount;
         CurrentIndex = index;
+
         var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
-        Texture.SaveJpg(index, 0, path);
+        using var surfaceSet = new NvttSurfaceSet(texture);
+        surfaceSet.SaveJpg(0, 0, path);
+        //texture.Save(path, ImageFormat.Jpeg);
+
         ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces img update on state change
         StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        Texture?.Dispose();
     }
 }

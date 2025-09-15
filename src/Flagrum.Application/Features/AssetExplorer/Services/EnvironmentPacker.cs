@@ -9,13 +9,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
+using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Core.Entities.Xml2;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Graphics.Models;
+using Flagrum.Core.Graphics.Textures;
+using Flagrum.Core.Graphics.Textures.Luminous;
+using Flagrum.Core.Graphics.Textures.Shared;
 using Flagrum.Core.Utilities;
 using Flagrum.Generators;
-using Flagrum.Application.Features.Shared;
-using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Injectio.Attributes;
 using Newtonsoft.Json;
 
@@ -52,7 +54,6 @@ public partial class EnvironmentPacker
         "Black.Entity.StaticModelEntity"
     };
 
-    [Inject] private readonly TextureConverter _textureConverter;
     private readonly ConcurrentDictionary<string, bool> _textures = new();
     private readonly ConcurrentDictionary<string, bool> _unreadClassTypes = new();
 
@@ -94,16 +95,15 @@ public partial class EnvironmentPacker
             }
         });
 
-        // Can't use multithreading here due to an issue where DirectXTexNet hits
-        // an access violation exception because we can't clear the memory quickly enough
-        foreach (var (uri2, _) in _textures)
+        Parallel.ForEach(_textures, kvp =>
         {
-            var btexData = _appState.GetFileByUri(uri2);
-            var pngData = _textureConverter.ToTarga(btexData);
-            var fileName = uri2.Split('/').Last();
+            var btexData = _appState.GetFileByUri(kvp.Key);
+            var tgaData = new BlackTexture(btexData).Save(0, ImageFileFormat.Targa);
+            var fileName = kvp.Key.Split('/').Last();
             var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
-            File.WriteAllBytes($"{_texturesDirectory}\\{fileNameWithoutExtension}.tga", pngData);
-        }
+            var path = Path.Combine(_texturesDirectory, $"{fileNameWithoutExtension}.tga");
+            File.WriteAllBytes(path, tgaData);
+        });
 
         File.WriteAllText(outputPath, JsonConvert.SerializeObject(_models));
 

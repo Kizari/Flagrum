@@ -1,7 +1,7 @@
 ﻿@using System.IO
 @using Flagrum.Core.Graphics.Terrain
+@using SixLabors.ImageSharp.Formats.Jpeg
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 
 <div class="flex-grow flex flex-col">
     <div class="flex flex-row items-center" style="flex: 1 1 auto;">
@@ -53,7 +53,7 @@
     private string ImageName { get; set; } = "asset_preview.jpg";
 
     private List<HeightEntityBinaryImageType> ImageTypes { get; set; }
-    private IList<byte[]> Images { get; set; }
+    private List<byte[]> Images { get; set; }
     private int CurrentIndex { get; set; }
 
     protected override void OnParametersSet()
@@ -61,9 +61,17 @@
         if (_previousItem != Item)
         {
             _previousItem = Item;
-            var heb = HeightEntityBinary.FromData(Item.Data);
-            Images = heb.ImageHeaders.Select(h => TextureConverter.DdsToScratchImage(h.ToDds()).ToPng()).ToList();
-            ImageTypes = heb.ImageHeaders.Select(h => h.Type).ToList();
+
+            var heb = new HeightEntityBinary(Item.Data);
+            Images = [];
+            ImageTypes = [];
+
+            for (var i = 0; i < heb.Images.Length; i++)
+            {
+                Images.Add(heb.Convert(i, new JpegEncoder()));
+                ImageTypes.Add(heb.Images[i].Type);
+            }
+
             SetImage(0);
         }
     }
