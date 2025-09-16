@@ -27,6 +27,8 @@ public partial class FileIndex : IFileIndex
     public FileIndex(IProfileService profile)
     {
         _profile = profile;
+        _dataRoot = _profile.GameDataDirectory;
+        _flagrumPatchDirectory = _profile.PatchDirectory;
 
         FileIndexMigration.Run(profile);
 
