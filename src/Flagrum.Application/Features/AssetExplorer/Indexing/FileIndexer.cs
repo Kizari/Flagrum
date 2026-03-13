@@ -16,8 +16,6 @@ namespace Flagrum.Application.Features.AssetExplorer.Indexing;
 
 public partial class FileIndex
 {
-    private readonly string _dataRoot;
-    private readonly string _flagrumPatchDirectory;
     private readonly HashSet<string> _rootDirectories = [];
     private HashSet<string>? _patchDirectories;
     
@@ -182,7 +180,7 @@ public partial class FileIndex
     /// <param name="records">WIP file index dictionary.</param>
     private void IndexLooseFiles(ConcurrentDictionary<AssetId, FileIndexerRecord> records)
     {
-        foreach (var path in Directory.GetFiles(_dataRoot, "*.*", SearchOption.AllDirectories)
+        foreach (var path in Directory.GetFiles(_profile.GameDataDirectory, "*.*", SearchOption.AllDirectories)
                      .Select(p => Path.GetRelativePath(_profile.GameDataDirectory, p))
                      .Where(FilterPatchFiles))
         {
@@ -190,7 +188,7 @@ public partial class FileIndex
             if (_allowedLooseFileExtensions.Contains(extension))
             {
                 var normalized = NormalizeRelativePath(path);
-                var uri = $"data://{normalized}";
+                var uri = $"data://{normalized.ToLower()}";
                 records.TryAdd(new AssetId(uri), new FileIndexerRecord(uri, normalized, -1));
             }
         }
@@ -204,12 +202,12 @@ public partial class FileIndex
     private void IndexPackedFiles(ConcurrentDictionary<AssetId, FileIndexerRecord> records)
     {
         // Use parallelism here, since each archive will need to be read to index the entries
-        Parallel.ForEach(Directory.GetFiles(_dataRoot, "*.earc", SearchOption.AllDirectories)
+        Parallel.ForEach(Directory.GetFiles(_profile.GameDataDirectory, "*.earc", SearchOption.AllDirectories)
                 .Select(p => Path.GetRelativePath(_profile.GameDataDirectory, p))
                 .Where(FilterPatchFiles),
             file =>
             {
-                using var archive = new EbonyArchive(Path.Combine(_dataRoot, file));
+                using var archive = new EbonyArchive(Path.Combine(_profile.GameDataDirectory, file));
 
                 // Only archive original archives
                 if (!archive.HasFlag(EbonyArchiveFlags.FlagrumModArchive)
@@ -223,7 +221,7 @@ public partial class FileIndex
                         var comparisonPath = entry.Uri[7..]; // Truncate "data://"
                         var normalized = NormalizeRelativePath(file);
                         var newRecord = new FileIndexerRecord(entry.Uri, normalized, 
-                            Levenshtein.GetDistance(comparisonPath, normalized));
+                            Levenshtein.GetDistance(comparisonPath, normalized.ToLower()));
 
                         // Add the record; if it already exists, only replace it if this record has a better score
                         records.AddOrUpdate(entry.Id, newRecord,
@@ -245,8 +243,8 @@ public partial class FileIndex
         // Get relative paths for all files from patch directories
         var patchRoots = InferLoosePatchRoots().ToArray();
         var priorityOrder = InferPatchArchiveDirectoriesRelative();
-        var patchFiles = Directory.GetFiles(_dataRoot, "*.*", SearchOption.AllDirectories)
-            .Select(p => Path.GetRelativePath(_dataRoot, p))
+        var patchFiles = Directory.GetFiles(_profile.GameDataDirectory, "*.*", SearchOption.AllDirectories)
+            .Select(p => Path.GetRelativePath(_profile.GameDataDirectory, p))
             .Where(p => patchRoots.Any(r => p.StartsWith(r, StringComparison.OrdinalIgnoreCase))
                 && !p.Contains($"{Path.DirectorySeparatorChar}china{Path.DirectorySeparatorChar}"))
             .OrderByDescending(p => p.StartsWith(priorityOrder[0], StringComparison.OrdinalIgnoreCase));
@@ -262,7 +260,7 @@ public partial class FileIndex
             if (file.EndsWith(".earc", StringComparison.OrdinalIgnoreCase))
             {
                 // File is an archive, process its entries
-                using var archive = new EbonyArchive(Path.Combine(_dataRoot, file));
+                using var archive = new EbonyArchive(Path.Combine(_profile.GameDataDirectory, file));
                 foreach (var entry in archive.Files.Values.Where(e => e.Size > 0))
                 {
                     if (entry.Flags.HasFlag(EbonyArchiveFileFlags.PatchedDeleted))
@@ -292,7 +290,7 @@ public partial class FileIndex
 
                     var rebased = Path.GetRelativePath(patchRoot, file);
                     var normalized = NormalizeRelativePath(rebased);
-                    var uri = $"data://{normalized}";
+                    var uri = $"data://{normalized.ToLower()}";
                     records[new AssetId(uri)] = new FileIndexerRecord(uri, normalized, -1);
                 }
             }
@@ -305,14 +303,14 @@ public partial class FileIndex
     /// <param name="relativePath">Relative path to filter.</param>
     /// <returns><c>false</c> if the path should be filtered out, otherwise <c>true</c>.</returns>
     private bool FilterPatchFiles(string relativePath) =>
-        !relativePath.StartsWith(_flagrumPatchDirectory + '/', StringComparison.OrdinalIgnoreCase)
+        !relativePath.StartsWith(_profile.PatchDirectory + '/', StringComparison.OrdinalIgnoreCase)
         && !_patchDirectories!.Any(d => relativePath.StartsWith(d + '/'));
 
     /// <summary>
     /// Infers a set of top-level directories within the game data root that contain patch files.
     /// </summary>
-    private HashSet<string> InferPatchDirectories() => Directory.GetDirectories(_dataRoot)
-        .Select(path => Path.GetRelativePath(_dataRoot, path))
+    private HashSet<string> InferPatchDirectories() => Directory.GetDirectories(_profile.GameDataDirectory)
+        .Select(path => Path.GetRelativePath(_profile.GameDataDirectory, path))
         .Where(directoryName =>
             directoryName.Equals("ACFestPackage", StringComparison.OrdinalIgnoreCase)
             || directoryName.Equals("FFXV_Patch", StringComparison.OrdinalIgnoreCase)
@@ -326,7 +324,7 @@ public partial class FileIndex
     {
         foreach (var subdirectory in _patchDirectories!)
         {
-            var path = Path.Combine(_dataRoot, subdirectory);
+            var path = Path.Combine(_profile.GameDataDirectory, subdirectory);
             foreach (var subdirectory2 in Directory.EnumerateDirectories(path))
             {
                 var name = Path.GetRelativePath(path, subdirectory2);
@@ -367,7 +365,7 @@ public partial class FileIndex
         foreach (var patchRoot in _patchDirectories!)
         {
             var patchIndexDirectories = new List<string>();
-            var path = Path.Combine(_dataRoot, patchRoot);
+            var path = Path.Combine(_profile.GameDataDirectory, patchRoot);
             InferPatchIndexDirectoriesUnordered(path, Directory.GetDirectories(path), patchIndexDirectories);
             
             foreach (var directory in patchIndexDirectories.DefaultIfEmpty(patchRoot))
@@ -398,7 +396,7 @@ public partial class FileIndex
             var name = Path.GetRelativePath(parentDirectory, directory);
             if (regex.IsMatch(name))
             {
-                results.Add(Path.GetRelativePath(_dataRoot, directory));
+                results.Add(Path.GetRelativePath(_profile.GameDataDirectory, directory));
             }
             else
             {
@@ -408,12 +406,12 @@ public partial class FileIndex
     }
 
     /// <summary>
-    /// Normalizes a relative path to use forward slashes, avoid leading slashes, and only lowercase letters.
+    /// Normalizes a relative path to use forward slashes and avoid leading slashes.
     /// </summary>
     /// <param name="path">Path to normalize.</param>
     /// <returns>Normalized relative path.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static string NormalizeRelativePath(string path) => path.Replace('\\', '/').TrimStart('/').ToLower();
+    private static string NormalizeRelativePath(string path) => path.Replace('\\', '/').TrimStart('/');
     
     /// <summary>
     /// Sorts nodes at the same level of the node tree first by whether it's a directory, then alphabetically.

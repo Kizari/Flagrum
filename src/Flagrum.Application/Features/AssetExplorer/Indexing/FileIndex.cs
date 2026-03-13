@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -27,8 +26,6 @@ public partial class FileIndex : IFileIndex
     public FileIndex(IProfileService profile)
     {
         _profile = profile;
-        _dataRoot = _profile.GameDataDirectory;
-        _flagrumPatchDirectory = _profile.PatchDirectory;
 
         FileIndexMigration.Run(profile);
 
