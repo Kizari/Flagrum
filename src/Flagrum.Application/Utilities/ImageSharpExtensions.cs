@@ -120,4 +120,16 @@ public static class ImageSharpExtensions
         throw new ArgumentException("Could not compress image to fit within the specified size limit.",
             nameof(sizeLimit));
     }
+
+    /// <summary>
+    /// Encodes the image as a Portable Network Graphic (PNG) file.
+    /// </summary>
+    /// <param name="image">Image to encode as a PNG.</param>
+    /// <returns>Buffer containing the PNG file.</returns>
+    public static byte[] EncodePng(this Image image)
+    {
+        using var stream = new MemoryStream();
+        image.SaveAsPng(stream);
+        return stream.ToArray();
+    }
 }

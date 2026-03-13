@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Application.Features.ModManager.Data;
@@ -197,12 +196,10 @@ public class WorkshopModBuildContext
         configuration.PreferContiguousImageBuffers = true;
         using var image = Image.Load<Rgba32>(new DecoderOptions {Configuration = configuration}, source);
         using var final = (Image<Rgba32>)image.ResizeFit(600, 600);
-        final.DangerousTryGetSinglePixelMemory(out var memory);
-        var span = MemoryMarshal.Cast<Rgba32, byte>(memory.Span);
         return (final.EncodeJpeg(953673),
             PreviewBtex = new BlackTextureBuilder("$preview", 600, 600, 1,
                     BlackTexturePixelFormat.BC1_UNORM, true)
-                .AddRasterImage(new RasterImageDataSource(span.ToArray(), 600, 600,
+                .AddRasterImage(new RasterImageDataSource(final.EncodePng(), 600, 600,
                     BlackTexturePixelFormat.R8G8B8A8_UNORM))
                 .Build());
     }
@@ -239,13 +236,11 @@ public class WorkshopModBuildContext
     {
         var configuration = Configuration.Default.Clone();
         configuration.PreferContiguousImageBuffers = true;
-        using var image = Image.Load(new DecoderOptions {Configuration = configuration}, source);
+        using var image = Image.Load<Rgba32>(new DecoderOptions {Configuration = configuration}, source);
         using var final = (Image<Rgba32>)image.ResizeFill(168, 242);
-        final.DangerousTryGetSinglePixelMemory(out var memory);
-        var span = MemoryMarshal.Cast<Rgba32, byte>(memory.Span);
         return PreviewBtex = new BlackTextureBuilder("default", 168, 242, 1,
                 BlackTexturePixelFormat.R8G8B8A8_UNORM, true)
-            .AddRasterImage(new RasterImageDataSource(span.ToArray(), 168, 242,
+            .AddRasterImage(new RasterImageDataSource(final.EncodePng(), 168, 242,
                 BlackTexturePixelFormat.R8G8B8A8_UNORM))
             .Build();
     }
