@@ -5,7 +5,7 @@ namespace Flagrum.Platform.Linux.Interop;
 
 internal static class JavaScriptCoreGtk
 {
-    private const string LibraryName = "libjavascriptcoregtk-4.0.so";
+    private const string LibraryName = "libjavascriptcoregtk-4.1";
     
     [DllImport(LibraryName, EntryPoint = "jsc_value_to_string")]
     internal static extern IntPtr JscValueToString(IntPtr jsValue);

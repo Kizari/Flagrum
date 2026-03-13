@@ -5,7 +5,7 @@ namespace Flagrum.Platform.Linux.Interop;
 
 internal static class WebKit
 {
-    private const string LibraryName = "libwebkit2gtk-4.0.so.37";
+    private const string LibraryName = "libwebkit2gtk-4.1";
     
     internal delegate void WebContextRegisterUriSchemeCallback(IntPtr request, IntPtr data);
     internal delegate void WebViewEvaluateJavaScriptCallback(IntPtr sourceObject, IntPtr result, IntPtr data);
