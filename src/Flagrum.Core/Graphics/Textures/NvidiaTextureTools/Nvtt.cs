@@ -94,6 +94,18 @@ public static partial class Nvtt
     [LibraryImport(Library, EntryPoint = "nvttSurfaceData")]
     internal static partial IntPtr SurfaceData(IntPtr surface);
 
+    [LibraryImport(Library, EntryPoint = "nvttSurfaceSetImageData")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool SurfaceSetImageData(
+        IntPtr surface,
+        NvttInputFormat format,
+        int w,
+        int h,
+        int d,
+        IntPtr data,
+        [MarshalAs(UnmanagedType.Bool)] bool unsignedToSigned,
+        IntPtr timingContext);
+
     [LibraryImport(Library, EntryPoint = "nvttSurfaceSetImage2D")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool SurfaceSetImage2D(

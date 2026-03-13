@@ -56,12 +56,14 @@ public sealed class NvttSurface : IDisposable
         }
 
         _pin = memory.Pin();
-        Nvtt.SurfaceSetImage2D(
+        Nvtt.SurfaceSetImageData(
             Handle,
-            NvttFormat.Format_RGBA,
+            NvttInputFormat.RGBA_32F,
             image.Width,
             image.Height,
+            1,
             new IntPtr(_pin.Value.Pointer),
+            false,
             IntPtr.Zero);
     }
 
