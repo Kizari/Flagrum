@@ -37,9 +37,9 @@ public class GraphPinDataItem : DataItem
     {
         get
         {
-            if (field != null && field.PinValueType != null)
+            if (_field != null && _field.PinValueType != null)
             {
-                return field.PinValueType;
+                return _field.PinValueType;
             }
 
             var dataType = this.dataType;
@@ -51,9 +51,9 @@ public class GraphPinDataItem : DataItem
     {
         get
         {
-            if (field != null)
+            if (_field != null)
             {
-                return field.MaxConnection;
+                return _field.MaxConnection;
             }
 
             var dataType = this.dataType;

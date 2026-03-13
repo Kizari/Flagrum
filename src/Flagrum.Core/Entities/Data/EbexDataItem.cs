@@ -53,7 +53,7 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     protected DataType dataType;
     protected bool disposed;
     private bool earcModified_;
-    protected Field field;
+    protected Field _field;
     private bool isDefault = true;
     private bool isExpanded;
     private bool modifed;
@@ -143,21 +143,21 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (field != null)
+            if (_field != null)
             {
-                return field.DisplayName;
+                return _field.DisplayName;
             }
 
             return name.StartsWith('[') ? DataTypeDisplayName : name;
         }
         set
         {
-            if (field == null)
+            if (_field == null)
             {
                 return;
             }
 
-            field.DisplayName = value;
+            _field.DisplayName = value;
         }
     }
 
@@ -165,9 +165,9 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (field != null && field.Category != null)
+            if (_field != null && _field.Category != null)
             {
-                return field.Category;
+                return _field.Category;
             }
 
             return dataType != null ? dataType.Category : null;
@@ -178,9 +178,9 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (field != null && field.Description != null)
+            if (_field != null && _field.Description != null)
             {
-                return field.Description;
+                return _field.Description;
             }
 
             return dataType != null ? dataType.Description : null;
@@ -252,10 +252,10 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
 
     public Field Field
     {
-        get => field;
+        get => _field;
         set
         {
-            field = value;
+            _field = value;
             browsable = true;
             setupBrowsable();
         }
@@ -278,7 +278,7 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
                 return RuntimeReadOnly == RuntimeOverrideType.ROT_TRUE;
             }
 
-            if (field != null && field.ReadOnly)
+            if (_field != null && _field.ReadOnly)
             {
                 return true;
             }
@@ -287,12 +287,12 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
         }
         set
         {
-            if (field == null)
+            if (_field == null)
             {
                 return;
             }
 
-            field.ReadOnly = value;
+            _field.ReadOnly = value;
         }
     }
 
@@ -390,9 +390,9 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (Browsable && field != null)
+            if (Browsable && _field != null)
             {
-                var attribute = field.GetAttribute(nameof(CenterTextTarget));
+                var attribute = _field.GetAttribute(nameof(CenterTextTarget));
                 if (attribute != null)
                 {
                     return attribute;
@@ -408,9 +408,9 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (Browsable && field != null)
+            if (Browsable && _field != null)
             {
-                var attribute = field.GetAttribute(nameof(CenterTextBoolTrue));
+                var attribute = _field.GetAttribute(nameof(CenterTextBoolTrue));
                 if (attribute != null)
                 {
                     return attribute;
@@ -426,9 +426,9 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (field != null && Browsable && field.CenterTextCommand != null)
+            if (_field != null && Browsable && _field.CenterTextCommand != null)
             {
-                return field.CenterTextCommand;
+                return _field.CenterTextCommand;
             }
 
             var dataType = this.dataType;
@@ -505,17 +505,17 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
 
     public bool IsDependencyPathItem => DependencyPath || DependencyFolderPath;
 
-    public bool DependencyPath => field != null && field.DependencyPath;
+    public bool DependencyPath => _field != null && _field.DependencyPath;
 
-    public bool DependencyFolderPath => field != null && field.DependencyFolderPath;
+    public bool DependencyFolderPath => _field != null && _field.DependencyFolderPath;
 
     public string SpecialType
     {
         get
         {
-            if (field != null && field.SpecialType != null)
+            if (_field != null && _field.SpecialType != null)
             {
-                return field.SpecialType;
+                return _field.SpecialType;
             }
 
             var dataType = this.dataType;
@@ -654,9 +654,9 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (field != null)
+            if (_field != null)
             {
-                return field.WakeUpCurveEditorByDoubleClick;
+                return _field.WakeUpCurveEditorByDoubleClick;
             }
 
             return dataType != null ? dataType.WakeUpCurveEditorByDoubleClick : -1;
@@ -667,24 +667,24 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
     {
         get
         {
-            if (field != null)
+            if (_field != null)
             {
-                return field.TimeLine;
+                return _field.TimeLine;
             }
 
             return dataType != null && dataType.TimeLine;
         }
     }
 
-    public bool TimeLineExposable => field != null && field.TimeLineExposable;
+    public bool TimeLineExposable => _field != null && _field.TimeLineExposable;
 
     public bool DataGrid
     {
         get
         {
-            if (field != null)
+            if (_field != null)
             {
-                return field.DataGrid;
+                return _field.DataGrid;
             }
 
             return dataType != null && dataType.DataGrid;
@@ -2328,12 +2328,12 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
         {
             browsable = true;
         }
-        else if (field != null)
+        else if (_field != null)
         {
             if (Parent != null && Parent.DataType is Class dataType3)
             {
                 var attributeRecursive = dataType3.GetAttributeRecursive("BrowsableOverride");
-                if (attributeRecursive != null && attributeRecursive.Contains(field.Name))
+                if (attributeRecursive != null && attributeRecursive.Contains(_field.Name))
                 {
                     var str1 = attributeRecursive;
                     var chArray1 = new char[1] {';'};
@@ -2355,7 +2355,7 @@ public class DataItem : IItem, IDisposable, IEnumerable<DataItem>, IEnumerable
                 }
             }
 
-            browsable = field.Browsable;
+            browsable = _field.Browsable;
         }
         else
         {
