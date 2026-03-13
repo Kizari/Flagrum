@@ -114,7 +114,9 @@ public class Bootstrapper : ComponentBase
                         mod.Index = binmodListing.Index;
                         mod.IsApplyToGame = binmodListing.IsEnabled;
                         mod.Path = file;
-                        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{mod.Uuid}.png", previewBytes);
+
+                        var previewPath = Path.Combine(IOHelper.GetWebRoot(), "images", $"{mod.Uuid}.png");
+                        File.WriteAllBytes(previewPath, previewBytes);
 
                         mods.Add(mod);
                     }
@@ -142,15 +144,13 @@ public class Bootstrapper : ComponentBase
             try
             {
                 var exceptions = AppState.Mods
-                    .Select(m => $"{IOHelper.GetWebRoot()}\\images\\{m.Uuid}.png")
+                    .Select(m => Path.Combine(IOHelper.GetWebRoot(), "images", $"{m.Uuid}.png"))
                     .ToList();
 
-                foreach (var image in Directory.EnumerateFiles($"{IOHelper.GetWebRoot()}\\images"))
+                foreach (var image in Directory.EnumerateFiles(Path.Combine(IOHelper.GetWebRoot(), "images"))
+                             .Where(image => !exceptions.Contains(image)))
                 {
-                    if (!exceptions.Contains(image))
-                    {
-                        File.Delete(image);
-                    }
+                    File.Delete(image);
                 }
             }
             catch

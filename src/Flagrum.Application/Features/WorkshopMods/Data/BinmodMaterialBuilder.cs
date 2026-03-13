@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Flagrum.Core.Graphics.Containers;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Utilities;
 
@@ -161,7 +160,8 @@ public static class BinmodMaterialBuilder
 
     public static byte[] GetDefaultTextureData(string name)
     {
-        return File.ReadAllBytes($"{IOHelper.GetExecutingDirectory()}\\Resources\\Textures\\{name}");
+        var path = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "Textures", name);
+        return File.ReadAllBytes(path);
     }
 }
 
