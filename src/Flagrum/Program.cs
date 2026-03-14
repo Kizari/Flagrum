@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Avalonia;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.ModManager;
-using Flagrum.ApplicationHost;
+using Flagrum.Application;
+using Flagrum.ApplicationHost.Native;
+using Flagrum.ApplicationHost.WebView;
 using Flagrum.Generators;
 using Flagrum.Migrations;
 using Flagrum.Utilities;
@@ -92,7 +94,25 @@ internal static class Program
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
     private static void RunApp(string[] args)
     {
-        AppBuilder.Configure<App>()
+        using var application = new NativeApplication();
+        using var window = new NativeWindow();
+        window.SetTitle("Flagrum");
+
+        using var dispatcher = new NativeDispatcher();
+        using var webView = new BlazorWebView(window);
+
+        // TODO: Should this method be async?
+        webView.SetRootComponentAsync<App>("#app").ConfigureAwait(false).GetAwaiter().GetResult();
+        webView.Navigate(BlazorWebViewManager.CreateUri("/"));
+
+        window.SetWebView(webView.NativeImpl);
+        window.Resize(1680, 1024);
+        window.Show();
+
+        application.Run();
+        return;
+
+        AppBuilder.Configure<ApplicationHost.App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()

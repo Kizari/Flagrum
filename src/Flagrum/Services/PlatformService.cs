@@ -78,7 +78,8 @@ public class PlatformService : IPlatformService
         Process.Start(executablePath);
     }
 
-    public string? GetFmodPath() => Main.FmodPath;
+    // TODO: Handle this properly once MainViewModel is removed/reworked
+    public string? GetFmodPath() => Main?.FmodPath;
 
     public void ClearFmodPath()
     {

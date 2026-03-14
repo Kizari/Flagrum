@@ -351,3 +351,9 @@ MigrationBackup/
 
 # Item ID Fixer project which is of little importance
 ItemIdFixer/
+
+# JetBrains IDE workspace files
+.idea/
+
+# Generated files that should not be checked in
+src/Flagrum/Generated/
