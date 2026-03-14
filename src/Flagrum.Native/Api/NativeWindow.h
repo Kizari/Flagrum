@@ -1,8 +1,7 @@
 #pragma once
 
-#include <QMainWindow>
-
 #include "NativeWebView.h"
+#include "../Components/CustomShellWindow.hpp"
 
 /**
  * Convenience wrapper for QMainWindow.
@@ -10,7 +9,7 @@
 class NativeWindow
 {
 private:
-    QMainWindow* window_;
+    CustomShellWindow* window_;
     
 public:
     NativeWindow();

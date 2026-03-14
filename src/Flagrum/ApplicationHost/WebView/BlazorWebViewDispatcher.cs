@@ -67,8 +67,6 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
             // Invoke the action on the main thread
             _dispatcher.Invoke(next.Execute);
         }
-
-        _thread.Join();
     }
 
     /// <inheritdoc />

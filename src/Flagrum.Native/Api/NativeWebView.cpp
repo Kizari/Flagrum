@@ -17,6 +17,7 @@ NativeWebView::NativeWebView(
 {
     // Create Qt components
     webView_ = new QWebEngineView(window);
+    webView_->setStyleSheet("background: #181512;");
     page_ = webView_->page();
     profile_ = new QWebEngineProfile(webView_);
     channel_ = new QWebChannel(page_);
@@ -36,7 +37,7 @@ NativeWebView::NativeWebView(
 
     // Inject necessary scripts into the web view
     InjectScript("qwebchannel", ":/qtwebchannel/qwebchannel.js");
-    InjectScript("interop", ":/scripts/interop.js");
+    InjectScript("interop", ":/Resources/interop.js");
 }
 
 NativeWebView::~NativeWebView()

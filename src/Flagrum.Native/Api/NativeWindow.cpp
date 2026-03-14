@@ -1,7 +1,7 @@
 #include "NativeWindow.h"
 
 NativeWindow::NativeWindow() :
-    window_(new QMainWindow())
+    window_(new CustomShellWindow())
 {
 }
 
@@ -27,7 +27,7 @@ void NativeWindow::Resize(const int width, const int height) const
 
 void NativeWindow::SetWebView(const NativeWebView* webView) const
 {
-    window_->setCentralWidget(webView->GetWidget());
+    window_->SetContentWidget(webView->GetWidget());
 }
 
 void NativeWindow::Show() const
