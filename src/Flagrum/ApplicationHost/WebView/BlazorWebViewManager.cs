@@ -22,31 +22,29 @@ public class BlazorWebViewManager : WebViewManager
 
     private readonly CancellationTokenSource _cancellation;
     private readonly HttpListener _listener;
+    private readonly ObservedTaskScheduler _scheduler;
 
     private readonly BlazorWebView _webView;
 
     /// <inheritdoc cref="WebViewManager" />
-    /// <param name="provider">The service provider associated with this web view's scope.</param>
-    /// <param name="fileProvider">A file provider that resolves web resources for this application.</param>
-    /// <param name="jsComponents">The JS component configuration store for this application.</param>
-    /// <param name="dispatcher">A dispatcher that synchronously dispatches actions to the UI thread.</param>
-    /// <param name="webView">Web view that this manager is to manage.</param>
     public BlazorWebViewManager(
         IServiceProvider provider,
         IFileProvider fileProvider,
         JSComponentConfigurationStore jsComponents,
         Dispatcher dispatcher,
+        ObservedTaskScheduler scheduler,
         BlazorWebView webView)
         : base(provider, dispatcher, BaseUri, fileProvider, jsComponents, HostPageRelativePath)
     {
         _webView = webView;
+        _scheduler = scheduler;
 
         // Start the local HTTP server that serves the application content to the web view
         _listener = new HttpListener();
         _listener.Prefixes.Add(BaseUri.AbsoluteUri);
         _cancellation = new CancellationTokenSource();
         _listener.Start();
-        ObservedTaskScheduler.RunLongRunningObserved(() => ListenLoop(_cancellation.Token), _cancellation.Token);
+        _scheduler.RunLongRunningObserved(() => ListenLoop(_cancellation.Token), _cancellation.Token);
     }
 
     /// <summary>
@@ -112,7 +110,7 @@ public class BlazorWebViewManager : WebViewManager
             }
 
             // Process the request separately to avoid delaying the next request
-            ObservedTaskScheduler.RunAsyncObserved(() => HandleRequest(context));
+            _scheduler.RunAsyncObserved(() => HandleRequest(context));
         }
     }
 

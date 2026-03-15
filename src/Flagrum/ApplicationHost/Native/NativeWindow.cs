@@ -1,12 +1,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Injectio.Attributes;
 
 namespace Flagrum.ApplicationHost.Native;
 
 /// <summary>
 /// C# wrapper for the NativeWindow class.
 /// </summary>
+[RegisterSingleton<NativeWindow>]
 public sealed partial class NativeWindow : IDisposable
 {
     /// <summary>
@@ -17,13 +19,6 @@ public sealed partial class NativeWindow : IDisposable
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose() => NativeWindow_Destroy(Handle);
-
-    /// <summary>
-    /// Sets the window title.
-    /// </summary>
-    /// <param name="title">The new window title.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetTitle(string title) => NativeWindow_SetTitle(Handle, title);
 
     /// <summary>
     /// Sets the size of the window.
@@ -45,7 +40,7 @@ public sealed partial class NativeWindow : IDisposable
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Show() => NativeWindow_Show(Handle);
-    
+
 
     [LibraryImport(NativeHelper.LibraryPath)]
     private static partial IntPtr NativeWindow_Create();

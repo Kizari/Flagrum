@@ -7,8 +7,6 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
-        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <AvaloniaVersion>11.3.5</AvaloniaVersion>
         <BaseVersion>1.6.5</BaseVersion> <!-- Current version of the application -->
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
@@ -28,40 +26,25 @@
         <DefineConstants>LINUX</DefineConstants>
     </PropertyGroup>
 
-    <ItemGroup>
-        <AvaloniaResource Include="Assets\**\*.*"/>
-    </ItemGroup>
-
     <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
         <Compile Remove="Platform\Linux\**\*.cs"/>
     </ItemGroup>
 
     <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
         <Compile Remove="Platform\Windows\**\*.cs"/>
+
+        <!-- Copy Drautos to the output directory on Linux as it won't be by default being a Windows dll -->
+        <!-- This is still needed as it is injected into the Windows game that's running under Proton. -->
         <Content Include="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)">
-            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
-        <PackageReference Include="FontAwesome5" Version="2.1.6"/>
-        <!--        <PackageReference Include="HotAvalonia" Version="3.0.0" PrivateAssets="All" Publish="True"/>-->
-        <PackageReference Include="MessageBox.Avalonia" Version="3.2.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
         <PackageReference Include="Velopack" Version="0.0.320"/>
         <PackageReference Include="Drautos" Version="1.0.0"/>
-        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.0.3"/>
     </ItemGroup>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
@@ -181,32 +164,11 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
         </Compile>
-        <Compile Update="ApplicationHost\App.axaml.cs">
-            <DependentUpon>App.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="ApplicationHost\MainWindow.axaml.cs">
-            <DependentUpon>MainWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="ApplicationHost\SplashWindow.axaml.cs">
-            <DependentUpon>SplashWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-        <AdditionalFiles Include="ApplicationHost\Shell\CustomShellWindow.axaml"/>
-        <AdditionalFiles Include="ApplicationHost\Shell\PlasmaShellButton.axaml"/>
     </ItemGroup>
 
     <ItemGroup>
         <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json"/>
         <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Generated\" />
     </ItemGroup>
 
     <!-- Automatically generate `SolutionInfo` class before build -->

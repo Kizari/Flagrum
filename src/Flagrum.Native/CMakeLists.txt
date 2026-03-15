@@ -14,13 +14,15 @@ add_library(Flagrum.Native SHARED
         Api/NativeDispatcher.hpp
         Exports/NativeDispatcher.cpp
         Components/CustomShellWindow.hpp
+        Exports/NativeMessageBox.cpp
+        Exports/NativeFileDialog.cpp
 )
 
 qt_add_resources(Flagrum.Native "resources"
         PREFIX "/"
         FILES
-            Resources/interop.js
-            Resources/logo_white.svg            
+        Resources/interop.js
+        Resources/logo_white.svg
 )
 
 target_link_libraries(Flagrum.Native

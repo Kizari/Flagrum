@@ -1,27 +1,38 @@
 ﻿using System.Threading.Tasks;
-using Flagrum.ApplicationHost;
+using Flagrum.Services;
+using Injectio.Attributes;
 using Velopack;
 using Velopack.Sources;
 
 namespace Flagrum.Utilities;
 
-public static class UpdateHelper
+/// <summary>
+/// Handles automatic updates for Flagrum.
+/// </summary>
+[RegisterSingleton<UpdateService>]
+public class UpdateService(ISplashScreen splash)
 {
-    public static async Task<bool> Update()
+    /// <summary>
+    /// Attempts to update the application.
+    /// </summary>
+    /// <returns><c>true</c> if an update was applied, otherwise <c>false</c>.</returns>
+    public async Task<bool> TryUpdate()
     {
         try
         {
-            SplashViewModel.Instance.SetLoadingText("Checking for updates");
+            splash.SetLoadingText("Checking for updates");
 
+            // Check for updates
             var github = new GithubSource("https://github.com/Kizari/Flagrum", null, false);
             var manager = new UpdateManager(github);
             var newVersion = await manager.CheckForUpdatesAsync();
-            
+
+            // Download and apply updates if any were available
             if (newVersion != null)
             {
-                SplashViewModel.Instance.SetLoadingText("Downloading updates");
+                splash.SetLoadingText("Downloading updates");
                 await manager.DownloadUpdatesAsync(newVersion);
-                SplashViewModel.Instance.SetLoadingText("Updating Flagrum");
+                splash.SetLoadingText("Updating Flagrum");
                 manager.ApplyUpdatesAndRestart();
                 return true;
             }
@@ -31,8 +42,8 @@ public static class UpdateHelper
             // Not much to be done if this fails, most likely due to no internet or user blocking the update URL
             // Let Flagrum continue as normal
         }
-        
-        SplashViewModel.Instance.SetLoadingText("Initialising");
+
+        splash.SetLoadingText("Initialising");
         return false;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
@@ -8,13 +9,15 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Flagrum.Migrations;
 
 [RegisterSingleton<MigrationRunner>]
-public partial class MigrationRunner(IProfileService profile)
+public partial class MigrationRunner(
+    IServiceProvider provider,
+    IProfileService profile)
 {
     public async Task RunMigrationsAsync()
     {
         var migrations = Assembly.GetAssembly(typeof(MigrationRunner))!.GetTypes()
             .Where(t => t.IsAssignableTo(typeof(IDataMigration)) && !t.IsInterface)
-            .Select(migrationClass => (IDataMigration)Program.Services.GetRequiredService(migrationClass))
+            .Select(migrationClass => (IDataMigration)provider.GetRequiredService(migrationClass))
             .OrderBy(m => m.Order)
             .ToList();
 

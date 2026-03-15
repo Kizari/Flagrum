@@ -3,9 +3,10 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Flagrum.ApplicationHost.Native;
+using Flagrum.Utilities;
+using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
 namespace Flagrum.ApplicationHost.WebView;
@@ -13,6 +14,7 @@ namespace Flagrum.ApplicationHost.WebView;
 /// <summary>
 /// A web view control that hosts Blazor applications.
 /// </summary>
+[RegisterSingleton<BlazorWebView>]
 public sealed class BlazorWebView : IDisposable
 {
     private readonly BlazorWebViewDispatcher _dispatcher;
@@ -21,21 +23,23 @@ public sealed class BlazorWebView : IDisposable
     /// <summary>
     /// Creates a new Blazor web view.
     /// </summary>
-    /// <param name="parent">The native window that is to own the web view.</param>
-    public BlazorWebView(NativeWindow parent)
+    public BlazorWebView(
+        IServiceProvider serviceProvider,
+        IFileProvider fileProvider,
+        JSComponentConfigurationStore configStore,
+        NativeWindow window,
+        ObservedTaskScheduler scheduler)
     {
         _dispatcher = new BlazorWebViewDispatcher();
-
         _webViewManager = new BlazorWebViewManager(
-            Program.Services.GetRequiredService<IServiceProvider>(),
-            Program.Services.GetRequiredService<IFileProvider>(),
-            Program.Services.GetRequiredService<JSComponentConfigurationStore>(),
+            serviceProvider,
+            fileProvider,
+            configStore,
             _dispatcher,
+            scheduler,
             this);
 
-        NativeImpl = new NativeWebView(
-            parent,
-            _webViewManager.OnWebMessageReceived);
+        NativeImpl = new NativeWebView(window, _webViewManager.OnWebMessageReceived);
     }
 
     /// <summary>

@@ -25,6 +25,7 @@ using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Application.Utilities;
 using Flagrum.ApplicationHost;
+using Flagrum.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flagrum.Migrations;
@@ -36,12 +37,13 @@ public partial class FileIndexMigration(
     LegacyModManagerServiceBase legacyModManager,
     ModManagerServiceBase modManager,
     IProfileService profile,
-    IFileIndex fileIndex)
+    IFileIndex fileIndex,
+    ISplashScreen splash)
 {
     [MigrationStep(0, "d2e4e56c-6e5b-4b57-9d33-11ccb8d3878e", MigrationScope.Profile)]
     private async Task MigrateFileIndex()
     {
-        SplashViewModel.Instance.SetLoadingText("Migrating file index");
+        splash.SetLoadingText("Migrating file index");
 
         // Load the node tree from the DB
         var nodeTree = context.AssetExplorerNodes
@@ -112,7 +114,7 @@ public partial class FileIndexMigration(
             ((FileIndex)fileIndex).Archives.Add(Cryptography.Hash64(archive.RelativePath), archive);
         }
 
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
+        splash.SetLoadingText("Cleaning up old data");
 
         fileIndex.Save(profile.FileIndexPath);
         context.SetString(StateKey.CurrentAssetNode, null);
@@ -127,7 +129,7 @@ public partial class FileIndexMigration(
     [MigrationStep(1, "6e57fe99-40e1-4e47-aabe-59ffcb21fafb", MigrationScope.Profile)]
     private async Task MigrateProjects()
     {
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Migrating mod projects");
+        splash.SetLoadingText("Migrating mod projects");
 
         var guids = new List<string>();
         var modsToEnable = new List<Guid>();
@@ -293,7 +295,7 @@ public partial class FileIndexMigration(
             }
         }
 
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Cleaning up old data");
+        splash.SetLoadingText("Cleaning up old data");
 
         // Delete the old thumbnail directories
         Directory.Delete(profile.ModThumbnailWebDirectory, true);
@@ -324,7 +326,7 @@ public partial class FileIndexMigration(
         // Delete all backup files as the new system doesn't need to backup files due to using patch archives
         Directory.Delete(profile.EarcModBackupsDirectory, true);
 
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Reenabling mods");
+        splash.SetLoadingText("Reenabling mods");
 
         // Now that everything is migrated, we need to enable any mods that were disabled for the migration
         foreach (var project in modsToEnable.Select(m => modManager.Projects[m]))

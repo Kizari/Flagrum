@@ -7,7 +7,7 @@ public interface IPlatformService
     Task OpenSaveFileDialogAsync(string defaultName, string filter, Func<string, Task> onFileSelected);
     Version GetVersion();
     void Restart();
-    string GetFmodPath();
+    string? GetFmodPath();
     void ClearFmodPath();
     Task SetClipboardTextAsync(string text);
     void RefreshPatreonButton();

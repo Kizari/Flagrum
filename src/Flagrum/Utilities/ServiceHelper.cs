@@ -2,14 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Flagrum.Abstractions;
-using Flagrum.Core.Utilities;
-using Flagrum.Generators;
-using Flagrum.Migrations;
-using Flagrum.Services;
 using Flagrum.Application.Services;
-using Flagrum.ApplicationHost;
+using Flagrum.Core.Utilities;
+using Flagrum.Migrations;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -36,22 +32,12 @@ public static class ServiceHelper
             .AddLogging(l => l.AddSerilog())
             .AddSingleton<IProfileService, ProfileService>()
             .AddSingleton<AppStateService>()
-            .AddSingleton<IPlatformService, PlatformService>()
             .AddSingleton<JSComponentConfigurationStore>()
             .AddSingleton<IFileProvider>(_ => new PhysicalFileProvider(
                 Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
             .AddBlazorWebView()
             .AddFlagrum()
             .AddFlagrumApplicationManual();
-
-        // Automatically add all ViewModels to the DI container via reflection
-        var viewModels = Assembly.GetAssembly(typeof(App))!.GetTypes()
-            .Where(t => t.IsAssignableTo(typeof(ObservableObject)));
-
-        foreach (var viewModel in viewModels)
-        {
-            services.AddTransient(viewModel);
-        }
 
         // Automatically add all data migration classes to the DI container via reflection
         var migrations = Assembly.GetAssembly(typeof(MigrationRunner))!.GetTypes()

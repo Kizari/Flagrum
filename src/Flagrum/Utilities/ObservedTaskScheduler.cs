@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+using Injectio.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Utilities;
@@ -9,7 +9,8 @@ namespace Flagrum.Utilities;
 /// <summary>
 /// Handles scheduling tasks in such a way that exceptions are observed when the task is not awaited.
 /// </summary>
-public class ObservedTaskScheduler
+[RegisterTransient<ObservedTaskScheduler>]
+public class ObservedTaskScheduler(ILogger<ObservedTaskScheduler> logger)
 {
     /// <summary>
     /// Fires off a task asynchronously, ensuring that any exceptions
@@ -19,10 +20,8 @@ public class ObservedTaskScheduler
     /// <exception cref="Exception">
     /// Thrown if any exceptions occur during the operation of the task.
     /// </exception>
-    public static void RunAsyncObserved(Func<Task> task)
+    public void RunAsyncObserved(Func<Task> task)
     {
-        var logger = Program.Services.GetRequiredService<ILogger<ObservedTaskScheduler>>();
-
         Task.Run(task).ContinueWith(t =>
         {
             if (t.IsFaulted)
@@ -43,10 +42,8 @@ public class ObservedTaskScheduler
     /// <exception cref="Exception">
     /// Thrown if any exceptions occur during the operation of the task.
     /// </exception>
-    public static void RunLongRunningObserved(Func<Task> task, CancellationToken cancellationToken)
+    public void RunLongRunningObserved(Func<Task> task, CancellationToken cancellationToken)
     {
-        var logger = Program.Services.GetRequiredService<ILogger<ObservedTaskScheduler>>();
-
         Task.Factory.StartNew(task, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default)
             .Unwrap()
             .ContinueWith(t =>

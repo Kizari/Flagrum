@@ -20,6 +20,7 @@ using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Application.Utilities;
 using Flagrum.ApplicationHost;
+using Flagrum.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +32,8 @@ public partial class RemoveSqliteMigration(
     FlagrumDbContext context,
     IConfiguration configuration,
     ModManagerServiceBase modManager,
-    IFileIndex fileIndex)
+    IFileIndex fileIndex,
+    ISplashScreen splash)
 {
     private const string ReindexWarning = "An unexpected error occurred while attempting to index loose game " +
                                           "files for the 1.5.6 feature update. If this is something you wish to " +
@@ -40,12 +42,12 @@ public partial class RemoveSqliteMigration(
     [MigrationStep(0, "d9079848-e368-4207-90fd-edffd5ffee4f", MigrationScope.Application)]
     private async Task MigrateStatePairs()
     {
-        SplashViewModel.Instance.SetLoadingText("Migrating application preferences");
+        splash.SetLoadingText("Migrating application preferences");
         
         // Ensure the DB is up to date
         await context.Database.MigrateAsync();
         
-        // Create a enum map for the state pairs
+        // Create an enum map for the state pairs
         var map = new Dictionary<StateKey, Type>
         {
             {StateKey.ViewportRotateModifierKey, typeof(ModifierKeys)},
@@ -80,7 +82,7 @@ public partial class RemoveSqliteMigration(
     [MigrationStep(1, "9904759b-cdc3-4381-8362-47519e0a8323", MigrationScope.Application)]
     private async Task MigrateWorkshopModelReplacementPresets()
     {
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Migrating Workshop model replacement presets");
+        splash.SetLoadingText("Migrating Workshop model replacement presets");
         
         // Ensure the DB is up to date
         await context.Database.MigrateAsync();
@@ -122,7 +124,7 @@ public partial class RemoveSqliteMigration(
     [MigrationStep(3, "748726d9-b1f4-4de7-a2f2-071a9439b5fb", MigrationScope.Profile, MigrationStepMode.Warn, ReindexWarning)]
     private async Task IndexLooseFiles()
     {
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Temporarily disabling active mods");
+        splash.SetLoadingText("Temporarily disabling active mods");
         
         // Disable all mods so the file indexer doesn't index any mod files
         var modsToEnable = new List<IFlagrumProject>();
@@ -134,11 +136,11 @@ public partial class RemoveSqliteMigration(
         }
         
         // Regenerate the file index
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Indexing loose files");
+        splash.SetLoadingText("Indexing loose files");
         fileIndex.Regenerate();
         
         // Reenable all mods now that the index has regenerated
-        ApplicationHost.SplashViewModel.Instance.SetLoadingText("Reenabling active mods");
+        splash.SetLoadingText("Reenabling active mods");
         foreach (var project in modsToEnable)
         {
             await modManager.EnableMod(project);

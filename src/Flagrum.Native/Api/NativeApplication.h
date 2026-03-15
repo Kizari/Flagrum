@@ -16,12 +16,4 @@ private:
 public:
     NativeApplication();
     ~NativeApplication();
-
-    /**
-     * Runs the application.
-     * 
-     * @return Exit code.
-     * @remarks This function blocks until the user quits the application.
-     */
-    [[nodiscard]] static int Run();
 };

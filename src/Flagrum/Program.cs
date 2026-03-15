@@ -1,20 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Avalonia;
 using Flagrum.Abstractions;
-using Flagrum.Abstractions.ModManager;
-using Flagrum.Application;
-using Flagrum.ApplicationHost.Native;
-using Flagrum.ApplicationHost.WebView;
+using Flagrum.ApplicationHost;
 using Flagrum.Generators;
-using Flagrum.Migrations;
 using Flagrum.Utilities;
 using Microsoft.Extensions.DependencyInjection;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 using NuGet.Versioning;
 using Velopack;
 
@@ -22,15 +13,7 @@ namespace Flagrum;
 
 internal static class Program
 {
-    /// <summary>
-    /// The dependency injection service container for the application.
-    /// </summary>
-    public static IServiceProvider Services { get; private set; } = null!;
-
-    /// <summary>
-    /// Identifier for the program's main (UI) thread.
-    /// </summary>
-    public static int MainThreadId { get; private set; }
+    private static IServiceProvider _services = null!;
 
     /// <summary>
     /// Main entry point for the application.
@@ -40,9 +23,8 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         // Program setup
-        MainThreadId = Environment.CurrentManagedThreadId;
         CrashHelper.Initialize();
-        Services = ServiceHelper.ConfigureServices();
+        _services = ServiceHelper.ConfigureServices();
 
         // Initialize Velopack
         VelopackApp.Build()
@@ -52,71 +34,8 @@ internal static class Program
 #endif
             .Run();
 
-        // Handle commandline arguments
-        if (args.Any(a => a == "--launch"))
-        {
-            var launcher = Services.GetRequiredService<IGameLauncher>();
-            var result = launcher.TryLaunch(false);
-            if (result != GameLaunchResult.Success)
-            {
-                var message = result switch
-                {
-                    GameLaunchResult.GameAlreadyRunning =>
-                        "Flagrum detected that the game is already running, " +
-                        "so it cannot launch again until the game is closed.",
-                    GameLaunchResult.UnsupportedExecutable =>
-                        "Flagrum did not recognize the FFXV executable, " +
-                        "the mod loader only supports the latest Steam release of the game.",
-                    GameLaunchResult.AccessDenied =>
-                        "Flagrum was unable to launch FFXV due to insufficient permissions. " +
-                        "Please run Flagrum as administrator and try again.",
-                    _ => throw new NotSupportedException($"Did not recognize launch result {result}.")
-                };
-
-                await MessageBoxManager.GetMessageBoxStandard("Error", message, ButtonEnum.Ok, Icon.Error)
-                    .ShowAsync();
-            }
-
-            // Flagrum was invoked only to launch the game, so terminate here
-            return;
-        }
-
-        // Run pending data migrations
-        Services.GetRequiredService<SteppedMigrationUpgrader>().Run();
-
         // Run the application
-        RunApp(args);
-    }
-
-    /// <summary>
-    /// Runs the WPF application until shutdown is requested.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    private static void RunApp(string[] args)
-    {
-        using var application = new NativeApplication();
-        using var window = new NativeWindow();
-        window.SetTitle("Flagrum");
-
-        using var dispatcher = new NativeDispatcher();
-        using var webView = new BlazorWebView(window);
-
-        // TODO: Should this method be async?
-        webView.SetRootComponentAsync<App>("#app").ConfigureAwait(false).GetAwaiter().GetResult();
-        webView.Navigate(BlazorWebViewManager.CreateUri("/"));
-
-        window.SetWebView(webView.NativeImpl);
-        window.Resize(1680, 1024);
-        window.Show();
-
-        application.Run();
-        return;
-
-        AppBuilder.Configure<ApplicationHost.App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace()
-            .StartWithClassicDesktopLifetime(args);
+        await _services.GetRequiredService<AppHost>().RunAsync(args);
     }
 
     /// <summary>
@@ -125,7 +44,7 @@ internal static class Program
     private static void OnFreshInstall(SemanticVersion version)
     {
         // Ensure that past data migrations are set as completed to prevent them running
-        var configuration = Services.GetRequiredService<IConfiguration>();
+        var configuration = _services.GetRequiredService<IConfiguration>();
         configuration.OnFreshInstall(SteppedMigrationHelper.ApplicationSteps, SteppedMigrationHelper.ProfileSteps);
     }
 
@@ -134,7 +53,7 @@ internal static class Program
     /// </summary>
     private static void OnBeforeUninstall(SemanticVersion version)
     {
-        var profile = Services.GetRequiredService<IProfileService>();
+        var profile = _services.GetRequiredService<IProfileService>();
 
         try
         {

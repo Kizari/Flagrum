@@ -1,3 +1,5 @@
+#include <QClipboard>
+
 #include "../Api/NativeApplication.h"
 
 #define EXPORT extern "C"
@@ -14,5 +16,15 @@ EXPORT void NativeApplication_Destroy(const NativeApplication* instance)
 
 EXPORT int NativeApplication_Run()
 {
-    return NativeApplication::Run();
+    return QApplication::exec();
+}
+
+EXPORT void NativeApplication_Exit(const int exitCode)
+{
+    QApplication::exit(exitCode);
+}
+
+EXPORT void NativeApplication_SetClipboardText(const char* text)
+{
+    QApplication::clipboard()->setText(text);
 }
