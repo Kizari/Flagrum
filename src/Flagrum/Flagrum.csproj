@@ -5,7 +5,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-        <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
+        <ApplicationIcon>../Flagrum.Native/Resources/flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <BaseVersion>1.6.5</BaseVersion> <!-- Current version of the application -->
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->

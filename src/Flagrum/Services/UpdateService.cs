@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Flagrum.Services;
 using Injectio.Attributes;
 using Velopack;
 using Velopack.Sources;
 
-namespace Flagrum.Utilities;
+namespace Flagrum.Services;
 
 /// <summary>
 /// Handles automatic updates for Flagrum.
@@ -43,7 +42,7 @@ public class UpdateService(ISplashScreen splash)
             // Let Flagrum continue as normal
         }
 
-        splash.SetLoadingText("Initialising");
+        splash.SetLoadingText("Loading");
         return false;
     }
 }

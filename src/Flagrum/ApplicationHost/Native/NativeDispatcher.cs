@@ -2,12 +2,14 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Injectio.Attributes;
 
 namespace Flagrum.ApplicationHost.Native;
 
 /// <summary>
 /// C# wrapper for the NativeDispatcher class.
 /// </summary>
+[RegisterSingleton<NativeDispatcher>]
 public sealed partial class NativeDispatcher : IDisposable
 {
     private readonly IntPtr _instance = NativeDispatcher_Create();

@@ -28,9 +28,10 @@ public sealed class BlazorWebView : IDisposable
         IFileProvider fileProvider,
         JSComponentConfigurationStore configStore,
         NativeWindow window,
-        ObservedTaskScheduler scheduler)
+        ObservedTaskScheduler scheduler,
+        BlazorWebViewDispatcher dispatcher)
     {
-        _dispatcher = new BlazorWebViewDispatcher();
+        _dispatcher = dispatcher;
         _webViewManager = new BlazorWebViewManager(
             serviceProvider,
             fileProvider,
@@ -51,7 +52,6 @@ public sealed class BlazorWebView : IDisposable
     public void Dispose()
     {
         NativeImpl.Dispose();
-        _dispatcher.Dispose();
     }
 
     /// <summary>

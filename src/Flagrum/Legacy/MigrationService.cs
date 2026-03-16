@@ -7,7 +7,7 @@ using Injectio.Attributes;
 using MemoryPack;
 using ZstdSharp;
 
-namespace Flagrum.Migrations;
+namespace Flagrum.Legacy;
 
 [MemoryPackable]
 [RegisterSingleton<MigrationService>]

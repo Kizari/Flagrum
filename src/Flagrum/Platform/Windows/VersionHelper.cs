@@ -4,14 +4,18 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Timers;
 using Flagrum.Core.Utilities.Extensions;
+using Flagrum.Utilities;
+using Injectio.Attributes;
 using Microsoft.Win32;
 
-namespace Flagrum.Utilities;
+namespace Flagrum.Platform.Windows;
 
+[RegisterSingleton<VersionHelper>]
 public class VersionHelper
 {
     private const string VersionKey =
         @"HKEY_CURRENT_USER\Software\Flagrum\CLASSES\CLSID\{926FEA7F-C202-4984-A67C-23FB540BE8D3}";
+
     private const string VersionTimeKey =
         @"HKEY_CURRENT_USER\Software\Flagrum\CLASSES\CLSID\{8D96FAAC-9E52-4C08-BE73-6BCD845F834D}";
 
@@ -36,13 +40,13 @@ public class VersionHelper
         if (registryVersionString != null)
         {
             var time = GetVersionTimeFromRegistry();
-            
+
             // Allow a 6-hour grace period (see https://github.com/Kizari/Flagrum/issues/179)
             if (time.HasValue && (DateTime.UtcNow - time.Value).TotalHours <= 6)
             {
                 return true;
             }
-            
+
             var registryVersion = StringToVersion(registryVersionString);
             return selfVersion >= registryVersion;
         }
@@ -77,7 +81,7 @@ public class VersionHelper
                     SetVersionInRegistry(response.TagName);
                     SetVersionTimeInRegistry(DateTime.UtcNow);
                 }
-                
+
                 _timer.Stop();
             }
         }
@@ -89,31 +93,22 @@ public class VersionHelper
 
     private void SetVersionInRegistry(string version)
     {
-        // TODO: Rework this
-        return;
         Registry.SetValue(VersionKey, "", version.ToBase64());
     }
 
     private string? GetVersionFromRegistry()
     {
-        // TODO: Rework this
-        return "v1.6.5";
         var result = (string?)Registry.GetValue(VersionKey, "", null);
         return result?.FromBase64();
     }
 
     private void SetVersionTimeInRegistry(DateTime time)
     {
-        // TODO: Rework this
-        return;
         Registry.SetValue(VersionTimeKey, "", time.Ticks.ToString());
     }
 
     private DateTime? GetVersionTimeFromRegistry()
     {
-        // TODO: Rework this
-        return null;
-        
         var time = (string?)Registry.GetValue(VersionTimeKey, "", null);
         if (time != null && long.TryParse(time, out var ticks))
         {

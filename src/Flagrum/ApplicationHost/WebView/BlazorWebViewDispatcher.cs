@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Flagrum.ApplicationHost.Native;
+using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView;
 
@@ -16,10 +17,11 @@ namespace Flagrum.ApplicationHost.WebView;
 /// Dispatches actions to the native library to be invoked on the main thread in the way that is most
 /// suitable for the target platform.
 /// </summary>
+[RegisterSingleton<BlazorWebViewDispatcher>]
 public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
 {
     private readonly CancellationTokenSource _cancellation = new();
-    private readonly NativeDispatcher _dispatcher = new();
+    private readonly NativeDispatcher _dispatcher;
 
     /// <summary>
     /// It's very important that this class uses a queue for the actions, even if the action could have been
@@ -30,13 +32,13 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
     /// </summary>
     private readonly BlockingCollection<IQueueItem> _queue = [];
 
-    private readonly Thread _thread;
-
-    public BlazorWebViewDispatcher()
+    public BlazorWebViewDispatcher(NativeDispatcher dispatcher)
     {
+        _dispatcher = dispatcher;
+
         // Run the dispatch loop on a separate thread to avoid blocking the UI thread
-        _thread = new Thread(DispatchLoop);
-        _thread.Start();
+        var thread = new Thread(DispatchLoop);
+        thread.Start();
     }
 
     public void Dispose()

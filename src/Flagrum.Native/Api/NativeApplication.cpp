@@ -1,5 +1,7 @@
 #include "NativeApplication.h"
 
+#include <QIcon>
+
 NativeApplication::NativeApplication()
 {
     // Create the QApplication
@@ -7,6 +9,7 @@ NativeApplication::NativeApplication()
     arg0_ = strdup("Flagrum");
     argv_ = new char*[2]{arg0_, nullptr};
     application_ = new QApplication(argc_, argv_);
+    QApplication::setWindowIcon(QIcon(":/Resources/flagrum.ico"));
 }
 
 NativeApplication::~NativeApplication()

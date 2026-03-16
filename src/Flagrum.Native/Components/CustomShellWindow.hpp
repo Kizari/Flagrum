@@ -1,12 +1,14 @@
+// ReSharper disable CppDFAMemoryLeak (Qt widgets handle disposing their children)
 #pragma once
 
 #include <QApplication>
+#include <QFile>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPushButton>
 #include <QStyle>
-#include <QtSvg/QSvgRenderer>
+#include <QSvgWidget>
 #include <QVBoxLayout>
 #include <QWindow>
 
@@ -28,6 +30,7 @@ public:
         // Set the window properties
         setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
         setStyleSheet("background: #181512;");
+        move(QApplication::primaryScreen()->geometry().center() - rect().center());
 
         // Create the content layout
         layout_ = new QVBoxLayout(this);
@@ -40,24 +43,31 @@ public:
         titleBar_->setStyleSheet("background: #181512;");
         titleBar_->setContentsMargins(10, 0, 0, 0);
 
+        // Load logo file
+        auto file = QFile(":/Resources/logo.svg");
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            throw std::runtime_error("Failed to open logo.svg");
+        }
+        
+        auto svgData = static_cast<QString>(file.readAll());
+        file.close();
+
         // Create the application icon
-        const auto iconLabel = new QLabel(titleBar_);
-        iconLabel->setFixedSize(25, 23);
-        iconLabel->setContentsMargins(0, 0, 0, 3);
-        auto renderer = QSvgRenderer(QStringLiteral(":/Resources/logo_white.svg"));
-        auto pixmap = QPixmap(20, 20);
-        pixmap.fill(Qt::transparent);
-        auto painter = QPainter(&pixmap);
-        renderer.render(&painter);
-        iconLabel->setPixmap(pixmap);
-        iconLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        iconLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+        const auto wrapper = new QWidget(titleBar_); // Needed to align the logo to center
+        const auto wrapperLayout = new QHBoxLayout(wrapper);
+        wrapperLayout->setContentsMargins(0, 0, 0, 3);
+        const auto logo = new QSvgWidget(wrapper);
+        svgData.replace("#ffffff", "#837363", Qt::CaseInsensitive);
+        logo->load(svgData.toUtf8());
+        logo->setFixedSize(20, 20);
+        wrapperLayout->addWidget(logo);
 
         // Create the application title
         const auto title = new QLabel("Flagrum", titleBar_);
-        title->setStyleSheet("color: #E7E5E4; font-size: 14px;");
+        title->setStyleSheet("color: #837363; font-size: 14px;");
         title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        title->setContentsMargins(0, 5, 15, 8);
+        title->setContentsMargins(2, 5, 15, 8);
 
         // Create the window buttons
         const auto minimize = CreateTitleBarButton(
@@ -79,7 +89,7 @@ public:
         // Populate the title bar layout
         const auto titleBarLayout = new QHBoxLayout(titleBar_);
         titleBarLayout->setContentsMargins(0, 0, 0, 0);
-        titleBarLayout->addWidget(iconLabel);
+        titleBarLayout->addWidget(wrapper);
         titleBarLayout->addWidget(title);
         titleBarLayout->addStretch();
         titleBarLayout->addWidget(minimize);

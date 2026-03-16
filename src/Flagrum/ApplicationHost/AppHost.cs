@@ -1,12 +1,19 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Flagrum.Abstractions;
 using Flagrum.Abstractions.ModManager;
 using Flagrum.Application;
+using Flagrum.Application.Services;
 using Flagrum.ApplicationHost.Native;
 using Flagrum.ApplicationHost.WebView;
 using Flagrum.Migrations;
+using Flagrum.Platform.Abstractions;
+using Flagrum.Services;
+using Flagrum.Utilities;
 using Injectio.Attributes;
+using Serilog;
 
 namespace Flagrum.ApplicationHost;
 
@@ -15,11 +22,19 @@ namespace Flagrum.ApplicationHost;
 /// </summary>
 [RegisterSingleton<AppHost>]
 public class AppHost(
+    IConfiguration configuration,
     NativeApplication application,
     NativeWindow window,
     BlazorWebView webView,
     SteppedMigrationUpgrader migrationUpgrader,
-    IGameLauncher launcher)
+    IGameLauncher launcher,
+    UpdateService updater,
+    MigrationRunner migrations,
+    AppStateService appState,
+    IPlatformManager platform,
+    ISplashScreen splash,
+    NativeDispatcher dispatcher,
+    ObservedTaskScheduler scheduler)
 {
     /// <summary>
     /// Runs the application, does not return until the main window is closed.
@@ -45,29 +60,76 @@ public class AppHost(
 
     private async Task RunAsync()
     {
-        // Run startup logic
-        Initialize();
+        // Upgrade from the legacy data migrations system if needed
+        migrationUpgrader.Run();
 
-        // Set up the Blazor web view
-        await webView.SetRootComponentAsync<App>("#app");
-        webView.Navigate(BlazorWebViewManager.CreateUri("/"));
+        // Initialize the application
+        SetCulture();
+        platform.EnableTaskbarStacking();
+        platform.SetFileTypeAssociation();
 
-        // Initialize the main window
-        window.SetWebView(webView.NativeImpl);
-        window.Resize(1680, 1024);
-        window.Show();
+        // Run startup code on separate thread so event loop can show/update the splash screen during load
+        scheduler.RunAsyncObserved(StartAsync);
 
         // Run the application until the main window is closed
         application.Run();
+
+        // Ensure the log is written and closed before terminating
+        await Log.CloseAndFlushAsync();
     }
 
-    /// <summary>
-    /// Initializes the application.
-    /// </summary>
-    private void Initialize()
+    private async Task StartAsync()
     {
-        // Upgrades from the legacy data migrations system if needed
-        migrationUpgrader.Run();
+        var start = DateTime.UtcNow;
+
+        // Show splash screen
+        dispatcher.Invoke(splash.Show);
+
+        // Check for updates
+        if (await updater.TryUpdate())
+        {
+            await Log.CloseAndFlushAsync();
+            return; // Application is restarting, finish here
+        }
+
+        // Run all data migrations
+        await migrations.RunMigrationsAsync();
+
+        // Check the application version
+        if (!platform.IsVersionSupported)
+        {
+            NativeMessageBox.Show("Error", "This version of Flagrum is no longer supported.",
+                MessageType.Error);
+
+            await Log.CloseAndFlushAsync();
+            return;
+        }
+
+        // Start initializing the asset explorer
+        appState.LoadNodes();
+
+        // Set up the Blazor web view
+        await webView.SetRootComponentAsync<App>("#app");
+        dispatcher.Invoke(() => { webView.Navigate(BlazorWebViewManager.CreateUri("/")); });
+
+#if !DEBUG
+        // Ensure the splash screen is displayed no less than two seconds
+        var elapsed = DateTime.UtcNow - start;
+        var remaining = TimeSpan.FromSeconds(2) - elapsed;
+        if (remaining.TotalMilliseconds > 0)
+        {
+            await Task.Delay(remaining);
+        }
+#endif
+
+        // Initialize the main window
+        dispatcher.Invoke(() =>
+        {
+            window.SetWebView(webView.NativeImpl);
+            window.Resize(1680, 1024);
+            window.Show();
+            splash.Close();
+        });
     }
 
     /// <summary>
@@ -93,6 +155,27 @@ public class AppHost(
             };
 
             NativeMessageBox.Show("Error", message, MessageType.Error);
+        }
+    }
+
+    private void SetCulture()
+    {
+        // Seems that the application culture needs to be set in the constructor
+        // See https://github.com/Kizari/Flagrum/issues/94
+        try
+        {
+            // Set culture based on stored language settings if any
+            var cultureName = configuration.Get<string?>(StateKey.Language);
+            if (cultureName != null)
+            {
+                var culture = CultureInfo.GetCultureInfo(cultureName);
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentUICulture = culture;
+            }
+        }
+        catch
+        {
+            // Ignore silently, not important
         }
     }
 }

@@ -5,6 +5,7 @@ using Flagrum.Abstractions;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Core.Utilities;
+using Flagrum.Legacy;
 using Injectio.Attributes;
 using Microsoft.Extensions.Logging;
 

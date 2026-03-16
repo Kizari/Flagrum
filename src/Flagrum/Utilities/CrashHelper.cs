@@ -42,16 +42,6 @@ public static class CrashHelper
     }
 
     [Conditional("RELEASE")]
-    public static void InitializeApplication()
-    {
-        // App.Current.DispatcherUnhandledException += (_, e) =>
-        // {
-        //     DumpCrashLog(e.Exception, false);
-        //     throw new OffMainThreadException();
-        // };
-    }
-
-    [Conditional("RELEASE")]
     private static void DumpCrashLog(Exception exception, bool fromMainThread)
     {
         // OffMainThreadException is thrown purely to crash the application as the true exception was already logged
@@ -68,7 +58,7 @@ public static class CrashHelper
                 return;
             }
         }
-        
+
         try
         {
             var crashDirectory = Path.Combine(IOHelper.LocalApplicationData, "Flagrum", "crashes");
