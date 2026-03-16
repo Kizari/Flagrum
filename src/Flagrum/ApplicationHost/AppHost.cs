@@ -80,7 +80,9 @@ public class AppHost(
 
     private async Task StartAsync()
     {
+#if !DEBUG
         var start = DateTime.UtcNow;
+#endif
 
         // Show splash screen
         dispatcher.Invoke(splash.Show);
@@ -160,8 +162,6 @@ public class AppHost(
 
     private void SetCulture()
     {
-        // Seems that the application culture needs to be set in the constructor
-        // See https://github.com/Kizari/Flagrum/issues/94
         try
         {
             // Set culture based on stored language settings if any

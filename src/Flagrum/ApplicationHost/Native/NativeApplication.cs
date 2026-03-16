@@ -33,6 +33,12 @@ public sealed partial class NativeApplication : IDisposable
     public int Run() => NativeApplication_Run();
 
     /// <summary>
+    /// Flushes the application event queue.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ProcessEvents() => NativeApplication_ProcessEvents();
+
+    /// <summary>
     /// Stops the application.
     /// </summary>
     /// <param name="exitCode">Exit code to return from the application.</param>
@@ -54,6 +60,9 @@ public sealed partial class NativeApplication : IDisposable
 
     [LibraryImport(NativeHelper.LibraryPath)]
     private static partial int NativeApplication_Run();
+
+    [LibraryImport(NativeHelper.LibraryPath)]
+    private static partial void NativeApplication_ProcessEvents();
 
     [LibraryImport(NativeHelper.LibraryPath)]
     private static partial void NativeApplication_Exit(int exitCode);

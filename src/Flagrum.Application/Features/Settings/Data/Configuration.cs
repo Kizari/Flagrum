@@ -59,6 +59,12 @@ public partial class Configuration : IConfiguration
             MemoryPackSerializer.Deserialize(decompressor.Unwrap(buffer), ref configuration,
                 MemoryPackSerializerOptions.Utf8);
         }
+#if DEBUG
+        else
+        {
+            OnFreshInstall(platform.ApplicationMigrationSteps, platform.ProfileMigrationSteps);
+        }
+#endif
 
         // Ensure a client ID exists
         if (ClientId == Guid.Empty)

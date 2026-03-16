@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="NewMod" xml:space="preserve">
+        <value>新しいMOD</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>セーブ</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>キャンセル</value>
+    </data>
+    <data name="Target" xml:space="preserve">
+        <value>対象</value>
+    </data>
+    <data name="Type" xml:space="preserve">
+        <value>タイプ</value>
+    </data>
+    <data name="NewPreset" xml:space="preserve">
+        <value>新規プリセット作成</value>
+    </data>
+    <data name="Variant" xml:space="preserve">
+        <value>バリアント</value>
+    </data>
+    <data name="SelectVariant" xml:space="preserve">
+        <value>-- バリエーションを選択 --</value>
+    </data>
+    <data name="Male" xml:space="preserve">
+        <value>男性</value>
+    </data>
+    <data name="Female" xml:space="preserve">
+        <value>女性</value>
+    </data>
+    <data name="SelectFmd" xml:space="preserve">
+        <value>モデルデータの入ったfmdファイルを選択</value>
+    </data>
+    <data name="SelectFmdPlaceholder" xml:space="preserve">
+        <value>{0}モデル用fmdファイルを選択</value>
+    </data>
+    <data name="Browse" xml:space="preserve">
+        <value>ブラウズ</value>
+    </data>
+    <data name="ModType" xml:space="preserve">
+        <value>MODタイプ</value>
+    </data>
+    <data name="ModTarget" xml:space="preserve">
+        <value>MODターゲット</value>
+    </data>
+    <data name="Uuid" xml:space="preserve">
+        <value>UUID</value>
+    </data>
+    <data name="ChangeImage" xml:space="preserve">
+        <value>画像を変更する</value>
+    </data>
+    <data name="ChangeThumbnail" xml:space="preserve">
+        <value>サムネイルを変更する</value>
+    </data>
+    <data name="ChangeModel" xml:space="preserve">
+        <value>モデルを変更する</value>
+    </data>
+    <data name="ChangeModelPlaceholder" xml:space="preserve">
+        <value>チェンジ{0}モデル</value>
+    </data>
+    <data name="UploadWorkshop" xml:space="preserve">
+        <value>ワークショップへのアップロード</value>
+    </data>
+    <data name="Delete" xml:space="preserve">
+        <value>削除</value>
+    </data>
+    <data name="DeleteMod" xml:space="preserve">
+        <value>MODを削除する</value>
+    </data>
+    <data name="AreYouSure" xml:space="preserve">
+        <value>本当ですか？</value>
+    </data>
+    <data name="CannotBeUndone" xml:space="preserve">
+        <value>このアクションは元に戻せません</value>
+    </data>
+    <data name="SelectTarget" xml:space="preserve">
+        <value>-- ターゲットを選択する --</value>
+    </data>
+    <data name="BuildingMod" xml:space="preserve">
+        <value>ビルディングMOD</value>
+    </data>
+    <data name="Saving" xml:space="preserve">
+        <value>セービング</value>
+    </data>
+    <data name="BallisticRes" xml:space="preserve">
+        <value>耐弾性 %</value>
+    </data>
+    <data name="DarkRes" xml:space="preserve">
+        <value>暗黒抵抗 %</value>
+    </data>
+    <data name="FireRes" xml:space="preserve">
+        <value>耐火性 %</value>
+    </data>
+    <data name="GearMenuDescription" xml:space="preserve">
+        <value>ギアメニューの説明</value>
+    </data>
+    <data name="GearMenuTitle" xml:space="preserve">
+        <value>ギアメニューのタイトル</value>
+    </data>
+    <data name="IceRes" xml:space="preserve">
+        <value>耐氷性 %</value>
+    </data>
+    <data name="Magic" xml:space="preserve">
+        <value>マジック</value>
+    </data>
+    <data name="MaxHP" xml:space="preserve">
+        <value>最大HP</value>
+    </data>
+    <data name="MaxMP" xml:space="preserve">
+        <value>最大MP</value>
+    </data>
+    <data name="ModDescription" xml:space="preserve">
+        <value>MOD説明</value>
+    </data>
+    <data name="ModTitle" xml:space="preserve">
+        <value>MODタイトル</value>
+    </data>
+    <data name="Spirit" xml:space="preserve">
+        <value>精神</value>
+    </data>
+    <data name="Strength" xml:space="preserve">
+        <value>強さ</value>
+    </data>
+    <data name="ThunderRes" xml:space="preserve">
+        <value>耐雷性 %</value>
+    </data>
+    <data name="Vitality" xml:space="preserve">
+        <value>バイタリティ</value>
+    </data>
+    <data name="Attack" xml:space="preserve">
+        <value>攻撃</value>
+    </data>
+    <data name="Weapon" xml:space="preserve">
+        <value>兵器</value>
+    </data>
+    <data name="StyleEdit" xml:space="preserve">
+        <value>マルチプレイ用衣装</value>
+    </data>
+    <data name="Multi_Weapon" xml:space="preserve">
+        <value>マルチプレイ用武器</value>
+    </data>
+    <data name="Cloth" xml:space="preserve">
+        <value>アウトフィット</value>
+    </data>
+    <data name="Character" xml:space="preserve">
+        <value>モデルチェンジ</value>
+    </data>
+</root>

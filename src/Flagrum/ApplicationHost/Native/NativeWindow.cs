@@ -40,6 +40,12 @@ public sealed partial class NativeWindow : IDisposable
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Show() => NativeWindow_Show(Handle);
+    
+    /// <summary>
+    /// Closes the window.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Close() => NativeWindow_Close(Handle);
 
 
     [LibraryImport(NativeHelper.LibraryPath)]
@@ -49,9 +55,6 @@ public sealed partial class NativeWindow : IDisposable
     private static partial void NativeWindow_Destroy(IntPtr instance);
 
     [LibraryImport(NativeHelper.LibraryPath)]
-    private static partial void NativeWindow_SetTitle(IntPtr instance, [MarshalAs(UnmanagedType.LPStr)] string title);
-
-    [LibraryImport(NativeHelper.LibraryPath)]
     private static partial void NativeWindow_Resize(IntPtr instance, int width, int height);
 
     [LibraryImport(NativeHelper.LibraryPath)]
@@ -59,4 +62,7 @@ public sealed partial class NativeWindow : IDisposable
 
     [LibraryImport(NativeHelper.LibraryPath)]
     private static partial void NativeWindow_Show(IntPtr instance);
+    
+    [LibraryImport(NativeHelper.LibraryPath)]
+    private static partial void NativeWindow_Close(IntPtr instance);
 }

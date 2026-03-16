@@ -19,6 +19,11 @@ EXPORT int NativeApplication_Run()
     return QApplication::exec();
 }
 
+EXPORT void NativeApplication_ProcessEvents()
+{
+    QApplication::processEvents();
+}
+
 EXPORT void NativeApplication_Exit(const int exitCode)
 {
     QApplication::exit(exitCode);

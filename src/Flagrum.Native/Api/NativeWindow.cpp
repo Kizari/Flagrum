@@ -34,3 +34,8 @@ void NativeWindow::Show() const
 {
     window_->show();
 }
+
+void NativeWindow::Close() const
+{
+    window_->close();
+}

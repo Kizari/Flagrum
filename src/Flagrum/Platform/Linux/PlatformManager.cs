@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions.Application;
+using Flagrum.Generators;
 using Injectio.Attributes;
 
 namespace Flagrum.Platform.Linux;
@@ -42,7 +44,13 @@ public class PlatformManager : IPlatformManager
             return clientId;
         }
     }
+
+    /// <inheritdoc />
+    public HashSet<Guid> ApplicationMigrationSteps => SteppedMigrationHelper.ApplicationSteps;
     
+    /// <inheritdoc />
+    public HashSet<Guid> ProfileMigrationSteps => SteppedMigrationHelper.ProfileSteps;
+
     /// <inheritdoc />
     public bool IsVersionSupported => true;
 

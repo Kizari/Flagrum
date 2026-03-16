@@ -11,6 +11,7 @@ namespace Flagrum.Services;
 [RegisterSingleton<IPlatformService>]
 public class PlatformService(
     NativeApplication application,
+    NativeWindow window,
     NativeFileDialog fileDialog) : IPlatformService
 {
     public async Task OpenFileDialogAsync(string filter, Func<string, Task> onFileSelected)
@@ -50,6 +51,8 @@ public class PlatformService(
             executablePath += ".exe";
         }
 
+        window.Close();
+        application.ProcessEvents();
         application.Exit(0);
 
         // Changed from System.Windows.Forms.Application.Restart() to solve https://github.com/Kizari/Flagrum/issues/81

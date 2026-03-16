@@ -13,6 +13,16 @@ public interface IPlatformManager
     Guid LucentClientId { get; }
     
     /// <summary>
+    /// IDs of every possible application-level data migration step Flagrum has.
+    /// </summary>
+    HashSet<Guid> ApplicationMigrationSteps { get; }
+    
+    /// <summary>
+    /// IDs of every possible profile-level data migration step Flagrum has.
+    /// </summary>
+    HashSet<Guid> ProfileMigrationSteps { get; }
+    
+    /// <summary>
     /// Whether the current version of Flagrum is still supported.
     /// </summary>
     bool IsVersionSupported { get; }

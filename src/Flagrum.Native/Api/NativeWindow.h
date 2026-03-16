@@ -46,4 +46,9 @@ public:
      * Shows this window.
      */
     void Show() const;
+
+    /**
+     * Closes this window.
+     */
+    void Close() const;
 };

@@ -31,3 +31,8 @@ EXPORT void NativeWindow_Show(const NativeWindow* instance)
 {
     instance->Show();
 }
+
+EXPORT void NativeWindow_Close(const NativeWindow* instance)
+{
+    instance->Close();
+}
