@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Core.Utilities;
 using Injectio.Attributes;
 using MemoryPack;
 using ZstdSharp;
 
 namespace Flagrum.Legacy;
+
+public class DummyService;
 
 [MemoryPackable]
 [RegisterSingleton<MigrationService>]

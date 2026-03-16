@@ -4,24 +4,23 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
 using Flagrum.Application.Features.Settings.Data;
-using Microsoft.Win32;
 
 namespace Flagrum.Application.Services;
 
 public class ProfileService : IProfileService
 {
-    private const string Steam32 = @"SOFTWARE\VALVE\Steam";
-    private const string Steam64 = @"SOFTWARE\Wow6432Node\Valve\Steam";
-
     private readonly EbonyArchiveManager _archiveManager = new();
     private readonly IConfiguration _configuration;
+    private readonly IPlatformManager _platform;
 
-    public ProfileService(IConfiguration configuration)
+    public ProfileService(IConfiguration configuration, IPlatformManager platform)
     {
         _configuration = configuration;
+        _platform = platform;
 
         if (_configuration.ShouldMigratePreProfilesData)
         {
@@ -317,28 +316,9 @@ public class ProfileService : IProfileService
 
     private void TrySetSteamExePath()
     {
-        try
+        if (_platform.TryGetSteamExecutablePath(out var path))
         {
-            var key64 = Registry.LocalMachine.OpenSubKey(Steam64);
-            if (key64 == null)
-            {
-                var key32 = Registry.LocalMachine.OpenSubKey(Steam32);
-                SteamExePath = key32?.GetValue("InstallPath")?.ToString();
-            }
-            else
-            {
-                SteamExePath = key64.GetValue("InstallPath")?.ToString();
-            }
-
-            if (SteamExePath != null)
-            {
-                SteamExePath += @"\steam.exe";
-            }
-        }
-        catch
-        {
-            // Don't want a failed Steam path to take out the whole app
-            // It's not that important
+            SteamExePath = path;
         }
     }
 

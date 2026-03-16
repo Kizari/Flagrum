@@ -171,6 +171,10 @@
         <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Platform\Abstractions\" />
+    </ItemGroup>
+
     <!-- Automatically generate `SolutionInfo` class before build -->
     <Target Name="GenerateSolutionInfo" BeforeTargets="BeforeBuild">
         <WriteLinesToFile

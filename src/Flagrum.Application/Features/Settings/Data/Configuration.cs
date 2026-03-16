@@ -3,28 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
 using Flagrum.Core.Persistence;
 using Flagrum.Core.Utilities;
 using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Generators;
 using Flagrum.Application.Legacy.Migration;
 using Flagrum.Application.Utilities;
-using Injectio.Attributes;
 using MemoryPack;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using ZstdSharp;
 
 namespace Flagrum.Application.Features.Settings.Data;
 
-[RegisterScoped]
-public partial class DummyService;
-
 [MemoryPackable]
 public partial class Configuration : IConfiguration
 {
-    private const string ClientIdKey =
-        @"HKEY_CURRENT_USER\Software\Lucent\CLASSES\CLSID\{D81BA2C5-A176-4EE5-B8CB-3AAAE258AC8A}";
+    [MemoryPackIgnore] private readonly IPlatformManager _platform;
     
     [MemoryPackInclude] [ConcurrentProperty]
     private Guid _clientId;
@@ -50,8 +43,10 @@ public partial class Configuration : IConfiguration
     [MemoryPackConstructor]
     public Configuration() { }
     
-    public Configuration(DummyService dummyService)
+    public Configuration(IPlatformManager platform)
     {
+        _platform = platform;
+        
         // Migrate from the old configuration DB if applicable
         ConfigurationMigration.RunAsync().AwaitSynchronous();
 
@@ -109,22 +104,8 @@ public partial class Configuration : IConfiguration
 
     [MemoryPackInclude] [ConcurrentProperty]
     private AuthenticationType _authenticationType;
-    
-    [MemoryPackIgnore]
-    public Guid LucentClientId
-    {
-        get
-        {
-            var clientIdString = (string)Registry.GetValue(ClientIdKey, "", null);
-            if (clientIdString == null)
-            {
-                clientIdString = Guid.NewGuid().ToString();
-                Registry.SetValue(ClientIdKey, "", clientIdString);
-            }
 
-            return new Guid(clientIdString);
-        }
-    }
+    [MemoryPackIgnore] public Guid LucentClientId => _platform.LucentClientId;
 
     public void AddProfile(IProfile profile)
     {
