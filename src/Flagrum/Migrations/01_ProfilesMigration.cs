@@ -6,7 +6,7 @@ using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
-using Flagrum.ApplicationHost;
+using Flagrum.Host;
 using Flagrum.Services;
 
 namespace Flagrum.Migrations;
@@ -16,14 +16,14 @@ public partial class ProfilesMigration(
     FlagrumDbContext context,
     IProfileService profile,
     IConfiguration configuration,
-    ISplashScreen splash)
+    ApplicationHost application)
 {
     [MigrationStep(0, "73beb165-31e2-4400-8ae8-93c8c0c0dbf9", MigrationScope.Application)]
     public async Task Migrate()
     {
         if (profile.DidMigrateThisSession)
         {
-            splash.SetLoadingText("Migrating to the profile system");
+            application.SetSplashText("Migrating to the profile system");
 
             var profile = context.Profile;
 

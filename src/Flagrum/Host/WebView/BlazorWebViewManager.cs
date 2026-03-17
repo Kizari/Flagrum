@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 
-namespace Flagrum.ApplicationHost.WebView;
+namespace Flagrum.Host.WebView;
 
 /// <inheritdoc cref="WebViewManager" />
 public class BlazorWebViewManager : WebViewManager

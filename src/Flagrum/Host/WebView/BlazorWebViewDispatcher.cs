@@ -2,12 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Flagrum.ApplicationHost.Native;
 using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView;
 
-namespace Flagrum.ApplicationHost.WebView;
+namespace Flagrum.Host.WebView;
 
 // TODO: This was taken from another of my project's where queuing was necessary
 //       However, it may not be here since Qt uses its own queue internally
@@ -21,7 +20,7 @@ namespace Flagrum.ApplicationHost.WebView;
 public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
 {
     private readonly CancellationTokenSource _cancellation = new();
-    private readonly NativeDispatcher _dispatcher;
+    private readonly ApplicationHost _application;
 
     /// <summary>
     /// It's very important that this class uses a queue for the actions, even if the action could have been
@@ -32,9 +31,9 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
     /// </summary>
     private readonly BlockingCollection<IQueueItem> _queue = [];
 
-    public BlazorWebViewDispatcher(NativeDispatcher dispatcher)
+    public BlazorWebViewDispatcher(ApplicationHost application)
     {
-        _dispatcher = dispatcher;
+        _application = application;
 
         // Run the dispatch loop on a separate thread to avoid blocking the UI thread
         var thread = new Thread(DispatchLoop);
@@ -44,7 +43,6 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
     public void Dispose()
     {
         _cancellation.Cancel();
-        _dispatcher.Dispose();
     }
 
     /// <summary>
@@ -67,7 +65,7 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
             }
 
             // Invoke the action on the main thread
-            _dispatcher.Invoke(next.Execute);
+            _application.Invoke(next.Execute);
         }
     }
 

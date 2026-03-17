@@ -135,7 +135,7 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
                 {
                     var catchBody = m.Mode == MigrationStepMode.Warn
                         ? $"""
-                                           Flagrum.ApplicationHost.Native.NativeMessageBox.Show("Warning", "{m.Warning}", Flagrum.ApplicationHost.Native.MessageType.Warning);
+                                           application.ShowMessageBox("Warning", "{m.Warning}", Flagrum.Host.MessageBoxType.Warning);
                                                
                                            // Warned migrations won't be retried
                                            {Service(m)}.SetMigrated({m.MethodName}Id);

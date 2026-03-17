@@ -19,7 +19,7 @@ using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Application.Utilities;
-using Flagrum.ApplicationHost;
+using Flagrum.Host;
 using Flagrum.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +33,7 @@ public partial class RemoveSqliteMigration(
     IConfiguration configuration,
     ModManagerServiceBase modManager,
     IFileIndex fileIndex,
-    ISplashScreen splash)
+    ApplicationHost application)
 {
     private const string ReindexWarning = "An unexpected error occurred while attempting to index loose game " +
                                           "files for the 1.5.6 feature update. If this is something you wish to " +
@@ -42,7 +42,7 @@ public partial class RemoveSqliteMigration(
     [MigrationStep(0, "d9079848-e368-4207-90fd-edffd5ffee4f", MigrationScope.Application)]
     private async Task MigrateStatePairs()
     {
-        splash.SetLoadingText("Migrating application preferences");
+        application.SetSplashText("Migrating application preferences");
         
         // Ensure the DB is up to date
         await context.Database.MigrateAsync();
@@ -82,7 +82,7 @@ public partial class RemoveSqliteMigration(
     [MigrationStep(1, "9904759b-cdc3-4381-8362-47519e0a8323", MigrationScope.Application)]
     private async Task MigrateWorkshopModelReplacementPresets()
     {
-        splash.SetLoadingText("Migrating Workshop model replacement presets");
+        application.SetSplashText("Migrating Workshop model replacement presets");
         
         // Ensure the DB is up to date
         await context.Database.MigrateAsync();
@@ -124,7 +124,7 @@ public partial class RemoveSqliteMigration(
     [MigrationStep(3, "748726d9-b1f4-4de7-a2f2-071a9439b5fb", MigrationScope.Profile, MigrationStepMode.Warn, ReindexWarning)]
     private async Task IndexLooseFiles()
     {
-        splash.SetLoadingText("Temporarily disabling active mods");
+        application.SetSplashText("Temporarily disabling active mods");
         
         // Disable all mods so the file indexer doesn't index any mod files
         var modsToEnable = new List<IFlagrumProject>();
@@ -136,11 +136,11 @@ public partial class RemoveSqliteMigration(
         }
         
         // Regenerate the file index
-        splash.SetLoadingText("Indexing loose files");
+        application.SetSplashText("Indexing loose files");
         fileIndex.Regenerate();
         
         // Reenable all mods now that the index has regenerated
-        splash.SetLoadingText("Reenabling active mods");
+        application.SetSplashText("Reenabling active mods");
         foreach (var project in modsToEnable)
         {
             await modManager.EnableMod(project);

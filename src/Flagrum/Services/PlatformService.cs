@@ -3,20 +3,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
-using Flagrum.ApplicationHost.Native;
+using Flagrum.Host;
 using Injectio.Attributes;
 
 namespace Flagrum.Services;
 
 [RegisterSingleton<IPlatformService>]
-public class PlatformService(
-    NativeApplication application,
-    NativeWindow window,
-    NativeFileDialog fileDialog) : IPlatformService
+public class PlatformService(ApplicationHost application) : IPlatformService
 {
     public async Task OpenFileDialogAsync(string filter, Func<string, Task> onFileSelected)
     {
-        var result = fileDialog.OpenFile("Open File", "", filter);
+        var result = application.OpenFile("Open File", "", filter);
         if (result != null)
         {
             await onFileSelected(result);
@@ -25,7 +22,7 @@ public class PlatformService(
 
     public async Task OpenFolderDialogAsync(string initialDirectory, Func<string, Task> onFolderSelected)
     {
-        var result = fileDialog.OpenDirectory("Select Folder", initialDirectory);
+        var result = application.OpenDirectory("Select Folder", initialDirectory);
         if (result != null)
         {
             await onFolderSelected(result);
@@ -34,7 +31,7 @@ public class PlatformService(
 
     public async Task OpenSaveFileDialogAsync(string defaultName, string filter, Func<string, Task> onFileSelected)
     {
-        var result = fileDialog.SaveFile("Save File", defaultName, filter);
+        var result = application.SaveFile("Save File", defaultName, filter);
         if (result != null)
         {
             await onFileSelected(result);
@@ -51,8 +48,6 @@ public class PlatformService(
             executablePath += ".exe";
         }
 
-        window.Close();
-        application.ProcessEvents();
         application.Exit(0);
 
         // Changed from System.Windows.Forms.Application.Restart() to solve https://github.com/Kizari/Flagrum/issues/81

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Flagrum.Host;
 using Injectio.Attributes;
 using Velopack;
 using Velopack.Sources;
@@ -9,7 +10,7 @@ namespace Flagrum.Services;
 /// Handles automatic updates for Flagrum.
 /// </summary>
 [RegisterSingleton<UpdateService>]
-public class UpdateService(ISplashScreen splash)
+public class UpdateService(ApplicationHost application)
 {
     /// <summary>
     /// Attempts to update the application.
@@ -19,7 +20,7 @@ public class UpdateService(ISplashScreen splash)
     {
         try
         {
-            splash.SetLoadingText("Checking for updates");
+            application.SetSplashText("Checking for updates");
 
             // Check for updates
             var github = new GithubSource("https://github.com/Kizari/Flagrum", null, false);
@@ -29,9 +30,9 @@ public class UpdateService(ISplashScreen splash)
             // Download and apply updates if any were available
             if (newVersion != null)
             {
-                splash.SetLoadingText("Downloading updates");
+                application.SetSplashText("Downloading updates");
                 await manager.DownloadUpdatesAsync(newVersion);
-                splash.SetLoadingText("Updating Flagrum");
+                application.SetSplashText("Updating Flagrum");
                 manager.ApplyUpdatesAndRestart();
                 return true;
             }
@@ -42,7 +43,7 @@ public class UpdateService(ISplashScreen splash)
             // Let Flagrum continue as normal
         }
 
-        splash.SetLoadingText("Loading");
+        application.SetSplashText("Loading");
         return false;
     }
 }

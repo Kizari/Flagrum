@@ -7,33 +7,30 @@ using Flagrum.Abstractions.Application;
 using Flagrum.Abstractions.ModManager;
 using Flagrum.Application;
 using Flagrum.Application.Services;
-using Flagrum.ApplicationHost.Native;
-using Flagrum.ApplicationHost.WebView;
+using Flagrum.Host.WebView;
 using Flagrum.Migrations;
 using Flagrum.Services;
 using Flagrum.Utilities;
 using Injectio.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace Flagrum.ApplicationHost;
+namespace Flagrum.Host;
 
 /// <summary>
-/// The Flagrum application.
+/// Handles initializing and executing the application.
 /// </summary>
-[RegisterSingleton<AppHost>]
-public class AppHost(
+[RegisterSingleton<ApplicationRunner>]
+public class ApplicationRunner(
+    IServiceProvider serviceProvider,
     IConfiguration configuration,
-    NativeApplication application,
-    NativeWindow window,
-    BlazorWebView webView,
+    ApplicationHost application,
     SteppedMigrationUpgrader migrationUpgrader,
     IGameLauncher launcher,
     UpdateService updater,
     MigrationRunner migrations,
     AppStateService appState,
     IPlatformManager platform,
-    ISplashScreen splash,
-    NativeDispatcher dispatcher,
     ObservedTaskScheduler scheduler)
 {
     /// <summary>
@@ -50,7 +47,7 @@ public class AppHost(
         // Handle game launch mode
         if (args.Any(a => a == "--launch"))
         {
-            Launch();
+            LaunchGame();
             return Task.CompletedTask; // Flagrum was invoked only to launch the game, so terminate here
         }
 
@@ -58,6 +55,9 @@ public class AppHost(
         return RunAsync();
     }
 
+    /// <summary>
+    /// Executes the standard run procedure (i.e. no special launch flags were set).
+    /// </summary>
     private async Task RunAsync()
     {
         // Upgrade from the legacy data migrations system if needed
@@ -68,8 +68,8 @@ public class AppHost(
         platform.EnableTaskbarStacking();
         platform.SetFileTypeAssociation();
 
-        // Run startup code on separate thread so event loop can show/update the splash screen during load
-        scheduler.RunAsyncObserved(StartAsync);
+        // Run initialization code on separate thread so event loop can show/update the splash screen during load
+        scheduler.RunAsyncObserved(InitializeAsync);
 
         // Run the application until the main window is closed
         application.Run();
@@ -78,14 +78,16 @@ public class AppHost(
         await Log.CloseAndFlushAsync();
     }
 
-    private async Task StartAsync()
+    /// <summary>
+    /// Runs through the initialization process with the splash screen active,
+    /// then launches the main application window.
+    /// </summary>
+    private async Task InitializeAsync()
     {
-#if !DEBUG
         var start = DateTime.UtcNow;
-#endif
 
         // Show splash screen
-        dispatcher.Invoke(splash.Show);
+        application.OpenSplash();
 
         // Check for updates
         if (await updater.TryUpdate())
@@ -100,8 +102,8 @@ public class AppHost(
         // Check the application version
         if (!platform.IsVersionSupported)
         {
-            NativeMessageBox.Show("Error", "This version of Flagrum is no longer supported.",
-                MessageType.Error);
+            application.ShowMessageBox("Error", "This version of Flagrum is no longer supported.",
+                MessageBoxType.Critical);
 
             await Log.CloseAndFlushAsync();
             return;
@@ -110,11 +112,6 @@ public class AppHost(
         // Start initializing the asset explorer
         appState.LoadNodes();
 
-        // Set up the Blazor web view
-        await webView.SetRootComponentAsync<App>("#app");
-        dispatcher.Invoke(() => { webView.Navigate(BlazorWebViewManager.CreateUri("/")); });
-
-#if !DEBUG
         // Ensure the splash screen is displayed no less than two seconds
         var elapsed = DateTime.UtcNow - start;
         var remaining = TimeSpan.FromSeconds(2) - elapsed;
@@ -122,22 +119,20 @@ public class AppHost(
         {
             await Task.Delay(remaining);
         }
-#endif
 
-        // Initialize the main window
-        dispatcher.Invoke(() =>
-        {
-            window.SetWebView(webView.NativeImpl);
-            window.Resize(1680, 1024);
-            window.Show();
-            splash.Close();
-        });
+        // Launch the main window
+        // TODO: Consider if it's possible to load the window and web view during splash screen before showing it
+        application.OpenMainWindow();
+        var webView = serviceProvider.GetRequiredService<BlazorWebView>(); // Must be resolved after window opened
+        await webView.SetRootComponentAsync<App>("#app");
+        webView.Navigate(BlazorWebViewManager.CreateUri("/"));
+        application.CloseSplash();
     }
 
     /// <summary>
     /// Launches the game.
     /// </summary>
-    private void Launch()
+    private void LaunchGame()
     {
         var result = launcher.TryLaunch(false);
         if (result != GameLaunchResult.Success)
@@ -156,10 +151,13 @@ public class AppHost(
                 _ => throw new NotSupportedException($"Did not recognize launch result {result}.")
             };
 
-            NativeMessageBox.Show("Error", message, MessageType.Error);
+            application.ShowMessageBox("Error", message, MessageBoxType.Critical);
         }
     }
 
+    /// <summary>
+    /// Sets the culture of the application as per user preferences.
+    /// </summary>
     private void SetCulture()
     {
         try

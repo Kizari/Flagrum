@@ -9,116 +9,61 @@
 #include <QPushButton>
 #include <QStyle>
 #include <QSvgWidget>
-#include <QVBoxLayout>
 #include <QWindow>
 
-#include "CustomShellWindow.hpp"
+#include "MainWebView.hpp"
+#include "MainWindow.hpp"
 
 /**
- * Qt window that implements Flagrum's custom window shell.
+ * Main window for the application.
  */
-class CustomShellWindow final : public QWidget
+class MainWindow final : public QWidget
 {
 private:
     QWidget* titleBar_;
     QVBoxLayout* layout_;
     QWidget* container_;
+    MainWebView* webView_;
 
 public:
-    explicit CustomShellWindow(QWidget* parent = nullptr) : QWidget(parent)
+    /**
+     * Creates the main application window with a custom shell, and initializes the embedded web view.
+     */
+    explicit MainWindow(QWidget* parent = nullptr) : QWidget(parent)
     {
         // Set the window properties
         setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        setWindowTitle("Flagrum");
+        resize(1680, 1024);
         setStyleSheet("background: #181512;");
         move(QApplication::primaryScreen()->geometry().center() - rect().center());
+
+        // Create components
+        titleBar_ = CreateTitleBar();
+        webView_ = new MainWebView(this);
 
         // Create the content layout
         layout_ = new QVBoxLayout(this);
         layout_->setContentsMargins(2, 2, 2, 2);
         layout_->setSpacing(0);
-
-        // Create the title bar
-        titleBar_ = new QWidget(this);
-        titleBar_->setFixedHeight(42);
-        titleBar_->setStyleSheet("background: #181512;");
-        titleBar_->setContentsMargins(10, 0, 0, 0);
-
-        // Load logo file
-        auto file = QFile(":/Resources/logo.svg");
-        if (!file.open(QIODevice::ReadOnly))
-        {
-            throw std::runtime_error("Failed to open logo.svg");
-        }
-        
-        auto svgData = static_cast<QString>(file.readAll());
-        file.close();
-
-        // Create the application icon
-        const auto wrapper = new QWidget(titleBar_); // Needed to align the logo to center
-        const auto wrapperLayout = new QHBoxLayout(wrapper);
-        wrapperLayout->setContentsMargins(0, 0, 0, 3);
-        const auto logo = new QSvgWidget(wrapper);
-        svgData.replace("#ffffff", "#837363", Qt::CaseInsensitive);
-        logo->load(svgData.toUtf8());
-        logo->setFixedSize(20, 20);
-        wrapperLayout->addWidget(logo);
-
-        // Create the application title
-        const auto title = new QLabel("Flagrum", titleBar_);
-        title->setStyleSheet("color: #837363; font-size: 14px;");
-        title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        title->setContentsMargins(2, 5, 15, 8);
-
-        // Create the window buttons
-        const auto minimize = CreateTitleBarButton(
-            titleBar_,
-            "window-minimize",
-            QStyle::SP_TitleBarMinButton);
-
-        // TODO: Icon should change when maximized state changes
-        const auto maximize = CreateTitleBarButton(
-            titleBar_,
-            "window-maximize",
-            QStyle::SP_TitleBarMaxButton);
-
-        const auto closeButton = CreateTitleBarButton(
-            titleBar_,
-            "window-close",
-            QStyle::SP_TitleBarCloseButton);
-
-        // Populate the title bar layout
-        const auto titleBarLayout = new QHBoxLayout(titleBar_);
-        titleBarLayout->setContentsMargins(0, 0, 0, 0);
-        titleBarLayout->addWidget(wrapper);
-        titleBarLayout->addWidget(title);
-        titleBarLayout->addStretch();
-        titleBarLayout->addWidget(minimize);
-        titleBarLayout->addWidget(maximize);
-        titleBarLayout->addWidget(closeButton);
-        titleBar_->setLayout(titleBarLayout);
         layout_->addWidget(titleBar_);
-
-        // Connect window buttons
-        connect(minimize, &QPushButton::clicked, this, &QWidget::showMinimized);
-        connect(maximize, &QPushButton::clicked, this, [&]
-        {
-            isMaximized() ? showNormal() : showMaximized();
-        });
-        connect(closeButton, &QPushButton::clicked, this, &QWidget::close);
-
-        // Create the content container
-        container_ = new QWidget(this);
-        layout_->addWidget(container_);
+        layout_->addWidget(webView_);
 
         // Enable mouse tracking to handle cursor changes for window edges
         setMouseTracking(true);
         titleBar_->setMouseTracking(true);
-        container_->setMouseTracking(true);
 
-        // Enable event handling
+        // Enable mouse event handling
         installEventFilter(this);
         titleBar_->installEventFilter(this);
-        container_->installEventFilter(this);
+    }
+
+    /**
+     * Gets a pointer to the embedded web view.
+     */
+    MainWebView* GetWebView() const
+    {
+        return webView_;
     }
 
     /**
@@ -135,13 +80,19 @@ public:
         }
 
         // Set the content widget
-        // ReSharper disable once CppDFAMemoryLeak (Qt parenting handles cleanup)
         const auto layout = new QVBoxLayout(container_);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(widget);
     }
 
 protected:
+    /**
+     * Handles mouse events for dragging, resizing, and cursor changes of the window shell. 
+     * 
+     * @param object Sender of the event.
+     * @param event Event to process.
+     * @return True if the event was handled by this filter, otherwise false.
+     */
     bool eventFilter(QObject* object, QEvent* event) override
     {
         // Remove/restore window borders on maximize/restore
@@ -231,6 +182,83 @@ protected:
     }
 
 private:
+    QWidget* CreateTitleBar()
+    {
+        // Create title bar
+        const auto bar = new QWidget(this);
+        bar->setFixedHeight(42);
+        bar->setStyleSheet("background: #181512;");
+        bar->setContentsMargins(10, 0, 0, 0);
+
+        // Create the window buttons
+        const auto minimize = CreateTitleBarButton(bar,
+            "window-minimize",
+            QStyle::SP_TitleBarMinButton);
+
+        // TODO: Icon should change when maximized state changes
+        const auto maximize = CreateTitleBarButton(bar,
+            "window-maximize",
+            QStyle::SP_TitleBarMaxButton);
+
+        const auto closeButton = CreateTitleBarButton(bar,
+            "window-close",
+            QStyle::SP_TitleBarCloseButton);
+
+        // Connect window buttons
+        connect(minimize, &QPushButton::clicked, this, &QWidget::showMinimized);
+        connect(maximize, &QPushButton::clicked, this, [&]
+        {
+            isMaximized() ? showNormal() : showMaximized();
+        });
+        connect(closeButton, &QPushButton::clicked, this, &QWidget::close);
+
+        // Populate the title bar layout
+        const auto titleBarLayout = new QHBoxLayout(bar);
+        titleBarLayout->setContentsMargins(0, 0, 0, 0);
+        titleBarLayout->addWidget(CreateLogo(bar));
+        titleBarLayout->addWidget(CreateTitle(bar));
+        titleBarLayout->addStretch();
+        titleBarLayout->addWidget(minimize);
+        titleBarLayout->addWidget(maximize);
+        titleBarLayout->addWidget(closeButton);
+        bar->setLayout(titleBarLayout);
+        
+        return bar;
+    }
+
+    static QWidget* CreateLogo(QWidget* parent)
+    {
+        // Load logo file
+        auto file = QFile(":/Resources/logo.svg");
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            throw std::runtime_error("Failed to open logo.svg");
+        }
+        
+        auto svgData = static_cast<QString>(file.readAll());
+        file.close();
+
+        // Create the logo widget
+        const auto wrapper = new QWidget(parent); // Needed to align the logo to center
+        const auto wrapperLayout = new QHBoxLayout(wrapper);
+        wrapperLayout->setContentsMargins(0, 0, 0, 3);
+        const auto logo = new QSvgWidget(wrapper);
+        svgData.replace("#ffffff", "#837363", Qt::CaseInsensitive);
+        logo->load(svgData.toUtf8());
+        logo->setFixedSize(20, 20);
+        wrapperLayout->addWidget(logo);
+        return wrapper;
+    }
+
+    static QLabel* CreateTitle(QWidget* parent)
+    {
+        const auto title = new QLabel("Flagrum", parent);
+        title->setStyleSheet("color: #837363; font-size: 14px;");
+        title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        title->setContentsMargins(2, 5, 15, 8);
+        return title;
+    }
+    
     /**
      * Creates a window button suitable for the title bar.
      * 

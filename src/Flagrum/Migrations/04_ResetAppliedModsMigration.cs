@@ -8,7 +8,7 @@ using Flagrum.Generators;
 using Flagrum.Application.Features.ModManager.Project;
 using Flagrum.Application.Features.ModManager.Services;
 using Flagrum.Application.Services;
-using Flagrum.ApplicationHost;
+using Flagrum.Host;
 using Flagrum.Services;
 
 namespace Flagrum.Migrations;
@@ -20,7 +20,7 @@ namespace Flagrum.Migrations;
 public partial class ResetAppliedModsMigration(
     ModManagerServiceBase modManager,
     IProfileService profile,
-    ISplashScreen splash)
+    ApplicationHost application)
 {
     private const string Warning = "An unexpected error occurred while attempting to repair potentially broken " +
                                    "modded files for a fix introduced in 1.5.11. Please manually reset your " +
@@ -33,7 +33,7 @@ public partial class ResetAppliedModsMigration(
         if (profile.Current.Type == LuminousGame.FFXV 
             && profile.Current.LastSeenVersion < new Version(1, 5, 11))
         {
-            splash.SetLoadingText("Repairing broken applied mods");
+            application.SetSplashText("Repairing broken applied mods");
             var enabledMods = modManager.Reset();
             foreach (var project in enabledMods)
             {

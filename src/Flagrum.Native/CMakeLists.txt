@@ -3,29 +3,20 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets WebEngineWidgets SvgWidgets)
 
 add_library(Flagrum.Native SHARED
-        Api/NativeApplication.cpp
-        Api/NativeWindow.cpp
-        Api/NativeWebView.cpp
-        Exports/NativeApplication.cpp
-        Exports/NativeWindow.cpp
-        Exports/NativeWebView.cpp
-        Api/NativeWebViewBridge.hpp
-        Api/NativeWebViewDevToolsWindow.hpp
-        Api/NativeDispatcher.hpp
-        Exports/NativeDispatcher.cpp
-        Components/CustomShellWindow.hpp
-        Exports/NativeMessageBox.cpp
-        Exports/NativeFileDialog.cpp
-        Api/NativeSplashWindow.hpp
-        Exports/NativeSplashWindow.cpp
+        Library.cpp
+        Components/ApplicationHost.hpp
+        Components/JavaScriptBridge.hpp
+        Components/MainWebView.hpp
+        Components/MainWindow.hpp
+        Components/SplashScreen.hpp
 )
 
 qt_add_resources(Flagrum.Native "resources"
         PREFIX "/"
         FILES
         Resources/flagrum.ico
-        Resources/logo.svg
         Resources/interop.js
+        Resources/logo.svg
         Resources/Play-Regular.ttf
 )
 

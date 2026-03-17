@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
-using Flagrum.ApplicationHost;
+using Flagrum.Host;
 using Flagrum.Generators;
 using Flagrum.Utilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +35,7 @@ internal static class Program
             .Run();
 
         // Run the application
-        await _services.GetRequiredService<AppHost>().RunAsync(args);
+        await _services.GetRequiredService<ApplicationRunner>().RunAsync(args);
     }
 
     /// <summary>
