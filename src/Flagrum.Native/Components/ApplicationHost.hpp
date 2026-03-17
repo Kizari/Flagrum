@@ -84,7 +84,7 @@ public:
      * 
      * @return Exit code.
      */
-    int Run() const
+    [[nodiscard]] int Run() const
     {
         return application_->exec();
     }
@@ -268,7 +268,7 @@ public:
 
             switch (type)
             {
-                case Information:
+            case Information:
                 QMessageBox::information(parent, title, message);
                 break;
             case Warning:

@@ -22,7 +22,6 @@ class MainWindow final : public QWidget
 private:
     QWidget* titleBar_;
     QVBoxLayout* layout_;
-    QWidget* container_;
     MainWebView* webView_;
 
 public:
@@ -36,7 +35,6 @@ public:
         setWindowTitle("Flagrum");
         resize(1680, 1024);
         setStyleSheet("background: #181512;");
-        move(QApplication::primaryScreen()->geometry().center() - rect().center());
 
         // Create components
         titleBar_ = CreateTitleBar();
@@ -61,28 +59,9 @@ public:
     /**
      * Gets a pointer to the embedded web view.
      */
-    MainWebView* GetWebView() const
+    [[nodiscard]] MainWebView* GetWebView() const
     {
         return webView_;
-    }
-
-    /**
-     * Sets the main content widget for this window.
-     * 
-     * @param widget Widget to set as the window content.
-     */
-    void SetContentWidget(QWidget* widget) const
-    {
-        // Clean up existing content widget if one is already present
-        if (container_->layout())
-        {
-            delete container_->layout();
-        }
-
-        // Set the content widget
-        const auto layout = new QVBoxLayout(container_);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(widget);
     }
 
 protected:
@@ -111,7 +90,7 @@ protected:
         // Handle maximize/restore via double-click on title bar
         if (object == titleBar_ && event->type() == QEvent::MouseButtonDblClick)
         {
-            const auto mouseEvent = static_cast<QMouseEvent*>(event);
+            const auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
             if (mouseEvent->button() == Qt::LeftButton)
             {
                 if (isMaximized())
@@ -131,7 +110,7 @@ protected:
         // TODO: Prevent cursor change here before mouse actually drags
         if (object == titleBar_ && event->type() == QEvent::MouseButtonPress)
         {
-            const auto mouseEvent = static_cast<QMouseEvent*>(event);
+            const auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
             if (mouseEvent->button() == Qt::LeftButton && windowHandle())
             {
                 windowHandle()->startSystemMove();
@@ -148,7 +127,7 @@ protected:
         // Handle window resizing
         if (event->type() == QEvent::MouseButtonPress)
         {
-            const auto mouseEvent = static_cast<QMouseEvent*>(event);
+            const auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
             if (mouseEvent->button() == Qt::LeftButton && windowHandle())
             {
                 const auto edges = HitTestEdges(mouseEvent->position());
@@ -163,7 +142,7 @@ protected:
         // Handle resize cursor change
         if (event->type() == QEvent::MouseMove)
         {
-            const auto mouseEvent = static_cast<QMouseEvent*>(event);
+            const auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
             const auto edges = HitTestEdges(mouseEvent->position());
 
             if (edges == (Qt::TopEdge | Qt::LeftEdge) || edges == (Qt::BottomEdge | Qt::RightEdge))
@@ -314,7 +293,7 @@ private:
      * 
      * @param position Position of the cursor.
      */
-    Qt::Edges HitTestEdges(const QPointF& position) const
+    [[nodiscard]] Qt::Edges HitTestEdges(const QPointF& position) const
     {
         constexpr int thickness = 2;
         Qt::Edges edges;
