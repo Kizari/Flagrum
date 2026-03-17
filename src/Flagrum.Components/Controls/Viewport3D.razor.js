@@ -142,6 +142,7 @@ export function clearMeshes() {
  * @param maxZ Z value of the maximum corner of the model's bounding box.
  */
 export function frameModel(minX, minY, minZ, maxX, maxY, maxZ) {
+    // Compute bounds
     const box = new THREE.Box3(
         new THREE.Vector3(minX, minY, minZ),
         new THREE.Vector3(maxX, maxY, maxZ)
@@ -150,19 +151,42 @@ export function frameModel(minX, minY, minZ, maxX, maxY, maxZ) {
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
     const maxSize = Math.max(size.x, size.y, size.z);
-    const fitHeightDistance = maxSize / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+    
+    // Compute minimum camera distance that fits the model with padding
+    const padding = 1.3; // 30% padding
+    const fitHeightDistance = (maxSize * padding) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
     const fitWidthDistance = fitHeightDistance / camera.aspect;
     const distance = Math.max(fitHeightDistance, fitWidthDistance);
 
-    const direction = new THREE.Vector3(0, 0, 1); // Default viewing direction (front-on)
+    // Compute cinematic camera angle
+    const yaw = THREE.MathUtils.degToRad(30);
+    const pitch = THREE.MathUtils.degToRad(20);
+    const direction = new THREE.Vector3(0, 0, 1) // Default viewing direction (front-on)
+        .applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw) // Rotate slightly to viewer's left
+        .applyAxisAngle(new THREE.Vector3(1, 0, 0), -pitch) // Tilt downward slightly
+        .normalize();
+    
+    // Apply fit and angle to camera
     camera.position.copy(center).add(direction.multiplyScalar(distance));
     camera.near = distance / 100;
     camera.far = distance * 100;
     camera.updateProjectionMatrix();
+    
+    // Offset target to compensate for perspective
+    const targetOffset = new THREE.Vector3(
+        size.x * 0.02,   // Visually shift model slightly left
+        size.y * 0.02,   // Visually shift model slightly downward
+        0
+    );
 
+    const adjustedTarget = center.clone().add(targetOffset);
+
+    // Apply final camera transformation
     if (controls) {
-        controls.target.copy(center);
+        controls.target.copy(adjustedTarget);
         controls.update();
+    } else {
+        camera.lookAt(adjustedTarget);
     }
 }
 
