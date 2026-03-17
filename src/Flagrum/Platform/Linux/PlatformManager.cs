@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -63,7 +64,60 @@ public class PlatformManager : IPlatformManager
     /// <inheritdoc />
     public void SetFileTypeAssociation()
     {
-        // TODO: Implement this
+        var needsUpdate = false;
+        
+        // Ensure directories exist
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var mimeDirectory = Path.Combine(home, ".local", "share", "mime");
+        var applicationsDirectory = Path.Combine(home, ".local", "share", "applications");
+        Directory.CreateDirectory(mimeDirectory);
+        Directory.CreateDirectory(applicationsDirectory);
+
+        // Write the MIME type record
+        var mimePath = Path.Combine(mimeDirectory, "packages", "flagrum.xml");
+        if (!File.Exists(mimePath))
+        {
+            needsUpdate = true;
+            File.WriteAllText(mimePath,
+                """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+                  <mime-type type="application/x-flagrum-mod">
+                    <comment>Flagrum Mod</comment>
+                    <glob pattern="*.fmod"/>
+                  </mime-type>
+                </mime-info>                                                                                    
+                """);
+        }
+
+        // Write the desktop entry
+        var executablePath = Path.Combine(home, ".local", "bin", "flagrum");
+        var desktopPath = Path.Combine(applicationsDirectory, "flagrum.desktop");
+        if (!File.Exists(desktopPath))
+        {
+            needsUpdate = true;
+            File.WriteAllText(desktopPath,
+                $"""
+                [Desktop Entry]
+                Type=Application
+                Name=Flagrum
+                Exec={executablePath} %f
+                MimeType=application/x-flagrum-mod;
+                Icon=flagrum
+                Terminal=false
+                """);
+            
+            // Make the desktop entry executable
+            Process.Start("chmod", $"+x \"{desktopPath}\"");
+        }
+        
+        // Register file type association
+        if (needsUpdate)
+        {
+            Process.Start("xdg-mime", "default flagrum.desktop application/x-flagrum-mod");
+            Process.Start("update-mime-database", mimeDirectory);
+            Process.Start("update-desktop-database", applicationsDirectory);
+        }
     }
 
     /// <inheritdoc />
