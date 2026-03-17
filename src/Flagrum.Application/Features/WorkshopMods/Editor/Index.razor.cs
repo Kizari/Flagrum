@@ -178,7 +178,7 @@ public partial class Index : ComponentBase
     private async Task SelectImage()
     {
         await PlatformService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            "Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)",
             async path =>
             {
                 await WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
@@ -193,7 +193,7 @@ public partial class Index : ComponentBase
     private async Task SelectThumbnail()
     {
         await PlatformService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            "Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)",
             path =>
             {
                 WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
@@ -376,7 +376,7 @@ public partial class Index : ComponentBase
     private async Task SelectModel(int index)
     {
         await PlatformService.OpenFileDialogAsync(
-            "Flagrum Model Data (*.fmd)|*.fmd",
+            "Flagrum Model Data (*.fmd)",
             async path =>
             {
                 FmdFileNames[index] = path.Split('\\', '/').Last();

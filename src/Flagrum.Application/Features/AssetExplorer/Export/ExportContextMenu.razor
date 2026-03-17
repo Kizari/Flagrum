@@ -121,10 +121,10 @@
 
         var filter = item.Type switch
         {
-            ExplorerItemType.Material or ExplorerItemType.Model => "Graphics Binary|*.gfxbin",
-            ExplorerItemType.Texture => "PNG|*.png|Targa|*.tga|DirectDraw Surface|*.dds|Black Texture|*.btex",
-            ExplorerItemType.TerrainTexture => "PNG|*.png|Targa|*.tga|DirectDraw Surface|*.dds|Height Entity Binary|*.heb",
-            ExplorerItemType.Xml => "eXtensible Markup Language|*.xml|Ebony XML (XMB(2))|*.exml",
+            ExplorerItemType.Material or ExplorerItemType.Model => "Graphics Binary (*.gfxbin)",
+            ExplorerItemType.Texture => "PNG (*.png);;Targa (*.tga);;DirectDraw Surface (*.dds);;Black Texture (*.btex)",
+            ExplorerItemType.TerrainTexture => "PNG (*.png);;Targa (*.tga);;DirectDraw Surface (*.dds);;Height Entity Binary (*.heb)",
+            ExplorerItemType.Xml => "eXtensible Markup Language (*.xml);;Ebony XML (*.exml)",
             _ => $"Unknown File|*.{UriHelper.Instance.GetTrueExtensionFromFileName(item.Name).Split('.')[^1]}"
         };
 
@@ -182,7 +182,7 @@
     private async Task ExportEnvironment()
     {
         var item = AssetExplorer.ContextNode;
-        const string filter = "Flagrum Environment Data|*.fed";
+        const string filter = "Flagrum Environment Data (*.fed)";
 
         await PlatformService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
         {
@@ -195,7 +195,7 @@
     private async Task ExportTerrain()
     {
         var item = AssetExplorer.ContextNode;
-        const string filter = "Flagrum Terrain Data|*.ftd";
+        const string filter = "Flagrum Terrain Data (*.ftd)";
 
         await PlatformService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".ftd", filter, async path =>
         {

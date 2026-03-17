@@ -117,7 +117,7 @@
 
     private async Task UpdateFilePath(PackedAssetBuildInstruction instruction)
     {
-        const string filter = "All Files|*.*";
+        const string filter = "All Files (*)";
         await PlatformService.OpenFileDialogAsync(filter, path =>
         {
             instruction.FilePath = path;

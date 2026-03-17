@@ -20,7 +20,7 @@ namespace Flagrum.Application.Features.ModManager.Editor;
 
 public partial class Editor
 {
-    private const string AllFilesFilter = "All Files|*.*";
+    private const string AllFilesFilter = "All Files (*)";
 
     private readonly Timer _timer = new(300);
 

@@ -134,7 +134,7 @@
         }
 
         var defaultName = mod.Name.ToLower().Replace(" ", "_") + ".fmod";
-        const string filter = "Flagrum Mod|*.fmod";
+        const string filter = "Flagrum Mod (*.fmod)";
         await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async savePath =>
         {
             await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
@@ -182,7 +182,7 @@
 
         Modal.Close();
 
-        const string filter = "Flagrum Mod|*.fmod";
+        const string filter = "Flagrum Mod (*.fmod)";
         await PlatformService.OpenSaveFileDialogAsync("modpack.fmod", filter, async savePath =>
         {
             await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));

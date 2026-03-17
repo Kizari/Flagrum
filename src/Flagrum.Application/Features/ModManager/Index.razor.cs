@@ -175,7 +175,7 @@ public sealed partial class Index : ModComponentBase
             return Task.CompletedTask;
         }
 
-        return PlatformService.OpenFileDialogAsync("Flagrum Mod|*.fmod;*.zip", async path => await InstallMod(path));
+        return PlatformService.OpenFileDialogAsync("Flagrum Mod (*.fmod *.zip)", async path => await InstallMod(path));
     }
 
     private async Task InstallMod(string path)

@@ -135,7 +135,7 @@
     private Task SelectImage()
     {
         return PlatformService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
+            "Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)",
             async path =>
             {
                 var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");

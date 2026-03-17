@@ -73,7 +73,7 @@
     {
         var item = ContextNode;
         var defaultName = item.Name + ".gfxbin";
-        const string filter = "Game Model|*.gmdl.gfxbin";
+        const string filter = "Game Model (*.gmdl.gfxbin)";
 
         await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async path =>
         {
