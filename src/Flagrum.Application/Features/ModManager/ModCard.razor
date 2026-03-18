@@ -23,7 +23,7 @@
         style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
         @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Identifier}"))">
         <div class="relative rounded-t mod-card"
-             style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('Images/@(Profile.Current.Id)/@(Mod.Identifier).jpg?@Timestamp')">
+             style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('Images/@(Profile.Current.Id)/@(Mod.Identifier).jpg?v=@Timestamp')">
             @if (ModManagerService.ModsState.GetPinned(Mod.Identifier))
             {
                 <div class="corner-pin"></div>
