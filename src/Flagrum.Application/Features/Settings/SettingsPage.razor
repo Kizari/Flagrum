@@ -4,7 +4,7 @@
 @using Flagrum.Application.Features.Settings.Data
 @implements ILoadingComponent
 
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject IStringLocalizer<SettingsPage> Localizer
 @inject IJSRuntime JSRuntime
 @inject IProfileService Profile
@@ -125,7 +125,7 @@
                                      Size="Textbox.Variant.Stretch"/>
                             <Button Icon="content_copy"
                                     Text="Copy"
-                                    OnClickAsync="() => PlatformService.SetClipboardTextAsync(SteamLaunchOptions)"/>
+                                    OnClick="() => Application.SetClipboardText(SteamLaunchOptions)"/>
                         </div>
                         <small>
                             To apply them, right-click on &quot;FINAL FANTASY XV WINDOWS EDITION&quot; in your Steam
@@ -274,7 +274,7 @@
             Configuration.Set(StateKey.Language, _currentCulture ?? "en-GB");
         }
 
-        PlatformService.Restart();
+        Application.Restart();
     }
 
     private void CancelRestart()
@@ -286,26 +286,24 @@
 
     private async Task GamePathClicked()
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Windows Executable (*.exe)",
-            async path =>
-            {
-                GamePath = path;
-                await InvokeAsync(StateHasChanged);
-                HandlePathState();
-            });
+        var path = Application.OpenFile("Windows Executable (*.exe)");
+        if (path != null)
+        {
+            GamePath = path;
+            await InvokeAsync(StateHasChanged);
+            HandlePathState();
+        }
     }
 
     private async Task BinmodListPathClicked()
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Binmod List (*.list)",
-            async path =>
-            {
-                Profile.Current.BinmodListPath = path;
-                await InvokeAsync(StateHasChanged);
-                HandlePathState();
-            });
+        var path = Application.OpenFile("Binmod List (*.list)");
+        if (path != null)
+        {
+            Profile.Current.BinmodListPath = path;
+            await InvokeAsync(StateHasChanged);
+            HandlePathState();
+        }
     }
 
     private void HandlePathState()

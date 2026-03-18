@@ -1,6 +1,6 @@
 ﻿@using System.IO
 @using Flagrum.Application.Features.Menu.Modals
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject IStringLocalizer<MainMenu> L
 @inject IStringLocalizer<App> AppLocalizer
 @inject IProfileService Profile
@@ -52,7 +52,7 @@
     protected override void OnInitialized()
     {
         ComponentState.OnRefreshMenu += StateHasChanged;
-        var v = PlatformService.GetVersion();
+        var v = Application.Version;
         Version = $"{v.Major}.{v.Minor}.{v.Build}";
     }
 

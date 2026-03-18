@@ -4,10 +4,10 @@
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Entities
 @using Flagrum.Core.Graphics.Terrain
-@using Flagrum.Core.Graphics.Textures
 @using Flagrum.Core.Graphics.Textures.Luminous
 @using Flagrum.Core.Graphics.Textures.Shared
-@inject IPlatformService PlatformService
+
+@inject IApplication Application
 @inject TerrainPacker TerrainPacker
 @inject IStringLocalizer<ExportContextMenu> Localizer
 @inject IProfileService Profile
@@ -138,7 +138,8 @@
             _ => defaultFileName
         };
 
-        await PlatformService.OpenSaveFileDialogAsync(defaultFileName, filter, async path =>
+        var path = Application.SaveFile(filter, defaultFileName);
+        if (path != null)
         {
             byte[] data;
 
@@ -176,7 +177,7 @@
             }
 
             await File.WriteAllBytesAsync(path, data);
-        });
+        }
     }
 
     private async Task ExportEnvironment()
@@ -184,12 +185,13 @@
         var item = AssetExplorer.ContextNode;
         const string filter = "Flagrum Environment Data (*.fed)";
 
-        await PlatformService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
+        var path = Application.SaveFile(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.fed");
+        if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
-            await Task.Run(() => { EnvironmentPacker.Pack(item.Path, path); });
-            await InvokeAsync(() => { AssetExplorer.SetLoading(false); });
-        });
+            await Task.Run(() => EnvironmentPacker.Pack(item.Path, path));
+            await InvokeAsync(() => AssetExplorer.SetLoading(false));
+        }
     }
 
     private async Task ExportTerrain()
@@ -197,31 +199,32 @@
         var item = AssetExplorer.ContextNode;
         const string filter = "Flagrum Terrain Data (*.ftd)";
 
-        await PlatformService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".ftd", filter, async path =>
+        var path = Application.SaveFile(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.ftd");
+        if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
             await Task.Run(() => { TerrainPacker.Pack(item.Path, path); });
             await InvokeAsync(() => AssetExplorer.SetLoading(false));
-        });
+        }
     }
 
     private async Task ExportAnimationClips()
     {
         var item = AssetExplorer.ContextNode;
-        await PlatformService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            async folderPath =>
+        var folderPath = Application.OpenDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+        if (folderPath != null)
+        {
+            await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
+            var data = item.Data;
+            var package = AnimationPackage.FromData(data);
+            foreach (var animation in package.Items)
             {
-                await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
-                var data = item.Data;
-                var package = AnimationPackage.FromData(data);
-                foreach (var animation in package.Items)
-                {
-                    var outPath = Path.Combine(folderPath, $"{package.Items.IndexOf(animation)}.ani");
-                    await File.WriteAllBytesAsync(outPath, animation.Ani);
-                }
+                var outPath = Path.Combine(folderPath, $"{package.Items.IndexOf(animation)}.ani");
+                await File.WriteAllBytesAsync(outPath, animation.Ani);
+            }
 
-                await InvokeAsync(() => AssetExplorer.SetLoading(false));
-            });
+            await InvokeAsync(() => AssetExplorer.SetLoading(false));
+        }
     }
 
     private void OnHiding()

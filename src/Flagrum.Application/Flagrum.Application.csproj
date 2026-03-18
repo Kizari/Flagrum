@@ -17,7 +17,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.*" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.9"/>
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7"/>
-        <PackageReference Include="Quickenshtein" Version="1.5.1" />
+        <PackageReference Include="Quickenshtein" Version="1.5.1"/>
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.4"/>
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0"/>
     </ItemGroup>
@@ -27,23 +27,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <_ContentIncludedByDefault Remove="Components\StandardGroupRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Components\StandardNodeRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Components\StandardPortRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Layout\MainLayout.razor"/>
-        <_ContentIncludedByDefault Remove="Layout\NodeExplorer.razor"/>
-        <_ContentIncludedByDefault Remove="Layout\TypeTreeComponent.razor"/>
-        <_ContentIncludedByDefault Remove="Features\FileInspector\Index.razor"/>
-        <_ContentIncludedByDefault Remove="Features\FileInspector\ObjectInspector.razor"/>
-        <_ContentIncludedByDefault Remove="Features\SequenceEditor\SequenceEditor.razor"/>
-        <_ContentIncludedByDefault Remove="Components\Graph\StandardGroupRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Components\Graph\StandardNodeRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Components\Graph\StandardPortRenderer.razor"/>
-        <_ContentIncludedByDefault Remove="Properties\launchSettings.json"/>
-    </ItemGroup>
-
-
-    <ItemGroup>
         <ProjectReference Include="..\Flagrum.Components\Flagrum.Components.csproj"/>
         <ProjectReference Include="..\Flagrum.Core\Flagrum.Core.csproj"/>
         <ProjectReference Include="..\..\tools\Flagrum.Generators\Flagrum.Generators.csproj"
@@ -51,6 +34,9 @@
                           ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
 
     <ItemGroup>
         <Reference Include="Steamworks.NET">

@@ -38,6 +38,9 @@ public partial class ApplicationHost
     private static partial void ApplicationHost_Exit(IntPtr instance, int exitCode);
     
     [LibraryImport(LibraryPath)]
+    private static partial void ApplicationHost_Post(IntPtr instance, Action action);
+    
+    [LibraryImport(LibraryPath)]
     private static partial void ApplicationHost_Invoke(IntPtr instance, Action action);
     
     [LibraryImport(LibraryPath)]

@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
 using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Core.Utilities;
-using Flagrum.Legacy;
 using Injectio.Attributes;
+using MemoryPack;
 using Microsoft.Extensions.Logging;
+using ZstdSharp;
 
 namespace Flagrum.Migrations;
 
@@ -16,7 +18,7 @@ public partial class SteppedMigrationUpgrader(
     IConfiguration configuration,
     FlagrumDbContext context,
     ILogger<SteppedMigrationUpgrader> logger,
-    MigrationService migrations,
+    LegacyMigrationService migrations,
     IProfileService profile)
 {
     public void Run()
@@ -128,6 +130,47 @@ public partial class SteppedMigrationUpgrader(
                 // Not a huge deal if some txt files are left behind so just let it fail and move on
                 logger.LogError(exception, "Failed to delete old log files");
             }
+        }
+    }
+}
+
+/// <summary>
+/// Empty class used to differentiate parameterless constructors from service container constructors
+/// in types that need a parameterless constructor for deserialization.
+/// </summary>
+public class DummyService;
+
+/// <summary>
+/// Old version of the migration service, retained for migration purposes.
+/// </summary>
+[MemoryPackable]
+[RegisterSingleton<LegacyMigrationService>]
+public partial class LegacyMigrationService
+{
+    [MemoryPackConstructor]
+    public LegacyMigrationService() { }
+
+    public LegacyMigrationService(DummyService dummy)
+    {
+        if (File.Exists(FilePath))
+        {
+            var buffer = File.ReadAllBytes(FilePath);
+            var decompressor = new Decompressor();
+            var self = this;
+            MemoryPackSerializer.Deserialize(decompressor.Unwrap(buffer), ref self,
+                MemoryPackSerializerOptions.Utf8);
+        }
+    }
+
+    private static string FilePath => Path.Combine(IOHelper.LocalApplicationData, "Flagrum", "migrations.fms");
+
+    [MemoryPackInclude] public HashSet<Guid> Completed { get; set; } = [];
+
+    public void Delete()
+    {
+        if (File.Exists(FilePath))
+        {
+            File.Delete(FilePath);
         }
     }
 }

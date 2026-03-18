@@ -9,7 +9,6 @@ using Flagrum.Application.Features.ModManager.Project;
 using Flagrum.Application.Features.ModManager.Services;
 using Flagrum.Application.Services;
 using Flagrum.Host;
-using Flagrum.Services;
 
 namespace Flagrum.Migrations;
 

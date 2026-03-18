@@ -2,13 +2,13 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Flagrum.Utilities;
+using Flagrum.Components;
 using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 
-namespace Flagrum.Host.WebView;
+namespace Flagrum.Host;
 
 /// <summary>
 /// A web view control that hosts Blazor applications.
@@ -16,7 +16,6 @@ namespace Flagrum.Host.WebView;
 [RegisterSingleton<BlazorWebView>]
 public sealed class BlazorWebView
 {
-    private readonly BlazorWebViewDispatcher _dispatcher;
     private readonly BlazorWebViewManager _webViewManager;
     private readonly ApplicationHost _application;
 
@@ -32,12 +31,11 @@ public sealed class BlazorWebView
         BlazorWebViewDispatcher dispatcher)
     {
         _application = application;
-        _dispatcher = dispatcher;
         _webViewManager = new BlazorWebViewManager(
             serviceProvider,
             fileProvider,
             configStore,
-            _dispatcher,
+            dispatcher,
             scheduler,
             this);
 

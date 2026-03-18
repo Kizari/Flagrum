@@ -8,7 +8,7 @@
 @using Index = Index
 @inject IStringLocalizer<Editor> EditorLocalizer
 @inject IStringLocalizer<ModCardModal> Localizer
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject NavigationManager Navigation
 @inject IProfileService Profile
 @inject ModManagerServiceBase ModManagerService
@@ -132,20 +132,19 @@
         Modal.Open();
     }
 
-    private Task SelectImage()
+    private async Task SelectImage()
     {
-        return PlatformService.OpenFileDialogAsync(
-            "Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)",
-            async path =>
-            {
-                var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");
-                using var image = await Image.LoadAsync(path);
-                image.ResizeFill(326, 170);
-                await image.SaveAsJpegAsync(previewPath);
+        var path = Application.OpenFile("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        if (path != null)
+        {
+            var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");
+            using var image = await Image.LoadAsync(path);
+            image.ResizeFill(326, 170);
+            await image.SaveAsJpegAsync(previewPath);
 
-                ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
-                await InvokeAsync(StateHasChanged);
-            });
+            ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task Submit()

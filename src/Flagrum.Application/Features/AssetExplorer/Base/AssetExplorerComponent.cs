@@ -12,7 +12,7 @@ public class AssetExplorerComponent : ComponentBase
 
     [Inject] protected IStringLocalizer<Index> Localizer { get; set; }
 
-    [Inject] protected IPlatformService PlatformService { get; set; }
+    [Inject] protected IApplication Application { get; set; }
 
     [Inject] protected IFileIndex FileIndex { get; set; }
 

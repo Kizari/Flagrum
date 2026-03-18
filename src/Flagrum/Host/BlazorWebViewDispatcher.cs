@@ -6,7 +6,7 @@ using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView;
 
-namespace Flagrum.Host.WebView;
+namespace Flagrum.Host;
 
 // TODO: This was taken from another of my project's where queuing was necessary
 //       However, it may not be here since Qt uses its own queue internally
@@ -64,7 +64,7 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher, IDisposable
                 break;
             }
 
-            // Invoke the action on the main thread
+            // Post the action to the UI thread
             _application.Invoke(next.Execute);
         }
     }

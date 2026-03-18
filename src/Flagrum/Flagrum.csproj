@@ -12,7 +12,6 @@
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
         <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
         <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
         <LangVersion>preview</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <SelfContained>true</SelfContained>
@@ -31,39 +30,30 @@
     </ItemGroup>
 
     <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
-        <Compile Remove="Platform\Windows\**\*.cs"/>
-
-        <!-- Copy Drautos to the output directory on Linux as it won't be by default being a Windows dll -->
-        <!-- This is still needed as it is injected into the Windows game that's running under Proton. -->
-        <Content Include="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
+        <Compile Remove="Platform\Windows\**\*.cs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
-        <PackageReference Include="Velopack" Version="0.0.320"/>
-        <PackageReference Include="Drautos" Version="1.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8" />
+        <PackageReference Include="Velopack" Version="0.0.320" />
+        <PackageReference Include="Drautos" Version="1.0.0" />
     </ItemGroup>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
     <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-        <PackageReference Include="Flagrum.Premium" Version="1.0.4"/>
+        <PackageReference Include="Flagrum.Premium" Version="1.0.4" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\tools\Flagrum.Generators\Flagrum.Generators.csproj"
                           OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"/>
-        <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj"/>
-        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj"/>
+                          ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj" />
+        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="steam_appid.txt">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <None Update="steam_api64.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -76,57 +66,19 @@
         <Content Include="Resources\Textures\teal.btex">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\Play-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\app.css">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\index.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\interop.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <None Remove="Resources\earc.png"/>
+        <None Remove="Resources\earc.png" />
         <Content Include="Resources\earc.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <None Remove="Resources\Play-Regular.ttf"/>
-        <Resource Include="Assets\logo_outlined.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
+        <None Remove="Resources\Play-Regular.ttf" />
         <None Update="libnvtt.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
     <ItemGroup>
-        <Resource Include="Assets\patreon.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <Resource Include="Assets\Play-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <None Remove="Resources\logo.png"/>
-        <Resource Include="Resources\logo.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <None Remove="Resources\logo_outlined.png"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json"/>
-        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json" />
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json" />
     </ItemGroup>
 
     <!-- Automatically generate `SolutionInfo` class before build -->
@@ -135,6 +87,29 @@
                 File="Generated/SolutionInfo.g.cs"
                 Lines="/// &lt;auto-generated /&gt;%0A%0Anamespace Flagrum%3B%0A%0Apublic static class Build%0A{%0A%20%20%20%20public const string SolutionDirectory = &quot;$(SolutionDir)&quot;%3B%0A}"
                 Overwrite="true"/>
+    </Target>
+
+    <!-- Automatically generate "steam_appid.txt" after build (Steamworks relies on this) -->
+    <Target Name="GenerateSteamAppId" AfterTargets="Build">
+        <WriteLinesToFile File="$(OutputPath)steam_appid.txt"
+                          Lines="637650"
+                          Overwrite="true" />
+    </Target>
+
+    <!-- Copy additional dependencies into the output directory -->
+    <Target Name="CopyAdditionalDependencies" Condition="$([MSBuild]::IsOSPlatform('Linux'))" AfterTargets="Build">
+        <!-- Copy Linux libs to output directory -->
+        <CreateItem Include="$(SolutionDir)libs/linux-x64/**">
+            <Output TaskParameter="Include" ItemName="LinuxLibs" />
+        </CreateItem>
+        <Copy SourceFiles="@(LinuxLibs)"
+              DestinationFiles="@(LinuxLibs->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true" />
+        <!-- Copy Drautos to the output directory on Linux as it won't be by default being a Windows dll -->
+        <!-- This is still needed as it is injected into the Windows game that's running under Proton. -->
+        <Copy SourceFiles="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll"
+              DestinationFiles="$(OutputPath)Drautos.dll"
+              SkipUnchangedFiles="true"/>
     </Target>
 
 </Project>

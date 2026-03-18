@@ -1,12 +1,20 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
+using Flagrum.Application.Services;
+using Flagrum.Core.Utilities;
 using Flagrum.Host;
 using Flagrum.Generators;
-using Flagrum.Utilities;
+using Flagrum.Migrations;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using NuGet.Versioning;
+using Serilog;
+using Serilog.Events;
 using Velopack;
 
 namespace Flagrum;
@@ -24,7 +32,8 @@ internal static class Program
     {
         // Program setup
         CrashHelper.Initialize();
-        _services = ServiceHelper.ConfigureServices();
+        InitializeLogging();
+        _services = ConfigureServices();
 
         // Initialize Velopack
         VelopackApp.Build()
@@ -36,6 +45,42 @@ internal static class Program
 
         // Run the application
         await _services.GetRequiredService<ApplicationRunner>().RunAsync(args);
+    }
+
+    /// <summary>
+    /// Initializes logging for the application.
+    /// </summary>
+    private static void InitializeLogging()
+    {
+        // Set up Serilog to write to log files that roll over daily
+        var logDirectory = Path.Combine(IOHelper.LocalApplicationData, "Flagrum", "logs");
+        IOHelper.EnsureDirectoryExists(logDirectory);
+        var path = Path.Combine(logDirectory, "log-.txt");
+
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.File(path, LogEventLevel.Information, rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+    }
+    
+    /// <summary>
+    /// Sets up IoC for the application.
+    /// </summary>
+    private static IServiceProvider ConfigureServices()
+    {
+        // Populate the service collection
+        var services = new ServiceCollection()
+            .AddLogging(l => l.AddSerilog())
+            .AddSingleton<IProfileService, ProfileService>()
+            .AddSingleton<AppStateService>()
+            .AddSingleton<JSComponentConfigurationStore>()
+            .AddSingleton<IFileProvider>(_ => new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
+            .AddBlazorWebView()
+            .AddFlagrum()
+            .AddFlagrumApplicationManual()
+            .AddDataMigrations();
+
+        return services.BuildServiceProvider();
     }
 
     /// <summary>

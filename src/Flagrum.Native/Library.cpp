@@ -24,6 +24,11 @@ EXPORT void ApplicationHost_Exit(ApplicationHost* instance, const int exitCode)
     instance->Exit(exitCode);
 }
 
+EXPORT void ApplicationHost_Post(ApplicationHost* instance, Action action)
+{
+    instance->Post(action);
+}
+
 EXPORT void ApplicationHost_Invoke(ApplicationHost* instance, Action action)
 {
     instance->Invoke(action);

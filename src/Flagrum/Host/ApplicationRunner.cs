@@ -7,13 +7,13 @@ using Flagrum.Abstractions.Application;
 using Flagrum.Abstractions.ModManager;
 using Flagrum.Application;
 using Flagrum.Application.Services;
-using Flagrum.Host.WebView;
+using Flagrum.Components;
 using Flagrum.Migrations;
-using Flagrum.Services;
-using Flagrum.Utilities;
 using Injectio.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Velopack;
+using Velopack.Sources;
 
 namespace Flagrum.Host;
 
@@ -27,7 +27,6 @@ public class ApplicationRunner(
     ApplicationHost application,
     SteppedMigrationUpgrader migrationUpgrader,
     IGameLauncher launcher,
-    UpdateService updater,
     MigrationRunner migrations,
     AppStateService appState,
     IPlatformManager platform,
@@ -41,7 +40,7 @@ public class ApplicationRunner(
         // Handle file association
         if (args.Length == 1 && args[0].EndsWith(".fmod", StringComparison.OrdinalIgnoreCase))
         {
-            application.FmodPath = args[0];
+            application.AssociatedFile = args[0];
         }
 
         // Handle game launch mode
@@ -90,7 +89,7 @@ public class ApplicationRunner(
         application.OpenSplash();
 
         // Check for updates
-        if (await updater.TryUpdate())
+        if (await TryUpdateAsync())
         {
             await Log.CloseAndFlushAsync();
             return; // Application is restarting, finish here
@@ -175,5 +174,40 @@ public class ApplicationRunner(
         {
             // Ignore silently, not important
         }
+    }
+    
+    /// <summary>
+    /// Attempts to update the application.
+    /// </summary>
+    /// <returns><c>true</c> if an update was applied, otherwise <c>false</c>.</returns>
+    private async Task<bool> TryUpdateAsync()
+    {
+        try
+        {
+            application.SetSplashText("Checking for updates");
+
+            // Check for updates
+            var github = new GithubSource("https://github.com/Kizari/Flagrum", null, false);
+            var manager = new UpdateManager(github);
+            var newVersion = await manager.CheckForUpdatesAsync();
+
+            // Download and apply updates if any were available
+            if (newVersion != null)
+            {
+                application.SetSplashText("Downloading updates");
+                await manager.DownloadUpdatesAsync(newVersion);
+                application.SetSplashText("Updating Flagrum");
+                manager.ApplyUpdatesAndRestart();
+                return true;
+            }
+        }
+        catch
+        {
+            // Not much to be done if this fails, most likely due to no internet or user blocking the update URL
+            // Let Flagrum continue as normal
+        }
+
+        application.SetSplashText("Loading");
+        return false;
     }
 }

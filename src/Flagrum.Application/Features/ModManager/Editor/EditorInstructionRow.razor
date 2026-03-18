@@ -1,4 +1,4 @@
-﻿@inject IPlatformService PlatformService
+﻿@inject IApplication Application
 @inject IStringLocalizer<Editor> Localizer
 @inject IProfileService Profile
 @using Flagrum.Abstractions.ModManager
@@ -62,7 +62,7 @@
                     <div>/@firstPath.Split('/').Last()</div>
                 </div>
                 <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                      @onclick="() => PlatformService.SetClipboardTextAsync(firstPath)">
+                      @onclick="() => Application.SetClipboardText(firstPath)">
                     content_copy
                 </span>
                 <br/>
@@ -70,7 +70,7 @@
                     <div>@string.Join('\\', secondPath.Split('\\')[..^1])</div>
                     <div>\@secondPath.Split('\\').Last()</div>
                     <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                          @onclick="() => PlatformService.SetClipboardTextAsync(secondPath)">
+                          @onclick="() => Application.SetClipboardText(secondPath)">
                         content_copy
                     </span>
                     <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
@@ -84,7 +84,7 @@
                     <div>@string.Join('/', packed.Uri.Split('/')[..^1])</div>
                     <div>/@packed.Uri.Split('/').Last()</div>
                     <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                          @onclick="() => PlatformService.SetClipboardTextAsync(packed.Uri)">
+                          @onclick="() => Application.SetClipboardText(packed.Uri)">
                         content_copy
                     </span>
                 </div>
@@ -117,13 +117,13 @@
 
     private async Task UpdateFilePath(PackedAssetBuildInstruction instruction)
     {
-        const string filter = "All Files (*)";
-        await PlatformService.OpenFileDialogAsync(filter, path =>
+        var path = Application.OpenFile();
+        if (path != null)
         {
             instruction.FilePath = path;
             instruction.FileLastModified = 0;
             Parent.SetHasChanged();
-            return InvokeAsync(StateHasChanged);
-        });
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }

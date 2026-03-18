@@ -6,7 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Core.Utilities;
 
-namespace Flagrum.Utilities;
+namespace Flagrum.Host;
+
+public class OffMainThreadException : Exception;
 
 public static class CrashHelper
 {

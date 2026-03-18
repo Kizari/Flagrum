@@ -115,15 +115,14 @@ public sealed partial class Index : ModComponentBase
     {
         if (firstRender)
         {
-            var fmodPath = PlatformService.GetFmodPath();
-            if (fmodPath != null)
+            if (Application.AssociatedFile != null)
             {
                 Prompt.Title = "Install Mod";
                 Prompt.Heading = "Do you wish to install this mod?";
-                Prompt.Subtext = fmodPath.Split('\\').Last();
-                Prompt.OnYes = async () => await InstallMod(fmodPath);
+                Prompt.Subtext = Application.AssociatedFile.Split('/', '\\').Last();
+                Prompt.OnYes = async () => await InstallMod(Application.AssociatedFile);
                 Prompt.Open();
-                PlatformService.ClearFmodPath();
+                Application.AssociatedFile = null;
             }
         }
     }
@@ -165,17 +164,21 @@ public sealed partial class Index : ModComponentBase
         Configuration.Set(StateKey.CurrentEarcEnabledState, state);
     }
 
-    private Task Install()
+    private async Task Install()
     {
         if (Profile.IsGameRunning())
         {
             Alert.Open("Error", "The Game is Running",
                 "Flagrum cannot install mods while the game is running. Please save and close down the game, then try again.",
                 null);
-            return Task.CompletedTask;
+            return;
         }
 
-        return PlatformService.OpenFileDialogAsync("Flagrum Mod (*.fmod *.zip)", async path => await InstallMod(path));
+        var path = Application.OpenFile("Flagrum Mod (*.fmod *.zip)");
+        if (path != null)
+        {
+            await InstallMod(path);
+        }
     }
 
     private async Task InstallMod(string path)

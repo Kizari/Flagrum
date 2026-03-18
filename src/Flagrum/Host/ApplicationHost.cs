@@ -1,8 +1,11 @@
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Flagrum.Host.WebView;
+using Flagrum.Abstractions;
 using Injectio.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Host;
@@ -16,16 +19,20 @@ public delegate void WebMessageReceivedCallback(string message);
 /// Native components that host the .NET/Blazor parts of the program.
 /// </summary>
 [RegisterSingleton<ApplicationHost>]
-public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : IDisposable
+[RegisterSingleton<IApplication>(Factory = nameof(Factory))]
+public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : IApplication
 {
     private readonly IntPtr _instance = ApplicationHost_Create();
     
     private WebMessageReceivedCallback? _onWebMessageReceived;
+
+    public static IApplication Factory(IServiceProvider provider) => provider.GetRequiredService<ApplicationHost>();
+
+    /// <inheritdoc />
+    public Version Version => typeof(Program).Assembly.GetName().Version!;
     
-    /// <summary>
-    /// Path to the mod that Flagrum was opened with, if any.
-    /// </summary>
-    public string? FmodPath { get; set; }
+    /// <inheritdoc />
+    public string? AssociatedFile { get; set; }
 
     /// <inheritdoc />
     public void Dispose()
@@ -46,6 +53,45 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
     /// <param name="exitCode">Exit code to return to <see cref="Run"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Exit(int exitCode) => ApplicationHost_Exit(_instance, exitCode);
+    
+    /// <inheritdoc />
+    public void Restart()
+    {
+        // Determine path to the Flagrum executable
+        var executablePath = Path.Combine(Directory.GetCurrentDirectory(), "Flagrum");
+        if (!File.Exists(executablePath))
+        {
+            executablePath += ".exe";
+        }
+
+        // Restart as a new process
+        Exit(0);
+        Process.Start(executablePath);
+    }
+
+    /// <summary>
+    /// Queues up an action to be executed on the UI thread.
+    /// </summary>
+    /// <param name="action">Action to execute.</param>
+    /// <remarks>
+    /// <paramref name="action"/> is automatically wrapped in a try/catch block to ensure that any
+    /// exceptions that occur during operation do not cross the native boundary.
+    /// Since the exception can't be rethrown, it's simply logged instead.
+    /// </remarks>
+    public void Post(Action action)
+    {
+        ApplicationHost_Post(_instance, () =>
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Exception occurred during UI thread invocation");
+            }
+        });
+    }
 
     /// <summary>
     /// Invokes an action on the UI thread.
@@ -127,10 +173,7 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RunJavaScript(string script) => ApplicationHost_RunJavaScript(_instance, script);
 
-    /// <summary>
-    /// Copies the given text into the system's clipboard.
-    /// </summary>
-    /// <param name="text">Text to copy.</param>
+    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetClipboardText(string text) => ApplicationHost_SetClipboardText(_instance, text);
 
@@ -144,14 +187,11 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
     public void ShowMessageBox(string title, string message, MessageBoxType type) =>
         ApplicationHost_ShowMessageBox(_instance, title, message, type);
 
-    /// <summary>
-    /// Shows an open file dialog.
-    /// </summary>
-    /// <param name="caption">Dialog title.</param>
-    /// <param name="initialDirectory">Directory to show in the dialog when it first appears.</param>
-    /// <param name="filter">Windows-style file type filter string.</param>
-    /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
-    public string? OpenFile(string caption, string initialDirectory, string filter)
+    /// <inheritdoc />
+    public string? OpenFile(
+        string filter = IApplication.AllFilesFilter, 
+        string? initialDirectory = null, 
+        string caption = "Open File")
     {
         var pResult = Marshal.AllocHGlobal(4096);
         ApplicationHost_OpenFile(_instance, caption, initialDirectory, filter, pResult);
@@ -160,14 +200,11 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
         return string.IsNullOrWhiteSpace(result) ? null : result;
     }
     
-    /// <summary>
-    /// Shows a save file dialog.
-    /// </summary>
-    /// <param name="caption">Dialog title.</param>
-    /// <param name="initialDirectory">Directory to show in the dialog when it first appears.</param>
-    /// <param name="filter">Windows-style file type filter string.</param>
-    /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
-    public string? SaveFile(string caption, string initialDirectory, string filter)
+    /// <inheritdoc />
+    public string? SaveFile(
+        string filter = IApplication.AllFilesFilter,
+        string? initialDirectory = null,
+        string caption = "Save File")
     {
         var pResult = Marshal.AllocHGlobal(4096);
         ApplicationHost_SaveFile(_instance, caption, initialDirectory, filter, pResult);
@@ -176,18 +213,19 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
         return string.IsNullOrWhiteSpace(result) ? null : result;
     }
     
-    /// <summary>
-    /// Shows a directory selection dialog.
-    /// </summary>
-    /// <param name="caption">Dialog title.</param>
-    /// <param name="initialDirectory">Directory to show in the dialog when it first appears.</param>
-    /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the directory.</returns>
-    public string? OpenDirectory(string caption, string initialDirectory)
+    /// <inheritdoc />
+    public string? OpenDirectory(string? initialDirectory = null, string caption = "Select Folder")
     {
         var pResult = Marshal.AllocHGlobal(4096);
         ApplicationHost_OpenDirectory(_instance, caption, initialDirectory, pResult);
         var result = Marshal.PtrToStringUTF8(pResult);
         Marshal.FreeHGlobal(pResult);
         return string.IsNullOrWhiteSpace(result) ? null : result;
+    }
+    
+    /// <inheritdoc />
+    public void RefreshPatreonButton()
+    {
+        // TODO: Implement this
     }
 }

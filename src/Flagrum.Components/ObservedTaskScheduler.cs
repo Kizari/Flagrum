@@ -1,15 +1,10 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Injectio.Attributes;
 using Microsoft.Extensions.Logging;
 
-namespace Flagrum.Utilities;
+namespace Flagrum.Components;
 
 /// <summary>
 /// Handles scheduling tasks in such a way that exceptions are observed when the task is not awaited.
 /// </summary>
-[RegisterTransient<ObservedTaskScheduler>]
 public class ObservedTaskScheduler(ILogger<ObservedTaskScheduler> logger)
 {
     /// <summary>

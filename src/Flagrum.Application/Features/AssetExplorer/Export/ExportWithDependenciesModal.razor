@@ -8,7 +8,7 @@
 @using Flagrum.Core.Graphics.Textures.Luminous
 @using Flagrum.Core.Graphics.Textures.Shared
 @using Flagrum.Core.Utilities
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject IStringLocalizer<ExportWithDependenciesModal> L
 @inject AppStateService AppState
 @inject IProfileService Profile
@@ -75,7 +75,8 @@
         var defaultName = item.Name + ".gfxbin";
         const string filter = "Game Model (*.gmdl.gfxbin)";
 
-        await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async path =>
+        var path = Application.SaveFile(filter, defaultName);
+        if (path != null)
         {
             await InvokeAsync(() =>
             {
@@ -180,7 +181,7 @@
             }
 
             await InvokeAsync(() => Parent.SetLoading(false));
-        });
+        }
     }
 
     private byte[] ProcessHighTextures(GameMaterial material, string highTexturePackUri, string directory, Dictionary<string, byte[]> textures, bool is4K)

@@ -13,7 +13,7 @@
 @using Flagrum.Core.Graphics.Textures.Shared
 @using Flagrum.Core.Utilities
 @using FileIndexNode = Flagrum.Application.Features.AssetExplorer.Indexing.FileIndexNode
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject IStringLocalizer<ExportFolderModal> Localizer
 @inject AppStateService AppState
 @inject IProfileService Profile
@@ -270,8 +270,11 @@
     {
         if (Parent.CurrentView == AssetExplorerView.GameView)
         {
-            await PlatformService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                async folder => await InvokeAsync(() => DoExport(folder)));
+            var folder = Application.OpenDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+            if (folder != null)
+            {
+                await InvokeAsync(() => DoExport(folder));
+            }
         }
         else
         {

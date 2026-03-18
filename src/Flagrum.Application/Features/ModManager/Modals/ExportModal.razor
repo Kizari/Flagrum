@@ -7,7 +7,7 @@
 @using Index = Index
 @inject ModManagerServiceBase ModManagerService
 @inject IProfileService Profile
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject AppStateService AppState
 
 <AutosizeModal @ref="Modal">
@@ -135,7 +135,8 @@
 
         var defaultName = mod.Name.ToLower().Replace(" ", "_") + ".fmod";
         const string filter = "Flagrum Mod (*.fmod)";
-        await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async savePath =>
+        var savePath = Application.SaveFile(filter, defaultName);
+        if (savePath != null)
         {
             await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
 
@@ -156,7 +157,7 @@
             });
 
             await InvokeAsync(() => Parent.SetLoading(false));
-        });
+        }
     }
 
     private async Task ExportModPack()
@@ -183,7 +184,8 @@
         Modal.Close();
 
         const string filter = "Flagrum Mod (*.fmod)";
-        await PlatformService.OpenSaveFileDialogAsync("modpack.fmod", filter, async savePath =>
+        var savePath = Application.SaveFile(filter, "modpack.fmod");
+        if (savePath != null)
         {
             await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
 
@@ -224,6 +226,6 @@
             });
 
             await InvokeAsync(() => Parent.SetLoading(false));
-        });
+        }
     }
 }

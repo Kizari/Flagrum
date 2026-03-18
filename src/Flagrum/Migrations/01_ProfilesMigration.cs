@@ -7,7 +7,6 @@ using Flagrum.Application.Persistence;
 using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Host;
-using Flagrum.Services;
 
 namespace Flagrum.Migrations;
 

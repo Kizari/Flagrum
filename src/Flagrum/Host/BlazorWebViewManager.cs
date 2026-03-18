@@ -4,13 +4,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Flagrum.Utilities;
+using Flagrum.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 
-namespace Flagrum.Host.WebView;
+namespace Flagrum.Host;
 
 /// <inheritdoc cref="WebViewManager" />
 public class BlazorWebViewManager : WebViewManager

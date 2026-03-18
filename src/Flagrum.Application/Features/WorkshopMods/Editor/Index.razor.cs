@@ -28,7 +28,7 @@ public partial class Index : ComponentBase
     [Inject] private BinmodTypeHelper BinmodTypeHelper { get; set; }
     [Inject] private IProfileService Profile { get; set; }
     [Inject] private NavigationManager Navigation { get; set; }
-    [Inject] private IPlatformService PlatformService { get; set; }
+    [Inject] private IApplication Application { get; set; }
     [Inject] private ModelReplacementPresets ReplacementPresets { get; set; }
     [Inject] private BinmodBuilder BinmodBuilder { get; set; }
     [Inject] private Modmeta Modmeta { get; set; }
@@ -177,34 +177,30 @@ public partial class Index : ComponentBase
 
     private async Task SelectImage()
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)",
-            async path =>
+        var path = Application.OpenFile("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        if (path != null)
+        {
+            await WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
             {
-                await WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
-                {
-                    // This jank is required or the UI won't update the image if the value hasn't changed
-                    ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
-                    await InvokeAsync(StateHasChanged);
-                });
+                // This jank is required or the UI won't update the image if the value hasn't changed
+                ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
+                await InvokeAsync(StateHasChanged);
             });
+        }
     }
 
     private async Task SelectThumbnail()
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)",
-            path =>
+        var path = Application.OpenFile("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        if (path != null)
+        {
+            await WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
             {
-                WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
-                {
-                    // This jank is required or the UI won't update the image if the value hasn't changed
-                    ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
-                    await InvokeAsync(StateHasChanged);
-                });
-
-                return Task.CompletedTask;
+                // This jank is required or the UI won't update the image if the value hasn't changed
+                ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
+                await InvokeAsync(StateHasChanged);
             });
+        }
     }
 
     private void Delete()
@@ -375,39 +371,38 @@ public partial class Index : ComponentBase
 
     private async Task SelectModel(int index)
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Flagrum Model Data (*.fmd)",
-            async path =>
+        var path = Application.OpenFile("Flagrum Model Data (*.fmd)");
+        if (path != null)
+        {
+            FmdFileNames[index] = path.Split('\\', '/').Last();
+            WorkshopModBuildContext.ProcessFmd(index, path);
+            Mod.ModDirectoryName = Mod.Uuid;
+            Mod.ModelName = path.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+
+            HasSelectedDataForModel[index] = true;
+
+            if (ModelCount == 1)
             {
-                FmdFileNames[index] = path.Split('\\', '/').Last();
-                WorkshopModBuildContext.ProcessFmd(index, path);
-                Mod.ModDirectoryName = Mod.Uuid;
-                Mod.ModelName = path.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+                CanSave = true;
+            }
+            else
+            {
+                CanSave = HasSelectedDataForModel[0] && HasSelectedDataForModel[1];
+            }
 
-                HasSelectedDataForModel[index] = true;
+            if (IsNew && CanSave && Mod.Type == (int)WorkshopModType.StyleEdit)
+            {
+                var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
+                var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";
+                File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
+                var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
+                WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
 
-                if (ModelCount == 1)
-                {
-                    CanSave = true;
-                }
-                else
-                {
-                    CanSave = HasSelectedDataForModel[0] && HasSelectedDataForModel[1];
-                }
+                // This jank is required or the UI won't update the image if the value hasn't changed
+                ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
+            }
 
-                if (IsNew && CanSave && Mod.Type == (int)WorkshopModType.StyleEdit)
-                {
-                    var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
-                    var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";
-                    File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
-                    var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
-                    WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
-
-                    // This jank is required or the UI won't update the image if the value hasn't changed
-                    ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
-                }
-
-                await InvokeAsync(StateHasChanged);
-            });
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }

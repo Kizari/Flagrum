@@ -20,7 +20,6 @@ using Flagrum.Application.Persistence.Entities;
 using Flagrum.Application.Services;
 using Flagrum.Application.Utilities;
 using Flagrum.Host;
-using Flagrum.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

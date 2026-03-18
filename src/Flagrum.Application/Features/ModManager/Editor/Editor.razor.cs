@@ -132,7 +132,8 @@ public partial class Editor
     {
         if (!CheckDuplicateFile(uri))
         {
-            await PlatformService.OpenFileDialogAsync(AllFilesFilter, async file =>
+            var file = Application.OpenFile();
+            if (file != null)
             {
                 // Create the replacement instruction
                 var archive = TryAddArchiveByAsset(uri);
@@ -148,7 +149,7 @@ public partial class Editor
                     Modal.Close();
                     StateHasChanged();
                 });
-            });
+            }
         }
     }
 
