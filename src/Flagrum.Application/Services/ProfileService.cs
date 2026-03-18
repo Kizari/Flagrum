@@ -261,6 +261,7 @@ public class ProfileService : IProfileService
         return new EbonyArchive(absolutePath);
     }
 
+    // TODO: Handle for Linux
     private void TrySetDefaultGamePath()
     {
         if (Current.GamePath == null && Current.Type == LuminousGame.FFXV)
@@ -285,6 +286,7 @@ public class ProfileService : IProfileService
         }
     }
 
+    // TODO: Handle for Linux
     private void TrySetDefaultBinmodListPath()
     {
         if (Current.BinmodListPath == null && Current.Type == LuminousGame.FFXV)

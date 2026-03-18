@@ -74,7 +74,7 @@ public class Fmod
                          or LegacyModBuildInstruction.ReplacePackedFile
                          or LegacyModBuildInstruction.AddToPackedTextureArray)))
         {
-            var path = $@"{earcModDirectory}\{++index}.ffg";
+            var path = Path.Combine(earcModDirectory, $"{++index}.ffg");
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
             stream.Seek((long)(_offset + DataOffset + file.DataOffset), SeekOrigin.Begin);
             stream.CopyTo(fileStream, file.Size);
@@ -82,7 +82,7 @@ public class Fmod
 
         foreach (var file in Files)
         {
-            var path = $@"{earcModDirectory}\{file.FileName}";
+            var path = Path.Combine(earcModDirectory, file.FileName);
             using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
             stream.Seek((long)(_offset + DataOffset + file.DataOffset), SeekOrigin.Begin);
             stream.CopyTo(fileStream, file.Size);

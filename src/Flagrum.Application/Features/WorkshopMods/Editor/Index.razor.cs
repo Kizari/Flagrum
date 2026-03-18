@@ -124,12 +124,12 @@ public partial class Index : ComponentBase
         if (previewBytes.Length > 0)
         {
             WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
-            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", previewBytes);
+            File.WriteAllBytes(Path.Combine(IOHelper.GetWebRoot(), "images", "current_preview.png"), previewBytes);
         }
         else
         {
-            var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
-            var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+            var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "preview.png");
+            var currentPreviewPath = Path.Combine(IOHelper.GetWebRoot(), "images", "current_preview.png");
             File.Copy(defaultPreviewPath, currentPreviewPath, true);
             previewBytes = File.ReadAllBytes(defaultPreviewPath);
             WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
@@ -224,7 +224,9 @@ public partial class Index : ComponentBase
             Mod.GameMenuTitle = null;
         }
 
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", WorkshopModBuildContext.PreviewImage);
+        File.WriteAllBytes(
+            Path.Combine(IOHelper.GetWebRoot(), "images", $"{Mod.Uuid}.png"), 
+            WorkshopModBuildContext.PreviewImage);
 
         if (WorkshopModBuildContext.Flags.HasFlag(WorkshopModBuildContextFlags.NeedsBuild))
         {
@@ -392,8 +394,8 @@ public partial class Index : ComponentBase
 
             if (IsNew && CanSave && Mod.Type == (int)WorkshopModType.StyleEdit)
             {
-                var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
-                var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";
+                var defaultThumbnailPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "default.png");
+                var currentThumbnailPath = Path.Combine(IOHelper.GetWebRoot(), "images", "current_thumbnail.png");
                 File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
                 var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
                 WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);

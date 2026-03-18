@@ -89,13 +89,13 @@ public sealed partial class Index : ModComponentBase
 
         foreach (var file in Directory.EnumerateFiles(Path.Combine(IOHelper.GetWebRoot(), "EarcMods")))
         {
-            var id = file.Split('\\').Last().Replace(".png", "");
+            var id = file.Split(Path.DirectorySeparatorChar).Last().Replace(".png", "");
             var guid = new Guid(id);
             if (!ModManager.Projects.ContainsKey(guid))
             {
                 try
                 {
-                    var thumbnail = $@"{IOHelper.GetWebRoot()}\EarcMods\{id}.png";
+                    var thumbnail = Path.Combine(IOHelper.GetWebRoot(), "EarcMods", $"{id}.png");
                     File.Delete(thumbnail);
                 }
                 catch

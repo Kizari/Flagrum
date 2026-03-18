@@ -1,4 +1,5 @@
-﻿using Flagrum.Abstractions.Archive;
+﻿using System.IO;
+using Flagrum.Abstractions.Archive;
 using Flagrum.Abstractions.ModManager.Instructions;
 using Flagrum.Abstractions.ModManager.Project;
 using Flagrum.Core.Utilities;
@@ -16,7 +17,7 @@ public partial class AddPackedFileBuildInstruction : PackedAssetBuildInstruction
     public override void Apply(IFlagrumProject mod, IEbonyArchive archive, IFlagrumProjectArchive projectArchive)
     {
         var hash = Cryptography.HashFileUri64(Uri);
-        var cachePath = $@"{Profile.CacheDirectory}\{mod.Identifier}{hash}.ffg";
+        var cachePath = Path.Combine(Profile.CacheDirectory, $"{mod.Identifier}{hash}.ffg");
 
         var fragment = new FmodFragment();
         fragment.Read(FilePath.EndsWith(".ffg")

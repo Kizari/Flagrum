@@ -10,12 +10,12 @@ public class FileSystemAddressBar : AddressBar
 
     public override void NavigateToCurrentPath()
     {
-        CurrentPath = CurrentPath.TrimEnd('\\');
+        CurrentPath = CurrentPath.TrimEnd(Path.DirectorySeparatorChar);
 
         // Fixes problem where root disk path forces the app to navigate to the executing directory
         if (CurrentPath.Length == 2)
         {
-            CurrentPath += '\\';
+            CurrentPath += Path.DirectorySeparatorChar;
         }
 
         if (string.IsNullOrWhiteSpace(CurrentPath))

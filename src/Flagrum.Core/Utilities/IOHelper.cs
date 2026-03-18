@@ -99,8 +99,8 @@ public static class IOHelper
     /// <param name="fullPath">The full path to delete from</param>
     public static void DeleteEmptyDirectoriesInPath(string basePath, string fullPath)
     {
-        basePath = basePath.Replace('/', '\\').Trim().TrimEnd('\\').ToLower();
-        fullPath = fullPath.Replace('/', '\\').Trim().TrimEnd('\\').ToLower();
+        basePath = basePath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower();
+        fullPath = fullPath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower();
 
         if (!Directory.Exists(basePath))
         {

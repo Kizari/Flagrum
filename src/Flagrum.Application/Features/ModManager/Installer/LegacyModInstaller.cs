@@ -105,7 +105,7 @@ public partial class LegacyModInstaller(
         var project = new FlagrumProject
         {
             Identifier = Guid.NewGuid(),
-            Name = new string(request.FilePath.Split('\\').Last().Take(37).ToArray()),
+            Name = new string(request.FilePath.Split(Path.DirectorySeparatorChar).Last().Take(37).ToArray()),
             Author = "Unknown",
             Description = "Legacy mod converted by Flagrum"
         };
@@ -139,7 +139,7 @@ public partial class LegacyModInstaller(
                     if (file.Size != match.Size || !CompareFiles(match, file))
                     {
                         // Save the file to the device
-                        var fileName = $@"{directory}\{file.RelativePath.Split('/', '\\').Last()}";
+                        var fileName = Path.Combine(directory, file.RelativePath.Split('/', '\\').Last());
                         var extension = fileName[fileName.LastIndexOf('.')..];
                         var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
                         var counter = 2;

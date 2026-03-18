@@ -64,12 +64,12 @@ public partial class EnvironmentPacker(
         var previousCulture = Thread.CurrentThread.CurrentCulture;
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-        var basePathTokens = outputPath.Split('\\')[..^1];
-        var basePath = string.Join('\\', basePathTokens);
-        var outputFileName = outputPath.Split('\\').Last();
+        var basePathTokens = outputPath.Split(Path.DirectorySeparatorChar)[..^1];
+        var basePath = string.Join(Path.DirectorySeparatorChar, basePathTokens);
+        var outputFileName = outputPath.Split(Path.DirectorySeparatorChar).Last();
         var outputFileNameWithoutExtension = outputFileName[..outputFileName.LastIndexOf('.')];
-        _modelsDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_models";
-        _texturesDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_textures";
+        _modelsDirectory = Path.Combine(basePath, $"{outputFileNameWithoutExtension}_models");
+        _texturesDirectory = Path.Combine(basePath, $"{outputFileNameWithoutExtension}_textures");
         IOHelper.EnsureDirectoryExists(_modelsDirectory);
         IOHelper.EnsureDirectoryExists(_texturesDirectory);
 
@@ -237,7 +237,7 @@ public partial class EnvironmentPacker(
                                     {
                                         Hash = t.UriHash.ToString(),
                                         Name = fileNameWithoutExtension,
-                                        Path = $"{_texturesDirectory}\\{fileNameWithoutExtension}.tga",
+                                        Path = Path.Combine(_texturesDirectory, $"{fileNameWithoutExtension}.tga"),
                                         Uri = textureUri,
                                         Slot = t.ShaderGenName
                                     };
@@ -257,7 +257,7 @@ public partial class EnvironmentPacker(
         }
 
         var json = JsonConvert.SerializeObject(meshData);
-        File.WriteAllText($"{directory}\\{index}.json", json);
+        File.WriteAllText(Path.Combine(directory, $"{index}.json"), json);
     }
 
     /// <summary>
@@ -364,8 +364,8 @@ public partial class EnvironmentPacker(
                     {
                         PrefabName = prefabFileName[..prefabFileName.LastIndexOf('.')],
                         Path = $"data://{path.GetTextValue().Replace('\\', '/')}",
-                        Position = new[] {positionAltered.X, positionAltered.Y, positionAltered.Z},
-                        Rotation = rotation?.GetFloat4Value() ?? new[] {0.0f, 0.0f, 0.0f, 0.0f},
+                        Position = [positionAltered.X, positionAltered.Y, positionAltered.Z],
+                        Rotation = rotation?.GetFloat4Value() ?? [0.0f, 0.0f, 0.0f, 0.0f],
                         PrefabRotations = prefabRotations,
                         Scale = scaleAltered
                     });

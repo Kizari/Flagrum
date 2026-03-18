@@ -18,7 +18,7 @@ public class FileSystemNode : IAssetExplorerNodeBase
     public FileSystemNode(string path)
     {
         Path = path;
-        Name = path.Length == 3 ? $"Local Disk ({path[..2]})" : path.Split('\\').Last();
+        Name = path.Length == 3 ? $"Local Disk ({path[..2]})" : path.Split(System.IO.Path.DirectorySeparatorChar).Last();
     }
 
     public string Name { get; set; }
