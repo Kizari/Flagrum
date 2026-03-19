@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Flagrum.Host;
 
 /// <summary>
-/// Callback that is invoked when <see cref="BlazorWebView"/> sends a message back to Flagrum.
+/// Callback that is invoked when <see cref="BlazorWebView" /> sends a message back to Flagrum.
 /// </summary>
 public delegate void WebMessageReceivedCallback(string message);
 
@@ -23,14 +23,12 @@ public delegate void WebMessageReceivedCallback(string message);
 public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : IApplication
 {
     private readonly IntPtr _instance = ApplicationHost_Create();
-    
-    private WebMessageReceivedCallback? _onWebMessageReceived;
 
-    public static IApplication Factory(IServiceProvider provider) => provider.GetRequiredService<ApplicationHost>();
+    private WebMessageReceivedCallback? _onWebMessageReceived;
 
     /// <inheritdoc />
     public Version Version => typeof(Program).Assembly.GetName().Version!;
-    
+
     /// <inheritdoc />
     public string? AssociatedFile { get; set; }
 
@@ -40,20 +38,6 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
         ApplicationHost_Destroy(_instance);
     }
 
-    /// <summary>
-    /// Runs the application indefinitely until <see cref="Exit"/> is called, or the main window is closed.
-    /// </summary>
-    /// <returns>Exit code.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int Run() => ApplicationHost_Run(_instance);
-
-    /// <summary>
-    /// Closes active windows and exits the event loop, ending the program.
-    /// </summary>
-    /// <param name="exitCode">Exit code to return to <see cref="Run"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Exit(int exitCode) => ApplicationHost_Exit(_instance, exitCode);
-    
     /// <inheritdoc />
     public void Restart()
     {
@@ -69,36 +53,74 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
         Process.Start(executablePath);
     }
 
-    /// <summary>
-    /// Queues up an action to be executed on the UI thread.
-    /// </summary>
-    /// <param name="action">Action to execute.</param>
-    /// <remarks>
-    /// <paramref name="action"/> is automatically wrapped in a try/catch block to ensure that any
-    /// exceptions that occur during operation do not cross the native boundary.
-    /// Since the exception can't be rethrown, it's simply logged instead.
-    /// </remarks>
-    public void Post(Action action)
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SetClipboardText(string text) => ApplicationHost_SetClipboardText(_instance, text);
+
+    /// <inheritdoc />
+    public string? OpenFile(
+        string filter = IApplication.AllFilesFilter,
+        string? initialDirectory = null,
+        string caption = "Open File")
     {
-        ApplicationHost_Post(_instance, () =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception exception)
-            {
-                logger.LogError(exception, "Exception occurred during UI thread invocation");
-            }
-        });
+        var pResult = Marshal.AllocHGlobal(4096);
+        ApplicationHost_OpenFile(_instance, caption, initialDirectory, filter, pResult);
+        var result = Marshal.PtrToStringUTF8(pResult);
+        Marshal.FreeHGlobal(pResult);
+        return string.IsNullOrWhiteSpace(result) ? null : result;
     }
+
+    /// <inheritdoc />
+    public string? SaveFile(
+        string filter = IApplication.AllFilesFilter,
+        string? initialDirectory = null,
+        string caption = "Save File")
+    {
+        var pResult = Marshal.AllocHGlobal(4096);
+        ApplicationHost_SaveFile(_instance, caption, initialDirectory, filter, pResult);
+        var result = Marshal.PtrToStringUTF8(pResult);
+        Marshal.FreeHGlobal(pResult);
+        return string.IsNullOrWhiteSpace(result) ? null : result;
+    }
+
+    /// <inheritdoc />
+    public string? OpenDirectory(string? initialDirectory = null, string caption = "Select Folder")
+    {
+        var pResult = Marshal.AllocHGlobal(4096);
+        ApplicationHost_OpenDirectory(_instance, caption, initialDirectory, pResult);
+        var result = Marshal.PtrToStringUTF8(pResult);
+        Marshal.FreeHGlobal(pResult);
+        return string.IsNullOrWhiteSpace(result) ? null : result;
+    }
+
+    /// <inheritdoc />
+    public void RefreshPatreonButton()
+    {
+        // TODO: Implement this
+    }
+
+    public static IApplication Factory(IServiceProvider provider) => provider.GetRequiredService<ApplicationHost>();
+
+    /// <summary>
+    /// Runs the application indefinitely until <see cref="Exit" /> is called, or the main window is closed.
+    /// </summary>
+    /// <returns>Exit code.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Run() => ApplicationHost_Run(_instance);
+
+    /// <summary>
+    /// Closes active windows and exits the event loop, ending the program.
+    /// </summary>
+    /// <param name="exitCode">Exit code to return to <see cref="Run" />.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Exit(int exitCode) => ApplicationHost_Exit(_instance, exitCode);
 
     /// <summary>
     /// Invokes an action on the UI thread.
     /// </summary>
     /// <param name="action">Action to execute.</param>
     /// <remarks>
-    /// <paramref name="action"/> is automatically wrapped in a try/catch block to ensure that any
+    /// <paramref name="action" /> is automatically wrapped in a try/catch block to ensure that any
     /// exceptions that occur during operation do not cross the native boundary.
     /// Since the exception can't be rethrown, it's simply logged instead.
     /// </remarks>
@@ -173,10 +195,6 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RunJavaScript(string script) => ApplicationHost_RunJavaScript(_instance, script);
 
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetClipboardText(string text) => ApplicationHost_SetClipboardText(_instance, text);
-
     /// <summary>
     /// Shows a native message box dialog.
     /// </summary>
@@ -186,46 +204,4 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ShowMessageBox(string title, string message, MessageBoxType type) =>
         ApplicationHost_ShowMessageBox(_instance, title, message, type);
-
-    /// <inheritdoc />
-    public string? OpenFile(
-        string filter = IApplication.AllFilesFilter, 
-        string? initialDirectory = null, 
-        string caption = "Open File")
-    {
-        var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_OpenFile(_instance, caption, initialDirectory, filter, pResult);
-        var result = Marshal.PtrToStringUTF8(pResult);
-        Marshal.FreeHGlobal(pResult);
-        return string.IsNullOrWhiteSpace(result) ? null : result;
-    }
-    
-    /// <inheritdoc />
-    public string? SaveFile(
-        string filter = IApplication.AllFilesFilter,
-        string? initialDirectory = null,
-        string caption = "Save File")
-    {
-        var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_SaveFile(_instance, caption, initialDirectory, filter, pResult);
-        var result = Marshal.PtrToStringUTF8(pResult);
-        Marshal.FreeHGlobal(pResult);
-        return string.IsNullOrWhiteSpace(result) ? null : result;
-    }
-    
-    /// <inheritdoc />
-    public string? OpenDirectory(string? initialDirectory = null, string caption = "Select Folder")
-    {
-        var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_OpenDirectory(_instance, caption, initialDirectory, pResult);
-        var result = Marshal.PtrToStringUTF8(pResult);
-        Marshal.FreeHGlobal(pResult);
-        return string.IsNullOrWhiteSpace(result) ? null : result;
-    }
-    
-    /// <inheritdoc />
-    public void RefreshPatreonButton()
-    {
-        // TODO: Implement this
-    }
 }

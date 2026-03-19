@@ -112,25 +112,6 @@ public:
     }
 
     /**
-     * Queues up a function to be executed on the UI thread.
-     * 
-     * @param callback Function to execute.
-     * @remarks Executes the callback directly if called from the UI thread.
-     */
-    void Post(std::function<void()> callback)
-    {
-        // Execute directly if already UI thread
-        if (QThread::currentThread() == application_->thread())
-        {
-            callback();
-            return;
-        }
-
-        // Dispatch to UI thread
-        QMetaObject::invokeMethod(this, std::move(callback), Qt::QueuedConnection);
-    }
-
-    /**
      * Executes a function on the UI thread and blocks until execution completes.
      * 
      * @param callback Function to execute.
