@@ -18,7 +18,14 @@ public class FileSystemNode : IAssetExplorerNodeBase
     public FileSystemNode(string path)
     {
         Path = path;
-        Name = path.Length == 3 ? $"Local Disk ({path[..2]})" : path.Split(System.IO.Path.DirectorySeparatorChar).Last();
+        
+#if WINDOWS
+        Name = path.Length == 3
+            ? $"Local Disk ({path[..2]})"
+            : path.Split(System.IO.Path.DirectorySeparatorChar).Last();
+#else
+        Name = path == "/" ? "This PC" : path.Split(System.IO.Path.DirectorySeparatorChar).Last();
+#endif
     }
 
     public string Name { get; set; }
@@ -124,15 +131,21 @@ public class FileSystemNode : IAssetExplorerNodeBase
         var node = new FileSystemNode
         {
             Name = "This PC",
+#if WINDOWS
             Path = ""
+#else
+            Path = "/"
+#endif
         };
 
+#if WINDOWS
         node._children = DriveInfo.GetDrives().Select(drive => new FileSystemNode
         {
             Name = $"Local Disk ({drive.Name[..^1]})",
             _parent = node,
             Path = drive.Name
         }).Cast<IAssetExplorerNode>().ToList();
+#endif
 
         return node;
     }
