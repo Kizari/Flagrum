@@ -111,9 +111,9 @@ public class ApplicationRunner(
         // Start initializing the asset explorer
         appState.LoadNodes();
 
-        // Ensure the splash screen is displayed no less than two seconds
+        // Ensure the splash screen is displayed no less than three seconds
         var elapsed = DateTime.UtcNow - start;
-        var remaining = TimeSpan.FromSeconds(2) - elapsed;
+        var remaining = TimeSpan.FromSeconds(3) - elapsed;
         if (remaining.TotalMilliseconds > 0)
         {
             await Task.Delay(remaining);

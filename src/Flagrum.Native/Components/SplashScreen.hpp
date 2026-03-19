@@ -2,13 +2,12 @@
 #pragma once
 
 #include <QApplication>
-#include <QFile>
-#include <QHBoxLayout>
 #include <QFontDatabase>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QProgressBar>
+#include <QRandomGenerator>
 #include <QScreen>
-#include <QSvgWidget>
 #include <QWidget>
 
 /**
@@ -17,6 +16,9 @@
 class SplashScreen final : public QWidget
 {
 private:
+    static constexpr int WIDTH = 380;
+    static constexpr int HEIGHT = 470;
+    
     QLabel* loadingLabel_;
     
 public:
@@ -28,10 +30,9 @@ public:
     explicit SplashScreen(QWidget *parent = nullptr) : QWidget(parent)
     {
         // Set up window
-        setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        setWindowFlags(Qt::SplashScreen | Qt::FramelessWindowHint);
         setWindowTitle("Flagrum");
-        setFixedSize(380, 450);
-        setStyleSheet("background: #181512;");
+        setFixedSize(WIDTH, HEIGHT);
         move(QApplication::primaryScreen()->geometry().center() - rect().center());
 
         // Create layout
@@ -39,12 +40,19 @@ public:
         layout->setContentsMargins(20, 30, 20, 20);
         layout->setSpacing(20);
 
+        // Load font
+        const auto id = QFontDatabase::addApplicationFont(":/Resources/Play-Regular.ttf");
+        const auto family = QFontDatabase::applicationFontFamilies(id).at(0);
+        auto font = QFont(family);
+        font.setPixelSize(20);
+
         // Populate layout
-        loadingLabel_ = CreateLoadingLabel();
-        layout->addWidget(CreateLogo());
+        loadingLabel_ = CreateLoadingLabel(font);
+        layout->addWidget(CreateLogo(), 0, Qt::AlignHCenter);
         layout->addStretch();
         layout->addWidget(loadingLabel_);
         layout->addWidget(CreateProgressBar());
+        layout->addWidget(CreateAcknowledgement(font));
     }
 
     /**
@@ -57,47 +65,109 @@ public:
         loadingLabel_->setText(text);
     }
 
-private:
-    QWidget* CreateLogo()
+protected:
+    /**
+     * Applies a custom brushed texture to the background.
+     */
+    void paintEvent(QPaintEvent* event) override
     {
-        // Load logo file as text
-        auto file = QFile(":/Resources/logo.svg");
-        if (!file.open(QIODevice::ReadOnly))
+        auto painter = QPainter(this);
+        constexpr auto base = QColor(28, 25, 23);
+        static QImage texture = CreateBrushedTexture(base);
+        painter.drawImage(0, 0, texture);
+    }
+
+private:
+    /**
+     * Creates a brushed aluminium style texture.
+     * 
+     * @param base Color to apply the brushed texture to.
+     */
+    static QImage CreateBrushedTexture(const QColor& base)
+    {
+        // Create random grayscale noise texture
+        auto gray = QVector<uint8_t>(WIDTH * HEIGHT);
+        for (auto i = 0; i < WIDTH * HEIGHT; ++i)
         {
-            throw std::runtime_error("Failed to open logo.svg");
+            gray[i] = QRandomGenerator::global()->bounded(0, 255);
         }
-        
-        auto svgData = static_cast<QString>(file.readAll());
-        file.close();
 
-        // Change logo color in the SVG text
-        svgData.replace("#ffffff", "#30261d", Qt::CaseInsensitive);
-        
-        // Create wrapper widget (needed to center-align the SVG)
-        const auto wrapper = new QWidget(this);
-        const auto wrapperLayout = new QHBoxLayout(wrapper);
-        const auto logo = new QSvgWidget(wrapper);
-        logo->load(svgData.toUtf8());
-        logo->setFixedSize(260, 260);
-        wrapperLayout->addWidget(logo);
+        // Apply wide horizontal blur
+        auto row = QVector<uint8_t>(WIDTH);
 
-        return wrapper;
+        for (auto pass = 0; pass < 3; ++pass)
+        {
+            for (auto y = 0; y < HEIGHT; ++y)
+            {
+                // Copy row into temporary buffer
+                for (auto x = 0; x < WIDTH; ++x)
+                {
+                    row[x] = gray[y * WIDTH + x];
+                }
+
+                // Convolve with wide kernel
+                for (auto x = 0; x < WIDTH; ++x)
+                {
+                    constexpr auto radius = 20;
+                    auto sum = 0;
+                    auto count = 0;
+
+                    for (auto k = -radius; k <= radius; ++k)
+                    {
+                        const auto ix = x + k;
+                        if (ix >= 0 && ix < WIDTH)
+                        {
+                            sum += row[ix];
+                            count++;
+                        }
+                    }
+
+                    gray[y * WIDTH + x] = static_cast<uint8_t>(sum / count);
+                }
+            }
+        }
+
+        // Allocate result
+        auto result = QImage(WIDTH, HEIGHT, QImage::Format_ARGB32_Premultiplied);
+        const auto offset = std::min(base.red(), std::min(base.green(), base.blue())) / 2;
+
+        // Apply brush pattern to base color
+        for (auto y = 0; y < HEIGHT; ++y)
+        {
+            const auto line = reinterpret_cast<QRgb*>(result.scanLine(y));
+            for (auto x = 0; x < WIDTH; ++x)
+            {
+                const auto factor = static_cast<float>(gray[y * WIDTH + x]) / 255.0f;
+                const auto r = static_cast<int>(static_cast<float>(base.red()) * factor + static_cast<float>(offset));
+                const auto g = static_cast<int>(static_cast<float>(base.green()) * factor + static_cast<float>(offset));
+                const auto b = static_cast<int>(static_cast<float>(base.blue()) * factor + static_cast<float>(offset));
+                line[x] = qRgba(r, g, b, 255);
+            }
+        }
+
+        return result;
     }
     
-    QLabel* CreateLoadingLabel()
+    QWidget* CreateLogo()
     {
-        // Load font
-        const auto id = QFontDatabase::addApplicationFont(":/Resources/Play-Regular.ttf");
-        const auto family = QFontDatabase::applicationFontFamilies(id).at(0);
-        auto font = QFont(family);
-        font.setPixelSize(20);
-
+        const auto image = QPixmap(":/Resources/logo.png");
+        const auto label = new QLabel(this);
+        label->setPixmap(image);
+        label->setScaledContents(true);
+        label->setFixedSize(280, 260);
+        label->setAlignment(Qt::AlignCenter);
+        label->setContentsMargins(20, 0, 0, 0);
+        return label;
+    }
+    
+    QLabel* CreateLoadingLabel(const QFont& font)
+    {
         // Create label
         const auto label = new QLabel("Loading", this);
         label->setAlignment(Qt::AlignCenter);
         label->setFont(font);
         label->setText("Loading");
-        label->setStyleSheet("color: #504030;");
+        label->setStyleSheet("color: #e1d9b7;");
 
         return label;
     }
@@ -108,18 +178,28 @@ private:
         progress->setRange(0, 0); // Uses indeterminate animation
         progress->setValue(0);
         progress->setTextVisible(false);
-        progress->setFixedHeight(20);
+        progress->setFixedHeight(6);
         progress->setStyleSheet(R"(
             QProgressBar {
-                background-color: #161310;
-                border-radius: 0px;
+                border: none;
+                background-color: rgb(16, 15, 12);
             }
             QProgressBar::chunk {
-                background-color: #30261d;
-                border-radius: 0px;
+                background-color: #ada685;
             }
         )");
 
         return progress;
+    }
+
+    QLabel* CreateAcknowledgement(const QFont& font)
+    {
+        const auto label = new QLabel(this);
+        label->setStyleSheet("font-size: 12px;");
+        label->setFont(font);
+        label->setText("Made with ♥ by Kizari");
+        label->setAlignment(Qt::AlignCenter);
+        label->setContentsMargins(0, 20, 0, 0);
+        return label;
     }
 };

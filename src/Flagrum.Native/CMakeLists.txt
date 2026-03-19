@@ -16,6 +16,7 @@ qt_add_resources(Flagrum.Native "resources"
         FILES
         Resources/flagrum.ico
         Resources/interop.js
+        Resources/logo.png
         Resources/logo.svg
         Resources/Play-Regular.ttf
 )
