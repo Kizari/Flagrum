@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using Flagrum.Abstractions;
 using Injectio.Attributes;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Flagrum.Host;
 
@@ -20,7 +19,7 @@ public delegate void WebMessageReceivedCallback(string message);
 /// </summary>
 [RegisterSingleton<ApplicationHost>]
 [RegisterSingleton<IApplication>(Factory = nameof(Factory))]
-public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : IApplication
+public sealed partial class ApplicationHost : IApplication
 {
     private readonly IntPtr _instance = ApplicationHost_Create();
 
@@ -124,20 +123,8 @@ public sealed partial class ApplicationHost(ILogger<ApplicationHost> logger) : I
     /// exceptions that occur during operation do not cross the native boundary.
     /// Since the exception can't be rethrown, it's simply logged instead.
     /// </remarks>
-    public void Invoke(Action action)
-    {
-        ApplicationHost_Invoke(_instance, () =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception exception)
-            {
-                logger.LogError(exception, "Exception occurred during UI thread invocation");
-            }
-        });
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Invoke(Action action) => ApplicationHost_Invoke(_instance, action);
 
     /// <summary>
     /// Creates and shows the splash screen.
