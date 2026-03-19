@@ -1,7 +1,10 @@
-﻿@using Flagrum.Core.Utilities.Extensions
+﻿@using Flagrum.Abstractions.Application
+@using Flagrum.Core.Utilities.Extensions
 @using Flagrum.Application.Features.Settings.Data
 @inject IStringLocalizer<ProfilesPage> Localizer
 @inject IProfileService Profile
+@inject IConfiguration Configuration
+@inject IPlatformManager Platform
 
 <AutosizeModal @ref="Modal">
     <HeaderView>
@@ -61,8 +64,10 @@
     {
         if (IsNew)
         {
-            // TODO: New profiles need migrations marked as complete
             Profile.Add(Model);
+            var newProfile = Configuration.Profiles.First(p => p.Id == new Guid(Model.Id));
+            newProfile.SetMigratedNoSave(Platform.ProfileMigrationSteps);
+            Configuration.Save();
         }
         else
         {
