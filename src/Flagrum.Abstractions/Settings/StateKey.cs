@@ -13,10 +13,10 @@ public enum StateKey
     BinmodListPath,
     LastSeenVersionNotes,
     CurrentAssetExplorerPath,
-    ViewportRotateModifierKey,
-    ViewportRotateMouseAction,
-    ViewportPanModifierKey,
-    ViewportPanMouseAction,
+    [Obsolete("Viewport controls are now handled by other keys")] ViewportRotateModifierKey,
+    [Obsolete("Viewport controls are now handled by other keys")] ViewportRotateMouseAction,
+    [Obsolete("Viewport controls are now handled by other keys")] ViewportPanModifierKey,
+    [Obsolete("Viewport controls are now handled by other keys")] ViewportPanMouseAction,
     CurrentEarcCategory,
     HasMigratedBackups,
     CurrentAssetExplorerView,
@@ -26,5 +26,8 @@ public enum StateKey
     ForspokenPatch,
     HasMigratedAwayFromSqlite,
     HidePatreonButton,
-    HideLucentTab
+    HideLucentTab,
+    ViewportLeftClickAction,
+    ViewportMiddleClickAction,
+    ViewportRightClickAction
 }

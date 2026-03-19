@@ -14,7 +14,6 @@ using Flagrum.Components.Controls;
 using Flagrum.Components.Modals;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Graphics.Models;
-using Flagrum.Core.Graphics.Textures;
 using Flagrum.Core.Graphics.Textures.Luminous;
 using Flagrum.Core.Graphics.Textures.Shared;
 using Microsoft.AspNetCore.Components;
@@ -58,6 +57,42 @@ public partial class ModelPreview
     private void OpenSettingsModal() => ModelPreviewSettingsModal?.Open();
     private Task PreviousLod() => ChangeLod(LodLevel - 1);
     private Task NextLod() => ChangeLod(LodLevel + 1);
+
+    private Viewport3D.Control GetAction(StateKey key)
+    {
+        if (!Configuration.ContainsKey(key))
+        {
+            return key switch
+            {
+                StateKey.ViewportLeftClickAction => Viewport3D.Control.Pan,
+                StateKey.ViewportMiddleClickAction => Viewport3D.Control.Rotate,
+                StateKey.ViewportRightClickAction => Viewport3D.Control.Dolly,
+                _ => throw new NotSupportedException($"'{key}' is not a viewport action")
+            };
+        }
+
+        return Configuration.Get<Viewport3D.Control>(key);
+    }
+
+    private string GetKeyBindingString(Viewport3D.Control control)
+    {
+        if (GetAction(StateKey.ViewportLeftClickAction) == control)
+        {
+            return "Left Click";
+        }
+        
+        if (GetAction(StateKey.ViewportMiddleClickAction) == control)
+        {
+            return "Middle Click";
+        }
+        
+        if (GetAction(StateKey.ViewportRightClickAction) == control)
+        {
+            return "Right Click";
+        }
+
+        return "None";
+    }
 
     private async Task ChangeLod(int lodLevel)
     {

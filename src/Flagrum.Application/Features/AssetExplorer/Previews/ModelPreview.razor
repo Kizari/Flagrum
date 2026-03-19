@@ -1,21 +1,16 @@
-﻿@using Flagrum.Core.Utilities.Extensions
-<div class="flex flex-col h-full">
+﻿<div class="flex flex-col h-full">
     <div class="flex flex-row items-center p-2 bg-grey-900" style="height: 46px;">
         <span class="material-icons ml-2 mr-2 text-grey-200 text-sm">360</span>
         <span class="text-grey-200 text-sm">
-            @{
-                var rotateModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportRotateModifierKey).ToString();
-                var rotateMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportRotateMouseAction).ToString().SpacePascalCase();
-            }
-            @($"{(rotateModifierKey is null or "None" ? "" : rotateModifierKey + " + ")}{rotateMouseAction}")
+            @GetKeyBindingString(Viewport3D.Control.Rotate)
         </span>
         <span class="material-icons ml-10 mr-2 text-grey-200 text-sm">pan_tool</span>
+        <span class="text-grey-200 text-sm">
+            @GetKeyBindingString(Viewport3D.Control.Pan)
+        </span>
+        <span class="material-icons ml-10 mr-2 text-grey-200 text-sm">height</span>
         <span class="text-grey-200 flex-grow text-sm">
-            @{
-                var panModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportPanModifierKey).ToString();
-                var panMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportPanMouseAction).ToString().SpacePascalCase();
-            }
-            @($"{(panModifierKey is null or "None" ? "" : panModifierKey + " + ")}{panMouseAction}")
+            @GetKeyBindingString(Viewport3D.Control.Dolly)
         </span>
         <span
             class="@("material-icons pr-2 text-grey-200 cursor-pointer select-none " + (LodLevel <= 0 || IsLoading ? "invisible" : ""))"
@@ -36,7 +31,12 @@
             <div class="continuous-3"></div>
             <span class="block text-accent1-200 font-display font-bold mt-4 mr-2">Loading Model</span>
         </div>
-        <Viewport3D @ref="Viewport" IsVisible="!IsLoading" OnReady="OnParametersSetAsync"/>
+        <Viewport3D @ref="Viewport" 
+                    IsVisible="!IsLoading" 
+                    OnReady="OnParametersSetAsync"
+                    LeftClickAction="GetAction(StateKey.ViewportLeftClickAction)"
+                    MiddleClickAction="GetAction(StateKey.ViewportMiddleClickAction)"
+                    RightClickAction="GetAction(StateKey.ViewportRightClickAction)"/>
     </div>
 </div>
 

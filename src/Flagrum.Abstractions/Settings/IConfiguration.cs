@@ -18,6 +18,7 @@ public interface IConfiguration
     void DeleteProfile(Guid id);
     void Save();
     bool ContainsKey(StateKey key);
+    bool TryGet<TValue>(StateKey key, out TValue? value);
     TValue Get<TValue>(StateKey key);
     void Set<TValue>(StateKey key, TValue value);
     bool HasMigrated(Guid migration);

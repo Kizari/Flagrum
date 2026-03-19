@@ -188,6 +188,18 @@ public partial class Configuration : IConfiguration
         }
     }
 
+    public bool TryGet<TValue>(StateKey key, out TValue? value)
+    {
+        if (_statePairs.ContainsKey(key))
+        {
+            value = Get<TValue>(key);
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
     public void Set<TValue>(StateKey key, TValue value)
     {
         lock (_lock)

@@ -1,7 +1,4 @@
-﻿@using Flagrum.Core.Utilities.Extensions
-@using Flagrum.Application.Features.AssetExplorer.Data
-@using Flagrum.Application.Features.Settings.Data
-@inject IApplication Application
+﻿@using Flagrum.Application.Features.AssetExplorer.Data
 @inject AppStateService AppState
 @inject IStringLocalizer<ModelPreviewSettingsModal> Localizer
 @inject IStringLocalizer<App> AppLocalizer
@@ -13,39 +10,34 @@
         <span class="material-icons cursor-pointer" @onclick="Cancel">close</span>
     </HeaderView>
     <BodyView>
-        <div>
+        <div style="width: 300px;">
             <div class="row mb-3">
                 <h5 class="text-accent1-200">Key Bindings</h5>
             </div>
             <div class="row mb-3">
-                <label class="text-right pr-3" style="width: 190px">@Localizer["Rotate"]</label>
-                <select @bind="RotateModifierKey" class="input bg-dark-550 w-full">
-                    @foreach (var key in ModifierKeys)
+                <label class="text-right pr-3" style="width: 100px">Left Click</label>
+                <select @bind="LeftClickAction" class="input bg-dark-550" style="width: 150px;">
+                    @foreach (var key in Enum.GetValues<Viewport3D.Control>())
                     {
-                        <option value="@key">@key.SpacePascalCase()</option>
+                        <option value="@key">@key</option>
                     }
                 </select>
-                <strong class="mx-3">+</strong>
-                <select @bind="RotateMouseAction" class="input bg-dark-550 w-full">
-                    @foreach (var key in MouseActions)
+            </div>
+            <div class="row mb-3">
+                <label class="text-right pr-3" style="width: 100px">Middle Click</label>
+                <select @bind="MiddleClickAction" class="input bg-dark-550" style="width: 150px;">
+                    @foreach (var key in Enum.GetValues<Viewport3D.Control>())
                     {
-                        <option value="@key">@key.SpacePascalCase()</option>
+                        <option value="@key">@key</option>
                     }
                 </select>
             </div>
             <div class="row mb-8">
-                <label class="text-right pr-3" style="width: 190px">@Localizer["Pan"]</label>
-                <select @bind="PanModifierKey" class="input bg-dark-550 w-full">
-                    @foreach (var key in ModifierKeys)
+                <label class="text-right pr-3" style="width: 100px">Right Click</label>
+                <select @bind="RightClickAction" class="input bg-dark-550" style="width: 150px;">
+                    @foreach (var key in Enum.GetValues<Viewport3D.Control>())
                     {
-                        <option value="@key">@key.SpacePascalCase()</option>
-                    }
-                </select>
-                <strong class="mx-3">+</strong>
-                <select @bind="PanMouseAction" class="input bg-dark-550 w-full">
-                    @foreach (var key in MouseActions)
-                    {
-                        <option value="@key">@key.SpacePascalCase()</option>
+                        <option value="@key">@key</option>
                     }
                 </select>
             </div>
@@ -53,7 +45,7 @@
                 <h5 class="text-accent1-200">Texture Settings</h5>
             </div>
             <div class="row mb-8">
-                <label class="text-right pr-3">Texture Fidelity</label>
+                <label class="text-right pr-3" style="width: 100px">Texture Fidelity</label>
                 <EditForm Model="this">
                     <EnumSelect TEnum="ModelViewerTextureFidelity" @bind-Value="TextureFidelity"/>
                 </EditForm>
@@ -69,26 +61,20 @@
 
     private AutosizeModal Modal { get; set; }
 
-    private ModifierKeys RotateModifierKey { get; set; }
-    private MouseAction RotateMouseAction { get; set; }
-    private ModifierKeys PanModifierKey { get; set; }
-    private MouseAction PanMouseAction { get; set; }
-    private List<string> ModifierKeys { get; set; } = new();
-    private List<string> MouseActions { get; set; } = new();
+    private Viewport3D.Control LeftClickAction { get; set; }
+    private Viewport3D.Control MiddleClickAction { get; set; }
+    private Viewport3D.Control RightClickAction { get; set; }
     private ModelViewerTextureFidelity TextureFidelity { get; set; }
-
-    protected override void OnInitialized()
-    {
-        ModifierKeys = Enum.GetNames<ModifierKeys>().ToList();
-        MouseActions = Enum.GetNames<MouseAction>().ToList();
-    }
 
     public void Open()
     {
-        RotateModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportRotateModifierKey);
-        RotateMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportRotateMouseAction);
-        PanModifierKey = Configuration.Get<ModifierKeys>(StateKey.ViewportPanModifierKey);
-        PanMouseAction = Configuration.Get<MouseAction>(StateKey.ViewportPanMouseAction);
+        LeftClickAction = Configuration.TryGet<Viewport3D.Control>(
+            StateKey.ViewportLeftClickAction, out var left) ? left : Viewport3D.Control.Pan;
+        MiddleClickAction = Configuration.TryGet<Viewport3D.Control>(
+            StateKey.ViewportMiddleClickAction, out var middle) ? middle : Viewport3D.Control.Rotate;
+        RightClickAction = Configuration.TryGet<Viewport3D.Control>(
+            StateKey.ViewportRightClickAction, out var right) ? right : Viewport3D.Control.Dolly;
+        
         var textureFidelity = Configuration.Get<int>(StateKey.ViewportTextureFidelity);
         TextureFidelity = textureFidelity == -1 ? ModelViewerTextureFidelity.Low : (ModelViewerTextureFidelity)textureFidelity;
 
@@ -104,10 +90,9 @@
 
     private void Save()
     {
-        Configuration.Set(StateKey.ViewportRotateModifierKey, RotateModifierKey);
-        Configuration.Set(StateKey.ViewportRotateMouseAction, RotateMouseAction);
-        Configuration.Set(StateKey.ViewportPanModifierKey, PanModifierKey);
-        Configuration.Set(StateKey.ViewportPanMouseAction, PanMouseAction);
+        Configuration.Set(StateKey.ViewportLeftClickAction, LeftClickAction);
+        Configuration.Set(StateKey.ViewportMiddleClickAction, MiddleClickAction);
+        Configuration.Set(StateKey.ViewportRightClickAction, RightClickAction);
         Configuration.Set(StateKey.ViewportTextureFidelity, (int)TextureFidelity);
 
         Cancel();

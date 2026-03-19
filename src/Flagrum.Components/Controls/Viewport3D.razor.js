@@ -11,7 +11,7 @@ const resizeObserver = new ResizeObserver(_ => {
 /**
  * Initializes the ThreeJS scene for the 3D viewer.
  */
-export function initialize() {
+export function initialize(left, middle, right) {
     container = document.getElementById("Viewport3DContainer");
     resizeObserver.observe(container);
 
@@ -37,11 +37,10 @@ export function initialize() {
 
     // Create controls for rotating, zooming, and panning
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.mouseButtons = {
-        LEFT: THREE.MOUSE.PAN,
-        MIDDLE: THREE.MOUSE.ROTATE,
-        RIGHT: THREE.MOUSE.DOLLY
-    };
+    controls.mouseButtons = {};
+    if (left > -1) {controls.mouseButtons.LEFT = left;}
+    if (middle > -1) {controls.mouseButtons.MIDDLE = middle;}
+    if (right > -1) {controls.mouseButtons.RIGHT = right;}
 
     // Set up lighting
     const light = new THREE.DirectionalLight(0xffffff, 2);
@@ -52,6 +51,18 @@ export function initialize() {
 
     // Start the render loop
     animate();
+}
+
+export function setLeftClick(action) {
+    controls.mouseButtons.LEFT = action > -1 ? action : undefined;
+}
+
+export function setMiddleClick(action) {
+    controls.mouseButtons.MIDDLE = action > -1 ? action : undefined;
+}
+
+export function setRightClick(action) {
+    controls.mouseButtons.RIGHT = action > -1 ? action : undefined;
 }
 
 /**
