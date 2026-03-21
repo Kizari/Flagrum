@@ -5,13 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Utilities;
 using Flagrum.Application.Features.ModManager.Services;
 using Flagrum.Application.Features.Shared;
 using Flagrum.Application.Features.WorkshopMods.Data;
 using Flagrum.Application.Features.WorkshopMods.Services;
 using Flagrum.Application.Services;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Utilities;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
@@ -164,13 +164,13 @@ public class Bootstrapper : ComponentBase
     {
         var modIds = ModManager.Projects.Keys.ToList();
         var wwwrootIds = Directory.EnumerateFiles(Profile.ImagesDirectory)
-            .Select(p => p.Split('\\').Last().Split('.').First())
+            .Select(p => p.Split(Path.DirectorySeparatorChar).Last().Split('.').First())
             .ToList();
 
         // Clone any thumbnails that exist in the mod's folder, but not in wwwroot/images
         foreach (var modId in modIds)
         {
-            if (!wwwrootIds.Any(t => t == modId.ToString()))
+            if (wwwrootIds.All(t => t != modId.ToString()))
             {
                 var path = Path.Combine(Profile.ModFilesDirectory, modId.ToString(), "thumbnail.jpg");
                 if (File.Exists(path))

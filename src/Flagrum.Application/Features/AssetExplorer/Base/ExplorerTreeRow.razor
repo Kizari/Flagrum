@@ -1,4 +1,4 @@
-﻿<ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="e => ContextMenuMouseUp(e, Node)">
+﻿<ContextMenuTrigger MenuId="assetExplorerMenu" Data="Node">
     <div id="@Node.ElementId" @onclick="OnClick"
          class="row py-1 pr-2 transition-colors hover:bg-grey-700 select-none cursor-pointer @(AssetExplorer.FileList.CurrentNode.Path == Node.Path ? "bg-grey-800" : "")"
          style="padding-left: @(Indent * 5)px">
@@ -53,13 +53,5 @@
     {
         Node.IsExpanded = !Node.IsExpanded;
         StateHasChanged();
-    }
-
-    private void ContextMenuMouseUp(MouseEventArgs e, IAssetExplorerNode node)
-    {
-        if (e.Button == 2)
-        {
-            AssetExplorer.ContextNode = node;
-        }
     }
 }

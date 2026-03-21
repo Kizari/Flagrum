@@ -1,21 +1,19 @@
 ﻿@using Flagrum.Abstractions.ModManager
 @using Flagrum.Abstractions.ModManager.Project
-@using Flagrum.Core.Utilities
 @using Flagrum.Application.Features.ModManager.Data
 @using Flagrum.Application.Features.ModManager.Services
+@using Flagrum.Core.Utilities
 @implements Flagrum.Abstractions.ModManager.IModCardContextMenu
+
 @inject ModManagerServiceBase ModManagerService
-@inject NavigationManager Navigation
 @inject IProfileService Profile
-@inject IApplication Application
-@inject ILogger<ModCardContextMenu> Logger
-@inject AppStateService AppState
 @inject IServiceProvider Provider
 @inject IAuthenticationService Authentication
 
 <ContextMenu Id="modCardContextMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
              OverrideDefaultListCssClass="p-0"
+             OnAppearing="e => Parent.SetContextMod((IFlagrumProject)e.Data)"
              @ref="ContextMenu">
     @if (ModManagerService.ModsState.GetActive(Parent.GetContextMod().Identifier))
     {

@@ -1,8 +1,6 @@
 ﻿@inherits ModComponentBase
 
 @inject NavigationManager Navigation
-@inject IApplication Application
-@inject ILogger<ModCard> Logger
 
 <style>
     .corner-pin:before {
@@ -17,13 +15,13 @@
     }
 </style>
 
-<ContextMenuTrigger MenuId="modCardContextMenu" @onmouseup="ContextMenuMouseUp">
+<ContextMenuTrigger MenuId="modCardContextMenu" Data="Mod">
     <div
         class="bg-grey-800 rounded shadow-lg mx-4 mt-8 cursor-pointer hover:shadow-xl hover:scale-105 transition-transform transition-shadow transform"
         style="width: 326px; height: 372px; @(IsDisabled ? "filter: grayscale(100%);" : "")"
         @onclick="@(() => Navigation.NavigateTo($"/earc/editor/{Mod.Identifier}"))">
         <div class="relative rounded-t mod-card"
-             style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('Images/@(Profile.Current.Id)/@(Mod.Identifier).jpg?v=@Timestamp')">
+             style="width: 326px; height: 170px; background-repeat: no-repeat; background-size: cover; background-position: center; background-image: url('images/@(Profile.Current.Id)/@(Mod.Identifier).jpg?v=@Timestamp')">
             @if (ModManagerService.ModsState.GetPinned(Mod.Identifier))
             {
                 <div class="corner-pin"></div>
@@ -87,18 +85,5 @@
     private void ShowReadme()
     {
         Parent.ShowReadme(Mod.Readme);
-    }
-
-    public void CallModListStateHasChanged()
-    {
-        Parent.CallStateHasChanged();
-    }
-
-    private void ContextMenuMouseUp(MouseEventArgs e)
-    {
-        if (e.Button == 2)
-        {
-            Parent.SetContextMod(Mod);
-        }
     }
 }
