@@ -29,5 +29,12 @@ public enum StateKey
     HideLucentTab,
     ViewportLeftClickAction,
     ViewportMiddleClickAction,
-    ViewportRightClickAction
+    ViewportRightClickAction,
+    SteamRootPath,
+    ProtonPrefixPath,
+    SteamLaunchWrapperPath,
+    SteamReaperPath,
+    SteamRuntimePath,
+    ProtonPath,
+    LaunchCommand
 }

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inherits ModComponentBase
+@using System.Runtime.InteropServices
 @using Flagrum.Abstractions.ModManager
 @using Flagrum.Application.Features.ModManager.Modals
 @implements IModLibrary
@@ -48,9 +49,28 @@
             </div>
             @if (Profile.Current.Type == LuminousGame.FFXV)
             {
-                <Button Icon="play_arrow" Text="Launch Game" IsLarge="true" CssClass="ml-6"
-                        BgColor="bg-green-700" BgHover="bg-green-500"
-                        OnClickAsync="() => LaunchGameAsync(false)"/>
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    <Button Icon="play_arrow" Text="Launch Game" IsLarge="true" CssClass="ml-6"
+                            BgColor="bg-green-700" BgHover="bg-green-500"
+                            OnClickAsync="() => LaunchGameAsync(false)"/>
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    <SplitButton Icon="play_arrow"
+                                 Text="Launch Game"
+                                 IsLarge="true"
+                                 CssClass="ml-6"
+                                 BackgroundColor="green-700"
+                                 BackgroundHoverColor="green-500"
+                                 ForegroundColor="grey-50"
+                                 SeparatorColor="green-900"
+                                 OnClickAsync="() => LaunchGameAsync(false)">
+                        <DropdownButtonItem Text="Launch Game" OnClick="() => LaunchGameAsync(false)"/>
+                        <DropdownButtonItem Text="Edit Configuration" OnClick="LaunchConfigModal.Open"/>
+                    </SplitButton>
+                }
+                
                 <CascadingValue TValue="IModLibrary" Value="this">
                     <PremiumComponent Type="PremiumComponentType.LaunchBarActions"/>
                 </CascadingValue>
@@ -157,5 +177,10 @@
     <ExportModal @ref="ExportModal"/>
     <PromptModal @ref="Prompt"/>
     <AlertModal @ref="Alert"/>
+    
+    @if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    {
+        <LaunchConfigurationModal @ref="LaunchConfigModal" />
+    }
 
 </CascadingValue>

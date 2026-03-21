@@ -40,6 +40,7 @@ public sealed partial class Index : ModComponentBase
     private ModCardModal ModCardModal { get; set; }
     public ExportModal ExportModal { get; set; }
     private ModPackInstallModal ModPackInstallModal { get; set; }
+    private LaunchConfigurationModal LaunchConfigModal { get; set; }
     private MarkupString CurrentReadme { get; set; }
     private Dictionary<string, List<string>> LegacyConflicts { get; set; }
     private List<EarcConflictString> SelectedLegacyConflicts { get; set; }

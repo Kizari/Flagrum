@@ -49,6 +49,14 @@ public class ApplicationRunner(
             LaunchGame();
             return Task.CompletedTask; // Flagrum was invoked only to launch the game, so terminate here
         }
+        
+        // Handle Linux game launch mode
+        var launchCommand = args.FirstOrDefault(a => a.StartsWith("--launch-command"));
+        if (launchCommand != null)
+        {
+            LaunchGame(launchCommand.Split('=')[1]);
+            return Task.CompletedTask; // Flagrum was invoked only to launch the game, so terminate here
+        }
 
         // Handle standard run mode
         return RunAsync();
@@ -131,9 +139,9 @@ public class ApplicationRunner(
     /// <summary>
     /// Launches the game.
     /// </summary>
-    private void LaunchGame()
+    private void LaunchGame(string? command = null)
     {
-        var result = launcher.TryLaunch(false);
+        var result = launcher.TryLaunch(false, command);
         if (result != GameLaunchResult.Success)
         {
             var message = result switch

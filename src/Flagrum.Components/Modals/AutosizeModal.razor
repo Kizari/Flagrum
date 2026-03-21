@@ -1,7 +1,12 @@
 ﻿<div class="@Opacity transition-opacity absolute inset-0 @Display flex-row items-center z-50"
      style="background-color: rgba(0, 0, 0, 0.8)">
     <div class="bg-grey-800 rounded-lg shadow-2xl mx-auto @CssClass"
-         style="min-width: @MinWidth; max-width: @MaxWidth; max-height: 90vh;">
+         style="
+             @(Width == null ? "" : $"width: {Width};")
+             @(Height == null ? "" : $"width: {Width};")
+             min-width: @MinWidth;
+             max-width: @MaxWidth;
+             max-height: 90vh;">
         @if (HeaderView != null)
         {
             <div class="rounded-t-lg bg-grey-700 p-3 row">
@@ -27,8 +32,8 @@
     [Parameter] public RenderFragment HeaderView { get; set; }
     [Parameter] public RenderFragment BodyView { get; set; }
     [Parameter] public RenderFragment FooterView { get; set; }
-    [Parameter] public int Width { get; set; } = 400;
-    [Parameter] public int Height { get; set; } = 300;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
     [Parameter] public int Padding { get; set; } = 6;
     [Parameter] public string MaxWidth { get; set; } = "90%";
     [Parameter] public string MinWidth { get; set; } = "0";

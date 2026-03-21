@@ -1,21 +1,22 @@
 ﻿@page "/settings"
+
+@using System.IO
+@using System.Runtime.InteropServices
 @using Flagrum.Abstractions.AssetExplorer
 @using Flagrum.Application.Features.ModManager.Services
 @using Flagrum.Application.Features.Settings.Data
+@using Flagrum.Core.Utilities
+
 @implements ILoadingComponent
 
 @inject IApplication Application
 @inject IStringLocalizer<SettingsPage> Localizer
-@inject IJSRuntime JSRuntime
 @inject IProfileService Profile
 @inject NavigationManager Navigation
 @inject AppStateService AppState
 @inject ModManagerServiceBase ModManager
 @inject IConfiguration Configuration
-@inject IAuthenticationService Authentication
-@inject ILogger<SettingsPage> Logger
 @inject IFileIndex FileIndex
-@inject IPremiumService Premium
 
 <LoadingView IsLoading="IsLoading" Text="@LoadingText" CssClass="p-6 h-full">
 
@@ -189,7 +190,9 @@
 
     private string SteamLaunchOptions
     {
-        get => $"\"{Profile.FlagrumDirectory}\\current\\Flagrum.exe\" %COMMAND% --launch";
+        get => RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? $"\"{Profile.FlagrumDirectory}\\current\\Flagrum.exe\" %COMMAND% --launch"
+            : $"\"{Path.Combine(IOHelper.GetExecutingDirectory(), "Flagrum")}\" --launch-command=\"%COMMAND%\"";
         set => _ = value;
     }
 
