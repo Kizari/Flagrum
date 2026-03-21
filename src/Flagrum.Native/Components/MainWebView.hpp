@@ -56,6 +56,17 @@ public:
         javaScriptBridge_->SetWebMessageHandler(callback);
     }
 
+protected:
+    /**
+     * Disables the Chromium context menu.
+     * 
+     * @param event Event that triggered the context menu.
+     */
+    void contextMenuEvent(QContextMenuEvent* event) override
+    {
+        event->ignore();
+    }
+    
 private:
     /**
      * Hooks up the JS-to-native bridge.
