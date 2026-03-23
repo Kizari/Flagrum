@@ -129,19 +129,21 @@ private:
 
         // Allocate result
         auto result = QImage(WIDTH, HEIGHT, QImage::Format_ARGB32_Premultiplied);
-        const auto offset = std::min(base.red(), std::min(base.green(), base.blue())) / 2;
 
         // Apply brush pattern to base color
+        const auto hsl = base.toHsl();
+        const auto h = hsl.hue();
+        const auto s = hsl.saturation();
+        const auto l = hsl.lightness();
+        
         for (auto y = 0; y < HEIGHT; ++y)
         {
             const auto line = reinterpret_cast<QRgb*>(result.scanLine(y));
+            
             for (auto x = 0; x < WIDTH; ++x)
             {
                 const auto factor = static_cast<float>(gray[y * WIDTH + x]) / 255.0f;
-                const auto r = static_cast<int>(static_cast<float>(base.red()) * factor + static_cast<float>(offset));
-                const auto g = static_cast<int>(static_cast<float>(base.green()) * factor + static_cast<float>(offset));
-                const auto b = static_cast<int>(static_cast<float>(base.blue()) * factor + static_cast<float>(offset));
-                line[x] = qRgba(r, g, b, 255);
+                line[x] = QColor::fromHsl(h, s, l * factor + l / 3).rgba();
             }
         }
 
