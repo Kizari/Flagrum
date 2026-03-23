@@ -35,6 +35,12 @@ public partial class ApplicationHost
     private static partial int ApplicationHost_Run(IntPtr instance);
 
     [LibraryImport(LibraryPath)]
+    private static partial void ApplicationHost_Restart(
+        IntPtr instance,
+        int exitCode,
+        [MarshalAs(UnmanagedType.LPStr)] string executablePath);
+
+    [LibraryImport(LibraryPath)]
     private static partial void ApplicationHost_Exit(IntPtr instance, int exitCode);
 
     [LibraryImport(LibraryPath)]

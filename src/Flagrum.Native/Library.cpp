@@ -19,7 +19,12 @@ EXPORT int ApplicationHost_Run(const ApplicationHost* instance)
     return instance->Run();
 }
 
-EXPORT void ApplicationHost_Exit(ApplicationHost* instance, const int exitCode)
+EXPORT void ApplicationHost_Restart(const ApplicationHost* instance, const int exitCode, const char* executablePath)
+{
+    instance->Restart(exitCode, executablePath);
+}
+
+EXPORT void ApplicationHost_Exit(const ApplicationHost* instance, const int exitCode)
 {
     instance->Exit(exitCode);
 }

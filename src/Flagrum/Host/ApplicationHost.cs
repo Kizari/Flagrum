@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -47,9 +46,8 @@ public sealed partial class ApplicationHost : IApplication
             executablePath += ".exe";
         }
 
-        // Restart as a new process
-        Exit(0);
-        Process.Start(executablePath);
+        // Restart the application
+        ApplicationHost_Restart(_instance, 0, executablePath);
     }
 
     /// <inheritdoc />

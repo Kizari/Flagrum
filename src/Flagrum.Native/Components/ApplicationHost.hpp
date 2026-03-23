@@ -5,6 +5,7 @@
 #include <QIcon>
 #include <QMessageBox>
 #include <QObject>
+#include <QProcess>
 #include <QSemaphore>
 #include <QThread>
 
@@ -90,24 +91,25 @@ public:
     }
 
     /**
+     * Restarts this application in a new process.
+     * 
+     * @param exitCode Exit code to return from `Run` on the current application.
+     * @param executablePath Path to the application.
+     */
+    void Restart(const int exitCode, const char* executablePath) const
+    {
+        application_->exit(exitCode);
+        QProcess::startDetached(executablePath);
+    }
+
+    /**
      * Closes any active splash screen and main window, then stops the event loop.
      * This causes any active calls on `Run` to return.
      * 
      * @param exitCode Exit code to return from `Run`.
      */
-    void Exit(const int exitCode)
+    void Exit(const int exitCode) const
     {
-        if (splashScreen_)
-        {
-            CloseSplash();
-        }
-
-        if (mainWindow_)
-        {
-            CloseMainWindow();
-        }
-
-        application_->processEvents();
         application_->exit(exitCode);
     }
 
@@ -127,14 +129,7 @@ public:
         }
 
         // Dispatch to UI thread and wait for completion
-        QSemaphore semaphore;
-        QMetaObject::invokeMethod(this, [cb = std::move(callback), &semaphore]
-        {
-            cb();
-            semaphore.release();
-        }, Qt::QueuedConnection);
-        
-        semaphore.acquire();
+        QMetaObject::invokeMethod(this, std::move(callback), Qt::BlockingQueuedConnection);
     }
 
     /**

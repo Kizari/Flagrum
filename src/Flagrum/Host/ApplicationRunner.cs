@@ -49,7 +49,7 @@ public class ApplicationRunner(
             LaunchGame();
             return Task.CompletedTask; // Flagrum was invoked only to launch the game, so terminate here
         }
-        
+
         // Handle Linux game launch mode
         var launchCommand = args.FirstOrDefault(a => a.StartsWith("--launch-command"));
         if (launchCommand != null)
@@ -183,7 +183,7 @@ public class ApplicationRunner(
             // Ignore silently, not important
         }
     }
-    
+
     /// <summary>
     /// Attempts to update the application.
     /// </summary>
