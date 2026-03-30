@@ -196,6 +196,29 @@ public:
     }
 
     /**
+     * Sets the visibility of the Patreon button in the main window's title bar.
+     * 
+     * @param isVisible Whether the button should be visible.
+     */
+    void SetPatreonButtonVisible(const bool isVisible)
+    {
+        Invoke([&]
+        {
+            mainWindow_->SetPatreonButtonVisible(isVisible);
+        });
+    }
+
+    /**
+     * Sets the callback for the Patreon button in the main window's title bar.
+     * 
+     * @param callback Action to execute.
+     */
+    void SetPatreonButtonCallback(void(*callback)()) const
+    {
+        mainWindow_->SetPatreonButtonCallback(callback);
+    }
+
+    /**
      * Sets the callback that will handle web messages sent to the host application by the embedded web view.
      * 
      * @param callback Web message handler.

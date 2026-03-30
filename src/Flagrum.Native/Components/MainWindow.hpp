@@ -23,6 +23,8 @@ private:
     QWidget* titleBar_;
     QVBoxLayout* layout_;
     MainWebView* webView_;
+    QPushButton* patreonButton_;
+    void(*patreonButtonCallback_)() = nullptr;
 
 public:
     /**
@@ -37,6 +39,7 @@ public:
         setStyleSheet("background: #181512;");
 
         // Create components
+        patreonButton_ = CreatePatreonButton();
         titleBar_ = CreateTitleBar();
         webView_ = new MainWebView(this);
 
@@ -62,6 +65,26 @@ public:
     [[nodiscard]] MainWebView* GetWebView() const
     {
         return webView_;
+    }
+
+    /**
+     * Sets the visibility of the Patreon button in the title bar.
+     * 
+     * @param isVisible Whether the button should be visible.
+     */
+    void SetPatreonButtonVisible(const bool isVisible) const
+    {
+        patreonButton_->setVisible(isVisible);
+    }
+
+    /**
+     * Sets the action to execute when the Patreon button is clicked.
+     * 
+     * @param callback Action to execute.
+     */
+    void SetPatreonButtonCallback(void(*callback)())
+    {
+        patreonButtonCallback_ = callback;
     }
 
 protected:
@@ -197,6 +220,8 @@ private:
         titleBarLayout->addWidget(CreateLogo(bar));
         titleBarLayout->addWidget(CreateTitle(bar));
         titleBarLayout->addStretch();
+        titleBarLayout->addWidget(patreonButton_);
+        titleBarLayout->addSpacerItem(new QSpacerItem(15, 1, QSizePolicy::Fixed, QSizePolicy::Fixed));
         titleBarLayout->addWidget(minimize);
         titleBarLayout->addWidget(maximize);
         titleBarLayout->addWidget(closeButton);
@@ -236,6 +261,28 @@ private:
         title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         title->setContentsMargins(2, 5, 15, 8);
         return title;
+    }
+
+    QPushButton* CreatePatreonButton()
+    {
+        const auto button = new QPushButton(this);
+        button->setIcon(QIcon(":/Resources/patreon.png"));
+        button->setIconSize(QSize(64, 16));
+        button->setFlat(true);
+        button->setContentsMargins(0, 0, 0, 5);
+        button->setVisible(false);
+        button->setStyleSheet("border: none;");
+        button->setCursor(Qt::PointingHandCursor);
+
+        connect(button, &QPushButton::clicked, this, [&]
+        {
+            if (patreonButtonCallback_)
+            {
+                patreonButtonCallback_();
+            }
+        });
+
+        return button;
     }
     
     /**

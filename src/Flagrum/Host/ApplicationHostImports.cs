@@ -64,6 +64,14 @@ public partial class ApplicationHost
     private static partial void ApplicationHost_CloseMainWindow(IntPtr instance);
 
     [LibraryImport(LibraryPath)]
+    private static partial void ApplicationHost_SetPatreonButtonVisible(
+        IntPtr instance,
+        [MarshalAs(UnmanagedType.Bool)] bool isVisible);
+
+    [LibraryImport(LibraryPath)]
+    private static partial void ApplicationHost_SetPatreonButtonCallback(IntPtr instance, Action callback);
+
+    [LibraryImport(LibraryPath)]
     private static partial void ApplicationHost_SetWebMessageHandler(
         IntPtr instance,
         WebMessageReceivedCallback handler);

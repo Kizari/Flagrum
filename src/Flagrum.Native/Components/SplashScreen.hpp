@@ -197,7 +197,7 @@ private:
     QLabel* CreateAcknowledgement(const QFont& font)
     {
         const auto label = new QLabel(this);
-        label->setStyleSheet("font-size: 12px;");
+        label->setStyleSheet("font-size: 14px;");
         label->setFont(font);
         label->setText("Made with ♥ by Kizari");
         label->setAlignment(Qt::AlignCenter);

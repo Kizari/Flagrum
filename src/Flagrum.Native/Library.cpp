@@ -59,6 +59,16 @@ EXPORT void ApplicationHost_CloseMainWindow(ApplicationHost* instance)
     instance->CloseMainWindow();
 }
 
+EXPORT void ApplicationHost_SetPatreonButtonVisible(ApplicationHost* instance, const bool isVisible)
+{
+    instance->SetPatreonButtonVisible(isVisible);
+}
+
+EXPORT void ApplicationHost_SetPatreonButtonCallback(const ApplicationHost* instance, void(*callback)())
+{
+    instance->SetPatreonButtonCallback(callback);
+}
+
 EXPORT void ApplicationHost_SetWebMessageHandler(
     const ApplicationHost* instance,
     const WebMessageReceivedCallback callback)

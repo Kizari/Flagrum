@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -18,11 +19,12 @@ public delegate void WebMessageReceivedCallback(string message);
 /// </summary>
 [RegisterSingleton<ApplicationHost>]
 [RegisterSingleton<IApplication>(Factory = nameof(Factory))]
-public sealed partial class ApplicationHost : IApplication
+public sealed partial class ApplicationHost(IConfiguration configuration) : IApplication
 {
     private readonly IntPtr _instance = ApplicationHost_Create();
 
     private WebMessageReceivedCallback? _onWebMessageReceived;
+    private Action? _patreonButtonCallback;
 
     /// <inheritdoc />
     public Version Version => typeof(Program).Assembly.GetName().Version!;
@@ -93,7 +95,8 @@ public sealed partial class ApplicationHost : IApplication
     /// <inheritdoc />
     public void RefreshPatreonButton()
     {
-        // TODO: Implement this
+        var isVisible = !configuration.Get<bool>(StateKey.HidePatreonButton);
+        ApplicationHost_SetPatreonButtonVisible(_instance, isVisible);
     }
 
     public static IApplication Factory(IServiceProvider provider) => provider.GetRequiredService<ApplicationHost>();
@@ -147,7 +150,18 @@ public sealed partial class ApplicationHost : IApplication
     /// Creates and shows the main application window.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OpenMainWindow() => ApplicationHost_OpenMainWindow(_instance);
+    public void OpenMainWindow()
+    {
+        ApplicationHost_OpenMainWindow(_instance);
+        
+        _patreonButtonCallback = () => Process.Start(new ProcessStartInfo("https://www.patreon.com/Kizari")
+        {
+            UseShellExecute = true
+        });
+        
+        ApplicationHost_SetPatreonButtonCallback(_instance, _patreonButtonCallback);
+        RefreshPatreonButton();
+    }
 
     /// <summary>
     /// Closes and destroys the main application window.
