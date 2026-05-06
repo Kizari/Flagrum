@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Flagrum.Abstractions;
 using Injectio.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 
 namespace Flagrum.Host;
 
@@ -19,9 +20,12 @@ public delegate void WebMessageReceivedCallback(string message);
 /// </summary>
 [RegisterSingleton<ApplicationHost>]
 [RegisterSingleton<IApplication>(Factory = nameof(Factory))]
-public sealed partial class ApplicationHost(IConfiguration configuration) : IApplication
+public sealed partial class ApplicationHost(
+    IConfiguration configuration,
+    IStringLocalizer<ApplicationHost> localizer) : IApplication
 {
     private readonly IntPtr _instance = ApplicationHost_Create();
+    private LocalizedStringBuffer? _stringBuffer;
 
     private WebMessageReceivedCallback? _onWebMessageReceived;
     private Action? _patreonButtonCallback;
@@ -36,6 +40,16 @@ public sealed partial class ApplicationHost(IConfiguration configuration) : IApp
     public void Dispose()
     {
         ApplicationHost_Destroy(_instance);
+        _stringBuffer?.Dispose();
+    }
+
+    /// <summary>
+    /// Initializes localization for the native application host.
+    /// </summary>
+    public void InitializeLocalization()
+    {
+        _stringBuffer = new LocalizedStringBuffer(localizer.GetAllStrings(true));
+        LocalizationService_Initialize(_stringBuffer.Count, _stringBuffer.Pointer);
     }
 
     /// <inheritdoc />
@@ -72,21 +86,21 @@ public sealed partial class ApplicationHost(IConfiguration configuration) : IApp
     /// <inheritdoc />
     public string? SaveFile(
         string filter = IApplication.AllFilesFilter,
-        string? initialDirectory = null,
+        string? defaultFileName = null,
         string caption = "Save File")
     {
         var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_SaveFile(_instance, caption, initialDirectory, filter, pResult);
+        ApplicationHost_SaveFile(_instance, caption, defaultFileName, filter, pResult);
         var result = Marshal.PtrToStringUTF8(pResult);
         Marshal.FreeHGlobal(pResult);
         return string.IsNullOrWhiteSpace(result) ? null : result;
     }
 
     /// <inheritdoc />
-    public string? OpenDirectory(string? initialDirectory = null, string caption = "Select Folder")
+    public string? OpenDirectory(string caption = "Select Folder")
     {
         var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_OpenDirectory(_instance, caption, initialDirectory, pResult);
+        ApplicationHost_OpenDirectory(_instance, caption, null, pResult);
         var result = Marshal.PtrToStringUTF8(pResult);
         Marshal.FreeHGlobal(pResult);
         return string.IsNullOrWhiteSpace(result) ? null : result;

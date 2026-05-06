@@ -26,6 +26,9 @@ public partial class ApplicationHost
 #endif
 
     [LibraryImport(LibraryPath)]
+    private static partial void LocalizationService_Initialize(int stringCount, IntPtr stringBuffer);
+    
+    [LibraryImport(LibraryPath)]
     private static partial IntPtr ApplicationHost_Create();
 
     [LibraryImport(LibraryPath)]
@@ -102,7 +105,7 @@ public partial class ApplicationHost
     private static partial void ApplicationHost_OpenFile(
         IntPtr instance,
         [MarshalAs(UnmanagedType.LPStr)] string caption,
-        [MarshalAs(UnmanagedType.LPStr)] string directory,
+        [MarshalAs(UnmanagedType.LPStr)] string? directory,
         [MarshalAs(UnmanagedType.LPStr)] string filter,
         IntPtr result);
 
@@ -110,7 +113,7 @@ public partial class ApplicationHost
     private static partial void ApplicationHost_SaveFile(
         IntPtr instance,
         [MarshalAs(UnmanagedType.LPStr)] string caption,
-        [MarshalAs(UnmanagedType.LPStr)] string directory,
+        [MarshalAs(UnmanagedType.LPStr)] string? directory,
         [MarshalAs(UnmanagedType.LPStr)] string filter,
         IntPtr result);
 
@@ -118,6 +121,6 @@ public partial class ApplicationHost
     private static partial void ApplicationHost_OpenDirectory(
         IntPtr instance,
         [MarshalAs(UnmanagedType.LPStr)] string caption,
-        [MarshalAs(UnmanagedType.LPStr)] string directory,
+        [MarshalAs(UnmanagedType.LPStr)] string? directory,
         IntPtr result);
 }

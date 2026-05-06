@@ -37,21 +37,20 @@ public interface IApplication : IDisposable
     /// Shows a save file dialog.
     /// </summary>
     /// <param name="filter">Qt-style file type filter string.</param>
-    /// <param name="initialDirectory">Directory to show in the dialog when it first appears.</param>
+    /// <param name="defaultFileName">Optional default file name to populate in the save dialog.</param>
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
     string? SaveFile(
         string filter = AllFilesFilter,
-        string? initialDirectory = null,
+        string? defaultFileName = null,
         string caption = "Save File");
 
     /// <summary>
     /// Shows a directory selection dialog.
     /// </summary>
-    /// <param name="initialDirectory">Directory to show in the dialog when it first appears.</param>
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the directory.</returns>
-    public string? OpenDirectory(string? initialDirectory = null, string caption = "Select Folder");
+    public string? OpenDirectory(string caption = "Select Folder");
     
     /// <summary>
     /// Gracefully shuts down this instance of the Flagrum process, and begins a new one.

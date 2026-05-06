@@ -11,6 +11,7 @@
 #include <QSvgWidget>
 #include <QWindow>
 
+#include "LocalizationService.hpp"
 #include "MainWebView.hpp"
 #include "MainWindow.hpp"
 
@@ -34,7 +35,7 @@ public:
     {
         // Set the window properties
         setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-        setWindowTitle("Flagrum");
+        setWindowTitle(LSTRING("WindowTitle").c_str());
         resize(1680, 1024);
         setStyleSheet("background: #181512;");
 
@@ -256,7 +257,7 @@ private:
 
     static QLabel* CreateTitle(QWidget* parent)
     {
-        const auto title = new QLabel("Flagrum", parent);
+        const auto title = new QLabel(LSTRING("WindowTitle").c_str(), parent);
         title->setStyleSheet("color: #837363; font-size: 14px;");
         title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         title->setContentsMargins(2, 5, 15, 8);

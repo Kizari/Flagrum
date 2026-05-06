@@ -8,7 +8,6 @@
 @using Flagrum.Core.Entities
 @using Flagrum.Core.Entities.Xml2
 @using Flagrum.Core.Graphics.Terrain
-@using Flagrum.Core.Graphics.Textures
 @using Flagrum.Core.Graphics.Textures.Luminous
 @using Flagrum.Core.Graphics.Textures.Shared
 @using Flagrum.Core.Utilities
@@ -270,7 +269,8 @@
     {
         if (Parent.CurrentView == AssetExplorerView.GameView)
         {
-            var folder = Application.OpenDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+            var folder = Application.OpenDirectory();
+
             if (folder != null)
             {
                 await InvokeAsync(() => DoExport(folder));

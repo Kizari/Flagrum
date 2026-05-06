@@ -9,6 +9,7 @@ add_library(Flagrum.Native SHARED
         Components/MainWebView.hpp
         Components/MainWindow.hpp
         Components/SplashScreen.hpp
+        Components/LocalizationService.hpp
 )
 
 qt_add_resources(Flagrum.Native "resources"

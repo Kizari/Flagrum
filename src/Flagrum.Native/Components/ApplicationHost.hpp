@@ -7,6 +7,8 @@
 #include <QObject>
 #include <QProcess>
 #include <QSemaphore>
+#include <QSettings>
+#include <QStandardPaths>
 #include <QThread>
 
 #include "MainWindow.hpp"
@@ -25,6 +27,21 @@ enum MessageBoxType
 };
 
 /**
+ * Defines keys that are used with QSettings in this application.
+ */
+namespace SettingsKey
+{
+    /// Path of the directory that was last used in the open file dialog.
+    constexpr auto LastOpenFileDirectory = "LastOpenFileDirectory";
+
+    /// Path of the directory that was last used in the save file dialog.
+    constexpr auto LastSaveFileDirectory = "LastSaveFileDirectory";
+
+    /// Path of the directory that was last used in the open directory dialog.
+    constexpr auto LastOpenDirectoryDirectory = "LastOpenDirectoryDirectory";
+}
+
+/**
  * Manages the minimal native UI needed to support the .NET/Blazor application.
  */
 class ApplicationHost final : public QObject
@@ -39,6 +56,7 @@ private:
 
     SplashScreen* splashScreen_ = nullptr;
     MainWindow* mainWindow_ = nullptr;
+    bool isFirstLocalLoad_ = true;
     
 public:
     /**
@@ -178,7 +196,23 @@ public:
         Invoke([&]
         {
             mainWindow_ = new MainWindow();
-            mainWindow_->show();
+            connect(mainWindow_->GetWebView(), &QWebEngineView::loadFinished, this, [&]
+            {
+                qDebug() << mainWindow_->GetWebView()->url().toString();
+                
+                if (isFirstLocalLoad_ && mainWindow_->GetWebView()->url().toString().startsWith("http://localhost"))
+                {
+                    isFirstLocalLoad_ = false;
+                    
+                    Invoke([&]
+                    {
+                        mainWindow_->show();
+                        splashScreen_->close();
+                        delete splashScreen_;
+                        splashScreen_ = nullptr;
+                    });
+                }
+            });
         });
     }
 
@@ -311,7 +345,24 @@ public:
     {
         Invoke([&]
         {
-            const auto result = QFileDialog::getOpenFileName(mainWindow_, caption, directory, filter);
+            // Determine the directory to start in—priority is: directory parameter > last used directory > home
+            auto settings = QSettings();
+            const auto defaultDirectory = directory && directory[0] != '\0'
+                ? QString::fromUtf8(directory)
+                : settings.value(SettingsKey::LastOpenFileDirectory,
+                    QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                  ).toString();
+
+            // Execute the open file dialog
+            const auto result = QFileDialog::getOpenFileName(mainWindow_, caption, defaultDirectory, filter);
+
+            // Store the directory path for next time
+            if (!result.isEmpty())
+            {
+                settings.setValue(SettingsKey::LastOpenFileDirectory, QFileInfo(result).absolutePath());
+            }
+
+            // Copy the file path to the output buffer
             const auto utf8 = result.toUtf8();
             memcpy(out, utf8.constData(), utf8.size());
             out[utf8.size()] = '\0';
@@ -322,15 +373,31 @@ public:
      * Shows a save file dialog.
      * 
      * @param caption Dialog title.
-     * @param directory Directory to show in the dialog when it first appears.
+     * @param defaultFileName Default name to assign the file in the save dialog.
      * @param filter Qt-style file type filter string.
      * @param out Pointer to the buffer to store the resulting file path in.
      */
-    void SaveFile(const char* caption, const char* directory, const char* filter, char* out)
+    void SaveFile(const char* caption, const char* defaultFileName, const char* filter, char* out)
     {
         Invoke([&]
         {
-            const auto result = QFileDialog::getSaveFileName(mainWindow_, caption, directory, filter);
+            // Determine the directory to start in—priority is: directory parameter > last used directory > home
+            auto settings = QSettings();
+            const auto defaultDirectory = settings.value(SettingsKey::LastSaveFileDirectory,
+                QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+            ).toString();
+
+            // Execute the open file dialog
+            const auto defaultPath = defaultDirectory + QDir::separator() + defaultFileName;
+            const auto result = QFileDialog::getSaveFileName(mainWindow_, caption, defaultPath, filter);
+
+            // Store the directory path for next time
+            if (!result.isEmpty())
+            {
+                settings.setValue(SettingsKey::LastSaveFileDirectory, QFileInfo(result).absolutePath());
+            }
+
+            // Copy the file path to the output buffer
             const auto utf8 = result.toUtf8();
             memcpy(out, utf8.constData(), utf8.size());
             out[utf8.size()] = '\0';
@@ -348,7 +415,24 @@ public:
     {
         Invoke([&]
         {
-            const auto result = QFileDialog::getExistingDirectory(mainWindow_, caption, directory);
+            // Determine the directory to start in—priority is: directory parameter > last used directory > home
+            auto settings = QSettings();
+            const auto defaultDirectory = directory && directory[0] != '\0'
+                ? QString::fromUtf8(directory)
+                : settings.value(SettingsKey::LastOpenDirectoryDirectory,
+                    QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
+                  ).toString();
+
+            // Execute the open file dialog
+            const auto result = QFileDialog::getExistingDirectory(mainWindow_, caption, defaultDirectory);
+
+            // Store the directory path for next time
+            if (!result.isEmpty())
+            {
+                settings.setValue(SettingsKey::LastOpenDirectoryDirectory, QFileInfo(result).absolutePath());
+            }
+
+            // Copy the file path to the output buffer
             const auto utf8 = result.toUtf8();
             memcpy(out, utf8.constData(), utf8.size());
             out[utf8.size()] = '\0';

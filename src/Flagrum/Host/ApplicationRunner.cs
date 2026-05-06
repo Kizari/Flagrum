@@ -72,6 +72,7 @@ public class ApplicationRunner(
 
         // Initialize the application
         SetCulture();
+        application.InitializeLocalization();
         platform.EnableTaskbarStacking();
         platform.SetFileTypeAssociation();
 
@@ -133,7 +134,6 @@ public class ApplicationRunner(
         var webView = serviceProvider.GetRequiredService<BlazorWebView>(); // Must be resolved after window opened
         await webView.SetRootComponentAsync<App>("#app");
         webView.Navigate(BlazorWebViewManager.CreateUri("/"));
-        application.CloseSplash();
     }
 
     /// <summary>

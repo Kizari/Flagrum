@@ -211,7 +211,8 @@
     private async Task ExportAnimationClips()
     {
         var item = AssetExplorer.ContextNode;
-        var folderPath = Application.OpenDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+        var folderPath = Application.OpenDirectory();
+
         if (folderPath != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));

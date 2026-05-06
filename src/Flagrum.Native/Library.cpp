@@ -1,8 +1,14 @@
 #include "Components/ApplicationHost.hpp"
+#include "Components/LocalizationService.hpp"
 
 #define EXPORT extern "C"
 
 using Action = void(*)();
+
+EXPORT void LocalizationService_Initialize(const int stringCount, char* stringBuffer)
+{
+    LocalizationService::GetInstance().Initialize(stringCount, stringBuffer);
+}
 
 EXPORT ApplicationHost* ApplicationHost_Create()
 {
@@ -113,11 +119,11 @@ EXPORT void ApplicationHost_OpenFile(
 EXPORT void ApplicationHost_SaveFile(
     ApplicationHost* instance,
     const char* caption,
-    const char* directory,
+    const char* defaultFileName,
     const char* filter,
     char* out)
 {
-    instance->SaveFile(caption, directory, filter, out);
+    instance->SaveFile(caption, defaultFileName, filter, out);
 }
 
 EXPORT void ApplicationHost_OpenDirectory(
