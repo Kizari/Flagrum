@@ -19,6 +19,7 @@
         <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.7"/>
         <PackageReference Include="Quickenshtein" Version="1.5.1"/>
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.4"/>
+        <PackageReference Include="Steamworks.NET.AnyCPU" Version="2025.162.7" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0"/>
     </ItemGroup>
 
@@ -36,13 +37,6 @@
 
     <ItemGroup>
         <None Include="wwwroot\**" CopyToOutputDirectory="PreserveNewest"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="Steamworks.NET">
-            <HintPath>..\..\libs\Steamworks.NET.dll</HintPath>
-        </Reference>
-        <Reference Include="System.Drawing.Common"/>
     </ItemGroup>
 
     <ItemGroup>
