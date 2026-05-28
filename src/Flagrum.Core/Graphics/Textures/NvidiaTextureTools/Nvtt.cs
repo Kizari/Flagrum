@@ -8,7 +8,7 @@ namespace Flagrum.Core.Graphics.Textures.NvidiaTextureTools;
 /// </summary>
 public static partial class Nvtt
 {
-    private const string Library = "libnvtt";
+    private const string Library = "nvtt";
 
     #region CompressionOptions
 

@@ -196,10 +196,9 @@ public:
         Invoke([&]
         {
             mainWindow_ = new MainWindow();
+            
             connect(mainWindow_->GetWebView(), &QWebEngineView::loadFinished, this, [&]
             {
-                qDebug() << mainWindow_->GetWebView()->url().toString();
-                
                 if (isFirstLocalLoad_ && mainWindow_->GetWebView()->url().toString().startsWith("http://localhost"))
                 {
                     isFirstLocalLoad_ = false;

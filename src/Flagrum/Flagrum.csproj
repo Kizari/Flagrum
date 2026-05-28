@@ -7,7 +7,7 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>../Flagrum.Native/Resources/flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
-        <BaseVersion>1.6.5</BaseVersion> <!-- Current version of the application -->
+        <BaseVersion>1.7.0</BaseVersion> <!-- Current version of the application -->
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
         <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
@@ -96,9 +96,8 @@
                           Overwrite="true" />
     </Target>
 
-    <!-- Copy additional dependencies into the output directory -->
+    <!-- Copy Linux libs to output directory -->
     <Target Name="CopyAdditionalDependencies" Condition="$([MSBuild]::IsOSPlatform('Linux'))" AfterTargets="Build">
-        <!-- Copy Linux libs to output directory -->
         <CreateItem Include="$(SolutionDir)libs/linux-x64/**">
             <Output TaskParameter="Include" ItemName="LinuxLibs" />
         </CreateItem>
@@ -110,6 +109,16 @@
         <Copy SourceFiles="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll"
               DestinationFiles="$(OutputPath)Drautos.dll"
               SkipUnchangedFiles="true"/>
+    </Target>
+    
+    <!-- Copy Windows libs to output directory -->
+    <Target Name="CopyAdditionalDependencies" Condition="$([MSBuild]::IsOSPlatform('Windows'))" AfterTargets="Build">
+        <CreateItem Include="$(SolutionDir)libs/win-x64/**">
+            <Output TaskParameter="Include" ItemName="WindowsLibs" />
+        </CreateItem>
+        <Copy SourceFiles="@(WindowsLibs)"
+              DestinationFiles="@(WindowsLibs->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true" />
     </Target>
 
 </Project>
