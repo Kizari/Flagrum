@@ -74,6 +74,10 @@ public sealed partial class Index : ModComponentBase
                 "Flagrum was unable to launch FFXV due to insufficient permissions. " +
                 "Please relaunch Flagrum as administrator and try again.", null);
         }
+        else if (result == GameLaunchResult.InvalidLaunchConfiguration)
+        {
+            LaunchConfigModal.Open(true);
+        }
 
         await Task.Delay(5000); // Prevent spam launching
     }

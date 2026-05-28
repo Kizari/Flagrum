@@ -155,6 +155,9 @@ public class ApplicationRunner(
                 GameLaunchResult.AccessDenied =>
                     "Flagrum was unable to launch FFXV due to insufficient permissions. " +
                     "Please run Flagrum as administrator and try again.",
+                GameLaunchResult.InvalidLaunchConfiguration =>
+                    "Flagrum was unable to launch FFXV due to an invalid launch configuration. " +
+                    "Please run Flagrum normally and set up the launch configuration from the Mod Manager tab.",
                 _ => throw new NotSupportedException($"Did not recognize launch result {result}.")
             };
 

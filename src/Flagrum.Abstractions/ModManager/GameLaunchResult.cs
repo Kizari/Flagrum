@@ -23,5 +23,10 @@ public enum GameLaunchResult
     /// <summary>
     /// The game was not launched due to insufficient access to create the game process.
     /// </summary>
-    AccessDenied
+    AccessDenied,
+    
+    /// <summary>
+    /// The game was not launched due to missing or invalid variables in the launch configuration.
+    /// </summary>
+    InvalidLaunchConfiguration
 }

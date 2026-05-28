@@ -1,7 +1,7 @@
-using System.Runtime.CompilerServices;
 using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Components.Modals;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Flagrum.Application.Features.ModManager.Modals;
 
@@ -10,6 +10,7 @@ public partial class LaunchConfigurationModal
     [Inject] private LaunchConfiguration Configuration { get; set; } = null!;
     
     private AutosizeModal Modal { get; set; } = null!;
+    private EditContext EditContext { get; set; } = null!;
     
     private string? SteamRoot { get; set; }
     private string? ProtonPrefix { get; set; }
@@ -18,9 +19,16 @@ public partial class LaunchConfigurationModal
     private string? SteamRuntime { get; set; }
     private string? Proton { get; set; }
     private string? LaunchCommand { get; set; }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Open() => Modal.Open();
+
+    public void Open(bool shouldValidateOnOpen)
+    {
+        if (shouldValidateOnOpen)
+        {
+            EditContext.Validate();
+        }
+        
+        Modal.Open();
+    }
 
     protected override void OnInitialized()
     {
@@ -32,6 +40,9 @@ public partial class LaunchConfigurationModal
         SteamRuntime = Configuration.SteamRuntime;
         Proton = Configuration.Proton;
         LaunchCommand = Configuration.LaunchCommand;
+
+        // Set form validation state
+        EditContext = new EditContext(this);
     }
 
     private void Save()
@@ -44,5 +55,7 @@ public partial class LaunchConfigurationModal
         Configuration.SteamRuntime = SteamRuntime;
         Configuration.Proton = Proton;
         Configuration.LaunchCommand = LaunchCommand;
+        
+        Modal.Close();
     }
 }

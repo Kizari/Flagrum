@@ -1,92 +1,105 @@
 <AutosizeModal @ref="Modal" Width="80%">
+    
+    <!-- Modal header -->
     <HeaderView>
         <span class="text-grey-300 flex-grow">Launch Configuration</span>
         <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
     </HeaderView>
+    
+    <!-- Modal body -->
     <BodyView>
-        <h4 class="text-grey-300 mb-4">Environment Variables</h4>
-        <table class="w-full">
-            <tr>
-                <td class="text-right">
-                    <label>$STEAM_COMPAT_CLIENT_INSTALL_PATH</label>
-                </td>
-                <td class="px-3" style="width: 70%;">
-                    <Textbox @bind-Value="SteamRoot"
-                             Size="Textbox.Variant.Stretch"/>
-                </td>
-                <td>
-                    <Button Icon="folder" Text="Browse"/>
-                </td>
-            </tr>
-            <tr>
-                <td class="text-right">
-                    <label>$STEAM_COMPAT_DATA_PATH</label>
-                </td>
-                <td class="px-3">
-                    <Textbox @bind-Value="ProtonPrefix"
-                             Size="Textbox.Variant.Stretch"/>
-                </td>
-                <td>
-                    <Button Icon="folder" Text="Browse"/>
-                </td>
-            </tr>
-            <tr>
-                <td class="text-right">
-                    <label>$FLAGRUM_STEAM_LAUNCH_WRAPPER</label>
-                </td>
-                <td class="px-3">
-                    <Textbox @bind-Value="SteamLaunchWrapper"
-                             Size="Textbox.Variant.Stretch"/>
-                </td>
-                <td>
-                    <Button Icon="folder" Text="Browse"/>
-                </td>
-            </tr>
-            <tr>
-                <td class="text-right">
-                    <label>$FLAGRUM_STEAM_REAPER</label>
-                </td>
-                <td class="px-3">
-                    <Textbox @bind-Value="SteamReaper"
-                             Size="Textbox.Variant.Stretch"/>
-                </td>
-                <td>
-                    <Button Icon="folder" Text="Browse"/>
-                </td>
-            </tr>
-            <tr>
-                <td class="text-right">
-                    <label>$FLAGRUM_STEAM_RUNTIME</label>
-                </td>
-                <td class="px-3">
-                    <Textbox @bind-Value="SteamRuntime"
-                             Size="Textbox.Variant.Stretch"/>
-                </td>
-                <td>
-                    <Button Icon="folder" Text="Browse"/>
-                </td>
-            </tr>
-            <tr>
-                <td class="text-right">
-                    <label>$FLAGRUM_PROTON_EXECUTABLE</label>
-                </td>
-                <td class="px-3">
-                    <Textbox @bind-Value="Proton"
-                             Size="Textbox.Variant.Stretch"/>
-                </td>
-                <td>
-                    <Button Icon="folder" Text="Browse"/>
-                </td>
-            </tr>
-        </table>
-        
-        <h4 class="text-grey-300 mt-6 mb-4">Launch Command</h4>
-        <Textbox Rows="12" 
-                 @bind-Value="LaunchCommand" 
-                 Size="Textbox.Variant.Stretch" />
+        <EditForm EditContext="EditContext" OnValidSubmit="Save" class="flex-shrink-0">
+            <DataAnnotationsValidator/>
+            
+            <!-- Environment variables -->
+            <h4 class="text-grey-300 mb-4">Environment Variables</h4>
+            <table class="w-full">
+                <tr>
+                    <td class="text-right">
+                        <label>$STEAM_COMPAT_CLIENT_INSTALL_PATH</label>
+                    </td>
+                    <td class="px-3" style="width: 70%;">
+                        <Textbox @bind-Value="SteamRoot"
+                                 Size="Textbox.Variant.Stretch"/>
+                    </td>
+                    <td>
+                        <Button Icon="folder" Text="Browse"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">
+                        <label>$STEAM_COMPAT_DATA_PATH</label>
+                    </td>
+                    <td class="px-3">
+                        <Textbox @bind-Value="ProtonPrefix"
+                                 Size="Textbox.Variant.Stretch"/>
+                    </td>
+                    <td>
+                        <Button Icon="folder" Text="Browse"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">
+                        <label>$FLAGRUM_STEAM_LAUNCH_WRAPPER</label>
+                    </td>
+                    <td class="px-3">
+                        <Textbox @bind-Value="SteamLaunchWrapper"
+                                 Size="Textbox.Variant.Stretch"/>
+                    </td>
+                    <td>
+                        <Button Icon="folder" Text="Browse"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">
+                        <label>$FLAGRUM_STEAM_REAPER</label>
+                    </td>
+                    <td class="px-3">
+                        <Textbox @bind-Value="SteamReaper"
+                                 Size="Textbox.Variant.Stretch"/>
+                    </td>
+                    <td>
+                        <Button Icon="folder" Text="Browse"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">
+                        <label>$FLAGRUM_STEAM_RUNTIME</label>
+                    </td>
+                    <td class="px-3">
+                        <Textbox @bind-Value="SteamRuntime"
+                                 Size="Textbox.Variant.Stretch"/>
+                    </td>
+                    <td>
+                        <Button Icon="folder" Text="Browse"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-right">
+                        <label>$FLAGRUM_PROTON_EXECUTABLE</label>
+                    </td>
+                    <td class="px-3">
+                        <Textbox @bind-Value="Proton"
+                                 Size="Textbox.Variant.Stretch"/>
+                    </td>
+                    <td>
+                        <Button Icon="folder" Text="Browse"/>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Launch command -->
+            <h4 class="text-grey-300 mt-6 mb-4">Launch Command</h4>
+            <Textbox Rows="12"
+                     @bind-Value="LaunchCommand"
+                     Size="Textbox.Variant.Stretch"/>
+
+            <!-- Button row -->
+            <div class="pt-4 flex flex-row">
+                <div class="flex-grow"></div>
+                <Button Icon="save" Text="Save" Type="submit"/>
+            </div>
+
+        </EditForm>
     </BodyView>
-    <FooterView>
-        <div class="flex-grow"></div>
-        <Button Text="Save" OnClick="Save"/>
-    </FooterView>
 </AutosizeModal>

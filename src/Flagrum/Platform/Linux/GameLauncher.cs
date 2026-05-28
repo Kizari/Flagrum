@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,8 +14,6 @@ using Injectio.Attributes;
 
 namespace Flagrum.Platform.Linux;
 
-// TODO: Show message on first launch on Linux to let user know the launch is configurable
-
 /// <inheritdoc />
 [RegisterSingleton<IGameLauncher>]
 public partial class GameLauncher(
@@ -28,9 +27,6 @@ public partial class GameLauncher(
     /// <inheritdoc />
     public GameLaunchResult TryLaunch(bool isDebug, string? command = null)
     {
-        // TODO: Abort if launch config is invalid or incomplete (Linux)
-        //       Not all variables are required if launching with `command`
-        
         // Don't launch if the game is already running
         if (profile.IsGameRunning())
         {
@@ -43,11 +39,21 @@ public partial class GameLauncher(
         {
             return GameLaunchResult.UnsupportedExecutable;
         }
+        
+        // Validate launch configuration if applicable
+        if (command == null)
+        {
+            var context = new ValidationContext(launchConfig);
+            if (!Validator.TryValidateObject(launchConfig, context, null, true))
+            {
+                return GameLaunchResult.InvalidLaunchConfiguration;
+            }
+        }
 
         // Launch the game
         var configuration = GenerateHookConfiguration(type, isDebug);
         StartWindowsLauncherViaProton(configuration, command == null
-            ? launchConfig.LaunchCommand 
+            ? launchConfig.LaunchCommand!
             : AlterSteamCommand(command));
         
         return GameLaunchResult.Success;

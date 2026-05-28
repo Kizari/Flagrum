@@ -67,7 +67,7 @@
                                  SeparatorColor="green-900"
                                  OnClickAsync="() => LaunchGameAsync(false)">
                         <DropdownButtonItem Text="Launch Game" OnClick="() => LaunchGameAsync(false)"/>
-                        <DropdownButtonItem Text="Edit Configuration" OnClick="LaunchConfigModal.Open"/>
+                        <DropdownButtonItem Text="Edit Configuration" OnClick="() => LaunchConfigModal.Open(false)"/>
                     </SplitButton>
                 }
                 

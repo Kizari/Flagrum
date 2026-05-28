@@ -1,7 +1,9 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
+using Flagrum.Application.Utilities;
 using Injectio.Attributes;
 
 namespace Flagrum.Application.Features.Settings.Data;
@@ -9,6 +11,8 @@ namespace Flagrum.Application.Features.Settings.Data;
 [RegisterSingleton<LaunchConfiguration>]
 public class LaunchConfiguration(IConfiguration configuration)
 {
+    [Required]
+    [DirectoryExists]
     public string? SteamRoot
     {
         get => configuration.TryGet<string?>(StateKey.SteamRootPath, out var value)
@@ -17,6 +21,8 @@ public class LaunchConfiguration(IConfiguration configuration)
         set => configuration.Set(StateKey.SteamRootPath, value);
     }
     
+    [Required]
+    [DirectoryExists]
     public string? ProtonPrefix
     {
         get => configuration.TryGet<string?>(StateKey.ProtonPrefixPath, out var value)
@@ -24,7 +30,8 @@ public class LaunchConfiguration(IConfiguration configuration)
             : DetectPath(StateKey.ProtonPrefixPath);
         set => configuration.Set(StateKey.ProtonPrefixPath, value);
     }
-    
+
+    [LaunchCommandFileExists("$FLAGRUM_STEAM_LAUNCH_WRAPPER")]
     public string? SteamLaunchWrapper
     {
         get => configuration.TryGet<string?>(StateKey.SteamLaunchWrapperPath, out var value)
@@ -33,6 +40,7 @@ public class LaunchConfiguration(IConfiguration configuration)
         set => configuration.Set(StateKey.SteamLaunchWrapperPath, value);
     }
     
+    [LaunchCommandFileExists("$FLAGRUM_STEAM_REAPER")]
     public string? SteamReaper
     {
         get => configuration.TryGet<string?>(StateKey.SteamReaperPath, out var value)
@@ -41,6 +49,7 @@ public class LaunchConfiguration(IConfiguration configuration)
         set => configuration.Set(StateKey.SteamReaperPath, value);
     }
     
+    [LaunchCommandFileExists("$FLAGRUM_STEAM_RUNTIME")]
     public string? SteamRuntime
     {
         get => configuration.TryGet<string?>(StateKey.SteamRuntimePath, out var value)
@@ -49,6 +58,7 @@ public class LaunchConfiguration(IConfiguration configuration)
         set => configuration.Set(StateKey.SteamRuntimePath, value);
     }
     
+    [LaunchCommandFileExists("$FLAGRUM_PROTON_EXECUTABLE")]
     public string? Proton
     {
         get => configuration.TryGet<string?>(StateKey.ProtonPath, out var value)
@@ -57,6 +67,7 @@ public class LaunchConfiguration(IConfiguration configuration)
         set => configuration.Set(StateKey.ProtonPath, value);
     }
 
+    [Required]
     public string? LaunchCommand
     {
         get => configuration.TryGet<string?>(StateKey.LaunchCommand, out var launchCommand) ? launchCommand :
