@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance.Buffers;
@@ -115,7 +114,8 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
                 surface.Data,
                 surface.Width,
                 surface.Height,
-                ImageHeader.Format));
+                ImageHeader.Format,
+                ImageHeader.Flags));
         }
 
         return result;

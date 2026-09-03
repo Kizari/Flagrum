@@ -3,7 +3,7 @@
 namespace Flagrum.Core.Graphics.Textures.Luminous;
 
 /// <summary>
-/// Determines various attributes of a <see cref="BlackTextureImageData" /> within a <see cref="BlackTexture" />.
+/// Determines various attributes of a <see cref="BlackTextureImageHeader" /> within a <see cref="BlackTexture" />.
 /// </summary>
 [Flags]
 public enum BlackTextureImageFlags : byte
@@ -36,7 +36,7 @@ public enum BlackTextureImageFlags : byte
     COMPRESS = 16,
 
     /// <summary>
-    /// The pixel data is in the sRGB colour space.
+    /// The pixel data is in the sRGB color space.
     /// </summary>
     SRGB = 32,
 

@@ -5,7 +5,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Flagrum.Core.Graphics.Textures.Luminous;
-using Flagrum.Core.Graphics.Textures.Luminous.Builder;
 using Flagrum.Core.Graphics.Textures.Luminous.DataSources;
 using Flagrum.Core.Graphics.Textures.Shared;
 
@@ -84,7 +83,12 @@ public readonly ref partial struct DirectDrawSurface : IEnumerable<TextureSurfac
 
         foreach (var surface in this)
         {
-            result[surface.ArrayIndex].Add(new RawPixelDataSource(surface.Data, surface.Width, surface.Height, format));
+            result[surface.ArrayIndex].Add(new RawPixelDataSource(
+                surface.Data, 
+                surface.Width, 
+                surface.Height, 
+                format,
+                BlackTextureImageFlags.NONE));
         }
 
         return result;
