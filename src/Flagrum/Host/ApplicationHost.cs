@@ -85,8 +85,21 @@ public sealed class ApplicationHost : IApplication
         }
         
         // Restart the application
-        AvaloniaApplication!.Shutdown();
-        Process.Start(executablePath);
+        Task.Run(async () =>
+        {
+            // Delay is required to prevent a TaskCanceledException from occurring when shutting down the application
+            // due to this method itself running from the WebViewDispatcher queue.
+            // This exception does not appear to be interceptible in the current version of Avalonia.Controls.WebView
+            // and so the delay is the only way around it, although not guaranteed to work every time on every system
+            await Task.Delay(500);
+            
+            // Shutdown must be done from the UI thread
+            Invoke(() =>
+            {
+                AvaloniaApplication!.Shutdown();
+                Process.Start(executablePath);
+            });
+        });
     }
     
     /// <inheritdoc />
