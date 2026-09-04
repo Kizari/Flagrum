@@ -7,10 +7,10 @@ using Flagrum.Abstractions;
 using Flagrum.Application.Features.WorkshopMods.Data;
 using Flagrum.Application.Features.WorkshopMods.Services;
 using Flagrum.Application.Services;
+using Flagrum.Application.Utilities;
 using Flagrum.Components.Modals;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Archive.Mod;
-using Flagrum.Core.Graphics.Textures;
 using Flagrum.Core.Graphics.Textures.Luminous;
 using Flagrum.Core.Graphics.Textures.Shared;
 using Flagrum.Core.Utilities;
@@ -40,8 +40,8 @@ public partial class Index : ComponentBase
     private bool CanSave { get; set; }
     private string LoadingText { get; set; }
     private bool IsLoading { get; set; }
-    private string ImageName { get; set; } = "current_preview";
-    private string ThumbnailName { get; set; } = "current_thumbnail";
+    private string ImageName { get; set; } = $"current_preview.png?v={CultureHelper.GetVersionTimestamp()}";
+    private string ThumbnailName { get; set; } = $"current_thumbnail.png?v={CultureHelper.GetVersionTimestamp()}";
     private Dictionary<int, string> ModTypes { get; set; }
     private Dictionary<int, string> ModTargets { get; set; }
     private WorkshopModBuildContext WorkshopModBuildContext { get; set; }
@@ -182,8 +182,7 @@ public partial class Index : ComponentBase
         {
             await WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
             {
-                // This jank is required or the UI won't update the image if the value hasn't changed
-                ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
+                ImageName = $"current_preview.png?v={CultureHelper.GetVersionTimestamp()}";
                 await InvokeAsync(StateHasChanged);
             });
         }
@@ -196,8 +195,7 @@ public partial class Index : ComponentBase
         {
             await WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
             {
-                // This jank is required or the UI won't update the image if the value hasn't changed
-                ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
+                ThumbnailName = $"current_thumbnail.png?v={CultureHelper.GetVersionTimestamp()}";
                 await InvokeAsync(StateHasChanged);
             });
         }
@@ -400,8 +398,7 @@ public partial class Index : ComponentBase
                 var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
                 WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
 
-                // This jank is required or the UI won't update the image if the value hasn't changed
-                ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
+                ThumbnailName = $"current_thumbnail.png?v={CultureHelper.GetVersionTimestamp()}";
             }
 
             await InvokeAsync(StateHasChanged);
