@@ -1,6 +1,7 @@
 ﻿@inject IApplication Application
 @inject IStringLocalizer<Editor> Localizer
 @inject IProfileService Profile
+@using Flagrum.Abstractions.Application
 @using Flagrum.Abstractions.ModManager
 @using Flagrum.Abstractions.ModManager.Instructions
 @using Flagrum.Core.Utilities.Extensions
@@ -117,7 +118,7 @@
 
     private async Task UpdateFilePath(PackedAssetBuildInstruction instruction)
     {
-        var path = await Application.OpenFileAsync();
+        var path = await Application.OpenFileAsync([FileDialogFileType.All]);
         if (path != null)
         {
             instruction.FilePath = path;

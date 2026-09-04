@@ -1,5 +1,6 @@
 ﻿@using System.IO
 @using System.Text
+@using Flagrum.Abstractions.Application
 @using Flagrum.Application.Features.AssetExplorer.Base
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Graphics.Materials
@@ -73,9 +74,8 @@
     {
         var item = ContextNode;
         var defaultName = item.Name + ".gfxbin";
-        const string filter = "Game Model (*.gmdl.gfxbin)";
 
-        var path = await Application.SaveFileAsync(filter, defaultName);
+        var path = await Application.SaveFileAsync([FileDialogFileType.GameModel], defaultName);
         if (path != null)
         {
             await InvokeAsync(() =>

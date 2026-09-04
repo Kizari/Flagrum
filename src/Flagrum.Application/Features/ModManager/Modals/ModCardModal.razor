@@ -1,5 +1,6 @@
 ﻿@using System.IO
 @using Blazored.TextEditor
+@using Flagrum.Abstractions.Application
 @using Flagrum.Application.Features.ModManager.Editor
 @using Flagrum.Application.Features.ModManager.Project
 @using Flagrum.Application.Features.ModManager.Services
@@ -134,7 +135,7 @@
 
     private async Task SelectImage()
     {
-        var path = await Application.OpenFileAsync("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.Images]);
         if (path != null)
         {
             var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");

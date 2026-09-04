@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Flagrum.Abstractions.Application;
 using Flagrum.Abstractions.ModManager;
 using Flagrum.Abstractions.ModManager.Instructions;
 using Flagrum.Abstractions.ModManager.Project;
@@ -20,8 +21,6 @@ namespace Flagrum.Application.Features.ModManager.Editor;
 
 public partial class Editor
 {
-    private const string AllFilesFilter = "All Files (*)";
-
     private readonly Timer _timer = new(300);
 
     private string _filterQuery;
@@ -132,7 +131,7 @@ public partial class Editor
     {
         if (!CheckDuplicateFile(uri))
         {
-            var file = await Application.OpenFileAsync();
+            var file = await Application.OpenFileAsync([FileDialogFileType.All]);
             if (file != null)
             {
                 // Create the replacement instruction

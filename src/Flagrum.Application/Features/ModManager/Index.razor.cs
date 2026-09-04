@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Abstractions.ModManager;
 using Flagrum.Abstractions.ModManager.Instructions;
@@ -179,7 +180,7 @@ public sealed partial class Index : ModComponentBase
             return;
         }
 
-        var path = await Application.OpenFileAsync("Flagrum Mod (*.fmod *.zip)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.AllFlagrumMods]);
         if (path != null)
         {
             await InstallMod(path);

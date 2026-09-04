@@ -2,6 +2,7 @@
 
 @using System.IO
 @using System.Runtime.InteropServices
+@using Flagrum.Abstractions.Application
 @using Flagrum.Abstractions.AssetExplorer
 @using Flagrum.Application.Features.ModManager.Services
 @using Flagrum.Application.Features.Settings.Data
@@ -289,7 +290,7 @@
 
     private async Task GamePathClicked()
     {
-        var path = await Application.OpenFileAsync("Windows Executable (*.exe)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.WindowsExecutable]);
         if (path != null)
         {
             GamePath = path;
@@ -300,7 +301,7 @@
 
     private async Task BinmodListPathClicked()
     {
-        var path = await Application.OpenFileAsync("Binmod List (*.list)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.BinmodList]);
         if (path != null)
         {
             Profile.Current.BinmodListPath = path;

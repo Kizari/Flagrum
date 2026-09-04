@@ -31,6 +31,8 @@ public sealed class BlazorWebView : NativeWebView
         // Force Linux to use WebKitGTK over WPE WebKit, as the latter is buggy at time of writing
         EnvironmentRequested += (_, args) =>
         {
+            args.EnableDevTools = true;
+            
             if (args is LinuxWpeWebViewEnvironmentRequestedEventArgs wpeArgs)
             {
                 wpeArgs.PreferWebKitGtkInstead = true;

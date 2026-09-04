@@ -1,12 +1,12 @@
-﻿namespace Flagrum.Abstractions;
+﻿using Flagrum.Abstractions.Application;
+
+namespace Flagrum.Abstractions;
 
 /// <summary>
 /// Represents the Flagrum application.
 /// </summary>
 public interface IApplication : IDisposable
 {
-    public const string AllFilesFilter = "All Files (*)";
-    
     /// <summary>
     /// Semantic version of the currently running build of Flagrum.
     /// </summary>
@@ -35,7 +35,7 @@ public interface IApplication : IDisposable
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
     Task<string?> OpenFileAsync(
-        string filter = AllFilesFilter, 
+        FileDialogFileType[] filter, 
         string? initialDirectory = null, 
         string caption = "Open File");
 
@@ -47,7 +47,7 @@ public interface IApplication : IDisposable
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
     Task<string?> SaveFileAsync(
-        string filter = AllFilesFilter,
+        FileDialogFileType[] filter,
         string? defaultFileName = null,
         string caption = "Save File");
 

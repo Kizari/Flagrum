@@ -1,4 +1,5 @@
 ﻿@using System.IO
+@using Flagrum.Abstractions.Application
 @using Flagrum.Abstractions.ModManager.Project
 @using Flagrum.Core.Archive
 @using Flagrum.Application.Features.ModManager.Data
@@ -134,8 +135,7 @@
         }
 
         var defaultName = mod.Name.ToLower().Replace(" ", "_") + ".fmod";
-        const string filter = "Flagrum Mod (*.fmod)";
-        var savePath = await Application.SaveFileAsync(filter, defaultName);
+        var savePath = await Application.SaveFileAsync([FileDialogFileType.FlagrumMod], defaultName);
         if (savePath != null)
         {
             await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));
@@ -183,8 +183,7 @@
 
         Modal.Close();
 
-        const string filter = "Flagrum Mod (*.fmod)";
-        var savePath = await Application.SaveFileAsync(filter, "modpack.fmod");
+        var savePath = await Application.SaveFileAsync([FileDialogFileType.FlagrumMod], "modpack.fmod");
         if (savePath != null)
         {
             await InvokeAsync(() => Parent.SetLoading(true, "ExportingModPack"));

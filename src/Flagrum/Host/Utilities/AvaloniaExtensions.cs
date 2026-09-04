@@ -1,6 +1,9 @@
 using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
+using Flagrum.Abstractions.Application;
 
 namespace Flagrum.Host.Utilities;
 
@@ -37,4 +40,14 @@ public static class AvaloniaExtensions
             screen.WorkingArea.X + (screen.WorkingArea.Width - width) / 2,
             screen.WorkingArea.Y + (screen.WorkingArea.Height - height) / 2);
     }
+
+    /// <summary>
+    /// Converts an array of <see cref="FilePickerFileType"/> items
+    /// to their equivalent <see cref="FileDialogFileType"/> items.
+    /// </summary>
+    /// <param name="filter">Items to convert.</param>
+    /// <returns>Array of converted items.</returns>
+    public static FilePickerFileType[] ToAvaloniaFilter(this FileDialogFileType[] filter) => filter
+        .Select(f => new FilePickerFileType(f.Name) {Patterns = f.Patterns})
+        .ToArray();
 }

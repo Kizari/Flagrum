@@ -7,6 +7,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
+using Flagrum.Host.Utilities;
 using Injectio.Attributes;
 
 namespace Flagrum.Host;
@@ -34,7 +36,7 @@ public sealed class ApplicationHost : IApplication
 
     /// <inheritdoc />
     public async Task<string?> OpenFileAsync(
-        string filter = IApplication.AllFilesFilter,
+        FileDialogFileType[] filter,
         string? initialDirectory = null,
         string caption = "Open File")
     {
@@ -42,7 +44,7 @@ public sealed class ApplicationHost : IApplication
         
         var result = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            FileTypeFilter = [new FilePickerFileType(filter)]
+            FileTypeFilter = filter.ToAvaloniaFilter()
         });
 
         return result.Count > 0 ? result[0].Path.LocalPath : null;
@@ -50,7 +52,7 @@ public sealed class ApplicationHost : IApplication
 
     /// <inheritdoc />
     public async Task<string?> SaveFileAsync(
-        string filter = IApplication.AllFilesFilter,
+        FileDialogFileType[] filter,
         string? defaultFileName = null,
         string caption = "Save File")
     {
@@ -59,7 +61,7 @@ public sealed class ApplicationHost : IApplication
         var result = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             SuggestedFileName = defaultFileName,
-            FileTypeChoices = [new FilePickerFileType(filter)],
+            FileTypeChoices = filter.ToAvaloniaFilter(),
             ShowOverwritePrompt = true
         });
 

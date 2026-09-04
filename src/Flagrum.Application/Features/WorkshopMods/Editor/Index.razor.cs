@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
 using Flagrum.Application.Features.WorkshopMods.Data;
 using Flagrum.Application.Features.WorkshopMods.Services;
 using Flagrum.Application.Services;
@@ -177,7 +178,7 @@ public partial class Index : ComponentBase
 
     private async Task SelectImage()
     {
-        var path = await Application.OpenFileAsync("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.Images]);
         if (path != null)
         {
             await WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
@@ -190,7 +191,7 @@ public partial class Index : ComponentBase
 
     private async Task SelectThumbnail()
     {
-        var path = await Application.OpenFileAsync("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.Images]);
         if (path != null)
         {
             await WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
@@ -371,7 +372,7 @@ public partial class Index : ComponentBase
 
     private async Task SelectModel(int index)
     {
-        var path = await Application.OpenFileAsync("Flagrum Model Data (*.fmd)");
+        var path = await Application.OpenFileAsync([FileDialogFileType.FlagrumModelData]);
         if (path != null)
         {
             FmdFileNames[index] = path.Split('\\', '/').Last();

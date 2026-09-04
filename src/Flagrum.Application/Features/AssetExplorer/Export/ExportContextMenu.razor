@@ -1,4 +1,5 @@
 ﻿@using System.IO
+@using Flagrum.Abstractions.Application
 @using Flagrum.Application.Features.AssetExplorer.Base
 @using Flagrum.Core.Animation.Package
 @using Flagrum.Core.Archive
@@ -121,11 +122,12 @@
 
         var filter = item.Type switch
         {
-            ExplorerItemType.Material or ExplorerItemType.Model => "Graphics Binary (*.gfxbin)",
-            ExplorerItemType.Texture => "PNG (*.png);;Targa (*.tga);;DirectDraw Surface (*.dds);;Black Texture (*.btex)",
-            ExplorerItemType.TerrainTexture => "PNG (*.png);;Targa (*.tga);;DirectDraw Surface (*.dds);;Height Entity Binary (*.heb)",
-            ExplorerItemType.Xml => "eXtensible Markup Language (*.xml);;Ebony XML (*.exml)",
-            _ => $"Unknown File|*.{UriHelper.Instance.GetTrueExtensionFromFileName(item.Name).Split('.')[^1]}"
+            ExplorerItemType.Material or ExplorerItemType.Model => [FileDialogFileType.GraphicsBinary],
+            ExplorerItemType.Texture => FileDialogFileType.Textures,
+            ExplorerItemType.TerrainTexture => FileDialogFileType.TerrainTextures,
+            ExplorerItemType.Xml => FileDialogFileType.EbonyXmlFiles,
+            _ => [new FileDialogFileType("Unknown File", 
+                [$"*.{UriHelper.Instance.GetTrueExtensionFromFileName(item.Name).Split('.')[^1]}"])]
         };
 
         var trueExtension = UriHelper.Instance.GetTrueExtensionFromFileName(item.Name);
@@ -183,9 +185,9 @@
     private async Task ExportEnvironment()
     {
         var item = AssetExplorer.ContextNode;
-        const string filter = "Flagrum Environment Data (*.fed)";
-
-        var path = await Application.SaveFileAsync(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.fed");
+        var path = await Application.SaveFileAsync([FileDialogFileType.FlagrumEnvironmentData], 
+            $"{item.Name[..item.Name.LastIndexOf('.')]}.fed");
+        
         if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
@@ -197,9 +199,9 @@
     private async Task ExportTerrain()
     {
         var item = AssetExplorer.ContextNode;
-        const string filter = "Flagrum Terrain Data (*.ftd)";
-
-        var path = await Application.SaveFileAsync(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.ftd");
+        var path = await Application.SaveFileAsync([FileDialogFileType.FlagrumTerrainData], 
+            $"{item.Name[..item.Name.LastIndexOf('.')]}.ftd");
+        
         if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
