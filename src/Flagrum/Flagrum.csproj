@@ -5,7 +5,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-        <ApplicationIcon>../Flagrum.Native/Resources/flagrum.ico</ApplicationIcon>
+        <ApplicationIcon>Resources/flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
         <BaseVersion>1.7.0</BaseVersion> <!-- Current version of the application -->
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
@@ -107,6 +107,18 @@
         <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json" />
         <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <EmbeddedResource Update="Resources/Strings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <PublicClass>true</PublicClass>
+            <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(MSBuildProjectDirectory)/Resources/Strings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Flagrum.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>Strings</StronglyTypedClassName>
+        </EmbeddedResource>
+    </ItemGroup>
 
     <!-- Automatically generate `SolutionInfo` class before build -->
     <Target Name="GenerateSolutionInfo" BeforeTargets="BeforeBuild">
@@ -124,7 +136,7 @@
     </Target>
 
     <!-- Copy Linux libs to output directory -->
-    <Target Name="CopyAdditionalDependencies" Condition="$([MSBuild]::IsOSPlatform('Linux'))" AfterTargets="Build">
+    <Target Name="CopyAdditionalDependenciesLinux" Condition="$([MSBuild]::IsOSPlatform('Linux'))" AfterTargets="Build">
         <CreateItem Include="$(SolutionDir)libs/linux-x64/**">
             <Output TaskParameter="Include" ItemName="LinuxLibs" />
         </CreateItem>
@@ -139,7 +151,7 @@
     </Target>
     
     <!-- Copy Windows libs to output directory -->
-    <Target Name="CopyAdditionalDependencies" Condition="$([MSBuild]::IsOSPlatform('Windows'))" AfterTargets="Build">
+    <Target Name="CopyAdditionalDependenciesWindows" Condition="$([MSBuild]::IsOSPlatform('Windows'))" AfterTargets="Build">
         <CreateItem Include="$(SolutionDir)libs/win-x64/**">
             <Output TaskParameter="Include" ItemName="WindowsLibs" />
         </CreateItem>

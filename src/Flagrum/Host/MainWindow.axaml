@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:shell="clr-namespace:Flagrum.Host.Shell"
+        xmlns:resources="clr-namespace:Flagrum.Resources"
         mc:Ignorable="d"
         Title="Flagrum"
         WindowStartupLocation="Manual"
@@ -24,7 +25,7 @@
             
             <!-- Title Bar -->
             <Grid Grid.Row="0"
-                  ColumnDefinitions="45,*,Auto,Auto,Auto"
+                  ColumnDefinitions="45,*,Auto,Auto,Auto,Auto"
                   Background="#181512"
                   WindowDecorationProperties.ElementRole="TitleBar">
                 
@@ -38,21 +39,30 @@
                 
                 <!-- Application name -->
                 <TextBlock Grid.Column="1"
-                           Text="Flagrum"
+                           Text="{x:Static resources:Strings.WindowTitle}"
                            FontFamily="{StaticResource Play}"
                            FontSize="14"
                            VerticalAlignment="Center"
                            Foreground="#837363"
                            Padding="0 5 15 8"/>
                 
+                <!-- Patreon button -->
+                <Image Grid.Column="2"
+                       Name="PatreonButton"
+                       Source="/Assets/patreon.png"
+                       PointerReleased="PatreonButton_OnPointerReleased"
+                       Height="20"
+                       Margin="0 0 30 0"
+                       Cursor="Hand"/>
+                
                 <!-- Minimize button -->
-                <shell:PlasmaShellButton Grid.Column="2"
+                <shell:PlasmaShellButton Grid.Column="3"
                                          Icon="WindowMinimize"
                                          WindowDecorationProperties.ElementRole="MinimizeButton"
                                          Click="OnMinimize"/>
                 
                 <!-- Maximize button -->
-                <shell:PlasmaShellButton Grid.Column="3"
+                <shell:PlasmaShellButton Grid.Column="4"
                                          Icon="{Binding WindowState, 
                                                         RelativeSource={RelativeSource AncestorType=Window},
                                                         Converter={StaticResource WindowStateToSystemIconConverter}}"
@@ -61,7 +71,7 @@
                                          Click="OnMaximize"/>
                 
                 <!-- Close button -->
-                <shell:PlasmaShellButton Grid.Column="4"
+                <shell:PlasmaShellButton Grid.Column="5"
                                          Icon="WindowClose"
                                          HoverBackground="IndianRed"
                                          Margin="0 0 8 0"

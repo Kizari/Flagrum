@@ -101,7 +101,10 @@ public sealed class ApplicationHost : IApplication
     /// <inheritdoc />
     public void RefreshPatreonButton()
     {
-        throw new NotImplementedException();
+        if (AvaloniaApplication?.MainWindow is MainWindow window)
+        {
+            window.RefreshPatreonButton();
+        }
     }
 
     /// <inheritdoc />
