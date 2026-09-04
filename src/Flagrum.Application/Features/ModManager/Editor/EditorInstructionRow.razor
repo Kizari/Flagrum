@@ -62,7 +62,7 @@
                     <div>/@firstPath.Split('/').Last()</div>
                 </div>
                 <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                      @onclick="() => Application.SetClipboardText(firstPath)">
+                      @onclick="() => Application.SetClipboardTextAsync(firstPath)">
                     content_copy
                 </span>
                 <br/>
@@ -70,7 +70,7 @@
                     <div>@string.Join('\\', secondPath.Split('\\')[..^1])</div>
                     <div>\@secondPath.Split('\\').Last()</div>
                     <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                          @onclick="() => Application.SetClipboardText(secondPath)">
+                          @onclick="() => Application.SetClipboardTextAsync(secondPath)">
                         content_copy
                     </span>
                     <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
@@ -84,7 +84,7 @@
                     <div>@string.Join('/', packed.Uri.Split('/')[..^1])</div>
                     <div>/@packed.Uri.Split('/').Last()</div>
                     <span class="material-icons pl-1.5 pt-0.5 cursor-pointer text-accent1-200 text-sm pb-0.5"
-                          @onclick="() => Application.SetClipboardText(packed.Uri)">
+                          @onclick="() => Application.SetClipboardTextAsync(packed.Uri)">
                         content_copy
                     </span>
                 </div>
@@ -117,7 +117,7 @@
 
     private async Task UpdateFilePath(PackedAssetBuildInstruction instruction)
     {
-        var path = Application.OpenFile();
+        var path = await Application.OpenFileAsync();
         if (path != null)
         {
             instruction.FilePath = path;

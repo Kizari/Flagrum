@@ -1,8 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Flagrum.Abstractions;
 
-namespace Flagrum.Host;
+namespace Flagrum.Host.WebView;
 
 /// <summary>
 /// Ensures that work from the Blazor application executes on the UI thread.
@@ -31,12 +32,12 @@ public class BlazorSynchronizationContext : SynchronizationContext
         workItem.SynchronizationContext.ExecuteSynchronously(null, workItem.Callback, workItem.AttachedState);
     };
 
-    private readonly ApplicationHost _application;
+    private readonly IApplication _application;
     private readonly State _state;
 
-    public BlazorSynchronizationContext(ApplicationHost application) : this(application, new State()) { }
+    public BlazorSynchronizationContext(IApplication application) : this(application, new State()) { }
 
-    private BlazorSynchronizationContext(ApplicationHost application, State state)
+    private BlazorSynchronizationContext(IApplication application, State state)
     {
         _application = application;
         _state = state;

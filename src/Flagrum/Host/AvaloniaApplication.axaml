@@ -1,0 +1,18 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shell="clr-namespace:Flagrum.Host.Shell"
+             x:Class="Flagrum.Host.AvaloniaApplication"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <FontFamily x:Key="Play">avares://Flagrum/Assets/Play-Regular.ttf#Play</FontFamily>
+        <shell:SystemIconConverter x:Key="SystemIconConverter"/>
+        <shell:WindowStateToSystemIconConverter x:Key="WindowStateToSystemIconConverter"/>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Flagrum/Host/Shell/PlasmaShellButton.axaml"/>
+    </Application.Styles>
+
+</Application>

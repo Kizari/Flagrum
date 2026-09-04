@@ -1,0 +1,81 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shell="clr-namespace:Flagrum.Host.Shell"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Flagrum.Host.SplashWindow"
+        Title="Flagrum"
+        Width="380"
+        Height="470"
+        MinWidth="380"
+        MaxWidth="380"
+        MinHeight="470"
+        MaxHeight="470"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        WindowDecorations="None"
+        ShowInTaskbar="False">
+    
+    <!-- Styles -->
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="avares://Flagrum/Assets/Play-Regular.ttf#Play" />
+        </Style>
+    </Window.Styles>
+
+    <!-- Layout -->
+    <Grid>
+        
+        <!-- Brushed background -->
+        <shell:BrushedMetalBackground />
+
+        <!-- Contents -->
+        <Grid
+            Margin="20,30,20,20"
+            RowDefinitions="Auto,*,Auto,Auto,Auto"
+            RowSpacing="20">
+
+            <!-- Logo -->
+            <Image
+                Grid.Row="0"
+                Width="280"
+                Height="260"
+                Margin="20,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Stretch="Uniform"
+                Source="avares://Flagrum/Assets/logo.png" />
+
+            <!-- Loading text -->
+            <TextBlock
+                x:Name="LoadingLabel"
+                Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                Text="Loading"
+                TextAlignment="Center"
+                FontSize="20"
+                Foreground="#E1D9B7"/>
+
+            <!-- Progress bar -->
+            <ProgressBar
+                Grid.Row="3"
+                HorizontalAlignment="Stretch"
+                IsIndeterminate="True"
+                ShowProgressText="False"
+                Background="#100F0C"
+                Foreground="#ADA685"
+                Height="6"/>
+
+            <!-- Acknowledgement -->
+            <TextBlock
+                Grid.Row="4"
+                Margin="0,20,0,10"
+                HorizontalAlignment="Stretch"
+                Text="Made with ♥ by Kizari"
+                TextAlignment="Center"
+                FontSize="14" />
+
+        </Grid>
+    </Grid>
+</Window>

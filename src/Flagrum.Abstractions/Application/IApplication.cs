@@ -20,6 +20,12 @@ public interface IApplication : IDisposable
     /// or if the associated file has already been handled and cleared.
     /// </remarks>
     string? AssociatedFile { get; set; }
+
+    /// <summary>
+    /// Invokes an action on the UI thread.
+    /// </summary>
+    /// <param name="callback">Action to execute on the UI thread.</param>
+    void Invoke(Action callback);
     
     /// <summary>
     /// Shows an open file dialog.
@@ -28,7 +34,7 @@ public interface IApplication : IDisposable
     /// <param name="initialDirectory">Directory to show in the dialog when it first appears.</param>
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
-    string? OpenFile(
+    Task<string?> OpenFileAsync(
         string filter = AllFilesFilter, 
         string? initialDirectory = null, 
         string caption = "Open File");
@@ -40,7 +46,7 @@ public interface IApplication : IDisposable
     /// <param name="defaultFileName">Optional default file name to populate in the save dialog.</param>
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the file.</returns>
-    string? SaveFile(
+    Task<string?> SaveFileAsync(
         string filter = AllFilesFilter,
         string? defaultFileName = null,
         string caption = "Save File");
@@ -50,7 +56,7 @@ public interface IApplication : IDisposable
     /// </summary>
     /// <param name="caption">Dialog title.</param>
     /// <returns><c>null</c> if the user canceled the dialog, otherwise the full path to the directory.</returns>
-    public string? OpenDirectory(string caption = "Select Folder");
+    Task<string?> OpenDirectoryAsync(string caption = "Select Folder");
     
     /// <summary>
     /// Gracefully shuts down this instance of the Flagrum process, and begins a new one.
@@ -61,11 +67,17 @@ public interface IApplication : IDisposable
     /// Copies the given text into the system's clipboard.
     /// </summary>
     /// <param name="text">Text to copy.</param>
-    void SetClipboardText(string text);
+    Task SetClipboardTextAsync(string text);
     
     /// <summary>
     /// Updates the state of the Patreon button in the application title bar.
     /// </summary>
     /// <remarks>Used to show/hide the button based on user preferences.</remarks>
     void RefreshPatreonButton();
+
+    /// <summary>
+    /// Sets the caption on the splash screen.
+    /// </summary>
+    /// <param name="text">Caption to set.</param>
+    void SetSplashText(string text);
 }

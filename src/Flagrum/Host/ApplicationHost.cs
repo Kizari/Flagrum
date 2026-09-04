@@ -2,54 +2,76 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using Flagrum.Abstractions;
 using Injectio.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Localization;
 
 namespace Flagrum.Host;
 
 /// <summary>
-/// Callback that is invoked when <see cref="BlazorWebView" /> sends a message back to Flagrum.
+/// Wraps the <see cref="Avalonia.Application"/> to expose platform functionality to the rest of the application.
 /// </summary>
-public delegate void WebMessageReceivedCallback(string message);
-
-/// <summary>
-/// Native components that host the .NET/Blazor parts of the program.
-/// </summary>
-[RegisterSingleton<ApplicationHost>]
-[RegisterSingleton<IApplication>(Factory = nameof(Factory))]
-public sealed partial class ApplicationHost(
-    IConfiguration configuration,
-    IStringLocalizer<ApplicationHost> localizer) : IApplication
+[RegisterSingleton<IApplication>]
+public sealed class ApplicationHost : IApplication
 {
-    private readonly IntPtr _instance = ApplicationHost_Create();
-    private LocalizedStringBuffer? _stringBuffer;
-
-    private WebMessageReceivedCallback? _onWebMessageReceived;
-    private Action? _patreonButtonCallback;
-
+    public IClassicDesktopStyleApplicationLifetime? AvaloniaApplication { get; set; }
+    
     /// <inheritdoc />
     public Version Version => typeof(Program).Assembly.GetName().Version!;
-
+    
     /// <inheritdoc />
     public string? AssociatedFile { get; set; }
+    
+    /// <inheritdoc />
+    public void Dispose() {}
 
     /// <inheritdoc />
-    public void Dispose()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Invoke(Action callback) => Avalonia.Threading.Dispatcher.UIThread.Invoke(callback);
+
+    /// <inheritdoc />
+    public async Task<string?> OpenFileAsync(
+        string filter = IApplication.AllFilesFilter,
+        string? initialDirectory = null,
+        string caption = "Open File")
     {
-        ApplicationHost_Destroy(_instance);
-        _stringBuffer?.Dispose();
+        var storage = AvaloniaApplication!.MainWindow!.StorageProvider;
+        
+        var result = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            FileTypeFilter = [new FilePickerFileType(filter)]
+        });
+
+        return result.Count > 0 ? result[0].Path.LocalPath : null;
     }
 
-    /// <summary>
-    /// Initializes localization for the native application host.
-    /// </summary>
-    public void InitializeLocalization()
+    /// <inheritdoc />
+    public async Task<string?> SaveFileAsync(
+        string filter = IApplication.AllFilesFilter,
+        string? defaultFileName = null,
+        string caption = "Save File")
     {
-        _stringBuffer = new LocalizedStringBuffer(localizer.GetAllStrings(true));
-        LocalizationService_Initialize(_stringBuffer.Count, _stringBuffer.Pointer);
+        var storage = AvaloniaApplication!.MainWindow!.StorageProvider;
+        
+        var result = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            SuggestedFileName = defaultFileName,
+            FileTypeChoices = [new FilePickerFileType(filter)],
+            ShowOverwritePrompt = true
+        });
+
+        return result?.Path.LocalPath;
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> OpenDirectoryAsync(string caption = "Select Folder")
+    {
+        var storage = AvaloniaApplication!.MainWindow!.StorageProvider;
+        var result = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions());
+        return result.Count > 0 ? result[0].Path.LocalPath : null;
     }
 
     /// <inheritdoc />
@@ -61,160 +83,33 @@ public sealed partial class ApplicationHost(
         {
             executablePath += ".exe";
         }
-
+        
         // Restart the application
-        ApplicationHost_Restart(_instance, 0, executablePath);
+        AvaloniaApplication!.Shutdown();
+        Process.Start(executablePath);
     }
-
+    
     /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetClipboardText(string text) => ApplicationHost_SetClipboardText(_instance, text);
-
-    /// <inheritdoc />
-    public string? OpenFile(
-        string filter = IApplication.AllFilesFilter,
-        string? initialDirectory = null,
-        string caption = "Open File")
+    public async Task SetClipboardTextAsync(string text)
     {
-        var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_OpenFile(_instance, caption, initialDirectory, filter, pResult);
-        var result = Marshal.PtrToStringUTF8(pResult);
-        Marshal.FreeHGlobal(pResult);
-        return string.IsNullOrWhiteSpace(result) ? null : result;
-    }
-
-    /// <inheritdoc />
-    public string? SaveFile(
-        string filter = IApplication.AllFilesFilter,
-        string? defaultFileName = null,
-        string caption = "Save File")
-    {
-        var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_SaveFile(_instance, caption, defaultFileName, filter, pResult);
-        var result = Marshal.PtrToStringUTF8(pResult);
-        Marshal.FreeHGlobal(pResult);
-        return string.IsNullOrWhiteSpace(result) ? null : result;
-    }
-
-    /// <inheritdoc />
-    public string? OpenDirectory(string caption = "Select Folder")
-    {
-        var pResult = Marshal.AllocHGlobal(4096);
-        ApplicationHost_OpenDirectory(_instance, caption, null, pResult);
-        var result = Marshal.PtrToStringUTF8(pResult);
-        Marshal.FreeHGlobal(pResult);
-        return string.IsNullOrWhiteSpace(result) ? null : result;
+        if (AvaloniaApplication!.MainWindow?.Clipboard != null)
+        {
+            await AvaloniaApplication.MainWindow.Clipboard.SetTextAsync(text);
+        }
     }
 
     /// <inheritdoc />
     public void RefreshPatreonButton()
     {
-        var isVisible = !configuration.Get<bool>(StateKey.HidePatreonButton);
-        ApplicationHost_SetPatreonButtonVisible(_instance, isVisible);
+        throw new NotImplementedException();
     }
 
-    public static IApplication Factory(IServiceProvider provider) => provider.GetRequiredService<ApplicationHost>();
-
-    /// <summary>
-    /// Runs the application indefinitely until <see cref="Exit" /> is called, or the main window is closed.
-    /// </summary>
-    /// <returns>Exit code.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int Run() => ApplicationHost_Run(_instance);
-
-    /// <summary>
-    /// Closes active windows and exits the event loop, ending the program.
-    /// </summary>
-    /// <param name="exitCode">Exit code to return to <see cref="Run" />.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Exit(int exitCode) => ApplicationHost_Exit(_instance, exitCode);
-
-    /// <summary>
-    /// Invokes an action on the UI thread.
-    /// </summary>
-    /// <param name="action">Action to execute.</param>
-    /// <remarks>
-    /// <paramref name="action" /> is automatically wrapped in a try/catch block to ensure that any
-    /// exceptions that occur during operation do not cross the native boundary.
-    /// Since the exception can't be rethrown, it's simply logged instead.
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Invoke(Action action) => ApplicationHost_Invoke(_instance, action);
-
-    /// <summary>
-    /// Creates and shows the splash screen.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OpenSplash() => ApplicationHost_OpenSplash(_instance);
-
-    /// <summary>
-    /// Closes and destroys the splash screen.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CloseSplash() => ApplicationHost_CloseSplash(_instance);
-
-    /// <summary>
-    /// Updates the text above the splash screen's loading bar.
-    /// </summary>
-    /// <param name="text">Text to display.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetSplashText(string text) => ApplicationHost_SetSplashText(_instance, text);
-
-    /// <summary>
-    /// Creates and shows the main application window.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OpenMainWindow()
+    /// <inheritdoc />
+    public void SetSplashText(string text)
     {
-        ApplicationHost_OpenMainWindow(_instance);
-        
-        _patreonButtonCallback = () => Process.Start(new ProcessStartInfo("https://www.patreon.com/Kizari")
+        if (AvaloniaApplication!.MainWindow is SplashWindow splash)
         {
-            UseShellExecute = true
-        });
-        
-        ApplicationHost_SetPatreonButtonCallback(_instance, _patreonButtonCallback);
-        RefreshPatreonButton();
+            splash.SetText(text);
+        }
     }
-
-    /// <summary>
-    /// Closes and destroys the main application window.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CloseMainWindow() => ApplicationHost_CloseMainWindow(_instance);
-
-    /// <summary>
-    /// Sets the callback that will handle web messages sent to the host application
-    /// by the embedded web view.
-    /// </summary>
-    /// <param name="handler">Web message handler.</param>
-    public void SetWebMessageHandler(WebMessageReceivedCallback handler)
-    {
-        _onWebMessageReceived = handler; // Prevent GC
-        ApplicationHost_SetWebMessageHandler(_instance, _onWebMessageReceived);
-    }
-
-    /// <summary>
-    /// Navigates the main window's embedded web view to a different page.
-    /// </summary>
-    /// <param name="url">URL to navigate to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void NavigateWebView(string url) => ApplicationHost_NavigateWebView(_instance, url);
-
-    /// <summary>
-    /// Executes a JavaScript snippet in the main window's embedded web view.
-    /// </summary>
-    /// <param name="script">JS code to execute.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void RunJavaScript(string script) => ApplicationHost_RunJavaScript(_instance, script);
-
-    /// <summary>
-    /// Shows a native message box dialog.
-    /// </summary>
-    /// <param name="title">Message box title.</param>
-    /// <param name="message">Message box body text.</param>
-    /// <param name="type">Message box type.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ShowMessageBox(string title, string message, MessageBoxType type) =>
-        ApplicationHost_ShowMessageBox(_instance, title, message, type);
 }

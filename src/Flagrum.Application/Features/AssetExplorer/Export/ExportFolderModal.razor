@@ -269,7 +269,7 @@
     {
         if (Parent.CurrentView == AssetExplorerView.GameView)
         {
-            var folder = Application.OpenDirectory();
+            var folder = await Application.OpenDirectoryAsync();
 
             if (folder != null)
             {

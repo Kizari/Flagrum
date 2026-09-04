@@ -15,7 +15,7 @@ public partial class ProfilesMigration(
     FlagrumDbContext context,
     IProfileService profile,
     IConfiguration configuration,
-    ApplicationHost application)
+    IApplication application)
 {
     [MigrationStep(0, "73beb165-31e2-4400-8ae8-93c8c0c0dbf9", MigrationScope.Application)]
     public async Task Migrate()

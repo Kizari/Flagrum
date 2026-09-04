@@ -4,13 +4,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Flagrum.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.FileProviders;
 
-namespace Flagrum.Host;
+namespace Flagrum.Host.WebView;
 
 /// <inheritdoc cref="WebViewManager" />
 public class BlazorWebViewManager : WebViewManager
@@ -38,6 +39,9 @@ public class BlazorWebViewManager : WebViewManager
     {
         _webView = webView;
         _scheduler = scheduler;
+        
+        // Set the message received callback
+        webView.WebMessageReceived += OnWebMessageReceived;
 
         // Start the local HTTP server that serves the application content to the web view
         _listener = new HttpListener();
@@ -83,10 +87,12 @@ public class BlazorWebViewManager : WebViewManager
     /// <summary>
     /// Handles web messages received from the web view.
     /// </summary>
-    /// <param name="message">The message that was received.</param>
-    public void OnWebMessageReceived(string message)
+    private void OnWebMessageReceived(object? sender, WebMessageReceivedEventArgs args)
     {
-        MessageReceived(BaseUri, message);
+        if (args.Body != null)
+        {
+            MessageReceived(BaseUri, args.Body);
+        }
     }
 
     /// <summary>

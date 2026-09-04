@@ -143,11 +143,13 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
                 {
                     var catchBody = m.Mode == MigrationStepMode.Warn
                         ? $"""
-                                           application.ShowMessageBox("Warning", "{m.Warning}", Flagrum.Host.MessageBoxType.Warning);
-                                               
-                                           // Warned migrations won't be retried
-                                           {Service(m)}.SetMigrated({m.MethodName}Id);
-                           """
+                                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                                                MessageBox.ShowAsync("Warning", "{m.Warning}", Icon.Warning)
+                                            );
+                                                
+                                            // Warned migrations won't be retried
+                                            {Service(m)}.SetMigrated({m.MethodName}Id);
+                            """
                         : "                // Doing nothing so this will be retried next launch";
 
                     var catchBlock = $$"""
@@ -178,6 +180,8 @@ public class DataMigrationSourceGenerator : IIncrementalGenerator
 
                            using System.Threading.Tasks;
                            using System.Collections.Generic;
+                           using MsBox.Avalonia.Enums;
+                           using Flagrum.Host.Shell;
 
                            namespace {{nameSpace}};
 

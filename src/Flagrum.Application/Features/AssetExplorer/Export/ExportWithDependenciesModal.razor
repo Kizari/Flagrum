@@ -75,7 +75,7 @@
         var defaultName = item.Name + ".gfxbin";
         const string filter = "Game Model (*.gmdl.gfxbin)";
 
-        var path = Application.SaveFile(filter, defaultName);
+        var path = await Application.SaveFileAsync(filter, defaultName);
         if (path != null)
         {
             await InvokeAsync(() =>

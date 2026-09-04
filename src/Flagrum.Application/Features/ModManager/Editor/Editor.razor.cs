@@ -132,7 +132,7 @@ public partial class Editor
     {
         if (!CheckDuplicateFile(uri))
         {
-            var file = Application.OpenFile();
+            var file = await Application.OpenFileAsync();
             if (file != null)
             {
                 // Create the replacement instruction

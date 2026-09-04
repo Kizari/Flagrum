@@ -138,7 +138,7 @@
             _ => defaultFileName
         };
 
-        var path = Application.SaveFile(filter, defaultFileName);
+        var path = await Application.SaveFileAsync(filter, defaultFileName);
         if (path != null)
         {
             byte[] data;
@@ -185,7 +185,7 @@
         var item = AssetExplorer.ContextNode;
         const string filter = "Flagrum Environment Data (*.fed)";
 
-        var path = Application.SaveFile(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.fed");
+        var path = await Application.SaveFileAsync(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.fed");
         if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
@@ -199,7 +199,7 @@
         var item = AssetExplorer.ContextNode;
         const string filter = "Flagrum Terrain Data (*.ftd)";
 
-        var path = Application.SaveFile(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.ftd");
+        var path = await Application.SaveFileAsync(filter, $"{item.Name[..item.Name.LastIndexOf('.')]}.ftd");
         if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
@@ -211,7 +211,7 @@
     private async Task ExportAnimationClips()
     {
         var item = AssetExplorer.ContextNode;
-        var folderPath = Application.OpenDirectory();
+        var folderPath = await Application.OpenDirectoryAsync();
 
         if (folderPath != null)
         {

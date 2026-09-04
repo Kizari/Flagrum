@@ -32,7 +32,7 @@ public partial class RemoveSqliteMigration(
     IConfiguration configuration,
     ModManagerServiceBase modManager,
     IFileIndex fileIndex,
-    ApplicationHost application)
+    IApplication application)
 {
     private const string ReindexWarning = "An unexpected error occurred while attempting to index loose game " +
                                           "files for the 1.5.6 feature update. If this is something you wish to " +

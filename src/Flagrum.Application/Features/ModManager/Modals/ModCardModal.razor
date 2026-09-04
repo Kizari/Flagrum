@@ -134,7 +134,7 @@
 
     private async Task SelectImage()
     {
-        var path = Application.OpenFile("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
+        var path = await Application.OpenFileAsync("Image Files (*.png *.jpg *.jpeg *.tif *.tiff *.gif)");
         if (path != null)
         {
             var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");

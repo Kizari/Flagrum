@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Core.Utilities;
 
-namespace Flagrum.Host;
+namespace Flagrum.Host.Utilities;
 
 public class OffMainThreadException : Exception;
 

@@ -19,7 +19,7 @@ namespace Flagrum.Migrations;
 public partial class ResetAppliedModsMigration(
     ModManagerServiceBase modManager,
     IProfileService profile,
-    ApplicationHost application)
+    IApplication application)
 {
     private const string Warning = "An unexpected error occurred while attempting to repair potentially broken " +
                                    "modded files for a fix introduced in 1.5.11. Please manually reset your " +

@@ -37,7 +37,7 @@ public partial class FileIndexMigration(
     ModManagerServiceBase modManager,
     IProfileService profile,
     IFileIndex fileIndex,
-    ApplicationHost application)
+    IApplication application)
 {
     [MigrationStep(0, "d2e4e56c-6e5b-4b57-9d33-11ccb8d3878e", MigrationScope.Profile)]
     private async Task MigrateFileIndex()

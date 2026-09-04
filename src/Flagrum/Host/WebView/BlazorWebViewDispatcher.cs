@@ -1,10 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Flagrum.Abstractions;
 using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 
-namespace Flagrum.Host;
+namespace Flagrum.Host.WebView;
 
 /// <summary>
 /// Dispatches Blazor work to the UI thread to ensure the native web view can be updated accordingly.
@@ -14,7 +15,7 @@ public sealed partial class BlazorWebViewDispatcher : Dispatcher
 {
     private readonly BlazorSynchronizationContext _context;
 
-    public BlazorWebViewDispatcher(ApplicationHost application)
+    public BlazorWebViewDispatcher(IApplication application)
     {
         _context = new BlazorSynchronizationContext(application);
         _context.UnhandledException += (_, args) => OnUnhandledException(args);

@@ -179,7 +179,7 @@ public sealed partial class Index : ModComponentBase
             return;
         }
 
-        var path = Application.OpenFile("Flagrum Mod (*.fmod *.zip)");
+        var path = await Application.OpenFileAsync("Flagrum Mod (*.fmod *.zip)");
         if (path != null)
         {
             await InstallMod(path);
