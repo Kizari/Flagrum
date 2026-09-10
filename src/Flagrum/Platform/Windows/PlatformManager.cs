@@ -2,7 +2,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Flagrum.Abstractions.Application;
+using System.Collections.Generic;
 using Flagrum.Core.Utilities;
+using Flagrum.Generators;
 using Flagrum.Platform.Windows.Interop;
 using Injectio.Attributes;
 using Microsoft.Win32;
@@ -33,6 +35,12 @@ public class PlatformManager(VersionHelper versionHelper) : IPlatformManager
             return new Guid(clientIdString);
         }
     }
+
+    /// <inheritdoc />
+    public HashSet<Guid> ApplicationMigrationSteps => SteppedMigrationHelper.ApplicationSteps;
+
+    /// <inheritdoc />
+    public HashSet<Guid> ProfileMigrationSteps => SteppedMigrationHelper.ProfileSteps;
 
     /// <inheritdoc />
     public bool IsVersionSupported => versionHelper.IsCurrent();

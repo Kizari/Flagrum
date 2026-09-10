@@ -31,7 +31,7 @@ public class GameLauncher(
     /// <exception cref="Win32Exception">
     /// Thrown if any Windows errors occur during the launch or injection process.
     /// </exception>
-    public GameLaunchResult TryLaunch(bool isDebug)
+    public GameLaunchResult TryLaunch(bool isDebug, string? command = null)
     {
         // Don't launch if the game is already running
         if (profile.IsGameRunning())

@@ -4,11 +4,15 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Timers;
 using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Utilities;
 using Injectio.Attributes;
 using Microsoft.Win32;
+using System.Text.Json.Serialization;
 
 namespace Flagrum.Platform.Windows;
+
+public class GitHubLatestResponse {
+    [JsonPropertyName("tag_name")] public string TagName {get; set;} = null!;
+}
 
 [RegisterSingleton<VersionHelper>]
 public class VersionHelper

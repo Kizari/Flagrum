@@ -124,7 +124,7 @@
     <Target Name="GenerateSolutionInfo" BeforeTargets="BeforeBuild">
         <WriteLinesToFile
                 File="Generated/SolutionInfo.g.cs"
-                Lines="/// &lt;auto-generated /&gt;%0A%0Anamespace Flagrum%3B%0A%0Apublic static class Build%0A{%0A%20%20%20%20public const string SolutionDirectory = &quot;$(SolutionDir)&quot;%3B%0A}"
+                Lines="/// &lt;auto-generated /&gt;%0A%0Anamespace Flagrum%3B%0A%0Apublic static class Build%0A{%0A%20%20%20%20public const string SolutionDirectory = @&quot;$(SolutionDir)&quot;%3B%0A}"
                 Overwrite="true"/>
     </Target>
 
