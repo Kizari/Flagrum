@@ -19,7 +19,7 @@ public enum SystemIcon
 }
 
 /// <summary>
-/// Converts a <see cref="SystemIcon"/> enumeration member to a fully-qualified file path to the respective icon.
+/// Converts a <see cref="SystemIcon" /> enumeration member to a fully-qualified file path to the respective icon.
 /// </summary>
 public class SystemIconConverter : IValueConverter
 {
@@ -28,6 +28,7 @@ public class SystemIconConverter : IValueConverter
     {
         if (value is SystemIcon icon)
         {
+            // Attempt to find native system icons
             var iconPath = FindIconPath(icon switch
             {
                 SystemIcon.WindowMinimize => "window-minimize",
@@ -37,14 +38,22 @@ public class SystemIconConverter : IValueConverter
                 _ => throw new NotSupportedException($"Unknown system icon type {icon}.")
             });
 
-            return iconPath ?? throw new InvalidOperationException($"Could not resolve system icon {icon}.");
+            // Fallback to embedded default icons if native icons were not found
+            return iconPath ?? icon switch
+            {
+                SystemIcon.WindowMinimize => "avares://Flagrum/Assets/Icons/minimize.svg",
+                SystemIcon.WindowMaximize => "avares://Flagrum/Assets/Icons/maximize.svg",
+                SystemIcon.WindowRestore => "avares://Flagrum/Assets/Icons/restore.svg",
+                SystemIcon.WindowClose => "avares://Flagrum/Assets/Icons/close.svg",
+                _ => throw new NotSupportedException($"Unknown system icon type {icon}.")
+            };
         }
 
         throw new InvalidOperationException($"Cannot convert non-{nameof(SystemIcon)} type to system icon.");
     }
 
     /// <inheritdoc />
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => 
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 
     /// <summary>
@@ -58,12 +67,12 @@ public class SystemIconConverter : IValueConverter
         var theme = Environment.GetEnvironmentVariable("GTK_THEME") ?? "breeze";
         var directories = new[]
         {
-            "/usr/share/icons/", 
+            "/usr/share/icons/",
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".icons")
         };
-        
-        var sizes = new[] { "22", "24" };
-        var categories = new[] { "actions", "apps", "status" };
+
+        var sizes = new[] {"22", "24"};
+        var categories = new[] {"actions", "apps", "status"};
 
         // Iterate the target directories until a match is found
         return directories

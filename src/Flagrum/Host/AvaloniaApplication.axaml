@@ -6,13 +6,13 @@
 
     <Application.Resources>
         <FontFamily x:Key="Play">avares://Flagrum/Assets/Play-Regular.ttf#Play</FontFamily>
-        <shell:SystemIconConverter x:Key="SystemIconConverter"/>
-        <shell:WindowStateToSystemIconConverter x:Key="WindowStateToSystemIconConverter"/>
+        <shell:SystemIconConverter x:Key="SystemIconConverter" />
+        <shell:WindowStateToSystemIconConverter x:Key="WindowStateToSystemIconConverter" />
     </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://Flagrum/Host/Shell/PlasmaShellButton.axaml"/>
+        <StyleInclude Source="avares://Flagrum/Host/Shell/ShellButton.axaml" />
     </Application.Styles>
 
 </Application>

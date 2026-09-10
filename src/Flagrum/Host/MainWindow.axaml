@@ -17,18 +17,18 @@
 
     <!-- Window border -->
     <Border Background="#181512">
-        
+
         <!-- Layout -->
         <Grid Name="MainGrid"
               Margin="2"
               RowDefinitions="42,*">
-            
+
             <!-- Title Bar -->
             <Grid Grid.Row="0"
                   ColumnDefinitions="45,*,Auto,Auto,Auto,Auto"
                   Background="#181512"
                   WindowDecorationProperties.ElementRole="TitleBar">
-                
+
                 <!-- Logo -->
                 <Svg Grid.Column="0"
                      Path="avares://Flagrum/Assets/logo_white.svg"
@@ -36,7 +36,7 @@
                      Height="20"
                      Margin="2, 0, 0, 2"
                      CurrentColor="#837363" />
-                
+
                 <!-- Application name -->
                 <TextBlock Grid.Column="1"
                            Text="{x:Static resources:Strings.WindowTitle}"
@@ -44,8 +44,8 @@
                            FontSize="14"
                            VerticalAlignment="Center"
                            Foreground="#837363"
-                           Padding="0 5 15 8"/>
-                
+                           Padding="0 5 15 8" />
+
                 <!-- Patreon button -->
                 <Image Grid.Column="2"
                        Name="PatreonButton"
@@ -53,32 +53,32 @@
                        PointerReleased="PatreonButton_OnPointerReleased"
                        Height="20"
                        Margin="0 0 30 0"
-                       Cursor="Hand"/>
-                
+                       Cursor="Hand" />
+
                 <!-- Minimize button -->
-                <shell:PlasmaShellButton Grid.Column="3"
-                                         Icon="WindowMinimize"
-                                         WindowDecorationProperties.ElementRole="MinimizeButton"
-                                         Click="OnMinimize"/>
-                
+                <shell:ShellButton Grid.Column="3"
+                                   Icon="WindowMinimize"
+                                   WindowDecorationProperties.ElementRole="MinimizeButton"
+                                   Click="OnMinimize" />
+
                 <!-- Maximize button -->
-                <shell:PlasmaShellButton Grid.Column="4"
-                                         Icon="{Binding WindowState, 
+                <shell:ShellButton Grid.Column="4"
+                                   Icon="{Binding WindowState, 
                                                         RelativeSource={RelativeSource AncestorType=Window},
                                                         Converter={StaticResource WindowStateToSystemIconConverter}}"
-                                         Margin="15 0"
-                                         WindowDecorationProperties.ElementRole="MaximizeButton"
-                                         Click="OnMaximize"/>
-                
+                                   Margin="15 0"
+                                   WindowDecorationProperties.ElementRole="MaximizeButton"
+                                   Click="OnMaximize" />
+
                 <!-- Close button -->
-                <shell:PlasmaShellButton Grid.Column="5"
-                                         Icon="WindowClose"
-                                         HoverBackground="IndianRed"
-                                         Margin="0 0 8 0"
-                                         WindowDecorationProperties.ElementRole="CloseButton"
-                                         Click="OnClose"/>
+                <shell:ShellButton Grid.Column="5"
+                                   Icon="WindowClose"
+                                   HoverBackground="IndianRed"
+                                   Margin="0 0 8 0"
+                                   WindowDecorationProperties.ElementRole="CloseButton"
+                                   Click="OnClose" />
             </Grid>
-            
+
             <!-- Content is added in codebehind -->
         </Grid>
     </Border>

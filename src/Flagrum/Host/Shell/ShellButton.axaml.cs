@@ -5,17 +5,16 @@ using Avalonia.Media;
 namespace Flagrum.Host.Shell;
 
 /// <summary>
-/// Button for the title bar that mimics the native look and feel of the
-/// KDE Plasma shell.
+/// Button for the title bar that attempts to use native OS icons, otherwise falls back to sensible defaults.
 /// </summary>
-public partial class PlasmaShellButton : Button
+public partial class ShellButton : Button
 {
     public static readonly StyledProperty<SystemIcon> IconProperty =
-        AvaloniaProperty.Register<PlasmaShellButton, SystemIcon>(nameof(Icon));
-    
+        AvaloniaProperty.Register<ShellButton, SystemIcon>(nameof(Icon));
+
     public static readonly StyledProperty<IBrush> HoverBackgroundProperty =
-        AvaloniaProperty.Register<PlasmaShellButton, IBrush>(nameof(HoverBackground), 
-            defaultValue: new SolidColorBrush(Color.Parse("#CACBCF")));
+        AvaloniaProperty.Register<ShellButton, IBrush>(nameof(HoverBackground),
+            new SolidColorBrush(Color.Parse("#CACBCF")));
 
     /// <summary>
     /// Icon to display in the button.
@@ -25,7 +24,7 @@ public partial class PlasmaShellButton : Button
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
-    
+
     /// <summary>
     /// Color to display when the button is hovered. Defaults to an off-white color.
     /// </summary>

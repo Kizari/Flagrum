@@ -1,0 +1,37 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Flagrum.Host.Shell">
+
+    <!-- Default styles -->
+    <Style Selector="controls|ShellButton">
+
+        <!-- Button properties -->
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Height" Value="24" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Background" Value="Transparent" />
+
+        <!-- Icon image -->
+        <Setter Property="Content">
+            <Template>
+                <Svg Width="16" Height="16"
+                     Css=".ColorScheme-Text { color: #CACBCF; }"
+                     Path="{Binding Icon, 
+                        Converter={StaticResource SystemIconConverter}, 
+                        RelativeSource={RelativeSource AncestorType=controls:ShellButton}}">
+                    <Svg.Styles>
+                        <Style Selector="controls|ShellButton:pointerover > Svg">
+                            <Setter Property="Css" Value=".ColorScheme-Text { color: #1A1B1F; }" />
+                        </Style>
+                    </Svg.Styles>
+                </Svg>
+            </Template>
+        </Setter>
+    </Style>
+
+    <!-- Change background on hover -->
+    <Style Selector="controls|ShellButton:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{TemplateBinding HoverBackground}" />
+    </Style>
+
+</Styles>
