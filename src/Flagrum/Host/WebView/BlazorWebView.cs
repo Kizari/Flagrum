@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -32,10 +33,19 @@ public sealed class BlazorWebView : NativeWebView
         EnvironmentRequested += (_, args) =>
         {
             args.EnableDevTools = true;
-            
+
             if (args is LinuxWpeWebViewEnvironmentRequestedEventArgs wpeArgs)
             {
                 wpeArgs.PreferWebKitGtkInstead = true;
+            }
+            else if (args is WindowsWebView2EnvironmentRequestedEventArgs webView2Args)
+            {
+                string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string userDataPath = Path.Combine(
+                    localAppDataPath,
+                    "Flagrum", "WebView2"
+                );
+                webView2Args.UserDataFolder = userDataPath;
             }
         };
 
