@@ -35,9 +35,8 @@ internal static class Program
     /// </summary>
     /// <param name="args">Commandline arguments that Flagrum was launched with.</param>
     [STAThread]
-    private static async Task Main(string[] args)
+    private static void Main(string[] args)
     {
-        // Program setup
         CrashHelper.Initialize();
         InitializeLogging();
         _services = ConfigureServices();
@@ -49,19 +48,20 @@ internal static class Program
             .WithBeforeUninstallFastCallback(OnBeforeUninstall)
 #endif
             .Run();
-        
+
+        // FIXME: Launching through command line used await but Main can't be an async task for STAThread to apply
         // Handle game launch mode
         if (args.Any(a => a == "--launch"))
         {
-            await LaunchGameAsync();
+            // await LaunchGameAsync();
             return; // Flagrum was invoked only to launch the game, so terminate here
         }
-        
+
         // Handle Linux game launch mode
         var launchCommand = args.FirstOrDefault(a => a.StartsWith("--launch-command"));
         if (launchCommand != null)
         {
-            await LaunchGameAsync(launchCommand.Split('=')[1]);
+            // await LaunchGameAsync(launchCommand.Split('=')[1]);
             return; // Flagrum was invoked only to launch the game, so terminate here
         }
 
@@ -95,7 +95,7 @@ internal static class Program
 #endif
         .WithInterFont()
 #pragma warning disable AVALONIA_X11_CSD
-        .With(new X11PlatformOptions {EnableDrawnDecorations = true})
+        .With(new X11PlatformOptions { EnableDrawnDecorations = true })
 #pragma warning restore AVALONIA_X11_CSD
         .LogToTrace();
 
@@ -164,7 +164,7 @@ internal static class Program
             // Too late to recover from this and try to resolve it, nothing more to do
         }
     }
-    
+
     /// <summary>
     /// Launches the game.
     /// </summary>
@@ -172,7 +172,7 @@ internal static class Program
     {
         var launcher = _services.GetRequiredService<IGameLauncher>();
         var result = launcher.TryLaunch(false, command);
-        
+
         if (result != GameLaunchResult.Success)
         {
             var message = result switch
@@ -195,14 +195,14 @@ internal static class Program
             await MessageBox.ShowAsync("Error", message, Icon.Error);
         }
     }
-    
+
     /// <summary>
     /// Sets the culture of the application as per user preferences.
     /// </summary>
     private static void SetCulture()
     {
         var configuration = _services.GetRequiredService<IConfiguration>();
-        
+
         try
         {
             // Set culture based on stored language settings if any
