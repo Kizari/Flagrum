@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Flagrum.Abstractions;
@@ -49,11 +50,19 @@ internal static class Program
 #endif
             .Run();
 
-        // FIXME: Launching through command line used await but Main can't be an async task for STAThread to apply
         // Handle game launch mode
         if (args.Any(a => a == "--launch"))
         {
-            // await LaunchGameAsync();
+            var completion = new ManualResetEventSlim(false);
+            var scheduler = _services.GetRequiredService<ObservedTaskScheduler>();
+            
+            scheduler.RunAsyncObserved(async () =>
+            {
+                await LaunchGameAsync();
+                completion.Set();
+            });
+
+            completion.Wait();
             return; // Flagrum was invoked only to launch the game, so terminate here
         }
 
@@ -61,7 +70,16 @@ internal static class Program
         var launchCommand = args.FirstOrDefault(a => a.StartsWith("--launch-command"));
         if (launchCommand != null)
         {
-            // await LaunchGameAsync(launchCommand.Split('=')[1]);
+            var completion = new ManualResetEventSlim(false);
+            var scheduler = _services.GetRequiredService<ObservedTaskScheduler>();
+            
+            scheduler.RunAsyncObserved(async () =>
+            {
+                await LaunchGameAsync(launchCommand.Split('=')[1]);
+                completion.Set();
+            });
+
+            completion.Wait();
             return; // Flagrum was invoked only to launch the game, so terminate here
         }
 
