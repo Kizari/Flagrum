@@ -38,7 +38,8 @@ public partial class MainWindow : Window
             services.GetRequiredService<IFileProvider>(),
             services.GetRequiredService<JSComponentConfigurationStore>(),
             services.GetRequiredService<ObservedTaskScheduler>(),
-            services.GetRequiredService<BlazorWebViewDispatcher>());
+            services.GetRequiredService<BlazorWebViewDispatcher>(),
+            services.GetRequiredService<IProfileService>());
         
         // Add the web view to the layout
         Grid.SetRow(webView, 1);

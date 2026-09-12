@@ -141,6 +141,9 @@ public class ProfileService : IProfileService
     /// <inheritdoc />
     public string ModFilesDirectory => Path.Combine(FlagrumDirectory, "earc", Current.Id.ToString());
 
+    /// <inheritdoc />
+    public string WebDataDirectory => Path.Combine(FlagrumDirectory, "web_data");
+
     public string EarcModThumbnailDirectory => Path.Combine(ModFilesDirectory, "thumbnails");
     public string EarcModBackupsDirectory => Path.Combine(ModFilesDirectory, "backup");
 

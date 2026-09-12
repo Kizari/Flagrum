@@ -10,7 +10,8 @@ using System.Text.Json.Serialization;
 
 namespace Flagrum.Platform.Windows;
 
-public class GitHubLatestResponse {
+public class GitHubLatestResponse 
+{
     [JsonPropertyName("tag_name")] public string TagName {get; set;} = null!;
 }
 
@@ -74,9 +75,9 @@ public class VersionHelper
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
             client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
-            var response =
-                await client.GetFromJsonAsync<GitHubLatestResponse>(
-                    "https://api.github.com/repos/Kizari/Flagrum/releases/latest");
+            var response = await client.GetFromJsonAsync<GitHubLatestResponse>(
+                "https://api.github.com/repos/Kizari/Flagrum/releases/latest");
+            
             if (response != null)
             {
                 var current = GetVersionFromRegistry();
@@ -114,6 +115,7 @@ public class VersionHelper
     private DateTime? GetVersionTimeFromRegistry()
     {
         var time = (string?)Registry.GetValue(VersionTimeKey, "", null);
+
         if (time != null && long.TryParse(time, out var ticks))
         {
             return new DateTime(ticks);

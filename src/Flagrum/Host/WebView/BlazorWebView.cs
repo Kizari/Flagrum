@@ -1,10 +1,10 @@
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Flagrum.Abstractions;
 using Flagrum.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -27,25 +27,24 @@ public sealed class BlazorWebView : NativeWebView
         IFileProvider fileProvider,
         JSComponentConfigurationStore configStore,
         ObservedTaskScheduler scheduler,
-        BlazorWebViewDispatcher dispatcher)
+        BlazorWebViewDispatcher dispatcher,
+        IProfileService profile)
     {
-        // Force Linux to use WebKitGTK over WPE WebKit, as the latter is buggy at time of writing
         EnvironmentRequested += (_, args) =>
         {
             args.EnableDevTools = true;
 
-            if (args is LinuxWpeWebViewEnvironmentRequestedEventArgs wpeArgs)
+            // Handle platform-specific web view functionality
+            switch (args)
             {
-                wpeArgs.PreferWebKitGtkInstead = true;
-            }
-            else if (args is WindowsWebView2EnvironmentRequestedEventArgs webView2Args)
-            {
-                string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string userDataPath = Path.Combine(
-                    localAppDataPath,
-                    "Flagrum", "WebView2"
-                );
-                webView2Args.UserDataFolder = userDataPath;
+                case LinuxWpeWebViewEnvironmentRequestedEventArgs wpeArgs:
+                    // Force Linux to use WebKitGTK over WPE WebKit, as the latter is buggy at time of writing
+                    wpeArgs.PreferWebKitGtkInstead = true;
+                    break;
+                case WindowsWebView2EnvironmentRequestedEventArgs webView2Args:
+                    // Force Windows to store web data in Flagrum directory to avoid access denied exceptions
+                    webView2Args.UserDataFolder = profile.GameDataDirectory;
+                    break;
             }
         };
 
