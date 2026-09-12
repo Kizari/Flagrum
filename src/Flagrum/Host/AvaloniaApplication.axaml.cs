@@ -163,7 +163,7 @@ public partial class AvaloniaApplication(
                 SetSplashText("Downloading updates");
                 await manager.DownloadUpdatesAsync(newVersion);
                 SetSplashText("Updating Flagrum");
-                manager.ApplyUpdatesAndRestart();
+                manager.ApplyUpdatesAndRestart(newVersion);
                 return true;
             }
         }

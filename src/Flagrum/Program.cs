@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using MsBox.Avalonia.Enums;
-using NuGet.Versioning;
 using Serilog;
 using Serilog.Events;
 using Velopack;
@@ -44,9 +43,9 @@ internal static class Program
 
         // Initialize Velopack
         VelopackApp.Build()
-            .WithFirstRun(OnFreshInstall)
+            .OnFirstRun(OnFreshInstall)
 #if WINDOWS
-            .WithBeforeUninstallFastCallback(OnBeforeUninstall)
+            .OnBeforeUninstallFastCallback(OnBeforeUninstall)
 #endif
             .Run();
 
