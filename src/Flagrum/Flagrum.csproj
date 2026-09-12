@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationIcon>Resources/flagrum.ico</ApplicationIcon>
@@ -30,17 +30,17 @@
     <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
         <Compile Remove="Platform\Linux\**\*.cs"/>
         <Compile Update="Host\AvaloniaApplication.axaml.cs">
-          <DependentUpon>AvaloniaApplication.axaml</DependentUpon>
-          <SubType>Code</SubType>
+            <DependentUpon>AvaloniaApplication.axaml</DependentUpon>
+            <SubType>Code</SubType>
         </Compile>
         <Compile Update="Host\MainWindow.axaml.cs">
-          <DependentUpon>MainWindow.axaml</DependentUpon>
-          <SubType>Code</SubType>
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
 
     <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
-        <Compile Remove="Platform\Windows\**\*.cs" />
+        <Compile Remove="Platform\Windows\**\*.cs"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -49,35 +49,35 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
+        <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0"/>
         <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
         <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
         <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
-        <PackageReference Include="Avalonia.Wayland" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Wayland" Version="$(AvaloniaVersion)"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.17" />
-        <PackageReference Include="Velopack" Version="1.2.0" />
-        <PackageReference Include="Drautos" Version="1.0.0" />
+        <PackageReference Include="MessageBox.Avalonia" Version="12.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.17"/>
+        <PackageReference Include="Velopack" Version="1.2.0"/>
+        <PackageReference Include="Drautos" Version="1.0.0"/>
     </ItemGroup>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
     <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-        <PackageReference Include="Flagrum.Premium" Version="1.0.4" />
+        <PackageReference Include="Flagrum.Premium" Version="1.0.4"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\tools\Flagrum.Generators\Flagrum.Generators.csproj"
                           OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj" />
-        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj" />
+                          ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj"/>
+        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -93,21 +93,21 @@
         <Content Include="Resources\Textures\teal.btex">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <None Remove="Resources\earc.png" />
+        <None Remove="Resources\earc.png"/>
         <Content Include="Resources\earc.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <None Remove="Resources\Play-Regular.ttf" />
+        <None Remove="Resources\Play-Regular.ttf"/>
         <None Update="libnvtt.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
     <ItemGroup>
-        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json" />
-        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json" />
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json"/>
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
     </ItemGroup>
-    
+
     <ItemGroup>
         <EmbeddedResource Update="Resources/Strings.resx">
             <Generator>MSBuild:Compile</Generator>
@@ -132,32 +132,32 @@
     <Target Name="GenerateSteamAppId" AfterTargets="Build">
         <WriteLinesToFile File="$(OutputPath)steam_appid.txt"
                           Lines="637650"
-                          Overwrite="true" />
+                          Overwrite="true"/>
     </Target>
 
     <!-- Copy Linux libs to output directory -->
     <Target Name="CopyAdditionalDependenciesLinux" Condition="$([MSBuild]::IsOSPlatform('Linux'))" AfterTargets="Build">
         <CreateItem Include="$(SolutionDir)libs/linux-x64/**">
-            <Output TaskParameter="Include" ItemName="LinuxLibs" />
+            <Output TaskParameter="Include" ItemName="LinuxLibs"/>
         </CreateItem>
         <Copy SourceFiles="@(LinuxLibs)"
               DestinationFiles="@(LinuxLibs->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
-              SkipUnchangedFiles="true" />
+              SkipUnchangedFiles="true"/>
         <!-- Copy Drautos to the output directory on Linux as it won't be by default being a Windows dll -->
         <!-- This is still needed as it is injected into the Windows game that's running under Proton. -->
         <Copy SourceFiles="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll"
               DestinationFiles="$(OutputPath)Drautos.dll"
               SkipUnchangedFiles="true"/>
     </Target>
-    
+
     <!-- Copy Windows libs to output directory -->
     <Target Name="CopyAdditionalDependenciesWindows" Condition="$([MSBuild]::IsOSPlatform('Windows'))" AfterTargets="Build">
         <CreateItem Include="$(SolutionDir)libs/win-x64/**">
-            <Output TaskParameter="Include" ItemName="WindowsLibs" />
+            <Output TaskParameter="Include" ItemName="WindowsLibs"/>
         </CreateItem>
         <Copy SourceFiles="@(WindowsLibs)"
               DestinationFiles="@(WindowsLibs->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
-              SkipUnchangedFiles="true" />
+              SkipUnchangedFiles="true"/>
     </Target>
 
 </Project>

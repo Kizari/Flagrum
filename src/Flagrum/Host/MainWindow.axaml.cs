@@ -31,7 +31,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         this.CenterOnPrimaryScreen();
         RefreshPatreonButton();
-        
+
         // Create the Blazor web view
         var webView = new BlazorWebView(
             services,

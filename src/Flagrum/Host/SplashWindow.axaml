@@ -7,16 +7,16 @@
         x:Class="Flagrum.Host.SplashWindow"
         Title="Flagrum"
         Width="380"
-        Height="470"
+        Height="490"
         MinWidth="380"
         MaxWidth="380"
-        MinHeight="470"
-        MaxHeight="470"
+        MinHeight="490"
+        MaxHeight="490"
         CanResize="False"
         WindowStartupLocation="CenterScreen"
         WindowDecorations="None"
         ShowInTaskbar="False">
-    
+
     <!-- Styles -->
     <Window.Styles>
         <Style Selector="TextBlock">
@@ -26,7 +26,7 @@
 
     <!-- Layout -->
     <Grid>
-        
+
         <!-- Brushed background -->
         <shell:BrushedMetalBackground />
 
@@ -41,7 +41,7 @@
                 Grid.Row="0"
                 Width="280"
                 Height="260"
-                Margin="20,0,0,0"
+                Margin="20,0,0,15"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Stretch="Uniform"
@@ -55,7 +55,7 @@
                 Text="Loading"
                 TextAlignment="Center"
                 FontSize="20"
-                Foreground="#E1D9B7"/>
+                Foreground="#E1D9B7" />
 
             <!-- Progress bar -->
             <ProgressBar
@@ -65,12 +65,12 @@
                 ShowProgressText="False"
                 Background="#100F0C"
                 Foreground="#ADA685"
-                Height="6"/>
+                Height="6" />
 
             <!-- Acknowledgement -->
             <TextBlock
                 Grid.Row="4"
-                Margin="0,20,0,10"
+                Margin="0,8,0,10"
                 HorizontalAlignment="Stretch"
                 Text="Made with ♥ by Kizari"
                 TextAlignment="Center"

@@ -6,33 +6,35 @@ using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.Application;
+using Flagrum.Components;
 using Flagrum.Host.Utilities;
 using Injectio.Attributes;
 
 namespace Flagrum.Host;
 
 /// <summary>
-/// Wraps the <see cref="Avalonia.Application"/> to expose platform functionality to the rest of the application.
+/// Wraps the <see cref="Avalonia.Application" /> to expose platform functionality to the rest of the application.
 /// </summary>
 [RegisterSingleton<IApplication>]
-public sealed class ApplicationHost : IApplication
+public sealed class ApplicationHost(ObservedTaskScheduler scheduler) : IApplication
 {
     public IClassicDesktopStyleApplicationLifetime? AvaloniaApplication { get; set; }
-    
+
     /// <inheritdoc />
     public Version Version => typeof(Program).Assembly.GetName().Version!;
-    
+
     /// <inheritdoc />
     public string? AssociatedFile { get; set; }
-    
+
     /// <inheritdoc />
-    public void Dispose() {}
+    public void Dispose() { }
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Invoke(Action callback) => Avalonia.Threading.Dispatcher.UIThread.Invoke(callback);
+    public void Invoke(Action callback) => Dispatcher.UIThread.Invoke(callback);
 
     /// <inheritdoc />
     public async Task<string?> OpenFileAsync(
@@ -41,7 +43,7 @@ public sealed class ApplicationHost : IApplication
         string caption = "Open File")
     {
         var storage = AvaloniaApplication!.MainWindow!.StorageProvider;
-        
+
         var result = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             FileTypeFilter = filter.ToAvaloniaFilter()
@@ -57,7 +59,7 @@ public sealed class ApplicationHost : IApplication
         string caption = "Save File")
     {
         var storage = AvaloniaApplication!.MainWindow!.StorageProvider;
-        
+
         var result = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             SuggestedFileName = defaultFileName,
@@ -85,16 +87,16 @@ public sealed class ApplicationHost : IApplication
         {
             executablePath += ".exe";
         }
-        
+
         // Restart the application
-        Task.Run(async () =>
+        scheduler.RunAsyncObserved(async () =>
         {
             // Delay is required to prevent a TaskCanceledException from occurring when shutting down the application
             // due to this method itself running from the WebViewDispatcher queue.
             // This exception does not appear to be interceptible in the current version of Avalonia.Controls.WebView
             // and so the delay is the only way around it, although not guaranteed to work every time on every system
             await Task.Delay(500);
-            
+
             // Shutdown must be done from the UI thread
             Invoke(() =>
             {
@@ -103,7 +105,7 @@ public sealed class ApplicationHost : IApplication
             });
         });
     }
-    
+
     /// <inheritdoc />
     public async Task SetClipboardTextAsync(string text)
     {
