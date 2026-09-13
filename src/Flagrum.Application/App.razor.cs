@@ -7,9 +7,9 @@ namespace Flagrum.Application;
 
 public partial class App
 {
-    [Inject] private IFileIndex FileIndex { get; set; }
+    [Inject] private IFileIndex FileIndex { get; set; } = null!;
 
-    private Assembly[] AdditionalAssemblies { get; set; }
+    private Assembly[] AdditionalAssemblies { get; set; } = [];
 
     protected override void OnInitialized()
     {

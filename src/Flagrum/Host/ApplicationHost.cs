@@ -24,7 +24,14 @@ public sealed class ApplicationHost(ObservedTaskScheduler scheduler) : IApplicat
     public IClassicDesktopStyleApplicationLifetime? AvaloniaApplication { get; set; }
 
     /// <inheritdoc />
-    public Version Version => typeof(Program).Assembly.GetName().Version!;
+    public Version Version
+    {
+        get
+        {
+            var v = typeof(Program).Assembly.GetName().Version!;
+            return new Version(v.Major, v.Minor, v.Build); // Truncate revision as Flagrum does not use it
+        }
+    }
 
     /// <inheritdoc />
     public string? AssociatedFile { get; set; }

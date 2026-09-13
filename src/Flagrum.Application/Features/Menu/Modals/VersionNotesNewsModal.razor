@@ -2,8 +2,10 @@
 @using System.Text.RegularExpressions
 @using MarkdownSharp
 @using Newtonsoft.Json.Linq
+
+@inherits Flagrum.Application.Features.Information.News.NewsModal
+
 @inject IStringLocalizer<MainMenu> Localizer
-@inject IApplication Platform
 
 <style>
     .patch-notes h1, .patch-notes h2, .patch-notes h3, .patch-notes h4, .patch-notes h5, .patch-notes h6 {
@@ -68,7 +70,7 @@
 <AutosizeModal @ref="Modal" Padding="0">
     <HeaderView>
         <span class="text-grey-300 flex-grow">@Localizer["SoftwareUpdate"]</span>
-        <span class="material-icons cursor-pointer" @onclick="() => Modal.Close()">cancel</span>
+        <span class="material-icons cursor-pointer" @onclick="DismissAsync">cancel</span>
     </HeaderView>
     <BodyView>
         <div class="h-full px-6 pb-6 scrollbar-light patch-notes" style="max-height: 100%; overflow-y: auto">
@@ -88,14 +90,12 @@
     private const string ChangelogUrl = $"https://github.com/Kizari/Flagrum/tree/main/{ChangelogDirectory}";
     private const string ChangelogApiUrl = $"https://api.github.com/repos/Kizari/Flagrum/contents/{ChangelogDirectory}";
 
-    private AutosizeModal Modal { get; set; }
-    private string ReleaseNotes { get; set; }
+    private string ReleaseNotes { get; set; } = string.Empty;
 
     /// <summary>
-    /// Initializes and displays the automatic version notes modal.
+    /// Fetches version notes prior to showing the modal.
     /// </summary>
-    /// <param name="lastSeenVersion">Version number of the application at the time the user last used it.</param>
-    public async Task OpenAsync(Version lastSeenVersion)
+    protected override async Task OnBeforePresent()
     {
         try
         {
@@ -118,7 +118,7 @@
             var markup = Regex.Replace(builder.ToString(), pattern, match =>
             {
                 var versionString = match.Groups[1].Value;
-                return new Version(versionString) > lastSeenVersion
+                return new Version(versionString) > Context!.Profile.LastVersion
                     ? $"<h2 class=\"new border-b border-grey-500\">Flagrum {versionString}</h2>"
                     : $"<h2 class=\"border-b border-grey-500\">Flagrum {versionString}</h2>";
             });
@@ -131,8 +131,6 @@
                            "You can find the release notes " +
                            $"<a target=\"_blank\" href=\"{ChangelogUrl}\">here</a> instead.";
         }
-
-        Modal.Open();
     }
 
     private async Task<List<string>> GetVersionFileNames()
