@@ -1,0 +1,81 @@
+@inherits Flagrum.Application.Features.Information.News.NewsModal
+
+<style>
+    .hero {
+        background: radial-gradient(
+            ellipse at center,
+            rgba(255, 215, 90, 0.18) 0%,
+            rgba(255, 180, 0, 0.08) 20%,
+            transparent 60%
+        ),
+        #141311;
+    }
+
+    .svg-icon {
+        filter: brightness(0) saturate(100%) invert(35%) sepia(90%) saturate(2000%) hue-rotate(30deg);
+    }
+</style>
+
+<AutosizeModal @ref="Modal" Padding="0" CssClass="shadow-lg rounded-lg shadow-black">
+    <BodyView>
+        <!-- Banner -->
+        <div class="relative">
+
+            <!-- Hero image -->
+            <div class="hero row" style="padding-top: 3em; padding-bottom: 3em;">
+                <div style="flex: 1 1 auto;"></div>
+
+                <img alt="Windows Logo" src="branding/windows.svg" class="svg-icon"
+                     style="width: 100px; height: 100px; transform: scaleX(-1)"/>
+
+                <div style="flex: 1 1 auto;"></div>
+
+                <img alt="Flagrum Logo" src="branding/flagrum.png"
+                     style="width: 220px; height: 200px; padding-left: 20px"/>
+
+                <div style="flex: 1 1 auto;"></div>
+
+                <img alt="Linux Logo" src="branding/linux.svg" class="svg-icon" style="width: 100px; height: 100px;"/>
+
+                <div style="flex: 1 1 auto;"></div>
+            </div>
+
+            <!-- Close button -->
+            <span class="material-icons block absolute top-2 right-2 text-grey-300 cursor-pointer select-none"
+                  @onclick="DismissAsync">close</span>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 pt-6 pb-10 flex flex-col text-center">
+
+            <!-- Title -->
+            <h1 class="text-accent1-200 block mb-6">
+                Flagrum is now cross-platform!
+            </h1>
+
+            <!-- Body text -->
+            <span class="block">
+                After months of development, Flagrum is now available natively for both Windows and Linux!<br/><br/>
+            </span>
+
+            <h4 class="text-grey-300">Windows Users</h4>
+            <span class="block">
+                Simply keep using Flagrum as you always have!
+            </span>
+
+            <h4 class="text-grey-300 mt-6">Linux Users</h4>
+            <span class="block">
+                Please see the
+                <Hyperlink Text="migration guide" Uri="https://github.com/Kizari/Flagrum/wiki/Migrating-to-Linux"/>
+                to ensure you do not lose your data.
+            </span>
+
+            <strong class="text-accent1-400 bg-accent1-800 p-4 border border-accent1-400 block mt-6">
+                Due to the scale of this rewrite, there is a possibility that bugs may have been introduced.<br/>
+                If you encounter any problems, please use the &quot;Report a Bug&quot; item on the left-hand menu so I
+                can fix them promptly.<br/><br/>
+                Thank you for your understanding!
+            </strong>
+        </div>
+    </BodyView>
+</AutosizeModal>
