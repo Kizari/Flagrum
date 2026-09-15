@@ -22,7 +22,7 @@ jobs:
           Write-Host "Flagrum Version: $resolved"
           $prerelease = if ($resolved -match "-") { "true" } else { "false" }
           "prerelease=$prerelease" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-          
+
       - name: Generate metadata.json for Azure Code Signing
         if: steps.setup.outputs.prerelease == 'false'
         shell: pwsh
@@ -34,33 +34,33 @@ jobs:
           } | ConvertTo-Json -Depth 10
           $utf8NoBom = New-Object System.Text.UTF8Encoding $False
           [System.IO.File]::WriteAllText('metadata.json', $jsonContent, $utf8NoBom)
-          
+
       - name: Install Azure CLI
         if: steps.setup.outputs.prerelease == 'false'
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLIInstaller.msi
           Start-Process -FilePath .\AzureCLIInstaller.msi -ArgumentList '/quiet' -Wait
-          
+
       - name: Log in to Azure
         if: steps.setup.outputs.prerelease == 'false'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
+
       - name: Install .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
-          
+          dotnet-version: 10.0.x
+
       - name: Add Private Package Source for Premium DLL
         run: dotnet nuget add source --username Kizari --password ${{ secrets.READ_PACKAGES_PAT }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kizari/index.json"
 
-      - name: Publish Flagrum
-        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish -r win-x64 --self-contained true
-        
-      - name: Copy External Dependencies
-        run: xcopy libs\* publish\ /Y
+      - name: Publish Windows Build
+        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-win-x64 -r win-x64 --self-contained true
+
+      - name: Publish Linux Build
+        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-linux-x64 -r linux-x64 --self-contained true
 
       - name: Download Previous Release
         if: steps.setup.outputs.prerelease == 'false'
@@ -76,48 +76,26 @@ jobs:
           out-file-path: "Releases"
           extract: false
 
-      - name: Delete Previous Setup and Excess Deltas
-        id: cleanup-release
-        if: steps.download-previous.outcome == 'success' && steps.setup.outputs.prerelease == 'false'
-        shell: bash
-        run: |
-          set -x
-          cd Releases
-          rm Setup.exe
-          
-          echo "full=$(ls | grep 'Flagrum-.*-full.nupkg')" >> $GITHUB_OUTPUT
-          DELTA_FILES=$(ls | grep 'Flagrum-.*-delta.nupkg' | sort -V) || true
-
-          if [ ${#DELTA_FILES[@]} -gt 4 ]; then
-            REMOVE_FILES=(${DELTA_FILES[@]:0:${#DELTA_FILES[@]}-4})
-            echo "Removing old delta files: ${REMOVE_FILES[@]}"
-            rm ${REMOVE_FILES[@]}
-          else
-            echo "There are 4 or fewer delta files. No files removed."
-          fi
-          
-      - name: Created Unsigned Velopack Release
+      - name: Created Unsigned Velopack Releases
         if: steps.setup.outputs.prerelease == 'true'
         # The --exclude regex replaces the default PDB exclusion, since a blank string will not work
         # While it's not proper, I don't think we need to ever worry about a file with the .zzzzz extension
         run: |
           dotnet tool install -g vpk
-          vpk pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish -e Flagrum.exe -s .github/Images/Splash.png -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --noPortable --exclude .*\.zzzzz
-          mv Releases/Flagrum-win-Setup.exe Releases/Setup.exe
+          vpk [win] pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish-win-x64 -e Flagrum.exe -s .github/Images/Splash.png -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --exclude .*\.zzzzz --framework webview2 --channel win --runtime win-x64
+          vpk [linux] pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish-linux-x64 -e Flagrum -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --exclude .*\.zzzzz --channel linux-x64 --runtime linux-x64
+          mv Releases/Flagrum-win-Setup.exe Releases/Flagrum-win-x64.exe
 
-      - name: Create Signed Velopack Release
+      - name: Create Signed Velopack Releases
         if: steps.setup.outputs.prerelease == 'false'
         # The --exclude regex replaces the default PDB exclusion, since a blank string will not work
         # While it's not proper, I don't think we need to ever worry about a file with the .zzzzz extension
         run: |
           dotnet tool install -g vpk
-          vpk pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish -e Flagrum.exe -s .github/Images/Splash.png -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --noPortable --azureTrustedSignFile metadata.json --exclude .*\.zzzzz
-          mv Releases/Flagrum-win-Setup.exe Releases/Setup.exe
+          vpk [win] pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish-win-x64 -e Flagrum.exe -s .github/Images/Splash.png -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --exclude .*\.zzzzz --framework webview2 --channel win --runtime win-x64 --azureTrustedSignFile metadata.json
+          vpk [linux] pack -u Flagrum -v ${{ steps.setup.outputs.version }} -p publish-linux-x64 -e Flagrum -i src/Flagrum/Resources/Flagrum.ico --packAuthors "Kizari" --packTitle Flagrum --exclude .*\.zzzzz --channel linux-x64 --runtime linux-x64 --azureTrustedSignFile metadata.json
+          mv Releases/Flagrum-win-Setup.exe Releases/Flagrum-win-x64.exe
 
-      - name: Delete Previous '-full' Package
-        if: steps.download-previous.outcome == 'success' && steps.setup.outputs.prerelease == 'false'
-        run: rm Releases/${{ steps.cleanup-release.outputs.full }}
-        
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1.13.0
         with:
@@ -126,14 +104,16 @@ jobs:
           body: |
             ## English / 英語
 
-            Download and run Setup.exe to install Flagrum.
+            :window: **Windows:** Download and run `Flagrum-win-x64.exe` to install Flagrum.
+            :penguin: **Linux:** Download `Flagrum-linux-x64.AppImage`, then follow the [Linux installation guide](https://github.com/Kizari/Flagrum/wiki/Installing-on-Linux).
 
             IMPORTANT: The [companion add-on for Blender](https://github.com/Kizari/Flagrum-Blender/releases/latest) is required for certain asset importing and creating Steam Workshop mods.  
             &nbsp;
 
             ## 日本語 / Japanese
 
-            フラーグルムをインストールするために「Setup.exe」をダウンロードし、実行します。
+            :window: **Windows:** フラーグルムをインストールするために「Flagrum-win-x64.exe」をダウンロードし、実行します。
+            :penguin: **Linux:** 「Flagrum-linux-x64.AppImage」をダウンロードして実行してください。
 
             重要：特定のアセットのインポートとSteamワークショップのMODの作成には、[Blender用のコンパニオンアドオン](https://github.com/Kizari/Flagrum-Blender/releases/latest)が必要です。
           draft: true
@@ -142,4 +122,11 @@ jobs:
           repo: Flagrum
           token: ${{ secrets.GITHUB_TOKEN }}
           artifactErrorsFailBuild: true
-          artifacts: "Releases/*.nupkg,Releases/releases.win.json,Releases/Setup.exe,Releases/RELEASES"
+          artifacts: >-
+            Releases/Flagrum-${{ steps.setup.outputs.version }}-delta.nupkg,
+            Releases/Flagrum-${{ steps.setup.outputs.version }}-full.nupkg,
+            Releases/Flagrum-${{ steps.setup.outputs.version }}-linux-x64-full.nupkg,
+            Releases/releases.win.json,
+            Releases/releases.linux-x64.json,
+            Releases/Flagrum-win-x64.exe,
+            Releases/Flagrum-linux-x64.AppImage
