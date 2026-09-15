@@ -172,7 +172,7 @@ public class WorkshopModBuildContext
 
         await Task.Run(async () =>
         {
-            var path = Path.Combine(IOHelper.GetWebRoot(), "images", "current_preview.png");
+            var path = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_preview.png");
             File.Copy(file, path, true);
             await onUpdate();
 
@@ -211,7 +211,7 @@ public class WorkshopModBuildContext
 
         await Task.Run(async () =>
         {
-            var path = Path.Combine(IOHelper.GetWebRoot(), "images", "current_thumbnail.png");
+            var path = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_thumbnail.png");
             File.Copy(file, path, true);
             await onUpdate();
 

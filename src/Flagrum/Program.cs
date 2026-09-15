@@ -54,7 +54,7 @@ internal static class Program
         {
             var completion = new ManualResetEventSlim(false);
             var scheduler = _services.GetRequiredService<ObservedTaskScheduler>();
-            
+
             scheduler.RunAsyncObserved(async () =>
             {
                 await LaunchGameAsync();
@@ -71,7 +71,7 @@ internal static class Program
         {
             var completion = new ManualResetEventSlim(false);
             var scheduler = _services.GetRequiredService<ObservedTaskScheduler>();
-            
+
             scheduler.RunAsyncObserved(async () =>
             {
                 await LaunchGameAsync(launchCommand.Split('=')[1]);
@@ -112,7 +112,7 @@ internal static class Program
 #endif
         .WithInterFont()
 #pragma warning disable AVALONIA_X11_CSD
-        .With(new X11PlatformOptions { EnableDrawnDecorations = true })
+        .With(new X11PlatformOptions {EnableDrawnDecorations = true})
 #pragma warning restore AVALONIA_X11_CSD
         .LogToTrace();
 
@@ -145,8 +145,10 @@ internal static class Program
             .AddSingleton<IProfileService, ProfileService>()
             .AddSingleton<AppStateService>()
             .AddSingleton<JSComponentConfigurationStore>()
-            .AddSingleton<IFileProvider>(_ => new PhysicalFileProvider(
-                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")))
+            .AddSingleton<IFileProvider>(_ => new WebFileProvider(
+                new PhysicalFileProvider(IOHelper.GetWebRoot()),
+                new PhysicalFileProvider(IOHelper.GetUserAssetsRoot())
+            ))
             .AddBlazorWebView()
             .AddFlagrum()
             .AddFlagrumApplicationManual()

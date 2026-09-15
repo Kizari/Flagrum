@@ -93,7 +93,7 @@ public sealed partial class Index : ModComponentBase
         var category = Configuration.Get<int>(StateKey.CurrentEarcCategory);
         Category = category;
 
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(IOHelper.GetWebRoot(), "EarcMods")))
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(IOHelper.GetUserAssetsRoot(), "EarcMods")))
         {
             var id = file.Split(Path.DirectorySeparatorChar).Last().Replace(".png", "");
             var guid = new Guid(id);
@@ -101,7 +101,7 @@ public sealed partial class Index : ModComponentBase
             {
                 try
                 {
-                    var thumbnail = Path.Combine(IOHelper.GetWebRoot(), "EarcMods", $"{id}.png");
+                    var thumbnail = Path.Combine(IOHelper.GetUserAssetsRoot(), "EarcMods", $"{id}.png");
                     File.Delete(thumbnail);
                 }
                 catch

@@ -11,12 +11,13 @@
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
         <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
-        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+        <SolutionDir>$([System.IO.Path]::GetFullPath($(MSBuildProjectDirectory)/../..))$([System.IO.Path]::DirectorySeparatorChar)</SolutionDir>
         <LangVersion>preview</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <SelfContained>true</SelfContained>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaVersion>12.1.2</AvaloniaVersion>
+        <DrautosVersion>1.0.0</DrautosVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
@@ -64,7 +65,7 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
         <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.17"/>
         <PackageReference Include="Velopack" Version="1.2.0"/>
-        <PackageReference Include="Drautos" Version="1.0.0"/>
+        <PackageReference Include="Drautos" Version="$(DrautosVersion)"/>
     </ItemGroup>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
@@ -120,14 +121,6 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <!-- Automatically generate `SolutionInfo` class before build -->
-    <Target Name="GenerateSolutionInfo" BeforeTargets="BeforeBuild">
-        <WriteLinesToFile
-                File="Generated/SolutionInfo.g.cs"
-                Lines="/// &lt;auto-generated /&gt;%0A%0Anamespace Flagrum%3B%0A%0Apublic static class Build%0A{%0A%20%20%20%20public const string SolutionDirectory = @&quot;$(SolutionDir)&quot;%3B%0A}"
-                Overwrite="true"/>
-    </Target>
-
     <!-- Automatically generate "steam_appid.txt" after build (Steamworks relies on this) -->
     <Target Name="GenerateSteamAppId" AfterTargets="Build">
         <WriteLinesToFile File="$(OutputPath)steam_appid.txt"
@@ -136,28 +129,57 @@
     </Target>
 
     <!-- Copy Linux libs to output directory -->
-    <Target Name="CopyAdditionalDependenciesLinux" Condition="$([MSBuild]::IsOSPlatform('Linux'))" AfterTargets="Build">
-        <CreateItem Include="$(SolutionDir)libs/linux-x64/**">
-            <Output TaskParameter="Include" ItemName="LinuxLibs"/>
-        </CreateItem>
+    <Target Name="CopyAdditionalDependenciesLinux"
+            Condition="$([MSBuild]::IsOSPlatform('Linux'))"
+            AfterTargets="Build;Publish">
+
+        <PropertyGroup>
+            <DependencyOutputPath Condition="'$(PublishDir)' == ''">$(OutputPath)</DependencyOutputPath>
+            <DependencyOutputPath Condition="'$(PublishDir)' != ''">$(PublishDir)</DependencyOutputPath>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <LinuxLibs Include="$(SolutionDir)libs/linux-x64/**"/>
+        </ItemGroup>
+
         <Copy SourceFiles="@(LinuxLibs)"
-              DestinationFiles="@(LinuxLibs->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+              DestinationFiles="@(LinuxLibs->'$(DependencyOutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
               SkipUnchangedFiles="true"/>
         <!-- Copy Drautos to the output directory on Linux as it won't be by default being a Windows dll -->
         <!-- This is still needed as it is injected into the Windows game that's running under Proton. -->
-        <Copy SourceFiles="$(NuGetPackageRoot)drautos/1.0.0/runtimes/win-x64/native/Drautos.dll"
-              DestinationFiles="$(OutputPath)Drautos.dll"
+        <Copy SourceFiles="$(NuGetPackageRoot)drautos/$(DrautosVersion)/runtimes/win-x64/native/Drautos.dll"
+              DestinationFiles="$(DependencyOutputPath)Drautos.dll"
               SkipUnchangedFiles="true"/>
     </Target>
 
     <!-- Copy Windows libs to output directory -->
-    <Target Name="CopyAdditionalDependenciesWindows" Condition="$([MSBuild]::IsOSPlatform('Windows'))" AfterTargets="Build">
-        <CreateItem Include="$(SolutionDir)libs/win-x64/**">
-            <Output TaskParameter="Include" ItemName="WindowsLibs"/>
-        </CreateItem>
+    <Target Name="CopyAdditionalDependenciesWindows"
+            Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+            AfterTargets="Build;Publish">
+
+        <PropertyGroup>
+            <DependencyOutputPath Condition="'$(PublishDir)' == ''">$(OutputPath)</DependencyOutputPath>
+            <DependencyOutputPath Condition="'$(PublishDir)' != ''">$(PublishDir)</DependencyOutputPath>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <WindowsLibs Include="$(SolutionDir)libs/win-x64/**"/>
+        </ItemGroup>
+
         <Copy SourceFiles="@(WindowsLibs)"
-              DestinationFiles="@(WindowsLibs->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+              DestinationFiles="@(WindowsLibs->'$(DependencyOutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
               SkipUnchangedFiles="true"/>
+    </Target>
+
+    <!-- Move Flagrum.Application web resources up into the root wwwroot directory on publish -->
+    <Target Name="MoveWebResources" AfterTargets="Publish">
+        <ItemGroup>
+            <WebResources Include="$(PublishDir)wwwroot/_content/Flagrum.Application/**/*"/>
+        </ItemGroup>
+
+        <Move SourceFiles="@(WebResources)"
+              DestinationFiles="@(WebResources->'$(PublishDir)wwwroot/%(RecursiveDir)%(Filename)%(Extension)')"/>
+        <RemoveDir Directories="$(PublishDir)wwwroot\_content\Flagrum.Application"/>
     </Target>
 
 </Project>

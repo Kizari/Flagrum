@@ -5,9 +5,9 @@ using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.Application;
+using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
-using Flagrum.Application.Features.Settings.Data;
 
 namespace Flagrum.Application.Services;
 
@@ -123,15 +123,17 @@ public class ProfileService : IProfileService
 
     public string DatabasePath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "flagrum.db");
     public string FileIndexPath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "file_index.zstd");
-    public string ImagesDirectory => Path.Combine(IOHelper.GetWebRoot(), "images", Current.Id.ToString());
-    public string ModThumbnailWebDirectory => Path.Combine(IOHelper.GetWebRoot(), "EarcMods", Current.Id.ToString());
+    public string ImagesDirectory => Path.Combine(IOHelper.GetUserAssetsRoot(), "images", Current.Id.ToString());
+
+    public string ModThumbnailWebDirectory =>
+        Path.Combine(IOHelper.GetUserAssetsRoot(), "EarcMods", Current.Id.ToString());
 
     /// <inheritdoc />
     public string TemporaryDirectory => Path.Combine(IOHelper.LocalApplicationData, "Temp", "Flagrum");
-    
+
     /// <inheritdoc />
     public string CacheDirectory => Path.Combine(TemporaryDirectory, Current.Id.ToString(), "cache");
-    
+
     /// <inheritdoc />
     public string ModStagingDirectory => Path.Combine(TemporaryDirectory, Current.Id.ToString(), "staging");
 
@@ -237,7 +239,7 @@ public class ProfileService : IProfileService
                 {
                     return Process.GetProcessesByName(fileName)
                         .Any(p => p.MainModule?.FileName
-                                      .StartsWith(directory, StringComparison.OrdinalIgnoreCase) == true);
+                            .StartsWith(directory, StringComparison.OrdinalIgnoreCase) == true);
                 }
                 catch
                 {

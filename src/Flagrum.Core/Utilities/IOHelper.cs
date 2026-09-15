@@ -12,15 +12,11 @@ public static class IOHelper
         get => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     }
 
-    public static string GetExecutingDirectory()
-    {
-        return Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
-    }
+    public static string GetExecutingDirectory() => Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
 
-    public static string GetWebRoot()
-    {
-        return Path.Combine(GetExecutingDirectory(), "wwwroot");
-    }
+    public static string GetWebRoot() => Path.Combine(GetExecutingDirectory(), "wwwroot");
+
+    public static string GetUserAssetsRoot() => Path.Combine(LocalApplicationData, "assets");
 
     public static void EnsureDirectoryExists(string path)
     {
@@ -72,8 +68,10 @@ public static class IOHelper
     /// <returns>True if files are in the same directory</returns>
     public static bool AreInSameDirectory(string path1, string path2)
     {
-        path1 = Path.GetDirectoryName(path1.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
-        path2 = Path.GetDirectoryName(path2.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
+        path1 = Path.GetDirectoryName(path1.Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
+        path2 = Path.GetDirectoryName(path2.Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
         return path1 == path2;
     }
 
@@ -99,8 +97,10 @@ public static class IOHelper
     /// <param name="fullPath">The full path to delete from</param>
     public static void DeleteEmptyDirectoriesInPath(string basePath, string fullPath)
     {
-        basePath = basePath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower();
-        fullPath = fullPath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower();
+        basePath = basePath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar)
+            .ToLower();
+        fullPath = fullPath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar)
+            .ToLower();
 
         if (!Directory.Exists(basePath))
         {
