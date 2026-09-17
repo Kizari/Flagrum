@@ -164,6 +164,8 @@ internal static class Program
     {
         // Ensure that past data migrations are set as completed to prevent them running
         var configuration = _services.GetRequiredService<IConfiguration>();
+        var application = _services.GetRequiredService<IApplication>();
+        configuration.LatestVersionNotes = application.Version.ToString();
         configuration.OnFreshInstall(SteppedMigrationHelper.ApplicationSteps, SteppedMigrationHelper.ProfileSteps);
     }
 
