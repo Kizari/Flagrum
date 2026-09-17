@@ -123,9 +123,16 @@ public partial class ModelPreview
         // Add the meshes to the scene
         await Parallel.ForEachAsync(model.LodMeshes[LodLevel], async (mesh, cancellation) =>
         {
-            var positions = (IList<float[]>)mesh.Semantics[VertexElementSemantic.Position0];
-            var normals = (IList<float[]>)mesh.Semantics[VertexElementSemantic.Normal0];
-            var uvs = (IList<float[]>)mesh.Semantics[VertexElementSemantic.TexCoord0];
+            var positions = ((IList<float[]>)mesh.Semantics[VertexElementSemantic.Position0])
+                .Select(a => a
+                    .Select(f => float.IsFinite(f) ? f : 0.0f));
+            var normals = ((IList<float[]>)mesh.Semantics[VertexElementSemantic.Normal0])
+                .Select(a => a
+                    .Select(f => float.IsFinite(f) ? f : 0.0f));
+            var uvs = ((IList<float[]>)mesh.Semantics[VertexElementSemantic.TexCoord0])
+                .Select(a => a
+                    .Select(f => float.IsFinite(f) ? f : 0.0f)
+                    .ToArray());
 
             // Reverse winding order of faces and flatten
             var indices = new uint[mesh.FaceIndexCount];
