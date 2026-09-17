@@ -94,6 +94,8 @@ export function addMesh(vertices, indices, normals, uvs, diffuse, normalMap) {
         promises.push(new Promise(resolve => {
             textureLoader.load(diffuseUrl, texture => {
                 texture.colorSpace = THREE.SRGBColorSpace;
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
                 materialParams.map = texture;
                 URL.revokeObjectURL(diffuseUrl);
                 resolve();
@@ -107,6 +109,8 @@ export function addMesh(vertices, indices, normals, uvs, diffuse, normalMap) {
         const normalUrl = URL.createObjectURL(normalBlob);
         promises.push(new Promise(resolve => {
             textureLoader.load(normalUrl, texture => {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
                 materialParams.normalMap = texture;
                 URL.revokeObjectURL(normalUrl);
                 resolve();
