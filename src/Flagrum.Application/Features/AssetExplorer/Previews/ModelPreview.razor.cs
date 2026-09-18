@@ -243,7 +243,8 @@ public partial class ModelPreview
 
         if (normalUri != null && TryGetDataByUri(normalUri, fidelity, out var normalBtex))
         {
-            normal = new BlackTexture(normalBtex).Save(0, ImageFileFormat.Png);
+            normal = new BlackTexture(normalBtex)
+                .Save(0, ImageFileFormat.Png, BlackTextureWriteMode.FillBlueChannel);
         }
 
         return true;

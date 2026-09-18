@@ -189,9 +189,13 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
     /// </summary>
     /// <param name="imageIndex">Index of the image to save.</param>
     /// <param name="format">File format to convert the image to.</param>
+    /// <param name="mode">Optional write mode to use for this image.</param>
     /// <returns>Buffer containing the image file.</returns>
     /// <exception cref="IndexOutOfRangeException">Thrown if image index is not in the valid range.</exception>
-    public byte[] Save(int imageIndex, ImageFileFormat format)
+    public byte[] Save(
+        int imageIndex, 
+        ImageFileFormat format, 
+        BlackTextureWriteMode mode = BlackTextureWriteMode.Standard)
     {
         if (imageIndex < 0 || imageIndex >= ImageHeader.ArrayCount)
         {
@@ -201,7 +205,7 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
 
         using var enumerator = (ITextureSurfaceEnumerator)GetEnumerator();
         using var stream = new MemoryStream();
-        WriteOther(stream, enumerator, imageIndex, format);
+        WriteOther(stream, enumerator, imageIndex, format, mode);
         return stream.ToArray();
     }
 
@@ -258,7 +262,7 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
                     : $"{pathNoExtension}.{format}";
                 IOHelper.EnsureDirectoriesExistForFilePath(finalPath);
                 using var stream = new FileStream(finalPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                WriteOther(stream, enumerator, i, format);
+                WriteOther(stream, enumerator, i, format, BlackTextureWriteMode.Standard);
             }
         }
     }
@@ -319,10 +323,16 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
     /// <param name="enumerator">Surface enumerator.</param>
     /// <param name="index">Index of the image to convert.</param>
     /// <param name="format">Image format to convert to.</param>
+    /// <param name="mode">Special write mode to use for this image.</param>
     /// <exception cref="NotSupportedException">
     /// Thrown if the <paramref name="format" /> is not JPEG, PNG, or TGA.
     /// </exception>
-    private void WriteOther(Stream destination, ITextureSurfaceEnumerator enumerator, int index, ImageFileFormat format)
+    private void WriteOther(
+        Stream destination, 
+        ITextureSurfaceEnumerator enumerator, 
+        int index, 
+        ImageFileFormat format,
+        BlackTextureWriteMode mode)
     {
         var element = enumerator.ElementAt(index, 0);
         var surfaceSpan = element.Data.Span;
@@ -345,7 +355,8 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
                 ? new PngEncoder()
                 : format == ImageFileFormat.Targa
                     ? new TgaEncoder()
-                    : throw new NotSupportedException($"Unsupported image format {format}"));
+                    : throw new NotSupportedException($"Unsupported image format {format}"),
+            mode);
     }
 
     /// <summary>
@@ -398,4 +409,23 @@ public readonly ref partial struct BlackTexture : IEnumerable<TextureSurface>
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// Custom write modes that apply to writing out images from a <see cref="BlackTexture"/>.
+/// </summary>
+public enum BlackTextureWriteMode
+{
+    /// <summary>
+    /// Does not alter the image on write.
+    /// </summary>
+    Standard,
+    
+    /// <summary>
+    /// Sets the blue channel of the image to maximum intensity (1.0f).
+    /// </summary>
+    /// <remarks>
+    /// Used to convert yellow normal maps to blue normal maps, such as for 3D viewers that do not support yellow maps.
+    /// </remarks>
+    FillBlueChannel
 }

@@ -154,7 +154,8 @@ public sealed class NvttSurface : IDisposable
     /// </summary>
     /// <param name="destination">Stream to write the encoded file to.</param>
     /// <param name="encoder">Encoder to use to determine the file format.</param>
-    public unsafe void Save(Stream destination, IImageEncoder encoder)
+    /// <param name="mode">Defines how to alter pixel information on write.</param>
+    public unsafe void Save(Stream destination, IImageEncoder encoder, BlackTextureWriteMode mode)
     {
         // Compute sizes
         var width = Width;
@@ -172,13 +173,31 @@ public sealed class NvttSurface : IDisposable
         // Create a new buffer and copy the pixel data into it, interleaved
         var interleavedMemory = new Memory<RgbaVector>(new RgbaVector[totalPixels]);
         var interleaved = interleavedMemory.Span;
-        for (var i = 0; i < totalPixels; i++)
+
+        // Handle fill blue channel write mode
+        if (mode == BlackTextureWriteMode.FillBlueChannel)
         {
-            ref var pixel = ref interleaved[i];
-            pixel.R = red[i];
-            pixel.G = green[i];
-            pixel.B = blue[i];
-            pixel.A = alpha[i];
+            for (var i = 0; i < totalPixels; i++)
+            {
+                ref var pixel = ref interleaved[i];
+                pixel.R = red[i];
+                pixel.G = green[i];
+                pixel.B = 1.0f;
+                pixel.A = alpha[i];
+            }
+        }
+        
+        // Handle standard write mode
+        else
+        {
+            for (var i = 0; i < totalPixels; i++)
+            {
+                ref var pixel = ref interleaved[i];
+                pixel.R = red[i];
+                pixel.G = green[i];
+                pixel.B = blue[i];
+                pixel.A = alpha[i];
+            }
         }
 
         // Wrap the interleaved buffer to avoid copying it
