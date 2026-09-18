@@ -120,13 +120,14 @@ public class ProfileService : IProfileService
     }
 
     public string FlagrumDirectory => Path.Combine(IOHelper.LocalApplicationData, "Flagrum");
+    public string UserAssetsDirectory => Path.Combine(FlagrumDirectory, "assets");
 
     public string DatabasePath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "flagrum.db");
     public string FileIndexPath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "file_index.zstd");
-    public string ImagesDirectory => Path.Combine(IOHelper.GetUserAssetsRoot(), "images", Current.Id.ToString());
+    public string ImagesDirectory => Path.Combine(UserAssetsDirectory, "images", Current.Id.ToString());
 
     public string ModThumbnailWebDirectory =>
-        Path.Combine(IOHelper.GetUserAssetsRoot(), "EarcMods", Current.Id.ToString());
+        Path.Combine(UserAssetsDirectory, "EarcMods", Current.Id.ToString());
 
     /// <inheritdoc />
     public string TemporaryDirectory => Path.Combine(IOHelper.LocalApplicationData, "Temp", "Flagrum");

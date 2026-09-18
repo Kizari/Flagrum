@@ -145,9 +145,9 @@ internal static class Program
             .AddSingleton<IProfileService, ProfileService>()
             .AddSingleton<AppStateService>()
             .AddSingleton<JSComponentConfigurationStore>()
-            .AddSingleton<IFileProvider>(_ => new WebFileProvider(
+            .AddSingleton<IFileProvider>(provider => new WebFileProvider(
                 new PhysicalFileProvider(IOHelper.GetWebRoot()),
-                new PhysicalFileProvider(IOHelper.GetUserAssetsRoot())
+                new PhysicalFileProvider(provider.GetRequiredService<IProfileService>().UserAssetsDirectory)
             ))
             .AddBlazorWebView()
             .AddFlagrum()

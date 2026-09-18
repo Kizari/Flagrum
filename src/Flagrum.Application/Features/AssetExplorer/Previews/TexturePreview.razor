@@ -61,17 +61,6 @@
 
     private void SetImage(int index)
     {
-        // var texture = BlackTexture.Deserialize(Texture);
-        // ImageCount = texture.ImageData[0].ArrayCount;
-        // CurrentIndex = index;
-        // var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
-        // using var surfaceSet = new SurfaceSet(texture);
-        // surfaceSet.SaveJpg(0, 0, path);
-        // ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces img update on state change
-        // StateHasChanged();
-        // return;
-
-
         var texture = new BlackTexture(Texture);
         ImageCount = texture.ImageHeader.ArrayCount;
         CurrentIndex = index;
@@ -79,7 +68,6 @@
         var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
         using var surfaceSet = new NvttSurfaceSet(texture);
         surfaceSet.SaveJpg(0, 0, path);
-        //texture.Save(path, ImageFormat.Jpeg);
 
         ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces img update on state change
         StateHasChanged();

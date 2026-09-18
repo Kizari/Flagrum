@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Flagrum.Abstractions;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Application.Utilities;
@@ -46,9 +47,11 @@ public enum WorkshopModBuildContextFlags
 
 public class WorkshopModBuildContext
 {
+    private readonly IProfileService _profile;
     private readonly Action _stateChanged;
 
     public WorkshopModBuildContext(
+        IProfileService profile,
         Action stateChanged) =>
         _stateChanged = stateChanged;
 
@@ -172,7 +175,7 @@ public class WorkshopModBuildContext
 
         await Task.Run(async () =>
         {
-            var path = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_preview.png");
+            var path = Path.Combine(_profile.UserAssetsDirectory, "images", "current_preview.png");
             File.Copy(file, path, true);
             await onUpdate();
 
@@ -211,7 +214,7 @@ public class WorkshopModBuildContext
 
         await Task.Run(async () =>
         {
-            var path = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_thumbnail.png");
+            var path = Path.Combine(_profile.UserAssetsDirectory, "images", "current_thumbnail.png");
             File.Copy(file, path, true);
             await onUpdate();
 

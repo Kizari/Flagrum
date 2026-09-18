@@ -10,6 +10,7 @@ public interface IProfileService : IDisposable
     bool DidMigrateThisSession { get; }
     bool IsReady { get; }
     string FlagrumDirectory { get; }
+    string UserAssetsDirectory { get; }
     string DatabasePath { get; }
     string FileIndexPath { get; }
     string ImagesDirectory { get; }

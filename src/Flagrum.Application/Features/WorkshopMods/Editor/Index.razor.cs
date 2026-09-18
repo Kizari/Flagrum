@@ -55,7 +55,7 @@ public partial class Index : ComponentBase
 
     protected override void OnInitialized()
     {
-        WorkshopModBuildContext = new WorkshopModBuildContext(StateHasChanged);
+        WorkshopModBuildContext = new WorkshopModBuildContext(Profile, StateHasChanged);
         ModTypes = Enum.GetValues<WorkshopModType>().ToDictionary(t => (int)t, t => L[t.ToString()].Value);
 
         Mod = AppState.ActiveMod?.Clone();
@@ -95,7 +95,7 @@ public partial class Index : ComponentBase
             WorkshopModBuildContextFlags.NeedsBuild | WorkshopModBuildContextFlags.PreviewImageChanged;
 
         var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "preview.png");
-        var currentPreviewPath = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_preview.png");
+        var currentPreviewPath = Path.Combine(Profile.UserAssetsDirectory, "images", "current_preview.png");
         File.Copy(defaultPreviewPath, currentPreviewPath, true);
         var previewBytes = File.ReadAllBytes(defaultPreviewPath);
         WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
@@ -125,13 +125,13 @@ public partial class Index : ComponentBase
         if (previewBytes.Length > 0)
         {
             WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
-            File.WriteAllBytes(Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_preview.png"),
+            File.WriteAllBytes(Path.Combine(Profile.UserAssetsDirectory, "images", "current_preview.png"),
                 previewBytes);
         }
         else
         {
             var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "preview.png");
-            var currentPreviewPath = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_preview.png");
+            var currentPreviewPath = Path.Combine(Profile.UserAssetsDirectory, "images", "current_preview.png");
             File.Copy(defaultPreviewPath, currentPreviewPath, true);
             previewBytes = File.ReadAllBytes(defaultPreviewPath);
             WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
@@ -139,7 +139,7 @@ public partial class Index : ComponentBase
 
         if (Mod.Type == (int)WorkshopModType.StyleEdit)
         {
-            var path = Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_thumbnail.png");
+            var path = Path.Combine(Profile.UserAssetsDirectory, "images", "current_thumbnail.png");
 
             if (Mod.HasThumbnailPng(out var thumbnailBytes))
             {
@@ -225,7 +225,7 @@ public partial class Index : ComponentBase
         }
 
         File.WriteAllBytes(
-            Path.Combine(IOHelper.GetUserAssetsRoot(), "images", $"{Mod.Uuid}.png"),
+            Path.Combine(Profile.UserAssetsDirectory, "images", $"{Mod.Uuid}.png"),
             WorkshopModBuildContext.PreviewImage);
 
         if (WorkshopModBuildContext.Flags.HasFlag(WorkshopModBuildContextFlags.NeedsBuild))
@@ -396,7 +396,7 @@ public partial class Index : ComponentBase
             {
                 var defaultThumbnailPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "default.png");
                 var currentThumbnailPath =
-                    Path.Combine(IOHelper.GetUserAssetsRoot(), "images", "current_thumbnail.png");
+                    Path.Combine(Profile.UserAssetsDirectory, "images", "current_thumbnail.png");
                 File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
                 var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
                 WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);

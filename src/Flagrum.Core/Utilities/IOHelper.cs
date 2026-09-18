@@ -16,8 +16,6 @@ public static class IOHelper
 
     public static string GetWebRoot() => Path.Combine(GetExecutingDirectory(), "wwwroot");
 
-    public static string GetUserAssetsRoot() => Path.Combine(LocalApplicationData, "assets");
-
     public static void EnsureDirectoryExists(string path)
     {
         if (!Directory.Exists(path))

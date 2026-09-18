@@ -10,7 +10,9 @@ namespace Flagrum.Migrations;
 /// Moves user-specific assets from the wwwroot directory to the user data directory.
 /// </summary>
 [SteppedDataMigration(6)]
-public partial class MoveUserAssetsMigration(IConfiguration configuration)
+public partial class MoveUserAssetsMigration(
+    IConfiguration configuration,
+    IProfileService profile)
 {
     [MigrationStep(0, "cdbec2c0-305b-49a4-a768-77897830fa03",
         MigrationScope.Application,
@@ -18,7 +20,7 @@ public partial class MoveUserAssetsMigration(IConfiguration configuration)
     private void MoveDirectories()
     {
         // Ensure the new user assets directory exists
-        var userAssetsRoot = IOHelper.GetUserAssetsRoot();
+        var userAssetsRoot = profile.UserAssetsDirectory;
         if (!Directory.Exists(userAssetsRoot))
         {
             Directory.CreateDirectory(userAssetsRoot);
@@ -26,9 +28,9 @@ public partial class MoveUserAssetsMigration(IConfiguration configuration)
         
         // Determine directory paths
         var imagesDirectoryOld = Path.Combine(IOHelper.GetWebRoot(), "images");
-        var imagesDirectoryNew = Path.Combine(IOHelper.GetUserAssetsRoot(), "images");
+        var imagesDirectoryNew = Path.Combine(profile.UserAssetsDirectory, "images");
         var modsDirectoryOld = Path.Combine(IOHelper.GetWebRoot(), "EarcMods");
-        var modsDirectoryNew = Path.Combine(IOHelper.GetUserAssetsRoot(), "EarcMods");
+        var modsDirectoryNew = Path.Combine(profile.UserAssetsDirectory, "EarcMods");
 
         // Catch error here, as the migration should not retry in future in case it replaces
         // the directories once they are already altered under the new system
