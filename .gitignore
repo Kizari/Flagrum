@@ -357,3 +357,6 @@ ItemIdFixer/
 
 # Generated files that should not be checked in
 src/Flagrum/Generated/
+
+# Visual Studio Code
+.vscode/
