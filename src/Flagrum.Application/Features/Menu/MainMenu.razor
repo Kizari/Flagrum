@@ -1,6 +1,5 @@
 ﻿@using Flagrum.Application.Features.Information.News
-@using Flagrum.Application.Features.Menu.Modals
-@using NewsModal = Flagrum.Application.Features.Menu.Modals.OpenSourceNewsModal
+@using Flagrum.Application.Features.Information.News.Modals
 @inject IApplication Application
 @inject IStringLocalizer<MainMenu> L
 @inject IStringLocalizer<App> AppLocalizer
@@ -55,7 +54,7 @@
 
         NewsFlow = NewsFlowBuilderFactory.Create()
             .PresentIfBelow<LauncherNewsModal>(new Version(1, 5, 17))
-            .PresentIfBelow<NewsModal>(new Version(1, 6, 0))
+            .PresentIfBelow<OpenSourceNewsModal>(new Version(1, 6, 0))
             .PresentIfBelow<CrossPlatformNewsModal>(new Version(1, 7, 1))
             .PresentAlways<VersionNotesNewsModal>()
             .Build();
