@@ -65,11 +65,23 @@
         ImageCount = texture.ImageHeader.ArrayCount;
         CurrentIndex = index;
 
-        var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
+        // NVTT crashes if attempting to overwrite the current image while it's being previewed on Windows
+        // so save to a temporary file instead
+        var tempPath = Path.Combine(Profile.ImagesDirectory, "asset_preview_temp.jpg");
         using var surfaceSet = new NvttSurfaceSet(texture);
-        surfaceSet.SaveJpg(0, 0, path);
+        surfaceSet.SaveJpg(0, 0, tempPath);
 
-        ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}"; // Forces img update on state change
+        // Read the temporary image and write it to the actual location
+        // This is ridiculous, but simply using File.Move does not work as Windows throws permission errors
+        // It is assumed this may be Defender being overzealous and assuming the quick file operations are malicious
+        using var stream = new FileStream(tempPath, FileMode.Open, FileAccess.Read);
+        var data = new byte[stream.Length];
+        stream.ReadExactly(data);
+        var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
+        File.WriteAllBytes(path, data);
+
+        // Update the preview image in the UI
+        ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}";
         StateHasChanged();
     }
 }
