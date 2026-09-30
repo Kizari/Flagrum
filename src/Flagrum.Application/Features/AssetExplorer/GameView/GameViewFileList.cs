@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Timers;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Application.Features.AssetExplorer.Base;
@@ -9,8 +8,6 @@ namespace Flagrum.Application.Features.AssetExplorer.GameView;
 
 public class GameViewFileList : FileList
 {
-    private Timer _timer;
-
     protected override void OnInitialized()
     {
         if (FileIndex.IsRegenerating)
@@ -50,7 +47,8 @@ public class GameViewFileList : FileList
                         (current, token) => (FileIndexNode)current!.Children
                             .FirstOrDefault(n => n.Name == token));
 
-                    SetCurrentNode(currentNode!.HasChildren ? currentNode : currentNode.Parent);
+                    SetCurrentNode(currentNode!.HasChildren || currentNode == FileIndex.RootNode ?
+                        currentNode : currentNode.Parent);
                     AssetExplorer.AddressBar.SetCurrentPath(uri);
                 }
                 else
@@ -69,7 +67,8 @@ public class GameViewFileList : FileList
     {
         if (CurrentNode != null)
         {
-            var currentNode = CurrentNode.Type == ExplorerItemType.Directory ? CurrentNode : CurrentNode.Parent;
+            var currentNode = CurrentNode.Type == ExplorerItemType.Directory || CurrentNode == FileIndex.RootNode 
+                ? CurrentNode : CurrentNode.Parent;
             Configuration.Set(StateKey.CurrentAssetNode, ((FileIndexNode)currentNode).Path);
         }
     }

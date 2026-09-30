@@ -1,3 +1,6 @@
+# Enforce LF line ends
+* text=auto eol=lf
+
 # Exclude documentation from language statistics
 docs/* linguist-documentation
 

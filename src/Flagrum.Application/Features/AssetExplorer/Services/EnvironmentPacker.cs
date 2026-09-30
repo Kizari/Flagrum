@@ -7,15 +7,14 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
+using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Flagrum.Core.Entities.Xml2;
 using Flagrum.Core.Graphics.Materials;
 using Flagrum.Core.Graphics.Models;
+using Flagrum.Core.Graphics.Textures.Luminous;
+using Flagrum.Core.Graphics.Textures.Shared;
 using Flagrum.Core.Utilities;
-using Flagrum.Generators;
-using Flagrum.Application.Features.Shared;
-using Flagrum.Application.Features.WorkshopMods.Data.Model;
 using Injectio.Attributes;
 using Newtonsoft.Json;
 
@@ -32,14 +31,14 @@ public class EnvironmentModelMetadata
     public List<float[]> PrefabRotations { get; set; }
 }
 
-[RegisterScoped]
-public partial class EnvironmentPacker
+[RegisterScoped<EnvironmentPacker>]
+public partial class EnvironmentPacker(
+    AppStateService appState,
+    IFileIndex fileIndex)
 {
-    [Inject] private readonly AppStateService _appState;
-    [Inject] private readonly IFileIndex _fileIndex;
     private readonly ConcurrentBag<EnvironmentModelMetadata> _models = new();
     private readonly ConcurrentBag<string> _nodeTypes = new();
-    [Inject] private readonly IProfileService _profile;
+
 
     private readonly List<string> _staticModelTypes = new()
     {
@@ -52,7 +51,6 @@ public partial class EnvironmentPacker
         "Black.Entity.StaticModelEntity"
     };
 
-    [Inject] private readonly TextureConverter _textureConverter;
     private readonly ConcurrentDictionary<string, bool> _textures = new();
     private readonly ConcurrentDictionary<string, bool> _unreadClassTypes = new();
 
@@ -66,17 +64,17 @@ public partial class EnvironmentPacker
         var previousCulture = Thread.CurrentThread.CurrentCulture;
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
-        var basePathTokens = outputPath.Split('\\')[..^1];
-        var basePath = string.Join('\\', basePathTokens);
-        var outputFileName = outputPath.Split('\\').Last();
+        var basePathTokens = outputPath.Split(Path.DirectorySeparatorChar)[..^1];
+        var basePath = string.Join(Path.DirectorySeparatorChar, basePathTokens);
+        var outputFileName = outputPath.Split(Path.DirectorySeparatorChar).Last();
         var outputFileNameWithoutExtension = outputFileName[..outputFileName.LastIndexOf('.')];
-        _modelsDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_models";
-        _texturesDirectory = $"{basePath}\\{outputFileNameWithoutExtension}_textures";
+        _modelsDirectory = Path.Combine(basePath, $"{outputFileNameWithoutExtension}_models");
+        _texturesDirectory = Path.Combine(basePath, $"{outputFileNameWithoutExtension}_textures");
         IOHelper.EnsureDirectoryExists(_modelsDirectory);
         IOHelper.EnsureDirectoryExists(_texturesDirectory);
 
         // Recurse through the scripts
-        GetPathsRecursively(uri, _appState.GetFileByUri(uri),
+        GetPathsRecursively(uri, appState.GetFileByUri(uri),
             null,
             null,
             1.0f,
@@ -94,16 +92,15 @@ public partial class EnvironmentPacker
             }
         });
 
-        // Can't use multithreading here due to an issue where DirectXTexNet hits
-        // an access violation exception because we can't clear the memory quickly enough
-        foreach (var (uri2, _) in _textures)
+        Parallel.ForEach(_textures, kvp =>
         {
-            var btexData = _appState.GetFileByUri(uri2);
-            var pngData = _textureConverter.ToTarga(btexData);
-            var fileName = uri2.Split('/').Last();
+            var btexData = appState.GetFileByUri(kvp.Key);
+            var tgaData = new BlackTexture(btexData).Save(0, ImageFileFormat.Targa);
+            var fileName = kvp.Key.Split('/').Last();
             var fileNameWithoutExtension = fileName[..fileName.LastIndexOf('.')];
-            File.WriteAllBytes($"{_texturesDirectory}\\{fileNameWithoutExtension}.tga", pngData);
-        }
+            var path = Path.Combine(_texturesDirectory, $"{fileNameWithoutExtension}.tga");
+            File.WriteAllBytes(path, tgaData);
+        });
 
         File.WriteAllText(outputPath, JsonConvert.SerializeObject(_models));
 
@@ -116,9 +113,9 @@ public partial class EnvironmentPacker
 
     private void PackModel(string uri, string directory, int index)
     {
-        var gfxbin = _appState.GetFileByUri(uri);
+        var gfxbin = appState.GetFileByUri(uri);
         var gpubinUri = uri.Replace(".gmdl", ".gpubin");
-        var gpubin = _appState.GetFileByUri(gpubinUri);
+        var gpubin = appState.GetFileByUri(gpubinUri);
 
         if (gfxbin.Length < 1 || gpubin.Length < 1)
         {
@@ -153,7 +150,7 @@ public partial class EnvironmentPacker
                         .FirstOrDefault(d => d.Key == m.MaterialHash.ToString())
                         !.Value;
 
-                    var materialData = _appState.GetFileByUri(materialUri);
+                    var materialData = appState.GetFileByUri(materialUri);
                     GameMaterial material;
                     try
                     {
@@ -240,7 +237,7 @@ public partial class EnvironmentPacker
                                     {
                                         Hash = t.UriHash.ToString(),
                                         Name = fileNameWithoutExtension,
-                                        Path = $"{_texturesDirectory}\\{fileNameWithoutExtension}.tga",
+                                        Path = Path.Combine(_texturesDirectory, $"{fileNameWithoutExtension}.tga"),
                                         Uri = textureUri,
                                         Slot = t.ShaderGenName
                                     };
@@ -260,7 +257,7 @@ public partial class EnvironmentPacker
         }
 
         var json = JsonConvert.SerializeObject(meshData);
-        File.WriteAllText($"{directory}\\{index}.json", json);
+        File.WriteAllText(Path.Combine(directory, $"{index}.json"), json);
     }
 
     /// <summary>
@@ -276,7 +273,7 @@ public partial class EnvironmentPacker
         string[] uris = [highest, high];
         foreach (var resolution in uris)
         {
-            if (_fileIndex.Contains(resolution))
+            if (fileIndex.Contains(resolution))
             {
                 return resolution;
             }
@@ -367,8 +364,8 @@ public partial class EnvironmentPacker
                     {
                         PrefabName = prefabFileName[..prefabFileName.LastIndexOf('.')],
                         Path = $"data://{path.GetTextValue().Replace('\\', '/')}",
-                        Position = new[] {positionAltered.X, positionAltered.Y, positionAltered.Z},
-                        Rotation = rotation?.GetFloat4Value() ?? new[] {0.0f, 0.0f, 0.0f, 0.0f},
+                        Position = [positionAltered.X, positionAltered.Y, positionAltered.Z],
+                        Rotation = rotation?.GetFloat4Value() ?? [0.0f, 0.0f, 0.0f, 0.0f],
                         PrefabRotations = prefabRotations,
                         Scale = scaleAltered
                     });
@@ -402,7 +399,7 @@ public partial class EnvironmentPacker
                 var uriUri = new Uri(uri.Replace("data://", "data://data/"));
                 var combinedUri = new Uri(uriUri, relativeUri);
                 var combinedUriString = combinedUri.ToString().Replace("data://data/", "data://");
-                var innerXmb2 = _appState.GetFileByUri(combinedUriString);
+                var innerXmb2 = appState.GetFileByUri(combinedUriString);
 
                 if (innerXmb2.Length > 0)
                 {

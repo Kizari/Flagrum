@@ -35,7 +35,7 @@ public class PremiumHelper
     /// <remarks>
     /// Returns <c>null</c> if the library was not present on disk.
     /// </remarks>
-    public Assembly Assembly { get; }
+    public Assembly? Assembly { get; }
 
     /// <summary>
     /// Adds premium services based on the presence of the <c>Flagrum.Premium</c>

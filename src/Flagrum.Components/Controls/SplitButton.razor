@@ -1,0 +1,138 @@
+@implements IAsyncDisposable
+
+@inject IJSRuntime JSRuntime
+
+<div class="
+    flex-shrink-0
+    inline-flex
+    flex-row
+    items-stretch
+    rounded
+    text-@ForegroundColor 
+    bg-@BackgroundColor 
+    hover:bg-@BackgroundHoverColor
+    cursor-pointer
+    transition-colors
+    select-none
+    relative
+    @CssClass"
+    @onclick="HandleClick">
+
+    <!-- Icon -->
+    <div class="pl-1 pt-2 pb-0.5">
+        <span class="material-icons-outlined @(IsLarge ? "" : "text-sm")">
+            @Icon
+        </span>
+    </div>
+    
+    <!-- Text -->
+    <div class="flex-grow pl-1 pb-0.5 pt-2 font-bold @(IsLarge ? "" : "text-sm")">
+        @Text
+    </div>
+    
+    <!-- Dropdown arrow -->
+    <div class="ml-4 pl-0.5 pr-0.5 pb-0.5 pt-2 border-l border-@SeparatorColor"
+         @onclick="OpenContextMenu"
+         @onclick:stopPropagation="true">
+        <span class="material-icons @(IsLarge ? "" : "text-sm")">
+            arrow_drop_down
+        </span>
+    </div>
+    
+    <!-- Context menu -->
+    <div @ref="ContextMenu"
+         class="absolute bg-grey-700 text-grey-100 shadow font-bold text-sm text-right mt-2" 
+         @onclick:stopPropagation="true"
+         style="
+             display: @(IsOpen ? "block" : "none"); 
+             top: 32px; 
+             right: 0; 
+             z-index: 1; 
+             @(DropdownWidth == null ? "" : $"width: {DropdownWidth}px;")">
+        @ChildContent
+    </div>
+    
+</div>
+
+@code
+{
+    private IJSObjectReference? _module;
+    private IJSObjectReference? _registration;
+    private DotNetObjectReference<SplitButton>? _dotNetReference;
+    private bool _didJustOpen;
+    
+    [Parameter] public string ForegroundColor { get; set; } = "grey-100";
+    [Parameter] public string BackgroundColor { get; set; } = "accent2-900";
+    [Parameter] public string BackgroundHoverColor { get; set; } = "accent2-700";
+    [Parameter] public string SeparatorColor { get; set; } = "grey-900";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public int? DropdownWidth { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public Func<Task>? OnClickAsync { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public bool IsLarge { get; set; }
+    
+    private ElementReference ContextMenu { get; set; }
+    private bool IsOpen { get; set; }
+
+    [JSInvokable]
+    public void NotifyOutsideClick()
+    {
+        if (_didJustOpen)
+        {
+            _didJustOpen = false;
+            return;
+        }
+        
+        if (IsOpen)
+        {
+            IsOpen = false;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetReference = DotNetObjectReference.Create(this);
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import",
+                "./_content/Flagrum.Components/Controls/SplitButton.razor.js");
+
+            _registration = await _module.InvokeAsync<IJSObjectReference>(
+                "registerOutsideClick", ContextMenu, _dotNetReference);
+        }
+    }
+
+    private Task HandleClick()
+    {
+        return OnClickAsync == null ? Task.CompletedTask : OnClickAsync();
+    }
+
+    private void OpenContextMenu()
+    {
+        if (!IsOpen)
+        {
+            IsOpen = true;
+            _didJustOpen = true;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_registration != null)
+        {
+            await _registration.InvokeVoidAsync("dispose");
+            await _registration.DisposeAsync();
+        }
+
+        if (_module != null)
+        {
+            await _module.DisposeAsync();
+        }
+        
+        _dotNetReference?.Dispose();
+    }
+}

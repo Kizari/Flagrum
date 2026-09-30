@@ -13,7 +13,7 @@ public partial class FileIndexNode : IAssetExplorerNodeBase
 {
     [MemoryPackIgnore] private string _path;
     public FileIndexNode ParentNode { get; set; }
-    public List<FileIndexNode> ChildNodes { get; set; }
+    public List<FileIndexNode>? ChildNodes { get; set; }
 
     public static AppStateService AppState { get; set; }
 

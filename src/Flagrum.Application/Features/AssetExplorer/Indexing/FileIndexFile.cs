@@ -6,5 +6,5 @@ namespace Flagrum.Application.Features.AssetExplorer.Indexing;
 public partial class FileIndexFile
 {
     public string Uri { get; set; }
-    public FileIndexArchive Archive { get; set; }
+    public FileIndexArchive? Archive { get; set; }
 }

@@ -1,25 +1,34 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
+using Flagrum.Abstractions.ModManager;
+using Flagrum.Application.Services;
+using Flagrum.Components;
+using Flagrum.Core.Utilities;
 using Flagrum.Generators;
+using Flagrum.Host;
+using Flagrum.Host.Shell;
+using Flagrum.Host.Utilities;
 using Flagrum.Migrations;
-using Flagrum.Utilities;
-using Flagrum.Application.Features.ModManager.Launcher;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
-using NuGet.Versioning;
+using Microsoft.Extensions.FileProviders;
+using MsBox.Avalonia.Enums;
+using Serilog;
+using Serilog.Events;
 using Velopack;
 
 namespace Flagrum;
 
 internal static class Program
 {
-    /// <summary>
-    /// The dependency injection service container for the application.
-    /// </summary>
-    public static IServiceProvider Services { get; private set; } = null!;
+    private static IServiceProvider _services = null!;
 
     /// <summary>
     /// Main entry point for the application.
@@ -28,60 +37,124 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        // Program setup
         CrashHelper.Initialize();
-        Services = ServiceHelper.ConfigureServices();
+        InitializeLogging();
+        _services = ConfigureServices();
 
         // Initialize Velopack
         VelopackApp.Build()
-            .WithFirstRun(OnFreshInstall)
-            .WithBeforeUninstallFastCallback(OnBeforeUninstall)
+            .OnFirstRun(OnFreshInstall)
+#if WINDOWS
+            .OnBeforeUninstallFastCallback(OnBeforeUninstall)
+#endif
             .Run();
 
-        // Handle commandline arguments
+        // Handle game launch mode
         if (args.Any(a => a == "--launch"))
         {
-            var launcher = Services.GetRequiredService<GameLauncher>();
-            var result = launcher.TryLaunch(false);
-            if (result != GameLaunchResult.Success)
+            var completion = new ManualResetEventSlim(false);
+            var scheduler = _services.GetRequiredService<ObservedTaskScheduler>();
+
+            scheduler.RunAsyncObserved(async () =>
             {
-                var message = result switch
-                {
-                    GameLaunchResult.GameAlreadyRunning => 
-                        "Flagrum detected that the game is already running, " +
-                        "so it cannot launch again until the game is closed.",
-                    GameLaunchResult.UnsupportedExecutable => 
-                        "Flagrum did not recognize the FFXV executable, " +
-                        "the mod loader only supports the latest Steam release of the game.",
-                    GameLaunchResult.AccessDenied =>
-                        "Flagrum was unable to launch FFXV due to insufficient permissions. " +
-                        "Please run Flagrum as administrator and try again.",
-                    _ => throw new NotSupportedException($"Did not recognize launch result {result}.")
-                };
+                await LaunchGameAsync();
+                completion.Set();
+            });
 
-                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            // Flagrum was invoked only to launch the game, so terminate here
-            return;
+            completion.Wait();
+            return; // Flagrum was invoked only to launch the game, so terminate here
         }
 
-        // Run pending data migrations
-        Services.GetRequiredService<SteppedMigrationUpgrader>().Run();
+        // Handle Linux game launch mode
+        var launchCommand = args.FirstOrDefault(a => a.StartsWith("--launch-command"));
+        if (launchCommand != null)
+        {
+            var completion = new ManualResetEventSlim(false);
+            var scheduler = _services.GetRequiredService<ObservedTaskScheduler>();
 
-        // Run the application
-        RunApp();
+            scheduler.RunAsyncObserved(async () =>
+            {
+                await LaunchGameAsync(launchCommand.Split('=')[1]);
+                completion.Set();
+            });
+
+            completion.Wait();
+            return; // Flagrum was invoked only to launch the game, so terminate here
+        }
+
+        // Handle standard run mode
+        _services.GetRequiredService<SteppedMigrationUpgrader>().Run(); // Upgrade from legacy data migrations if needed
+        SetCulture();
+        var platform = _services.GetRequiredService<IPlatformManager>();
+        platform.EnableTaskbarStacking();
+        platform.SetFileTypeAssociation();
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 
     /// <summary>
-    /// Runs the WPF application until shutdown is requested.
+    /// Defines how to build the Avalonia application.
     /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    private static void RunApp()
+    /// <remarks>This method needs to be separate as it is also called by the XAML designer by convention.</remarks>
+    private static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() =>
+        {
+            _services ??= ConfigureServices(); // Needed for XAML designer
+            return new AvaloniaApplication(
+                _services,
+                _services.GetRequiredService<IApplication>(),
+                _services.GetRequiredService<ObservedTaskScheduler>(),
+                _services.GetRequiredService<MigrationRunner>(),
+                _services.GetRequiredService<IPlatformManager>(),
+                _services.GetRequiredService<AppStateService>());
+        })
+        .UsePlatformDetect()
+#if DEBUG
+        .WithDeveloperTools()
+#endif
+        .WithInterFont()
+#pragma warning disable AVALONIA_X11_CSD
+        .With(new X11PlatformOptions {EnableDrawnDecorations = true})
+#pragma warning restore AVALONIA_X11_CSD
+        .LogToTrace();
+
+    /// <summary>
+    /// Initializes logging for the application.
+    /// </summary>
+    private static void InitializeLogging()
     {
-        var app = new App();
-        app.InitializeComponent();
-        app.Run();
+        // Set up Serilog to write to log files that roll over daily
+        var logDirectory = Path.Combine(IOHelper.LocalApplicationData, "Flagrum", "logs");
+        IOHelper.EnsureDirectoryExists(logDirectory);
+        var path = Path.Combine(logDirectory, "log-.txt");
+
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.File(path, LogEventLevel.Information, rollingInterval: RollingInterval.Day)
+#if DEBUG
+            .WriteTo.Console()
+#endif
+            .CreateLogger();
+    }
+
+    /// <summary>
+    /// Sets up IoC for the application.
+    /// </summary>
+    private static IServiceProvider ConfigureServices()
+    {
+        // Populate the service collection
+        var services = new ServiceCollection()
+            .AddLogging(l => l.AddSerilog())
+            .AddSingleton<IProfileService, ProfileService>()
+            .AddSingleton<AppStateService>()
+            .AddSingleton<JSComponentConfigurationStore>()
+            .AddSingleton<IFileProvider>(provider => new WebFileProvider(
+                new PhysicalFileProvider(IOHelper.GetWebRoot()),
+                new PhysicalFileProvider(provider.GetRequiredService<IProfileService>().UserAssetsDirectory)
+            ))
+            .AddBlazorWebView()
+            .AddFlagrum()
+            .AddFlagrumApplicationManual()
+            .AddDataMigrations();
+
+        return services.BuildServiceProvider();
     }
 
     /// <summary>
@@ -90,7 +163,9 @@ internal static class Program
     private static void OnFreshInstall(SemanticVersion version)
     {
         // Ensure that past data migrations are set as completed to prevent them running
-        var configuration = Services.GetRequiredService<IConfiguration>();
+        var configuration = _services.GetRequiredService<IConfiguration>();
+        var application = _services.GetRequiredService<IApplication>();
+        configuration.LatestVersionNotes = application.Version.ToString();
         configuration.OnFreshInstall(SteppedMigrationHelper.ApplicationSteps, SteppedMigrationHelper.ProfileSteps);
     }
 
@@ -99,8 +174,8 @@ internal static class Program
     /// </summary>
     private static void OnBeforeUninstall(SemanticVersion version)
     {
-        var profile = Services.GetRequiredService<IProfileService>();
-        
+        var profile = _services.GetRequiredService<IProfileService>();
+
         try
         {
             Directory.Delete(profile.TemporaryDirectory, true);
@@ -108,6 +183,61 @@ internal static class Program
         catch
         {
             // Too late to recover from this and try to resolve it, nothing more to do
+        }
+    }
+
+    /// <summary>
+    /// Launches the game.
+    /// </summary>
+    private static async Task LaunchGameAsync(string? command = null)
+    {
+        var launcher = _services.GetRequiredService<IGameLauncher>();
+        var result = launcher.TryLaunch(false, command);
+
+        if (result != GameLaunchResult.Success)
+        {
+            var message = result switch
+            {
+                GameLaunchResult.GameAlreadyRunning =>
+                    "Flagrum detected that the game is already running, " +
+                    "so it cannot launch again until the game is closed.",
+                GameLaunchResult.UnsupportedExecutable =>
+                    "Flagrum did not recognize the FFXV executable, " +
+                    "the mod loader only supports the latest Steam release of the game.",
+                GameLaunchResult.AccessDenied =>
+                    "Flagrum was unable to launch FFXV due to insufficient permissions. " +
+                    "Please run Flagrum as administrator and try again.",
+                GameLaunchResult.InvalidLaunchConfiguration =>
+                    "Flagrum was unable to launch FFXV due to an invalid launch configuration. " +
+                    "Please run Flagrum normally and set up the launch configuration from the Mod Manager tab.",
+                _ => throw new NotSupportedException($"Did not recognize launch result {result}.")
+            };
+
+            await MessageBox.ShowAsync("Error", message, Icon.Error);
+        }
+    }
+
+    /// <summary>
+    /// Sets the culture of the application as per user preferences.
+    /// </summary>
+    private static void SetCulture()
+    {
+        var configuration = _services.GetRequiredService<IConfiguration>();
+
+        try
+        {
+            // Set culture based on stored language settings if any
+            var cultureName = configuration.Get<string?>(StateKey.Language);
+            if (cultureName != null)
+            {
+                var culture = CultureInfo.GetCultureInfo(cultureName);
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentUICulture = culture;
+            }
+        }
+        catch
+        {
+            // Ignore silently, not important
         }
     }
 }

@@ -28,13 +28,8 @@ public class GameViewAddressBar : AddressBar
 
             if (currentNode == null)
             {
-                if (AppState.Is3DViewerOpen)
-                {
-                    PlatformService.Set3DViewportVisibility(false);
-                }
-
                 Parent.Alert.Open("Error", "Invalid URI", "Nothing was found at the given address.",
-                    () => { PlatformService.Set3DViewportVisibility(true); });
+                    null);
 
                 return;
             }

@@ -4,15 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
-using Flagrum.Components.Modals;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Archive.Mod;
-using Flagrum.Core.Utilities;
-using Flagrum.Core.Utilities.Extensions;
-using Flagrum.Application.Features.Shared;
+using Flagrum.Abstractions.Application;
 using Flagrum.Application.Features.WorkshopMods.Data;
 using Flagrum.Application.Features.WorkshopMods.Services;
 using Flagrum.Application.Services;
+using Flagrum.Application.Utilities;
+using Flagrum.Components.Modals;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Archive.Mod;
+using Flagrum.Core.Graphics.Textures.Luminous;
+using Flagrum.Core.Graphics.Textures.Shared;
+using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Localization;
 
@@ -22,12 +25,11 @@ public partial class Index : ComponentBase
 {
     [Parameter] public string NavigationParameter { get; set; }
 
-    [Inject] private TextureConverter TextureConverter { get; set; }
     [Inject] private AppStateService AppState { get; set; }
     [Inject] private BinmodTypeHelper BinmodTypeHelper { get; set; }
     [Inject] private IProfileService Profile { get; set; }
     [Inject] private NavigationManager Navigation { get; set; }
-    [Inject] private IPlatformService PlatformService { get; set; }
+    [Inject] private IApplication Application { get; set; }
     [Inject] private ModelReplacementPresets ReplacementPresets { get; set; }
     [Inject] private BinmodBuilder BinmodBuilder { get; set; }
     [Inject] private Modmeta Modmeta { get; set; }
@@ -39,8 +41,8 @@ public partial class Index : ComponentBase
     private bool CanSave { get; set; }
     private string LoadingText { get; set; }
     private bool IsLoading { get; set; }
-    private string ImageName { get; set; } = "current_preview";
-    private string ThumbnailName { get; set; } = "current_thumbnail";
+    private string ImageName { get; set; } = $"current_preview.png?v={CultureHelper.GetVersionTimestamp()}";
+    private string ThumbnailName { get; set; } = $"current_thumbnail.png?v={CultureHelper.GetVersionTimestamp()}";
     private Dictionary<int, string> ModTypes { get; set; }
     private Dictionary<int, string> ModTargets { get; set; }
     private WorkshopModBuildContext WorkshopModBuildContext { get; set; }
@@ -53,7 +55,7 @@ public partial class Index : ComponentBase
 
     protected override void OnInitialized()
     {
-        WorkshopModBuildContext = new WorkshopModBuildContext(TextureConverter, StateHasChanged);
+        WorkshopModBuildContext = new WorkshopModBuildContext(Profile, StateHasChanged);
         ModTypes = Enum.GetValues<WorkshopModType>().ToDictionary(t => (int)t, t => L[t.ToString()].Value);
 
         Mod = AppState.ActiveMod?.Clone();
@@ -92,8 +94,8 @@ public partial class Index : ComponentBase
         WorkshopModBuildContext.Flags |=
             WorkshopModBuildContextFlags.NeedsBuild | WorkshopModBuildContextFlags.PreviewImageChanged;
 
-        var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
-        var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+        var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "preview.png");
+        var currentPreviewPath = Path.Combine(Profile.UserAssetsDirectory, "images", "current_preview.png");
         File.Copy(defaultPreviewPath, currentPreviewPath, true);
         var previewBytes = File.ReadAllBytes(defaultPreviewPath);
         WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
@@ -104,7 +106,7 @@ public partial class Index : ComponentBase
             IsApplyToGame = true
         };
 
-        Mod.Path = $"{Profile.BinmodDirectory}\\{Mod.Uuid}.ffxvbinmod";
+        Mod.Path = Path.Combine(Profile.BinmodDirectory, $"{Mod.Uuid}.ffxvbinmod");
     }
 
     private void InitializeExistingMod()
@@ -123,12 +125,13 @@ public partial class Index : ComponentBase
         if (previewBytes.Length > 0)
         {
             WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
-            File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_preview.png", previewBytes);
+            File.WriteAllBytes(Path.Combine(Profile.UserAssetsDirectory, "images", "current_preview.png"),
+                previewBytes);
         }
         else
         {
-            var defaultPreviewPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\preview.png";
-            var currentPreviewPath = $"{IOHelper.GetWebRoot()}\\images\\current_preview.png";
+            var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "preview.png");
+            var currentPreviewPath = Path.Combine(Profile.UserAssetsDirectory, "images", "current_preview.png");
             File.Copy(defaultPreviewPath, currentPreviewPath, true);
             previewBytes = File.ReadAllBytes(defaultPreviewPath);
             WorkshopModBuildContext.ProcessPreviewImage(previewBytes);
@@ -136,26 +139,29 @@ public partial class Index : ComponentBase
 
         if (Mod.Type == (int)WorkshopModType.StyleEdit)
         {
+            var path = Path.Combine(Profile.UserAssetsDirectory, "images", "current_thumbnail.png");
+
             if (Mod.HasThumbnailPng(out var thumbnailBytes))
             {
                 WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
-                File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", thumbnailBytes);
+                File.WriteAllBytes(path, thumbnailBytes);
             }
             else
             {
                 try
                 {
-                    var jpgBytes = TextureConverter.ToJpeg(thumbnailBytes);
+                    var jpgBytes = new BlackTexture(thumbnailBytes).Save(0, ImageFileFormat.Jpeg);
                     WorkshopModBuildContext.ProcessThumbnailImage(jpgBytes);
-                    File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", jpgBytes);
+                    File.WriteAllBytes(path, jpgBytes);
                 }
                 catch
                 {
                     // Must be a mod made with a previous version of Flagrum if the Btex conversion is failing
-                    var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
+                    var defaultThumbnailPath =
+                        Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "default.png");
                     var pngBytes = File.ReadAllBytes(defaultThumbnailPath);
                     WorkshopModBuildContext.ProcessThumbnailImage(pngBytes);
-                    File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png", pngBytes);
+                    File.WriteAllBytes(path, pngBytes);
                 }
             }
         }
@@ -173,36 +179,28 @@ public partial class Index : ComponentBase
 
     private async Task SelectImage()
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
-            path =>
+        var path = await Application.OpenFileAsync([FileDialogFileType.Images]);
+        if (path != null)
+        {
+            await WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
             {
-                WorkshopModBuildContext.ProcessPreviewImage(path, async () =>
-                {
-                    // This jank is required or the UI won't update the image if the value hasn't changed
-                    ImageName = ImageName == "current_preview" ? "Current_Preview" : "current_preview";
-                    await InvokeAsync(StateHasChanged);
-                });
-
-                return Task.CompletedTask;
+                ImageName = $"current_preview.png?v={CultureHelper.GetVersionTimestamp()}";
+                await InvokeAsync(StateHasChanged);
             });
+        }
     }
 
     private async Task SelectThumbnail()
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
-            path =>
+        var path = await Application.OpenFileAsync([FileDialogFileType.Images]);
+        if (path != null)
+        {
+            await WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
             {
-                WorkshopModBuildContext.ProcessThumbnailImage(path, async () =>
-                {
-                    // This jank is required or the UI won't update the image if the value hasn't changed
-                    ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
-                    await InvokeAsync(StateHasChanged);
-                });
-
-                return Task.CompletedTask;
+                ThumbnailName = $"current_thumbnail.png?v={CultureHelper.GetVersionTimestamp()}";
+                await InvokeAsync(StateHasChanged);
             });
+        }
     }
 
     private void Delete()
@@ -226,7 +224,9 @@ public partial class Index : ComponentBase
             Mod.GameMenuTitle = null;
         }
 
-        File.WriteAllBytes($"{IOHelper.GetWebRoot()}\\images\\{Mod.Uuid}.png", WorkshopModBuildContext.PreviewImage);
+        File.WriteAllBytes(
+            Path.Combine(Profile.UserAssetsDirectory, "images", $"{Mod.Uuid}.png"),
+            WorkshopModBuildContext.PreviewImage);
 
         if (WorkshopModBuildContext.Flags.HasFlag(WorkshopModBuildContextFlags.NeedsBuild))
         {
@@ -373,39 +373,38 @@ public partial class Index : ComponentBase
 
     private async Task SelectModel(int index)
     {
-        await PlatformService.OpenFileDialogAsync(
-            "Flagrum Model Data (*.fmd)|*.fmd",
-            async path =>
+        var path = await Application.OpenFileAsync([FileDialogFileType.FlagrumModelData]);
+        if (path != null)
+        {
+            FmdFileNames[index] = path.Split('\\', '/').Last();
+            WorkshopModBuildContext.ProcessFmd(index, path);
+            Mod.ModDirectoryName = Mod.Uuid;
+            Mod.ModelName = path.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+
+            HasSelectedDataForModel[index] = true;
+
+            if (ModelCount == 1)
             {
-                FmdFileNames[index] = path.Split('\\', '/').Last();
-                WorkshopModBuildContext.ProcessFmd(index, path);
-                Mod.ModDirectoryName = Mod.Uuid;
-                Mod.ModelName = path.Split('\\', '/').Last().Split('.')[0].ToSafeString();
+                CanSave = true;
+            }
+            else
+            {
+                CanSave = HasSelectedDataForModel[0] && HasSelectedDataForModel[1];
+            }
 
-                HasSelectedDataForModel[index] = true;
+            if (IsNew && CanSave && Mod.Type == (int)WorkshopModType.StyleEdit)
+            {
+                var defaultThumbnailPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "default.png");
+                var currentThumbnailPath =
+                    Path.Combine(Profile.UserAssetsDirectory, "images", "current_thumbnail.png");
+                File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
+                var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
+                WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
 
-                if (ModelCount == 1)
-                {
-                    CanSave = true;
-                }
-                else
-                {
-                    CanSave = HasSelectedDataForModel[0] && HasSelectedDataForModel[1];
-                }
+                ThumbnailName = $"current_thumbnail.png?v={CultureHelper.GetVersionTimestamp()}";
+            }
 
-                if (IsNew && CanSave && Mod.Type == (int)WorkshopModType.StyleEdit)
-                {
-                    var defaultThumbnailPath = $"{IOHelper.GetExecutingDirectory()}\\Resources\\default.png";
-                    var currentThumbnailPath = $"{IOHelper.GetWebRoot()}\\images\\current_thumbnail.png";
-                    File.Copy(defaultThumbnailPath, currentThumbnailPath, true);
-                    var thumbnailBytes = await File.ReadAllBytesAsync(defaultThumbnailPath);
-                    WorkshopModBuildContext.ProcessThumbnailImage(thumbnailBytes);
-
-                    // This jank is required or the UI won't update the image if the value hasn't changed
-                    ThumbnailName = ThumbnailName == "current_thumbnail" ? "Current_Thumbnail" : "current_thumbnail";
-                }
-
-                await InvokeAsync(StateHasChanged);
-            });
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }

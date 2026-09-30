@@ -4,20 +4,21 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Abstractions.ModManager.Project;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Graphics.Textures.Luminous;
-using Flagrum.Core.Persistence;
-using Flagrum.Core.Utilities;
-using Flagrum.Core.Utilities.Extensions;
 using Flagrum.Application.Features.AssetExplorer.Data;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Instructions;
 using Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 using Flagrum.Application.Utilities;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Graphics.Textures.Luminous;
+using Flagrum.Core.Persistence;
+using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Extensions;
 
 namespace Flagrum.Application.Features.ModManager.Services;
 
@@ -185,7 +186,7 @@ public abstract class ModManagerServiceBase
         var imageMap = new ConcurrentDictionary<string, byte[]>();
 
         // Get metadata for replacement textures
-        var textureMetadata = new ConcurrentDictionary<string, BlackTexture>();
+        var textureMetadata = new ConcurrentDictionary<string, ExistingTextureMetadata>();
         var replacementTextures = mod.Archives
             .SelectMany(e => e.Instructions
                 .Where(i => i is ReplacePackedFileBuildInstruction replace
@@ -193,8 +194,8 @@ public abstract class ModManagerServiceBase
                             && !replace.FilePath.EndsWith(".btex")
                             && !replace.FilePath.EndsWith(".ffg")
                             && (replace.FileLastModified != File.GetLastWriteTime(replace.FilePath).Ticks
-                                || !File.Exists(
-                                    $@"{_profile.CacheDirectory}\{mod.Identifier}{Cryptography.HashFileUri64(i.Uri)}.ffg"))));
+                                || !File.Exists(Path.Combine(_profile.CacheDirectory, 
+                                    $"{mod.Identifier}{Cryptography.HashFileUri64(i.Uri)}.ffg")))));
 
         Parallel.ForEach(replacementTextures, file =>
         {
@@ -210,18 +211,24 @@ public abstract class ModManagerServiceBase
                 throw new Exception($"Could not determine earc path for file {file.Uri}");
             }
 
-            var path = $@"{_profile.GameDataDirectory}\{relativePath}";
-
-            if (!File.Exists(path) && (path!.Contains(@"\highimages\") || path.EndsWith("_$h2.earc")))
+            var path = Path.Combine(_profile.GameDataDirectory, relativePath);
+            if (!File.Exists(path) 
+                && (path.Contains($@"{Path.DirectorySeparatorChar}highimages{Path.DirectorySeparatorChar}") 
+                    || path.EndsWith("_$h2.earc")))
             {
                 return;
             }
 
             var archive = archiveManager.Open(path);
             var data = archive[file.Uri].GetReadableData();
-            var binary = new BlackTexture(_profile.Current.Type);
-            binary.Read(data);
-            textureMetadata[file.Uri] = binary;
+            var binary = new BlackTexture(data);
+            textureMetadata[file.Uri] = new ExistingTextureMetadata
+            {
+                Name = Encoding.UTF8.GetString(binary.Name),
+                Format = binary.ImageHeader.Format,
+                Flags = binary.ImageHeader.Flags,
+                MipCount = binary.ImageHeader.MipMapCount
+            };
         });
 
         _assetConverter.SetTextureMetadata(textureMetadata);
@@ -239,7 +246,7 @@ public abstract class ModManagerServiceBase
                          .Cast<PackedAssetBuildInstruction>())
             {
                 var hash = Cryptography.HashFileUri64(file.Uri);
-                var cachePath = $@"{_profile.CacheDirectory}\{mod.Identifier}{hash}.ffg";
+                var cachePath = Path.Combine(_profile.CacheDirectory, $"{mod.Identifier}{hash}.ffg");
                 var needsRebuild = !file.FilePath.EndsWith(".ffg")
                                    && (file.FileLastModified !=
                                        File.GetLastWriteTime(file.FilePath).Ticks
@@ -267,7 +274,7 @@ public abstract class ModManagerServiceBase
                 file =>
                 {
                     var hash = Cryptography.HashFileUri64(file.Uri);
-                    var cachePath = $@"{_profile.CacheDirectory}\{mod.Identifier}{hash}.ffg";
+                    var cachePath = Path.Combine(_profile.CacheDirectory, $"{mod.Identifier}{hash}.ffg");
 
                     // Only build files that are not already processed
                     if (file.Uri.EndsWith(".win32.bins") || // Always rebuild bins in case they need merging
@@ -287,7 +294,7 @@ public abstract class ModManagerServiceBase
         if (Directory.Exists(_profile.CacheDirectory))
         {
             foreach (var path in Directory.EnumerateFiles(_profile.CacheDirectory)
-                         .Where(f => f.Split('\\').Last().StartsWith(modId.ToString())))
+                         .Where(f => f.Split(Path.DirectorySeparatorChar).Last().StartsWith(modId.ToString())))
             {
                 File.Delete(path);
             }
@@ -301,9 +308,9 @@ public abstract class ModManagerServiceBase
         {
             foreach (var file in earc.Instructions.OfType<PackedAssetBuildInstruction>())
             {
-                if (!file.FilePath.EndsWith(".ffg") &&
-                    !File.Exists(
-                        $@"{_profile.CacheDirectory}\{mod.Identifier}{Cryptography.HashFileUri64(file.Uri)}.ffg"))
+                if (!file.FilePath.EndsWith(".ffg") 
+                    && !File.Exists(Path.Combine(_profile.CacheDirectory,
+                        $"{mod.Identifier}{Cryptography.HashFileUri64(file.Uri)}.ffg")))
                 {
                     isCached = false;
                 }
@@ -317,8 +324,8 @@ public abstract class ModManagerServiceBase
     {
         return mod.Archives.Any(e => e.Instructions
             .Any(f => f is PackedAssetBuildInstruction
-                      && File.Exists(
-                          $@"{_profile.CacheDirectory}\{mod.Identifier}{Cryptography.HashFileUri64(f.Uri)}.ffg")));
+                      && File.Exists(Path.Combine(_profile.CacheDirectory,
+                          $"{mod.Identifier}{Cryptography.HashFileUri64(f.Uri)}.ffg"))));
     }
 
     private void UpdateThumbnail(Guid modId)

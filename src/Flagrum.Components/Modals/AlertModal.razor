@@ -21,8 +21,8 @@
     private string Heading { get; set; }
     private string Subtext { get; set; }
     private Action? OnClose { get; set; }
-    private int Width { get; set; } = 400;
-    private int Height { get; set; } = 300;
+    private string? Width { get; set; } = "400px";
+    private string? Height { get; set; } = "300px";
     private bool DisableMaxWidth { get; set; }
 
     public void Open(
@@ -38,8 +38,8 @@
         Heading = heading;
         Subtext = subtext;
         OnClose = onClose;
-        Width = width;
-        Height = height;
+        Width = $"{width}px";
+        Height = $"{height}px";
         DisableMaxWidth = disableMaxWidth;
         StateHasChanged();
 

@@ -5,12 +5,8 @@
         <IsPackable>false</IsPackable>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
-
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
-
-        <RootNamespace>Flagrum.Generators</RootNamespace>
-        <PackageId>Flagrum.Desktop</PackageId>
     </PropertyGroup>
 
     <ItemGroup>

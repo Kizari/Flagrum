@@ -3,10 +3,10 @@
 @inject NavigationManager Navigation
 @inject AppStateService AppState
 
-<div class="mod-listing-card shadow-lg mx-2.5 mt-6 bg-grey-800 @Opacity transition-opacity transition-transform transition-shadow transform hover:scale-105 cursor-pointer hover:shadow-xl"
+<div class="mod-listing-card shadow-lg mx-2.5 mt-6 bg-grey-800 transition-opacity transition-transform transition-shadow transform hover:scale-105 cursor-pointer hover:shadow-xl"
      @onclick="Configure">
     <div class="bg-black">
-        <div style="position:relative;width:178px;height:178px;background-repeat: no-repeat; background-size: contain; background-position: center; background-image: url('images/@(Mod.Uuid).png?@Timestamp')"
+        <div style="position:relative;width:178px;height:178px;background-repeat: no-repeat; background-size: contain; background-position: center; background-image: url('images/@(Mod.Uuid).png?v=@Timestamp')"
              id="@Mod.Uuid">
             <Checkbox CssStyle="position:absolute;top:-10px;right:-10px;"
                       IsChecked="@Mod.IsApplyToGame"
@@ -37,24 +37,12 @@
     [Parameter]
     public Binmod Mod { get; set; }
 
-    private string Opacity { get; set; } = "opacity-0";
     private long Timestamp { get; set; }
 
     protected override void OnInitialized()
     {
         Timestamp = DateTime.UtcNow.Ticks;
         Parent.AddChild(this);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-        if (firstRender)
-        {
-            await Task.Delay(50);
-            Opacity = "opacity-100";
-            StateHasChanged();
-        }
     }
 
     private void Configure()

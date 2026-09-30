@@ -1,5 +1,4 @@
 ﻿@inject JSInterop JSInterop
-@inject AppStateService AppState
 
 <div id="directoryView"
      class="outline-none pt-2 pb-4"
@@ -8,7 +7,7 @@
      @onkeydown:preventDefault="true">
     <CascadingValue Value="this">
         <Virtualize Items="Children.Where(Parent.ItemFilter).ToList()" ItemSize="28" Context="node">
-            <ContextMenuTrigger MenuId="assetExplorerMenu" @onmouseup="e => ContextMenuMouseUp(e, node)">
+            <ContextMenuTrigger MenuId="assetExplorerMenu" Data="node">
                 <ExplorerRow Node="node"/>
             </ContextMenuTrigger>
         </Virtualize>

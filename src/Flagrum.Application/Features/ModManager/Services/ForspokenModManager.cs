@@ -24,7 +24,7 @@ public class ForspokenModManager : ModManagerServiceBase
         IServiceProvider provider)
         : base(profile, fileIndex, assetConverter, provider)
     {
-        var modDirectory = $@"{_profile.GameDataDirectory}\mods";
+        var modDirectory = Path.Combine(_profile.GameDataDirectory, "mods");
         if (!Directory.Exists(modDirectory))
         {
             Directory.CreateDirectory(modDirectory);
@@ -33,8 +33,8 @@ public class ForspokenModManager : ModManagerServiceBase
 
     protected override Task ApplyMod(IFlagrumProject mod, EbonyArchiveManager archiveManager)
     {
-        var c000 = $@"{_profile.GameDataDirectory}\c000.earc";
-        var backup = $@"{_profile.GameDataDirectory}\c000.backup";
+        var c000 = Path.Combine(_profile.GameDataDirectory, "c000.earc");
+        var backup = Path.Combine(_profile.GameDataDirectory, "c000.backup");
 
         if (!File.Exists(backup))
         {
@@ -57,7 +57,7 @@ public class ForspokenModManager : ModManagerServiceBase
                     case ReplacePackedFileBuildInstruction:
                         var packedAssetInstruction = (PackedAssetBuildInstruction)file;
                         var hash = Cryptography.HashFileUri64(file.Uri);
-                        var cachePath = $@"{_profile.CacheDirectory}\{mod.Identifier}{hash}.ffg";
+                        var cachePath = Path.Combine(_profile.CacheDirectory, $"{mod.Identifier}{hash}.ffg");
                         var fragment = new FmodFragment();
                         fragment.Read(packedAssetInstruction.FilePath.EndsWith(".ffg")
                             ? packedAssetInstruction.FilePath
@@ -94,7 +94,9 @@ public class ForspokenModManager : ModManagerServiceBase
                 }
             }
 
-            modArchive.WriteToFile($@"{_profile.GameDataDirectory}\mods\{mod.Identifier}.earc", LuminousGame.Forspoken);
+            modArchive.WriteToFile(
+                Path.Combine(_profile.GameDataDirectory, "mods", $"{mod.Identifier}.earc"), 
+                LuminousGame.Forspoken);
         }
 
         erepEntry.SetRawData(erep.ToArray());
@@ -108,7 +110,7 @@ public class ForspokenModManager : ModManagerServiceBase
 
     protected override Task RevertMod(IFlagrumProject mod)
     {
-        using var archive = new EbonyArchive($@"{_profile.GameDataDirectory}\c000.earc");
+        using var archive = new EbonyArchive(Path.Combine(_profile.GameDataDirectory, "c000.earc"));
         var erepEntry = archive["data://c000.erep"];
         var erep = new EbonyReplace(erepEntry.GetReadableData());
 
@@ -129,7 +131,7 @@ public class ForspokenModManager : ModManagerServiceBase
         archive.RemoveFile($"data://mods/{mod.Identifier}.ebex@");
         archive.WriteToSource(LuminousGame.Forspoken);
 
-        var modPath = $@"{_profile.GameDataDirectory}\mods\{mod.Identifier}.earc";
+        var modPath = Path.Combine(_profile.GameDataDirectory, "mods", $"{mod.Identifier}.earc");
         if (File.Exists(modPath))
         {
             File.Delete(modPath);

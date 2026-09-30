@@ -5,31 +5,29 @@ using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.ModManager.Instructions;
-using Flagrum.Core.Utilities;
-using Flagrum.Core.Utilities.Exceptions;
-using Flagrum.Generators;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 using Flagrum.Application.Features.ModManager.Mod;
 using Flagrum.Application.Features.ModManager.Services;
+using Flagrum.Core.Utilities;
+using Flagrum.Core.Utilities.Exceptions;
 using Injectio.Attributes;
 
 namespace Flagrum.Application.Features.ModManager.Installer;
 
-[RegisterScoped]
-public partial class FlagrumModInstaller
+[RegisterScoped<FlagrumModInstaller>]
+public partial class FlagrumModInstaller(
+    IModBuildInstructionFactory instructionFactory,
+    ModManagerServiceBase modManager,
+    IProfileService profile)
 {
-    [Inject] private readonly IModBuildInstructionFactory _instructionFactory;
-    [Inject] private readonly ModManagerServiceBase _modManager;
-    [Inject] private readonly IProfileService _profile;
-
     public async Task<ModInstallationResult> Install(ModInstallationRequest request)
     {
         using var modPack = new FlagrumModPack(request.FilePath);
 
         try
         {
-            modPack.Read(request.FilePath, _instructionFactory);
+            modPack.Read(request.FilePath, instructionFactory);
         }
         catch (FileFormatException)
         {
@@ -71,7 +69,7 @@ public partial class FlagrumModInstaller
 
         // Check if any of the mods are already installed
         var duplicates = selectedMods
-            .Where(m => _modManager.Projects.ContainsKey(m.Metadata.Guid))
+            .Where(m => modManager.Projects.ContainsKey(m.Metadata.Guid))
             .ToList();
 
         if (duplicates.Any())
@@ -93,13 +91,13 @@ public partial class FlagrumModInstaller
             }
 
             // Create a directory for the new mod
-            var directory = Path.Combine(_profile.ModFilesDirectory, mod.Metadata.Guid.ToString());
+            var directory = Path.Combine(profile.ModFilesDirectory, mod.Metadata.Guid.ToString());
             IOHelper.EnsureDirectoryExists(directory);
 
             // Unpack the thumbnail and make a copy in wwwroot
             var thumbnailPath = Path.Combine(directory, "thumbnail.jpg");
             mod.UnpackThumbnail(request.FilePath, thumbnailPath);
-            File.Copy(thumbnailPath, Path.Combine(_profile.ImagesDirectory, $"{mod.Metadata.Guid}.jpg"), true);
+            File.Copy(thumbnailPath, Path.Combine(profile.ImagesDirectory, $"{mod.Metadata.Guid}.jpg"), true);
 
             // Unpack the mod's files into the mod directory
             foreach (var (instruction, _) in mod.FileTable)
@@ -126,16 +124,16 @@ public partial class FlagrumModInstaller
 
             // Create a Flagrum Project from the mod metadata
             var project = FmodExtensions.ToFlagrumProject(mod);
-            _modManager.Projects.Add(project.Identifier, project);
-            _modManager.ModsState.Add(project.Identifier, new ModState());
-            await project.Save(Path.Combine(_profile.ModFilesDirectory, project.Identifier.ToString(),
+            modManager.Projects.Add(project.Identifier, project);
+            modManager.ModsState.Add(project.Identifier, new ModState());
+            await project.Save(Path.Combine(profile.ModFilesDirectory, project.Identifier.ToString(),
                 "project.fproj"));
             result.Projects.Add(project);
         }
 
         return result;
     }
-    
+
     /// <summary>
     /// Gets the line of text to display in the mod installation modal if a mod with the same
     /// GUID as the target mod is already installed.
@@ -145,9 +143,9 @@ public partial class FlagrumModInstaller
     {
         // Name of the new mod in bold
         var result = $"<strong>{target.Metadata.Name}</strong>";
-        
+
         // Append the name of the conflicting installed mod if it isn't the same as the new mod
-        var installed = _modManager.Projects[target.Metadata.Guid];
+        var installed = modManager.Projects[target.Metadata.Guid];
         if (!installed.Name.Equals(target.Metadata.Name, StringComparison.OrdinalIgnoreCase))
         {
             result += $" (installed as {installed.Name})";

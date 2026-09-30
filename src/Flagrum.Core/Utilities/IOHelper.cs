@@ -1,51 +1,35 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Flagrum.Core.Utilities;
 
 public static class IOHelper
 {
-    public static string LocalApplicationData =>
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-    public static string GetExecutingDirectory()
+    public static string LocalApplicationData
     {
-        return Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     }
 
-    public static string GetWebRoot()
-    {
-        return $"{GetExecutingDirectory()}\\wwwroot";
-    }
+    public static string GetExecutingDirectory() => Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+
+    public static string GetWebRoot() => Path.Combine(GetExecutingDirectory(), "wwwroot");
 
     public static void EnsureDirectoryExists(string path)
     {
-        path = path.Replace('/', '\\');
-        var directories = path.Split('\\');
-        var currentPath = "";
-        foreach (var directory in directories)
+        if (!Directory.Exists(path))
         {
-            currentPath += directory + '\\';
-            if (!Directory.Exists(currentPath))
-            {
-                Directory.CreateDirectory(currentPath);
-            }
+            Directory.CreateDirectory(path);
         }
     }
 
     public static void EnsureDirectoriesExistForFilePath(string path)
     {
-        path = path.Replace('/', '\\');
-        path = path[..path.LastIndexOf('\\')];
-        var directories = path.Split('\\');
-        var currentPath = "";
-        foreach (var directory in directories)
+        var directory = Path.GetDirectoryName(path);
+        if (!Directory.Exists(directory))
         {
-            currentPath += directory + '\\';
-            if (!Directory.Exists(currentPath))
-            {
-                Directory.CreateDirectory(currentPath);
-            }
+            Directory.CreateDirectory(directory!);
         }
     }
 
@@ -82,8 +66,10 @@ public static class IOHelper
     /// <returns>True if files are in the same directory</returns>
     public static bool AreInSameDirectory(string path1, string path2)
     {
-        path1 = Path.GetDirectoryName(path1.Replace('/', '\\').Trim().TrimEnd('\\').ToLower());
-        path2 = Path.GetDirectoryName(path2.Replace('/', '\\').Trim().TrimEnd('\\').ToLower());
+        path1 = Path.GetDirectoryName(path1.Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
+        path2 = Path.GetDirectoryName(path2.Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar).ToLower());
         return path1 == path2;
     }
 
@@ -109,8 +95,10 @@ public static class IOHelper
     /// <param name="fullPath">The full path to delete from</param>
     public static void DeleteEmptyDirectoriesInPath(string basePath, string fullPath)
     {
-        basePath = basePath.Replace('/', '\\').Trim().TrimEnd('\\').ToLower();
-        fullPath = fullPath.Replace('/', '\\').Trim().TrimEnd('\\').ToLower();
+        basePath = basePath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar)
+            .ToLower();
+        fullPath = fullPath.Replace('/', Path.DirectorySeparatorChar).Trim().TrimEnd(Path.DirectorySeparatorChar)
+            .ToLower();
 
         if (!Directory.Exists(basePath))
         {

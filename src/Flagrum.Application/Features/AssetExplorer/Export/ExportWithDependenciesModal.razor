@@ -1,16 +1,18 @@
 ﻿@using System.IO
 @using System.Text
+@using Flagrum.Abstractions.Application
+@using Flagrum.Application.Features.AssetExplorer.Base
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Graphics.Materials
 @using Flagrum.Core.Graphics.Models
 @using Flagrum.Core.Graphics.Textures
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Graphics.Textures.Shared
 @using Flagrum.Core.Utilities
-@using Flagrum.Application.Features.AssetExplorer.Base
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject IStringLocalizer<ExportWithDependenciesModal> L
 @inject AppStateService AppState
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 @inject IFileIndex FileIndex
 
 <Modal @ref="Modal">
@@ -59,7 +61,6 @@
     {
         ContextNode = contextNode;
         AppState.IsModalOpen = true;
-        PlatformService.Set3DViewportVisibility(false);
         Modal.Open();
     }
 
@@ -67,20 +68,15 @@
     {
         Modal.Close();
         AppState.IsModalOpen = false;
-
-        if (AppState.Is3DViewerOpen)
-        {
-            PlatformService.Set3DViewportVisibility(true);
-        }
     }
 
     private async Task Export()
     {
         var item = ContextNode;
         var defaultName = item.Name + ".gfxbin";
-        const string filter = "Game Model|*.gmdl.gfxbin";
 
-        await PlatformService.OpenSaveFileDialogAsync(defaultName, filter, async path =>
+        var path = await Application.SaveFileAsync([FileDialogFileType.GameModel], defaultName);
+        if (path != null)
         {
             await InvokeAsync(() =>
             {
@@ -185,7 +181,7 @@
             }
 
             await InvokeAsync(() => Parent.SetLoading(false));
-        });
+        }
     }
 
     private byte[] ProcessHighTextures(GameMaterial material, string highTexturePackUri, string directory, Dictionary<string, byte[]> textures, bool is4K)
@@ -258,8 +254,7 @@
     {
         var fileName = uri.Split('/').Last();
         fileName = fileName[..fileName.LastIndexOf('.')] + "." + Extension.ToLower();
-        var texturePath = $"{directory}\\{fileName}";
-
-        TextureConverter.ExportTexture(texturePath, (ImageFormat)Extension, btex);
+        var texturePath = Path.Combine(directory, fileName);
+        new BlackTexture(btex).Save(texturePath, (ImageFileFormat)Extension);
     }
 }

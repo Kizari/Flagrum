@@ -2,42 +2,70 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <UseWPF>true</UseWPF>
-        <ApplicationIcon>Resources\flagrum.ico</ApplicationIcon>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationIcon>Resources/flagrum.ico</ApplicationIcon>
         <DebugType>embedded</DebugType>
-        <BaseVersion>1.6.5</BaseVersion> <!-- Current version of the application -->
+        <BaseVersion>1.7.0</BaseVersion> <!-- Current version of the application -->
         <Version>$(BaseVersion)</Version> <!-- Semantic version to show on GitHub -->
         <AssemblyVersion>$(BaseVersion)</AssemblyVersion> <!-- Version of the assembly for internal purposes -->
         <FileVersion>$(BaseVersion)</FileVersion> <!-- Version that is displayed in Windows for the application -->
-        <SolutionDir>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</SolutionDir>
+        <SolutionDir>$([System.IO.Path]::GetFullPath($(MSBuildProjectDirectory)/../..))$([System.IO.Path]::DirectorySeparatorChar)</SolutionDir>
+        <LangVersion>preview</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <SelfContained>true</SelfContained>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaVersion>12.1.2</AvaloniaVersion>
+        <DrautosVersion>1.0.0</DrautosVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-        <None Remove="loading.gif"/>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <DefineConstants>WINDOWS</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <DefineConstants>LINUX</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <Compile Remove="Platform\Linux\**\*.cs"/>
+        <Compile Update="Host\AvaloniaApplication.axaml.cs">
+            <DependentUpon>AvaloniaApplication.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Host\MainWindow.axaml.cs">
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <Compile Remove="Platform\Windows\**\*.cs"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="boilerplatezero" Version="2.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <AvaloniaResource Include="Assets\**\*.*"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0"/>
+        <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="Avalonia.Wayland" Version="$(AvaloniaVersion)"/>
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
-        <PackageReference Include="FontAwesome5" Version="2.1.6"/>
-        <PackageReference Include="HelixToolkit.SharpDX.Assimp" Version="2.22.0"/>
-        <PackageReference Include="HelixToolkit.SharpDX.Core.Wpf" Version="2.22.0"/>
-        <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Wpf" Version="6.0.101-preview.11.2349"/>
+        <PackageReference Include="MessageBox.Avalonia" Version="12.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2"/>
-        <PackageReference Include="PropertyChanged.SourceGenerator" Version="1.0.8">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Velopack" Version="0.0.320"/>
-        <PackageReference Include="Drautos" Version="1.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.17"/>
+        <PackageReference Include="Velopack" Version="1.2.0"/>
+        <PackageReference Include="Drautos" Version="$(DrautosVersion)"/>
     </ItemGroup>
 
     <!-- Will include the Premium library only in CI builds. The GitHub workflow handles adding this package source. -->
@@ -50,12 +78,10 @@
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj"/>
+        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="steam_appid.txt">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <None Update="steam_api64.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -68,99 +94,92 @@
         <Content Include="Resources\Textures\teal.btex">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Update="wwwroot\fonts\MaterialIcons-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\MaterialIconsOutlined-Regular.otf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\Play-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\fonts\Roboto-Regular.ttf">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\app.css">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\index.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Update="wwwroot\interop.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
         <None Remove="Resources\earc.png"/>
         <Content Include="Resources\earc.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <None Remove="Resources\Play-Regular.ttf"/>
-        <Resource Include="Resources\Play-Regular.ttf">
+        <None Update="libnvtt.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
-        <Resource Include="flagrum-titlebar.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <Resource Include="patreon.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <None Remove="Resources\logo.png"/>
-        <Resource Include="Resources\logo.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
-        <None Remove="Resources\logo_outlined.png"/>
-        <Resource Include="Resources\logo_outlined.png">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Resource>
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json"/>
+        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Update="Resources\Localisation.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>Localisation.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Resources\Localisation.ja-JP.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>Localisation.ja-JP.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Resources\Localisation.zh-cn.resx">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <LastGenOutput>Localisation.zh-cn.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-        <EmbeddedResource Update="Resources\Localisation.zh-hk.resx">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <LastGenOutput>Localisation.zh-hk.Designer.cs</LastGenOutput>
+        <EmbeddedResource Update="Resources/Strings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <PublicClass>true</PublicClass>
+            <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(MSBuildProjectDirectory)/Resources/Strings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Flagrum.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>Strings</StronglyTypedClassName>
         </EmbeddedResource>
     </ItemGroup>
 
-    <ItemGroup>
-        <Compile Update="Resources\Localisation.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Localisation.resx</DependentUpon>
-        </Compile>
-        <Compile Update="Resources\Localisation.ja-JP.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Localisation.ja-JP.resx</DependentUpon>
-        </Compile>
-        <Compile Update="Resources\Localisation.zh-cn.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Localisation.zh-cn.resx</DependentUpon>
-        </Compile>
-        <Compile Update="Resources\Localisation.zh-hk.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Localisation.zh-hk.resx</DependentUpon>
-        </Compile>
-    </ItemGroup>
+    <!-- Automatically generate "steam_appid.txt" after build (Steamworks relies on this) -->
+    <Target Name="GenerateSteamAppId" AfterTargets="Build">
+        <WriteLinesToFile File="$(OutputPath)steam_appid.txt"
+                          Lines="637650"
+                          Overwrite="true"/>
+    </Target>
 
-    <ItemGroup>
-        <ApplicationDefinition Remove="App.xaml"/>
-        <Page Include="App.xaml"/>
-    </ItemGroup>
+    <!-- Copy Linux libs to output directory -->
+    <Target Name="CopyAdditionalDependenciesLinux"
+            Condition="$([MSBuild]::IsOSPlatform('Linux'))"
+            AfterTargets="Build;Publish">
+
+        <PropertyGroup>
+            <DependencyOutputPath Condition="'$(PublishDir)' == ''">$(OutputPath)</DependencyOutputPath>
+            <DependencyOutputPath Condition="'$(PublishDir)' != ''">$(PublishDir)</DependencyOutputPath>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <LinuxLibs Include="$(SolutionDir)libs/linux-x64/**"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(LinuxLibs)"
+              DestinationFiles="@(LinuxLibs->'$(DependencyOutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"/>
+        <!-- Copy Drautos to the output directory on Linux as it won't be by default being a Windows dll -->
+        <!-- This is still needed as it is injected into the Windows game that's running under Proton. -->
+        <Copy SourceFiles="$(NuGetPackageRoot)drautos/$(DrautosVersion)/runtimes/win-x64/native/Drautos.dll"
+              DestinationFiles="$(DependencyOutputPath)Drautos.dll"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+    <!-- Copy Windows libs to output directory -->
+    <Target Name="CopyAdditionalDependenciesWindows"
+            Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+            AfterTargets="Build;Publish">
+
+        <PropertyGroup>
+            <DependencyOutputPath Condition="'$(PublishDir)' == ''">$(OutputPath)</DependencyOutputPath>
+            <DependencyOutputPath Condition="'$(PublishDir)' != ''">$(PublishDir)</DependencyOutputPath>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <WindowsLibs Include="$(SolutionDir)libs/win-x64/**"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(WindowsLibs)"
+              DestinationFiles="@(WindowsLibs->'$(DependencyOutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+    <!-- Move Flagrum.Application web resources up into the root wwwroot directory on publish -->
+    <Target Name="MoveWebResources" AfterTargets="Publish">
+        <ItemGroup>
+            <WebResources Include="$(PublishDir)wwwroot/_content/Flagrum.Application/**/*"/>
+        </ItemGroup>
+
+        <Move SourceFiles="@(WebResources)"
+              DestinationFiles="@(WebResources->'$(PublishDir)wwwroot/%(RecursiveDir)%(Filename)%(Extension)')"/>
+        <RemoveDir Directories="$(PublishDir)wwwroot\_content\Flagrum.Application"/>
+    </Target>
 
 </Project>

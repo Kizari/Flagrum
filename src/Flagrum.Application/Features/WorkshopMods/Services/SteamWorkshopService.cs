@@ -119,9 +119,9 @@ public class SteamWorkshopService
             SteamUGC.SetItemTags(updateHandle, details.Tags);
         }
 
-        _tempDirectory = $"{Path.GetTempPath()}\\{_appState.ActiveMod.Uuid}";
+        _tempDirectory = Path.Combine(Path.GetTempPath(), _appState.ActiveMod.Uuid);
         Directory.CreateDirectory(_tempDirectory);
-        _tempBinmod = $"{_tempDirectory}\\{Path.GetFileName(_appState.ActiveMod.Path)}";
+        _tempBinmod = Path.Combine(_tempDirectory, Path.GetFileName(_appState.ActiveMod.Path));
         File.Copy(_appState.ActiveMod.Path, _tempBinmod);
 
         SteamUGC.SetItemContent(updateHandle, _tempDirectory);

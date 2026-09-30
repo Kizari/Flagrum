@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Flagrum.Core.Ps4;
+namespace Flagrum.Core.Graphics.Textures.Luminous;
 
 [Flags]
 public enum BlackTextureFlags : byte

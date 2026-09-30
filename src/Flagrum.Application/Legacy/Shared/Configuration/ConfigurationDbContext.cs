@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Flagrum.Application.Persistence.Configuration.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -14,8 +15,8 @@ public class ConfigurationDbContext : DbContext
     {
         var builder = new SqliteConnectionStringBuilder
         {
-            DataSource =
-                $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum\config.fcg",
+            DataSource = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Flagrum", "config.fcg"),
             Password = "c8cfc6c1-d95e-4a08-b486-76427cf3ca5f"
         };
 

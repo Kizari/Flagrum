@@ -1,6 +1,8 @@
 ﻿@using System.IO
+@using Flagrum.Core.Graphics.Textures
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Graphics.Textures.NvidiaTextureTools
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 
 <div class="flex-grow flex flex-col">
     <div class="flex-grow flex flex-row items-center">
@@ -16,7 +18,7 @@
         }
         <img alt="Texture Preview" src="images/@Profile.Current.Id/@ImageName" class="mx-auto select-none"
              style="max-width: 70%; max-height: 90%;"/>
-        @if (CurrentIndex < Images.Count - 1)
+        @if (CurrentIndex < ImageCount - 1)
         {
             <span class="material-icons text-5xl text-grey-400 cursor-pointer mr-6 select-none"
                   @onclick="() => SetImage(CurrentIndex + 1)">arrow_forward_ios</span>
@@ -27,10 +29,10 @@
         }
     </div>
 
-    @if (Images.Count > 1)
+    @if (ImageCount > 1)
     {
         <div class="text-center mb-6">
-            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @Images.Count</span>
+            <span class="font-display text-grey-400 text-lg">Image @(CurrentIndex + 1) / @ImageCount</span>
         </div>
     }
 </div>
@@ -43,27 +45,43 @@
 
     private string ImageName { get; set; } = "asset_preview.jpg";
 
-    private IList<byte[]> Images { get; set; }
+    private byte[] Texture { get; set; }
     private int CurrentIndex { get; set; }
+    private uint ImageCount { get; set; } = 1;
 
     protected override void OnParametersSet()
     {
         if (_previousItem != Item)
         {
             _previousItem = Item;
-            Images = TextureConverter.ToJpegs(Item.Data).ToList();
+            Texture = Item.Data;
             SetImage(0);
         }
     }
 
     private void SetImage(int index)
     {
+        var texture = new BlackTexture(Texture);
+        ImageCount = texture.ImageHeader.ArrayCount;
         CurrentIndex = index;
-        File.WriteAllBytes(Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg"), Images[index]);
 
-        // Jank to trick the UI into updating
-        ImageName = ImageName == "asset_preview.jpg" ? "Asset_Preview.jpg" : "asset_preview.jpg";
+        // NVTT crashes if attempting to overwrite the current image while it's being previewed on Windows
+        // so save to a temporary file instead
+        var tempPath = Path.Combine(Profile.ImagesDirectory, "asset_preview_temp.jpg");
+        using var surfaceSet = new NvttSurfaceSet(texture);
+        surfaceSet.SaveJpg(0, 0, tempPath);
 
+        // Read the temporary image and write it to the actual location
+        // This is ridiculous, but simply using File.Move does not work as Windows throws permission errors
+        // It is assumed this may be Defender being overzealous and assuming the quick file operations are malicious
+        using var stream = new FileStream(tempPath, FileMode.Open, FileAccess.Read);
+        var data = new byte[stream.Length];
+        stream.ReadExactly(data);
+        var path = Path.Combine(Profile.ImagesDirectory, "asset_preview.jpg");
+        File.WriteAllBytes(path, data);
+
+        // Update the preview image in the UI
+        ImageName = $"asset_preview.jpg?v={CultureHelper.GetVersionTimestamp()}";
         StateHasChanged();
     }
 }

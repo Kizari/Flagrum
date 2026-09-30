@@ -4,24 +4,23 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
+using Flagrum.Application.Features.Settings.Data;
 using Flagrum.Core.Archive;
 using Flagrum.Core.Utilities;
-using Flagrum.Application.Features.Settings.Data;
-using Microsoft.Win32;
 
 namespace Flagrum.Application.Services;
 
 public class ProfileService : IProfileService
 {
-    private const string Steam32 = @"SOFTWARE\VALVE\Steam";
-    private const string Steam64 = @"SOFTWARE\Wow6432Node\Valve\Steam";
-
     private readonly EbonyArchiveManager _archiveManager = new();
     private readonly IConfiguration _configuration;
+    private readonly IPlatformManager _platform;
 
-    public ProfileService(IConfiguration configuration)
+    public ProfileService(IConfiguration configuration, IPlatformManager platform)
     {
         _configuration = configuration;
+        _platform = platform;
 
         if (_configuration.ShouldMigratePreProfilesData)
         {
@@ -61,8 +60,7 @@ public class ProfileService : IProfileService
             var ffxvDirectory = Path.GetDirectoryName(Current.GamePath);
             var commonFolder = Path.GetDirectoryName(ffxvDirectory);
             var steamAppsFolder = Path.GetDirectoryName(commonFolder);
-
-            return $@"{steamAppsFolder}\workshop\appworkshop_637650.acf";
+            return Path.Combine(steamAppsFolder!, "workshop", "appworkshop_637650.acf");
         }
     }
 
@@ -121,20 +119,22 @@ public class ProfileService : IProfileService
         }
     }
 
-    public string FlagrumDirectory =>
-        $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Flagrum";
+    public string FlagrumDirectory => Path.Combine(IOHelper.LocalApplicationData, "Flagrum");
+    public string UserAssetsDirectory => Path.Combine(FlagrumDirectory, "assets");
 
-    public string DatabasePath => $@"{FlagrumDirectory}\profiles\{Current.Id}\flagrum.db";
+    public string DatabasePath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "flagrum.db");
     public string FileIndexPath => Path.Combine(FlagrumDirectory, "profiles", Current.Id.ToString(), "file_index.zstd");
-    public string ImagesDirectory => $@"{IOHelper.GetWebRoot()}\images\{Current.Id}";
-    public string ModThumbnailWebDirectory => $@"{IOHelper.GetWebRoot()}\EarcMods\{Current.Id}";
+    public string ImagesDirectory => Path.Combine(UserAssetsDirectory, "images", Current.Id.ToString());
+
+    public string ModThumbnailWebDirectory =>
+        Path.Combine(UserAssetsDirectory, "EarcMods", Current.Id.ToString());
 
     /// <inheritdoc />
     public string TemporaryDirectory => Path.Combine(IOHelper.LocalApplicationData, "Temp", "Flagrum");
-    
+
     /// <inheritdoc />
     public string CacheDirectory => Path.Combine(TemporaryDirectory, Current.Id.ToString(), "cache");
-    
+
     /// <inheritdoc />
     public string ModStagingDirectory => Path.Combine(TemporaryDirectory, Current.Id.ToString(), "staging");
 
@@ -142,18 +142,21 @@ public class ProfileService : IProfileService
     public string PatchDirectory => Path.Combine(GameDataDirectory, "patch");
 
     /// <inheritdoc />
-    public string ModFilesDirectory => $@"{FlagrumDirectory}\earc\{Current.Id}";
+    public string ModFilesDirectory => Path.Combine(FlagrumDirectory, "earc", Current.Id.ToString());
 
-    public string EarcModThumbnailDirectory => $@"{ModFilesDirectory}\thumbnails";
-    public string EarcModBackupsDirectory => $@"{ModFilesDirectory}\backup";
+    /// <inheritdoc />
+    public string WebDataDirectory => Path.Combine(FlagrumDirectory, "web_data");
+
+    public string EarcModThumbnailDirectory => Path.Combine(ModFilesDirectory, "thumbnails");
+    public string EarcModBackupsDirectory => Path.Combine(ModFilesDirectory, "backup");
 
     /// <inheritdoc />
     public string SteamExePath { get; private set; }
 
-    public string BinmodDirectory => $"{Path.GetDirectoryName(Current.BinmodListPath)}";
-    public string WorkshopDirectory => $@"{Path.GetDirectoryName(WorkshopPath)}\content\637650";
-    public string GameDataDirectory => $@"{Path.GetDirectoryName(Current.GamePath)}\datas";
-    public string GameDirectory => Path.GetDirectoryName(Current.GamePath);
+    public string BinmodDirectory => Path.GetDirectoryName(Current.BinmodListPath)!;
+    public string WorkshopDirectory => Path.Combine(Path.GetDirectoryName(WorkshopPath)!, "content", "637650");
+    public string GameDataDirectory => Path.Combine(Path.GetDirectoryName(Current.GamePath)!, "datas");
+    public string GameDirectory => Path.GetDirectoryName(Current.GamePath)!;
     public string ModStatePath => Path.Combine(FlagrumDirectory, "Profiles", Current.Id.ToString(), "mod_state.zstd");
 
     public void Dispose()
@@ -237,7 +240,7 @@ public class ProfileService : IProfileService
                 {
                     return Process.GetProcessesByName(fileName)
                         .Any(p => p.MainModule?.FileName
-                                      .StartsWith(directory, StringComparison.OrdinalIgnoreCase) == true);
+                            .StartsWith(directory, StringComparison.OrdinalIgnoreCase) == true);
                 }
                 catch
                 {
@@ -264,6 +267,7 @@ public class ProfileService : IProfileService
         return new EbonyArchive(absolutePath);
     }
 
+    // TODO: Handle for Linux
     private void TrySetDefaultGamePath()
     {
         if (Current.GamePath == null && Current.Type == LuminousGame.FFXV)
@@ -288,6 +292,7 @@ public class ProfileService : IProfileService
         }
     }
 
+    // TODO: Handle for Linux
     private void TrySetDefaultBinmodListPath()
     {
         if (Current.BinmodListPath == null && Current.Type == LuminousGame.FFXV)
@@ -319,28 +324,9 @@ public class ProfileService : IProfileService
 
     private void TrySetSteamExePath()
     {
-        try
+        if (_platform.TryGetSteamExecutablePath(out var path))
         {
-            var key64 = Registry.LocalMachine.OpenSubKey(Steam64);
-            if (key64 == null)
-            {
-                var key32 = Registry.LocalMachine.OpenSubKey(Steam32);
-                SteamExePath = key32?.GetValue("InstallPath")?.ToString();
-            }
-            else
-            {
-                SteamExePath = key64.GetValue("InstallPath")?.ToString();
-            }
-
-            if (SteamExePath != null)
-            {
-                SteamExePath += @"\steam.exe";
-            }
-        }
-        catch
-        {
-            // Don't want a failed Steam path to take out the whole app
-            // It's not that important
+            SteamExePath = path;
         }
     }
 

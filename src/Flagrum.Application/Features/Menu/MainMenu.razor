@@ -1,12 +1,13 @@
-﻿@using System.IO
-@using Flagrum.Application.Features.Menu.Modals
-@inject IPlatformService PlatformService
+﻿@using Flagrum.Application.Features.Information.News
+@using Flagrum.Application.Features.Information.News.Modals
+@inject IApplication Application
 @inject IStringLocalizer<MainMenu> L
 @inject IStringLocalizer<App> AppLocalizer
 @inject IProfileService Profile
 @inject NavigationManager Navigation
 @inject IConfiguration Configuration
 @inject ComponentStateService ComponentState
+@inject NewsFlowBuilderFactory NewsFlowBuilderFactory
 
 <CascadingValue Value="this">
     <Bootstrapper/>
@@ -36,55 +37,34 @@
         </div>
     </div>
 
-    <LauncherInfoModal @ref="LauncherInfoModal"/>
-    <VersionNotesModal @ref="VersionNotesModal"/>
-    <NewsModal @ref="NewsModal"/>
+    @NewsFlow?.RenderFragment
 </CascadingValue>
 
 @code
 {
-    private List<MenuItem> Items { get; set; } = [];
-    private string Version { get; set; }
-    private VersionNotesModal VersionNotesModal { get; set; }
-    private LauncherInfoModal LauncherInfoModal { get; set; }
-    private NewsModal NewsModal { get; set; }
+    private NewsFlow? NewsFlow { get; set; }
+    private List<MenuItem> Items { get; } = [];
+    private string? Version { get; set; }
 
     protected override void OnInitialized()
     {
         ComponentState.OnRefreshMenu += StateHasChanged;
-        var v = PlatformService.GetVersion();
+        var v = Application.Version;
         Version = $"{v.Major}.{v.Minor}.{v.Build}";
+
+        NewsFlow = NewsFlowBuilderFactory.Create()
+            .PresentIfBelow<LauncherNewsModal>(new Version(1, 5, 17))
+            .PresentIfBelow<OpenSourceNewsModal>(new Version(1, 6, 0))
+            .PresentIfBelow<CrossPlatformNewsModal>(new Version(1, 7, 1))
+            .PresentAlways<VersionNotesNewsModal>()
+            .Build();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            if (Profile.LastVersionNotes != Version)
-            {
-                if (Profile.LastVersion < new Version(1, 5, 17))
-                {
-                    // Show the mod loader modal if the user is coming from a version before its introduction
-                    // This will call OnManualVersionNotesModalClosedAsync when the user closes it
-                    LauncherInfoModal.Open(Profile.LastVersion);
-                }
-                else if (Profile.LastVersion < new Version(1, 6, 0))
-                {
-                    NewsModal.Open(Profile.LastVersion);
-                }
-                else
-                {
-                    await VersionNotesModal.OpenAsync(Profile.LastVersion);
-                }
-
-                // Clear build cache in case any build changes have been made in the new version that need to be applied
-                foreach (var file in Directory.EnumerateFiles(Profile.CacheDirectory))
-                {
-                    File.Delete(file);
-                }
-
-                Profile.LastVersionNotes = Version;
-            }
+            await NewsFlow!.ExecuteAsync();
         }
     }
 
@@ -94,15 +74,6 @@
         SetActiveItem(item);
         Navigation.NavigateTo("/featured");
     }
-
-    public Task OnLauncherInfoModalClosedAsync(Version lastSeenVersion)
-    {
-        NewsModal.Open(lastSeenVersion);
-        return Task.CompletedTask;
-    }
-    
-    public Task OnNewsModalClosedAsync(Version lastSeenVersion) =>
-        VersionNotesModal.OpenAsync(lastSeenVersion);
 
     public void AddItem(MenuItem item)
     {

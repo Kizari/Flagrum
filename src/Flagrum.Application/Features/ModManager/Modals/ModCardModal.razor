@@ -1,19 +1,18 @@
 ﻿@using System.IO
 @using Blazored.TextEditor
-@using Flagrum.Core.Utilities
+@using Flagrum.Abstractions.Application
 @using Flagrum.Application.Features.ModManager.Editor
 @using Flagrum.Application.Features.ModManager.Project
 @using Flagrum.Application.Features.ModManager.Services
+@using Flagrum.Core.Utilities
+@using SixLabors.ImageSharp
 @using Index = Index
 @inject IStringLocalizer<Editor> EditorLocalizer
 @inject IStringLocalizer<ModCardModal> Localizer
-@inject IStringLocalizer<Index> IndexLocalizer
-@inject IPlatformService PlatformService
+@inject IApplication Application
 @inject NavigationManager Navigation
 @inject IProfileService Profile
 @inject ModManagerServiceBase ModManagerService
-@inject TextureConverter TextureConverter
-@inject AppStateService AppState
 
 <style>
     .rte-container h1, .rte-container h2, .rte-container h3, .rte-container h4, .rte-container h5, .rte-container h6 {
@@ -31,7 +30,7 @@
             <EditForm Model="Mod" OnValidSubmit="Submit" class="shadow-md flex-shrink-0">
                 <DataAnnotationsValidator/>
                 <img alt="Mod Thumbnail" class="relative rounded-t" style="display: block; width: 330px; height: 180px;"
-                     src="images/@Profile.Current.Id/@(ImageName).png"/>
+                     src="images/@Profile.Current.Id/@(ImageName)"/>
                 <div class="p-4 flex-grow flex flex-col">
                     <small class="text-center mb-4">Recommended thumbnail size 326x170</small>
                     <Textbox Size="Textbox.Variant.Stretch" @bind-Value="Mod.Name"
@@ -96,12 +95,12 @@
     public async Task Open(Guid modId)
     {
         Mod = new ModCardViewModel();
-        var currentPreviewPath = $@"{Profile.ImagesDirectory}\current_earc_preview.png";
+        var currentPreviewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");
 
         if (modId == Guid.Empty)
         {
             Identifier = Guid.Empty;
-            var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+            var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "earc.png");
             File.Copy(defaultPreviewPath, currentPreviewPath, true);
             await Editor.LoadHTMLContent(null);
         }
@@ -124,29 +123,29 @@
             }
             else
             {
-                var defaultPreviewPath = $@"{IOHelper.GetExecutingDirectory()}\Resources\earc.png";
+                var defaultPreviewPath = Path.Combine(IOHelper.GetExecutingDirectory(), "Resources", "earc.png");
                 File.Copy(defaultPreviewPath, currentPreviewPath, true);
             }
         }
 
-        // This jank is required or the UI won't update the image if the value hasn't changed
-        ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
+        ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
         StateHasChanged();
         Modal.Open();
     }
 
-    private Task SelectImage()
+    private async Task SelectImage()
     {
-        return PlatformService.OpenFileDialogAsync(
-            "Image Files|*.png;*.jpg;*.jpeg;*.tif;*.tiff;*.gif",
-            async path =>
-            {
-                var processedImage = TextureConverter.WicToEarcThumbnailJpeg(await File.ReadAllBytesAsync(path));
-                await File.WriteAllBytesAsync($@"{Profile.ImagesDirectory}\current_earc_preview.png", processedImage);
-                // This jank is required or the UI won't update the image if the value hasn't changed
-                ImageName = ImageName == "current_earc_preview" ? "Current_Earc_Preview" : "current_earc_preview";
-                await InvokeAsync(StateHasChanged);
-            });
+        var path = await Application.OpenFileAsync([FileDialogFileType.Images]);
+        if (path != null)
+        {
+            var previewPath = Path.Combine(Profile.ImagesDirectory, "current_earc_preview.png");
+            using var image = await Image.LoadAsync(path);
+            image.ResizeFill(326, 170);
+            await image.SaveAsJpegAsync(previewPath);
+
+            ImageName = $"current_earc_preview.png?v={CultureHelper.GetVersionTimestamp()}";
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task Submit()

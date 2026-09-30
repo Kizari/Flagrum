@@ -1,13 +1,13 @@
 ﻿@page "/mod/upload"
-
+@using System.IO
 @using Flagrum.Application.Features.WorkshopMods.Services
 @using Flagrum.Core.Archive.Mod
+@using SixLabors.ImageSharp
 
 @inject SteamWorkshopService SteamWorkshop
 @inject AppStateService AppState
 @inject NavigationManager Navigation
 @inject BinmodTypeHelper BinmodTypeHelper
-@inject TextureConverter TextureConverter
 
 <LoadingView Text="@LoadingText"
              IsLoading="IsLoading">
@@ -106,11 +106,13 @@
     {
         var preview = AppState.ActiveMod.GetPreviewPng();
 
-    // Compress preview if it's too large for Steam
+        // Compress preview if it's too large for Steam
         if (preview.Length > 953673)
         {
-            _ = TextureConverter.WicToBinmodPreviewBlackTexture("$preview", preview, out var jpeg);
-            preview = jpeg;
+            using var stream = new MemoryStream(preview);
+            using var image = Image.Load(stream);
+            using var final = image.ResizeFit(600, 600);
+            preview = final.EncodeJpeg(953673);
         }
 
         Details.PreviewBytes = preview;

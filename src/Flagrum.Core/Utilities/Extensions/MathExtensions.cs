@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Flagrum.Core.Utilities.Type;
 
 namespace Flagrum.Core.Utilities.Extensions;
@@ -159,13 +160,16 @@ public static class MathExtensions
         return ColorRGB.FromHSL(hue / 360.0, 0.6, 0.6);
     }
 
-    public static string ToHex(this Color color)
-    {
-        return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-    }
+    public static string ToHex(this Color color) => $"#{color.R:X2}{color.G:X2}{color.B:X2}";
 
-    public static int RoundToMultiple(this double value, int multiple)
-    {
-        return (int) Math.Round(value / multiple) * multiple;
-    }
+    public static int RoundToMultiple(this double value, int multiple) => (int)Math.Round(value / multiple) * multiple;
+
+    /// <summary>
+    /// Aligns a given offset to the end of the block of a given size.
+    /// </summary>
+    /// <param name="offset">Offset to align.</param>
+    /// <param name="blockSize">Size of the block to align to. <b>Must be a power of 2</b>.</param>
+    /// <returns>Input value if already aligned, otherwise the aligned offset.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int AlignTo(this int offset, int blockSize) => (offset + blockSize - 1) & ~(blockSize - 1);
 }

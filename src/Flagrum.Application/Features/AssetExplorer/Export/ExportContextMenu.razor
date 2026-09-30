@@ -1,22 +1,23 @@
 ﻿@using System.IO
+@using Flagrum.Abstractions.Application
+@using Flagrum.Application.Features.AssetExplorer.Base
 @using Flagrum.Core.Animation.Package
 @using Flagrum.Core.Archive
 @using Flagrum.Core.Entities
-@using Flagrum.Core.Graphics.Textures
-@using Flagrum.Application.Features.AssetExplorer.Base
-@inject IPlatformService PlatformService
-@inject ILogger<ExportContextMenu> Logger
+@using Flagrum.Core.Graphics.Terrain
+@using Flagrum.Core.Graphics.Textures.Luminous
+@using Flagrum.Core.Graphics.Textures.Shared
+
+@inject IApplication Application
 @inject TerrainPacker TerrainPacker
 @inject IStringLocalizer<ExportContextMenu> Localizer
-@inject AppStateService AppState
 @inject IProfileService Profile
-@inject TextureConverter TextureConverter
 @inject EnvironmentPacker EnvironmentPacker
 
 <ContextMenu Id="assetExplorerMenu"
              OverrideDefaultCssClass="fixed select-none bg-grey-700 p-0 border-0 shadow-md"
              OverrideDefaultListCssClass="p-0"
-             OnAppearing="OnAppearing"
+             OnAppearing="e => AssetExplorer.ContextNode = (IAssetExplorerNode)e.Data"
              OnHiding="OnHiding"
              @ref="ContextMenu">
     @if (AssetExplorer.ContextNode?.Type == ExplorerItemType.Directory)
@@ -121,11 +122,12 @@
 
         var filter = item.Type switch
         {
-            ExplorerItemType.Material or ExplorerItemType.Model => "Graphics Binary|*.gfxbin",
-            ExplorerItemType.Texture => "PNG|*.png|Targa|*.tga|DirectDraw Surface|*.dds|Black Texture|*.btex",
-            ExplorerItemType.TerrainTexture => "PNG|*.png|Targa|*.tga|DirectDraw Surface|*.dds|Height Entity Binary|*.heb",
-            ExplorerItemType.Xml => "eXtensible Markup Language|*.xml|Ebony XML (XMB(2))|*.exml",
-            _ => $"Unknown File|*.{UriHelper.Instance.GetTrueExtensionFromFileName(item.Name).Split('.')[^1]}"
+            ExplorerItemType.Material or ExplorerItemType.Model => [FileDialogFileType.GraphicsBinary],
+            ExplorerItemType.Texture => FileDialogFileType.Textures,
+            ExplorerItemType.TerrainTexture => FileDialogFileType.TerrainTextures,
+            ExplorerItemType.Xml => FileDialogFileType.EbonyXmlFiles,
+            _ => [new FileDialogFileType("Unknown File", 
+                [$"*.{UriHelper.Instance.GetTrueExtensionFromFileName(item.Name).Split('.')[^1]}"])]
         };
 
         var trueExtension = UriHelper.Instance.GetTrueExtensionFromFileName(item.Name);
@@ -138,7 +140,8 @@
             _ => defaultFileName
         };
 
-        await PlatformService.OpenSaveFileDialogAsync(defaultFileName, filter, async path =>
+        var path = await Application.SaveFileAsync(filter, defaultFileName);
+        if (path != null)
         {
             byte[] data;
 
@@ -147,13 +150,14 @@
                 case ExplorerItemType.Texture:
                 {
                     var extension = path.Split('.').Last();
-                    TextureConverter.ExportTexture(path, (ImageFormat)extension, item.Data);
+                    new BlackTexture(item.Data).Save(path, (ImageFileFormat)extension);
                     return;
                 }
                 case ExplorerItemType.TerrainTexture:
                 {
                     var extension = path.Split('.').Last();
-                    if (!TextureConverter.ExportTerrainTexture(path, (ImageFormat)extension, item.Data))
+                    var heb = new HeightEntityBinary(item.Data);
+                    if (!heb.TrySave(path, (ImageFileFormat)extension))
                     {
                         Alert.Open("Warning", "Nothing to Export",
                             "The selected HEB file does not contain any images, so nothing was exported.", null);
@@ -175,59 +179,54 @@
             }
 
             await File.WriteAllBytesAsync(path, data);
-        });
+        }
     }
 
     private async Task ExportEnvironment()
     {
         var item = AssetExplorer.ContextNode;
-        const string filter = "Flagrum Environment Data|*.fed";
-
-        await PlatformService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".fed", filter, async path =>
+        var path = await Application.SaveFileAsync([FileDialogFileType.FlagrumEnvironmentData], 
+            $"{item.Name[..item.Name.LastIndexOf('.')]}.fed");
+        
+        if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
-            await Task.Run(() => { EnvironmentPacker.Pack(item.Path, path); });
-            await InvokeAsync(() => { AssetExplorer.SetLoading(false); });
-        });
+            await Task.Run(() => EnvironmentPacker.Pack(item.Path, path));
+            await InvokeAsync(() => AssetExplorer.SetLoading(false));
+        }
     }
 
     private async Task ExportTerrain()
     {
         var item = AssetExplorer.ContextNode;
-        const string filter = "Flagrum Terrain Data|*.ftd";
-
-        await PlatformService.OpenSaveFileDialogAsync(item.Name[..item.Name.LastIndexOf('.')] + ".ftd", filter, async path =>
+        var path = await Application.SaveFileAsync([FileDialogFileType.FlagrumTerrainData], 
+            $"{item.Name[..item.Name.LastIndexOf('.')]}.ftd");
+        
+        if (path != null)
         {
             await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
             await Task.Run(() => { TerrainPacker.Pack(item.Path, path); });
             await InvokeAsync(() => AssetExplorer.SetLoading(false));
-        });
+        }
     }
 
     private async Task ExportAnimationClips()
     {
         var item = AssetExplorer.ContextNode;
-        await PlatformService.OpenFolderDialogAsync(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            async folderPath =>
-            {
-                await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
-                var data = item.Data;
-                var package = AnimationPackage.FromData(data);
-                foreach (var animation in package.Items)
-                {
-                    var outPath = Path.Combine(folderPath, $"{package.Items.IndexOf(animation)}.ani");
-                    await File.WriteAllBytesAsync(outPath, animation.Ani);
-                }
+        var folderPath = await Application.OpenDirectoryAsync();
 
-                await InvokeAsync(() => AssetExplorer.SetLoading(false));
-            });
-    }
-
-    private void OnAppearing()
-    {
-        if (AppState.Is3DViewerOpen)
+        if (folderPath != null)
         {
-            PlatformService.Set3DViewportVisibility(false);
+            await InvokeAsync(() => AssetExplorer.SetLoading(true, "Exporting"));
+            var data = item.Data;
+            var package = AnimationPackage.FromData(data);
+            foreach (var animation in package.Items)
+            {
+                var outPath = Path.Combine(folderPath, $"{package.Items.IndexOf(animation)}.ani");
+                await File.WriteAllBytesAsync(outPath, animation.Ani);
+            }
+
+            await InvokeAsync(() => AssetExplorer.SetLoading(false));
         }
     }
 
@@ -235,10 +234,5 @@
     {
         AssetExplorer.ContextNode = null;
         AssetExplorer.CallStateHasChanged();
-
-        if (AppState.Is3DViewerOpen && !AppState.IsModalOpen)
-        {
-            PlatformService.Set3DViewportVisibility(true);
-        }
     }
 }

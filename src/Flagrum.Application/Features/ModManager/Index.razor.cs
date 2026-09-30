@@ -5,18 +5,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flagrum.Abstractions;
+using Flagrum.Abstractions.Application;
 using Flagrum.Abstractions.AssetExplorer;
+using Flagrum.Abstractions.ModManager;
 using Flagrum.Abstractions.ModManager.Instructions;
 using Flagrum.Abstractions.ModManager.Project;
-using Flagrum.Components.Modals;
-using Flagrum.Core.Utilities;
 using Flagrum.Application.Features.ModManager.Data;
 using Flagrum.Application.Features.ModManager.Installer;
-using Flagrum.Application.Features.ModManager.Instructions.Builders;
-using Flagrum.Application.Features.ModManager.Launcher;
 using Flagrum.Application.Features.ModManager.Modals;
 using Flagrum.Application.Features.ModManager.Services;
-using Flagrum.Application.Features.Shared;
+using Flagrum.Components.Modals;
+using Flagrum.Core.Utilities;
 using Microsoft.AspNetCore.Components;
 
 namespace Flagrum.Application.Features.ModManager;
@@ -26,8 +25,6 @@ public sealed partial class Index : ModComponentBase
     private IFlagrumProject _contextMod;
 
     [Inject] private IConfiguration Configuration { get; set; }
-    [Inject] private TextureConverter TextureConverter { get; set; }
-    [Inject] private DataIndexBinaryDifferenceBuilder DifferenceBuilder { get; set; }
     [Inject] private IModBuildInstructionFactory InstructionFactory { get; set; }
     [Inject] private ModInstaller ModInstaller { get; set; }
     [Inject] private ModManagerServiceBase ModManager { get; set; }
@@ -44,6 +41,7 @@ public sealed partial class Index : ModComponentBase
     private ModCardModal ModCardModal { get; set; }
     public ExportModal ExportModal { get; set; }
     private ModPackInstallModal ModPackInstallModal { get; set; }
+    private LaunchConfigurationModal LaunchConfigModal { get; set; }
     private MarkupString CurrentReadme { get; set; }
     private Dictionary<string, List<string>> LegacyConflicts { get; set; }
     private List<EarcConflictString> SelectedLegacyConflicts { get; set; }
@@ -77,6 +75,10 @@ public sealed partial class Index : ModComponentBase
                 "Flagrum was unable to launch FFXV due to insufficient permissions. " +
                 "Please relaunch Flagrum as administrator and try again.", null);
         }
+        else if (result == GameLaunchResult.InvalidLaunchConfiguration)
+        {
+            LaunchConfigModal.Open(true);
+        }
 
         await Task.Delay(5000); // Prevent spam launching
     }
@@ -91,15 +93,15 @@ public sealed partial class Index : ModComponentBase
         var category = Configuration.Get<int>(StateKey.CurrentEarcCategory);
         Category = category;
 
-        foreach (var file in Directory.EnumerateFiles($@"{IOHelper.GetWebRoot()}\EarcMods"))
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(Profile.UserAssetsDirectory, "EarcMods")))
         {
-            var id = file.Split('\\').Last().Replace(".png", "");
+            var id = file.Split(Path.DirectorySeparatorChar).Last().Replace(".png", "");
             var guid = new Guid(id);
             if (!ModManager.Projects.ContainsKey(guid))
             {
                 try
                 {
-                    var thumbnail = $@"{IOHelper.GetWebRoot()}\EarcMods\{id}.png";
+                    var thumbnail = Path.Combine(Profile.UserAssetsDirectory, "EarcMods", $"{id}.png");
                     File.Delete(thumbnail);
                 }
                 catch
@@ -119,15 +121,14 @@ public sealed partial class Index : ModComponentBase
     {
         if (firstRender)
         {
-            var fmodPath = PlatformService.GetFmodPath();
-            if (fmodPath != null)
+            if (Application.AssociatedFile != null)
             {
                 Prompt.Title = "Install Mod";
                 Prompt.Heading = "Do you wish to install this mod?";
-                Prompt.Subtext = fmodPath.Split('\\').Last();
-                Prompt.OnYes = async () => await InstallMod(fmodPath);
+                Prompt.Subtext = Application.AssociatedFile.Split('/', '\\').Last();
+                Prompt.OnYes = async () => await InstallMod(Application.AssociatedFile);
                 Prompt.Open();
-                PlatformService.ClearFmodPath();
+                Application.AssociatedFile = null;
             }
         }
     }
@@ -169,17 +170,21 @@ public sealed partial class Index : ModComponentBase
         Configuration.Set(StateKey.CurrentEarcEnabledState, state);
     }
 
-    private Task Install()
+    private async Task Install()
     {
         if (Profile.IsGameRunning())
         {
             Alert.Open("Error", "The Game is Running",
                 "Flagrum cannot install mods while the game is running. Please save and close down the game, then try again.",
                 null);
-            return Task.CompletedTask;
+            return;
         }
 
-        return PlatformService.OpenFileDialogAsync("Flagrum Mod|*.fmod;*.zip", async path => await InstallMod(path));
+        var path = await Application.OpenFileAsync([FileDialogFileType.AllFlagrumMods]);
+        if (path != null)
+        {
+            await InstallMod(path);
+        }
     }
 
     private async Task InstallMod(string path)
