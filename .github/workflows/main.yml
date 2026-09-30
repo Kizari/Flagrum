@@ -57,10 +57,10 @@ jobs:
         run: dotnet nuget add source --username Kizari --password ${{ secrets.READ_PACKAGES_PAT }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kizari/index.json"
 
       - name: Publish Windows Build
-        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-win-x64 -r win-x64 --self-contained true
+        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-win-x64 -r win-x64 --self-contained true -p:UsePremiumPackageSource=true
 
       - name: Publish Linux Build
-        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-linux-x64 -r linux-x64 --self-contained true
+        run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-linux-x64 -r linux-x64 --self-contained true -p:UsePremiumPackageSource=true
 
       - name: Download Previous Release
         if: steps.setup.outputs.prerelease == 'false'
