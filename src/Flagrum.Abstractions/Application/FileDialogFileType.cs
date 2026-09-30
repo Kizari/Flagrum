@@ -37,6 +37,11 @@ public class FileDialogFileType(string name, string[] patterns)
     public static FileDialogFileType FlagrumMod => new("Flagrum Mod", ["*.fmod"]);
 
     /// <summary>
+    /// Matches the EARC file format.
+    /// </summary>
+    public static FileDialogFileType EbonyArchive => new("Ebony Archive", ["*.earc"]);
+
+    /// <summary>
     /// Matches game model files.
     /// </summary>
     public static FileDialogFileType GameModel => new("Game Model", ["*.gmdl.gfxbin"]);
