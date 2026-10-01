@@ -1,0 +1,803 @@
+﻿@page "/ebonysnapsmanager"
+@using Microsoft.AspNetCore.Components.Web
+@using System.IO
+@using System.Threading;
+@using Microsoft.JSInterop
+@using Flagrum.Components.Controls
+@using Flagrum.Application.Features.EbonySnapsManager
+@using Flagrum.Application.Features.EbonySnapsManager.Helpers
+@using Flagrum.Application.Features.EbonySnapsManager.Crypto
+@using Flagrum.Application.Features.EbonySnapsManager.LargeProcesses
+@using Flagrum.Application.Features.Settings.Data
+@inject IPlatformService PlatformService
+@inject IStringLocalizer<EbonySnapsManager> L
+@inject JSInterop Interop
+@inject IJSRuntime JSRuntime
+@inject IProfileService ProfileService
+
+<style>.content-area {padding: 20px;} </style>
+ <!-- Top Bar -->
+<LoadingView Text="Loading Snapshots" IsLoading="@IsLoading">
+  <div class="page-container">
+    <div class="row px-2 py-2 border-b border-t border-dark-600 sticky top-0 z-40 bg-dark">
+      <img src="/pictures/ebonysnaps.ico" alt="Icon" class="h-6 mr-3" />
+      <h1 class="font-display text-xl text-grey-300 mr-5">Ebony Snaps Manager</h1>
+      <div class="flex flex-row flex-wrap flex-grow">
+        <div class="rounded row mr-10">
+          <ModTypeButtonGroup Target="@ActiveTool" OnItemSelected="SetActiveTool">
+            <ModTypeButton Text="@L["Snap Viewer"]" Value="0" />
+            <ModTypeButton Text="@L["Snap Tools"]" Value="1" />
+          </ModTypeButtonGroup>
+        </div>
+        <div class="ml-auto">
+          <Button Icon="info" Text="Info" OnClick="ShowNotes" CssClass="mb-4" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area" style="height: calc(100vh - 150px);">
+      @if (ActiveTool == 0)
+      {
+        <div class="flex flex-row" style="gap:20px; height:100%;">
+          <!-- Left Side: Snapshot Controls & Image Panel -->
+          <div class="flex flex-col flex-grow" style="gap:15px;">
+            <div class="flex flex-row space-x-4 mb-4">
+              <Button Icon="image" OnClick="LoadSnapshotBtn_Click" CssStyle="min-width:150px;" Text="Load Snapshot" />
+              <Button Icon="photo_library" OnClick="LoadSnapshotDirectoryBtn_Click" CssStyle="min-width:200px;" Text="Load Snapshot Directory" />
+            </div>
+            <div class="border border-dark-600 rounded flex items-center justify-center bg-dark"
+                 style="flex-grow:1; min-height:350px; position: relative;">
+              @if (string.IsNullOrEmpty(BitmapSrc0))
+              {
+                <TextBlock Text="No Image Loaded" class="text-grey-300 text-lg" />
+              }
+              else
+              {
+                <img src="@BitmapSrc0" alt="Loaded Snapshot" style="max-width:100%; max-height:100%;"
+                     id="snapshotImg"
+                     @oncontextmenu:preventDefault
+                     @oncontextmenu="OnRightClick" />
+              }
+            </div>
+          </div>
+          <!-- Right Side: Snapshots List & Save Button -->
+          <div style="flex: 0 0 250px; display:flex; flex-direction:column; gap:10px;">
+            <TextBlock Text="SnapsList:" class="text-lg font-display mb-2 text-grey-300" />
+            <div id="snapshot-list-container"
+                 tabindex="0" 
+                 @onkeydown:preventDefault 
+                 @onkeydown="HandleKeyDown"
+                 class="bg-dark-550 p-2 flex-grow overflow-y-auto"
+                 style="min-height:350px; scroll-behavior:smooth; scroll-padding-top:10px;">
+              <Virtualize TItem="string" Items="@SnapshotList" ItemSize="28">
+                <ItemContent Context="item">
+                  @{
+                    var index = SnapshotList.IndexOf(item);
+                  }
+                  <div id="snapshot-item-@index"
+                       tabindex="-1"
+                       @onclick="() => OnSnapshotSelected(item)"
+                       style="@GetItemStyle(index)">
+                    @item
+                  </div>
+                </ItemContent>
+              </Virtualize>
+            </div>
+            <div>
+              <Button Icon="download" OnClick="SaveSnapshotsInListBtn_Click" CssStyle="width:100%;" Text="Save all Snapshots" />
+            </div>
+          </div>
+        </div>
+      }
+      else if (ActiveTool == 1)
+      {
+        <!-- Snap Tools UI -->
+        <div class="flex flex-col" style="gap:15px; height:100%;">
+          <!-- Top Row: Primary Actions -->
+          <div class="flex flex-row gap-4">
+            <Button Icon="image" OnClick="LoadImageBtn_Click" CssStyle="min-width:150px;" Text="Load Image to Panel" />
+            <Button Icon="add_a_photo" OnClick="AddNewSnapshotBtn_Click" CssStyle="min-width:150px;" Text="Add as New Snap" />
+            <Button Icon="flip_camera_ios" OnClick="ReplaceSnapshotBtn_Click" CssStyle="min-width:150px;" Text="Replace Existing Snap" />
+            <Button Icon="burst_mode" OnClick="AddMultipleNewSnapsBtn_Click" CssStyle="min-width:150px;" Text="Batch Add New Snaps" />
+          </div>
+          <!-- Lower Area: Image Panel and Secondary Buttons -->
+          <div class="flex flex-row gap-15" style="flex-grow:1; overflow: hidden;">
+            <!-- Left: Image Panel -->
+            <div class="flex-grow border border-dark-600 rounded flex items-center justify-center bg-dark"
+                 style="min-height:350px; position: relative; overflow: hidden;">
+              @if (string.IsNullOrEmpty(BitmapSrc1))
+              {
+                <TextBlock Text="No Image Loaded" class="text-grey-200 text-lg" />
+              }
+              else
+              {
+                <img src="@BitmapSrc1" alt="Loaded Image" style="max-width:100%; max-height:100%;" />
+              }
+            </div>
+            <!-- Right: Column for Secondary Buttons -->
+            <div class="flex flex-col gap-4" style="width:170px;">
+              <Button Icon="delete" OnClick="RemoveBlankSnapsBtn_Click" CssStyle="min-width:150px;" Text="Remove Blank Snaps" />
+              <Button Icon="no_encryption" OnClick="DecryptFileButton_Click" CssStyle="min-width:150px;" Text="Decrypt Save File" />
+              <Button Icon="lock" OnClick="EncryptFileButton_Click" CssStyle="min-width:150px;" Text="Encrypt Save File" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    <footer class="bg-dark-550 text-grey-300 border-t border-dark-600 p-4 text-center">
+      <div style="font-size:16px;">@StatusBarTxt</div>
+    </footer>
+  </div>
+</LoadingView>
+ <!-- Notes Window -->
+<div style="max-width: 100px; margin: auto;">
+    <AutosizeModal @ref="NotesModal" CssClass="shadow-lg rounded-lg shadow-black">
+        <HeaderView>
+            <span class="text-grey-300 flex-grow text-xl font-bold">Important Notes:</span>
+            <span class="material-icons text-grey-300 cursor-pointer" @onclick="CloseNotes">close</span>
+        </HeaderView>
+        <BodyView>
+            <div class="w-full p-2 pt-0 text-left">
+                <ul class="list-disc ml-6 space-y-2 text-grey-300">
+                    <li>
+                        The <strong>Add as new snap</strong>, <strong>Batch add new snaps</strong>, and 
+                        <strong>Remove blank snaps</strong><br/> options will modify your save file and the <code>snapshotlink.sl</code> file (located <br/>in the snapshot folder). 
+                        For safety, please back up these files before <br/>using these options.
+                    </li>
+                    <li>
+                        The <strong>Remove blank snaps</strong> option will remove records leftover from <br/>missing or deleted snapshots.
+                    </li>
+                    <li>
+                        When prompted to select a save file, please choose a<br/> <code>gameplay0.save</code> file from one of the <strong>gameplay/slot</strong> folders.
+                    </li>
+                     <li>
+                        <code>slot0</code> and <code>slot1</code> contain the first two autosave files, while the <br/>remaining slot folders have manually saved files.
+                    </li>
+                    <li>
+                        Note: Options to <strong>Decrypt</strong> and <strong>Encrypt</strong> can be used for exploring and <br/>debugging all save file formats and are not needed for any functions <br/>of this tool.
+                    </li>
+                    <br/>
+                     <p align="center"> 
+                         <a href="https://github.com/Kizari/Flagrum/wiki/Managing-Snapshots" 
+                            style="color: #00A2FF; font-weight: bold;" 
+                            target="_blank" 
+                            rel="noopener noreferrer">
+                             Link for additional info on using Ebony Snaps Manager
+                         </a> 
+                     </p>
+                </ul>
+            </div>
+        </BodyView>
+    </AutosizeModal>
+</div>
+
+@code {
+    private bool IsLoading { get; set; } = false;
+    private int ActiveTool { get; set; } = 0;
+    private AutosizeModal NotesModal { get; set; }
+    private void ShowNotes() => NotesModal.Open();
+    private void CloseNotes() => NotesModal.Close();
+    private string BitmapSrc0 { get; set; } = "";
+    private string BitmapSrc1 { get; set; } = "";
+    private string StatusBarTxt { get; set; } = "Ready";
+    private string CurrentSSName { get; set; } = "";
+    private byte[] CurrentSnapshotData { get; set; }
+    private List<string> SnapshotList { get; set; } = new List<string>();
+    private Dictionary<string, string> SnapshotFilesInDirDict { get; set; } = new Dictionary<string, string>();
+    private List<string> SnapshotItems => SnapshotList;
+    private int SelectedIndex { get; set; } = -1;
+    private CancellationTokenSource _debounceCts;
+
+    // -------------------------
+    // Snap Viewer
+    // -------------------------
+
+    private async void LoadSnapshotBtn_Click()
+    {
+        try
+        {
+            InvokeAsync(() => StatusBarTxt = "Select a FFXV snapshot file.");
+            await InvokeAsync(StateHasChanged);
+            await PlatformService.OpenFileDialogAsync(
+                "Snapshot Files (*.ss)|*.ss",
+                async path =>
+                {
+                    BitmapSrc0 = null;
+                    byte[] snapshotData = SnapshotHelpers.GetImgDataFromSnapshotFile(path);
+                    if (snapshotData == null || snapshotData.Length == 0)
+                    {
+                        StatusBarTxt = "No image data found in the snapshot file.";
+                        await InvokeAsync(StateHasChanged);
+                        return;
+                    }
+                    CurrentSnapshotData = snapshotData;
+                    CurrentSSName = Path.GetFileName(path);
+
+                    BitmapSrc0 = "data:image/jpeg;base64," + Convert.ToBase64String(snapshotData);
+                    StatusBarTxt = $"Loaded snapshot: \"{CurrentSSName}\"";// ({snapshotData.Length} bytes)";
+                    await InvokeAsync(StateHasChanged);
+                });
+        }
+        catch (Exception ex)
+        {
+            StatusBarTxt = "Failed to load snapshot file: " + ex.Message;
+        }
+    }
+
+    private async Task SaveImgOption_Click()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(CurrentSSName) || CurrentSnapshotData == null || CurrentSnapshotData.Length == 0)
+            {
+                StatusBarTxt = "No snapshot loaded to save.";
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            await PlatformService.OpenSaveFileDialogAsync(
+                Path.GetFileNameWithoutExtension(CurrentSSName), 
+                "Image Files (*.jpg;*.png)|*.jpg;*.png",
+                async savedPath =>
+                {
+                    string strippedFileName = Path.GetFileNameWithoutExtension(savedPath);
+                    SnapshotHelpers.SaveImgDataToFile(strippedFileName, Path.GetDirectoryName(savedPath), CurrentSnapshotData);
+                    StatusBarTxt = $"Saved image file \"{Path.GetFileName(savedPath)}\"";
+                    await InvokeAsync(StateHasChanged);
+                });
+        }
+        catch (Exception ex)
+        {
+            StatusBarTxt = $"Failed to save image file: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // Auto-load snapshots on initial load (if a default BinmodListPath is set)
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(ProfileService.Current?.BinmodListPath))
+        {
+            string defaultSnapshotFolder = GetDefaultSnapshotLocation();
+            if (!string.IsNullOrEmpty(defaultSnapshotFolder) && Directory.Exists(defaultSnapshotFolder))
+            {
+                StatusBarTxt = $"Auto-loading snapshots from default folder: {defaultSnapshotFolder}";
+                await LoadSnapshotsFromFolderAsync(defaultSnapshotFolder);
+            }
+        }
+    }
+
+    private string GetDefaultSnapshotLocation()
+    {
+        string binmodPath = ProfileService.Current.BinmodListPath;
+        if (string.IsNullOrEmpty(binmodPath))
+        {
+            return string.Empty;
+        }
+        string binmodDirectory = Path.GetDirectoryName(binmodPath);
+        if (string.IsNullOrEmpty(binmodDirectory))
+        {
+            return string.Empty;
+        }
+        DirectoryInfo modDir = new DirectoryInfo(binmodDirectory);
+        DirectoryInfo parentDir = modDir.Parent; 
+        if (parentDir == null)
+        {
+            return string.Empty;
+        }
+        return Path.Combine(parentDir.FullName, "savestorage", "snapshot");
+    }
+
+    private async Task LoadSnapshotsFromFolderAsync(string folderPath)
+    {
+        string[] snapshotFiles = Directory.GetFiles(folderPath, "*.ss", SearchOption.TopDirectoryOnly);
+        if (snapshotFiles.Length == 0)
+        {
+            StatusBarTxt = "Unable to find valid FFXV snapshot files in the selected folder.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        StatusBarTxt = $"Found {snapshotFiles.Length} snapshot file(s). Loading...";
+        SnapshotFilesInDirDict.Clear();
+        SnapshotList.Clear();
+        foreach (var file in snapshotFiles)
+        {
+            string fileName = Path.GetFileName(file);
+            SnapshotFilesInDirDict[fileName] = file;
+            SnapshotList.Add(fileName);
+        }
+        SelectedIndex = 0;
+        if (SnapshotList.Count > 0)
+        {
+            await OnSnapshotSelected(SnapshotList[0]);
+            StatusBarTxt = $"Loaded {snapshotFiles.Length} snapshot files from directory.";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async void LoadSnapshotDirectoryBtn_Click()
+    {
+        InvokeAsync(() => StatusBarTxt = "Select a FFXV snapshot directory.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFolderDialogAsync("", async folderPath =>
+        {
+            await LoadSnapshotsFromFolderAsync(folderPath);
+        });
+    }
+
+    private async Task OnSnapshotSelected(string item)
+    {
+        if (!string.IsNullOrEmpty(item))
+        {
+            try
+            {
+                if (SnapshotFilesInDirDict.ContainsKey(item) && File.Exists(SnapshotFilesInDirDict[item]))
+                {
+                    string imgFile = SnapshotFilesInDirDict[item];
+                    byte[] snapshotData = SnapshotHelpers.GetImgDataFromSnapshotFile(imgFile);
+                    CurrentSnapshotData = snapshotData;
+                    CurrentSSName = Path.GetFileName(imgFile);
+                    BitmapSrc0 = "data:image/jpeg;base64," + Convert.ToBase64String(snapshotData);
+                    StatusBarTxt = $"Loaded snapshot: \"{CurrentSSName}\"";// ({snapshotData.Length} bytes)";
+                    SelectedIndex = SnapshotList.IndexOf(item);
+                    StateHasChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusBarTxt = "Failed to load selected snapshot file: " + ex.Message;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        int maxIndex = SnapshotList.Count - 1;
+
+        if ((e.Key == "ArrowDown" || e.Key == "ArrowRight") && SelectedIndex < maxIndex)
+        {
+            SelectedIndex++;
+        }
+        else if ((e.Key == "ArrowUp" || e.Key == "ArrowLeft") && SelectedIndex > 0)
+        {
+            SelectedIndex--;
+        }
+        else
+        {
+            return;
+        }
+        StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("eval", $@" (function() {{ const maxWait = 1500; const pollInterval = 50; const targetId = 'snapshot-item-{SelectedIndex}'; const start = Date.now(); 
+        function tryScroll() {{
+           var el = document.getElementById(targetId);
+           if (el) {{
+                el.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
+           }} else if (Date.now() - start < maxWait) {{
+               setTimeout(tryScroll, pollInterval);
+           }} else {{
+               console.warn('scroll target not found within allowed time:', targetId);
+           }}
+        }}
+        tryScroll(); }})();");
+        _debounceCts?.Cancel();
+        _debounceCts = new CancellationTokenSource();
+        try
+        {
+            // Helps smooth snapshot navigation by preventing the app from loading every image if the user holds down an arrow key
+            await Task.Delay(75, _debounceCts.Token);
+            await OnSnapshotSelected(SnapshotList[SelectedIndex]);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async void SaveSnapshotsInListBtn_Click()
+    {
+        if (SnapshotFilesInDirDict.Count == 0)
+        {
+            StatusBarTxt = "Unable to find snapshot files in the SnapsList. Please load a valid snapshot directory before using this option.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        InvokeAsync(() => StatusBarTxt = "Select a directory to save the image file(s)");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFolderDialogAsync("Select a directory to save the image file(s)", async saveDirPath =>
+        {
+            if (!string.IsNullOrEmpty(saveDirPath))
+            {
+                IsLoading = true;
+                StatusBarTxt = "Saving snapshot files...";
+                await InvokeAsync(StateHasChanged);
+
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        foreach (var ssFile in SnapshotFilesInDirDict.Values)
+                        {
+                            if (File.Exists(ssFile))
+                            {
+                                string strippedFileName = Path.GetFileNameWithoutExtension(ssFile);
+                                SnapshotHelpers.SaveImgDataToFile(strippedFileName, saveDirPath, SnapshotHelpers.GetImgDataFromSnapshotFile(ssFile));
+                            }
+                        }
+                        StatusBarTxt = "Saved all snapshot files from directory.";
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusBarTxt = $"Failed to save snapshot files: {ex.Message}";
+                    }
+                    finally
+                    {
+                        IsLoading = false;
+                        InvokeAsync(StateHasChanged);
+                    }
+                });
+            }
+        });
+    }
+
+    // -------------------------
+    // Snap Tools 
+    // -------------------------
+
+    private async void LoadImageBtn_Click()
+    {
+        StatusBarTxt = "Select an image file to load into the panel.";
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFileDialogAsync(
+            "Image file (*.jpg;*.png)|*.jpg;*.png",
+            async imgFile =>
+            {
+                try
+                {
+                    byte[] imageData = File.ReadAllBytes(imgFile);
+                    CurrentSnapshotData = imageData;
+                    CurrentSSName = Path.GetFileName(imgFile);
+                    using (var ms = new MemoryStream(imageData))
+                    {
+                        using (var image = System.Drawing.Image.FromStream(ms))
+                        {
+                            int width = image.Width;
+                            int height = image.Height;
+                            double aspect = (double)width / height;
+                            double targetAspect = 16.0 / 9.0;
+                            // Allow a small tolerance for aspect ratio matching.
+                            if (Math.Abs(aspect - targetAspect) > 0.01)
+                            {
+                                StatusBarTxt = $"Loaded image: {CurrentSSName} (Warning: Aspect ratio is not 16:9 and may be stretched in game.)";
+                            }
+                            else
+                            {
+                                StatusBarTxt = $"Loaded image: {CurrentSSName}";
+                            }
+                        }
+                    }
+                    BitmapSrc1 = "data:image/jpeg;base64," + Convert.ToBase64String(imageData);
+                    await InvokeAsync(StateHasChanged);
+                }
+                catch (Exception ex)
+                {
+                    StatusBarTxt = $"Failed to load image file: {ex.Message}";
+                    await InvokeAsync(StateHasChanged);
+                }
+            });
+    }
+
+    private async void ReplaceSnapshotBtn_Click()
+    {
+        if (string.IsNullOrEmpty(BitmapSrc1))
+        {
+            StatusBarTxt = "A valid image file is not selected. Please load an image file into the panel before using this option.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        InvokeAsync(() => StatusBarTxt = "Select a snapshot to replace with displayed image.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFileDialogAsync(
+            "Snapshot file (*.ss)|*.ss",
+            async snapshotFile =>
+            {
+                try
+                {
+                    SnapshotHelpers.CreateSnapshotFile(snapshotFile, CurrentSnapshotData);
+
+                    StatusBarTxt = $"Replaced image data in \"{Path.GetFileName(snapshotFile)}\"";
+                    await InvokeAsync(StateHasChanged);
+                }
+                catch (Exception ex)
+                {
+                    StatusBarTxt = $"Failed to replace snapshot file's data: {ex.Message}";
+                    await InvokeAsync(StateHasChanged);
+                }
+            });
+    }
+
+    private async void AddNewSnapshotBtn_Click()
+    {
+        if (string.IsNullOrEmpty(BitmapSrc1))
+        {
+            StatusBarTxt = "A valid image file is not selected. Please load an image file into the panel before using this option.";
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+        InvokeAsync(() => StatusBarTxt = "Select a snapshotlink file to update.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFileDialogAsync(
+            "snapshotlink.sl|snapshotlink.sl",
+            async snapshotlinkFile =>
+            {
+                if (string.IsNullOrEmpty(snapshotlinkFile))
+                    return;
+                InvokeAsync(() => StatusBarTxt = "Select a save file to update.");
+                await InvokeAsync(StateHasChanged);
+                await PlatformService.OpenFileDialogAsync(
+                    "gameplay0.save|gameplay0.save",
+                    async saveFile =>
+                    {
+                        if (string.IsNullOrEmpty(saveFile))
+                            return; 
+                        IsLoading = true;
+                        StatusBarTxt = "Processing new snapshot...";
+                        await InvokeAsync(StateHasChanged);
+                        await Task.Run(() =>
+                        {
+                            try
+                            {
+                                uint snapId = uint.MinValue;
+                                InvokeAsync(() => StatusBarTxt = "Updating snapshotlink file...");
+                                SnapshotProcesses.AddSnapsInLink(snapshotlinkFile, ref snapId, 1);
+                                InvokeAsync(() => StatusBarTxt = "Updating save file...");
+                                SavedataProcesses.AddSnapsInSave(saveFile, snapId, 1);
+                                InvokeAsync(() => StatusBarTxt = "Creating new snapshot file...");
+                                string newSnapshotFile = Path.Combine(
+                                    Path.GetDirectoryName(snapshotlinkFile),
+                                    snapId.ToString().PadLeft(8, '0') + ".ss");
+
+                                if (File.Exists(newSnapshotFile))
+                                {
+                                    File.Delete(newSnapshotFile);
+                                }
+                                SnapshotHelpers.CreateSnapshotFile(newSnapshotFile, CurrentSnapshotData);
+                                InvokeAsync(() => StatusBarTxt = "Added new snap");
+                            }
+                            catch (Exception ex)
+                            {
+                                InvokeAsync(() => StatusBarTxt = $"Failed to add new snap: {ex.Message}");
+                            }
+                            finally
+                            {
+                                IsLoading = false;
+                                InvokeAsync(StateHasChanged);
+                            }
+                        });
+                    });
+            });
+    }
+
+    private async void AddMultipleNewSnapsBtn_Click()
+    {
+        InvokeAsync(() => StatusBarTxt = "Select a folder with images to add into the game.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFolderDialogAsync("Select a directory containing image file(s)", async folderPath =>
+        {
+            if (string.IsNullOrEmpty(folderPath))
+                return; 
+            var jpgFiles = Directory.GetFiles(folderPath, "*.jpg", SearchOption.TopDirectoryOnly);
+            var pngFiles = Directory.GetFiles(folderPath, "*.png", SearchOption.TopDirectoryOnly);
+            var imgFilesList = new List<string>();
+            imgFilesList.AddRange(jpgFiles);
+            imgFilesList.AddRange(pngFiles);
+            var imgDirFiles = imgFilesList.ToArray();
+            if (imgDirFiles.Length == 0)
+            {
+                StatusBarTxt = "Unable to find valid image file(s) in the selected folder.";
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            InvokeAsync(() => StatusBarTxt = "Select a snapshotlink file to update.");
+            await InvokeAsync(StateHasChanged);
+            await PlatformService.OpenFileDialogAsync(
+                "snapshotlink.sl|snapshotlink.sl",
+                async snapshotlinkFile =>
+                {
+                    if (string.IsNullOrEmpty(snapshotlinkFile))
+                        return;
+                    InvokeAsync(() => StatusBarTxt = "Select a save file to update.");
+                    await InvokeAsync(StateHasChanged);
+                    await PlatformService.OpenFileDialogAsync(
+                        "gameplay0.save|gameplay0.save",
+                        async saveFile =>
+                        {
+                            if (string.IsNullOrEmpty(saveFile))
+                                return;
+                            IsLoading = true;
+                            StatusBarTxt = "Processing multiple snapshots...";
+                            await InvokeAsync(StateHasChanged);
+
+                            await Task.Run(() =>
+                            {
+                                try
+                                {
+                                    uint snapId = uint.MinValue;
+                                    InvokeAsync(() => StatusBarTxt = "Updating snapshotlink file...");
+                                    SnapshotProcesses.AddSnapsInLink(snapshotlinkFile, ref snapId, imgDirFiles.Length);
+                                    InvokeAsync(() => StatusBarTxt = "Updating save file...");
+                                    SavedataProcesses.AddSnapsInSave(saveFile, snapId, imgDirFiles.Length);
+                                    InvokeAsync(() => StatusBarTxt = "Creating new snapshot file(s)...");
+                                    foreach (var imgFile in imgDirFiles)
+                                    {
+                                        string newSnapshotFile = Path.Combine(
+                                            Path.GetDirectoryName(snapshotlinkFile),
+                                            snapId.ToString().PadLeft(8, '0') + ".ss");
+
+                                        if (File.Exists(newSnapshotFile))
+                                        {
+                                            File.Delete(newSnapshotFile);
+                                        }
+                                        SnapshotHelpers.CreateSnapshotFile(newSnapshotFile, File.ReadAllBytes(imgFile));
+                                        snapId++;
+                                    }
+                                    InvokeAsync(() => StatusBarTxt = "Added new snap(s)");
+                                }
+                                catch (Exception ex)
+                                {
+                                    InvokeAsync(() => StatusBarTxt = $"Failed to add new snap(s): {ex.Message}");
+                                }
+                                finally
+                                {
+                                    IsLoading = false;
+                                    InvokeAsync(StateHasChanged);
+                                }
+                            });
+                        });
+                });
+        });
+    }
+
+    private async void RemoveBlankSnapsBtn_Click()
+    {
+        InvokeAsync(() => StatusBarTxt = "Select a save file to remove missing snapshot records from.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFileDialogAsync("gameplay0.save|gameplay0.save", async saveFile =>
+        {
+            if (string.IsNullOrEmpty(saveFile))
+                return;
+            InvokeAsync(() => StatusBarTxt = "Select a snapshotlink file to update.");
+            await InvokeAsync(StateHasChanged);
+            await PlatformService.OpenFileDialogAsync("snapshotlink.sl|snapshotlink.sl", async snapshotlinkFile =>
+            {
+                if (string.IsNullOrEmpty(snapshotlinkFile))
+                    return;
+                InvokeAsync(() => StatusBarTxt = "Select a your FFXV snapshot directory to scan for missing records.");
+                await InvokeAsync(StateHasChanged);
+                await PlatformService.OpenFolderDialogAsync("Select a FFXV snapshot directory", async snapshotDir =>
+                {
+                    if (string.IsNullOrEmpty(snapshotDir))
+                        return;
+                    IsLoading = true;
+                    StatusBarTxt = "Updating save file....";
+                    await InvokeAsync(StateHasChanged);
+                    await Task.Run(async () =>
+                    {
+                        try
+                        {
+                            SavedataProcesses.RemoveBlankSnapsInSave(saveFile, snapshotDir);
+                            await InvokeAsync(() => { StatusBarTxt = "Updating snapshotlink file...."; });
+                            SnapshotProcesses.RemoveBlankSnapsInlink(snapshotlinkFile, snapshotDir);
+                            await InvokeAsync(() => { StatusBarTxt = "Finished removing blank snaps"; });
+                        }
+                        catch (Exception ex)
+                        {
+                            await InvokeAsync(() => { StatusBarTxt = $"Failed to remove blank snaps: {ex.Message}"; });
+                        }
+                        finally
+                        {
+                            IsLoading = false;
+                            await InvokeAsync(StateHasChanged);
+                        }
+                    });
+                });
+            });
+        });
+    }
+
+    private async void DecryptFileButton_Click()
+    {
+        InvokeAsync(() => StatusBarTxt = "Select a save file to decrypt.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFileDialogAsync("All Files (*.*)|*.*", async fileToDecrypt =>
+        {
+            if (string.IsNullOrEmpty(fileToDecrypt))
+                return;
+            try
+            {
+                byte[] fileData = File.ReadAllBytes(fileToDecrypt);
+                var decryptedData = Decrypt.BeginDecryption(fileData);
+
+                await PlatformService.OpenSaveFileDialogAsync(
+                    Path.GetFileNameWithoutExtension(fileToDecrypt) + "_decrypted",
+                    "All Files (*.*)|*.*",
+                    async savePath =>
+                    {
+                        if (string.IsNullOrEmpty(savePath))
+                            return;
+                        File.WriteAllBytes(savePath, decryptedData);
+                        StatusBarTxt = "Decryption completed successfully.";
+                        await InvokeAsync(StateHasChanged);
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                StatusBarTxt = $"An error occurred during decryption: {ex.Message}";
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    private async void EncryptFileButton_Click()
+    {
+        InvokeAsync(() => StatusBarTxt = "Select a save file to encrypt.");
+        await InvokeAsync(StateHasChanged);
+        await PlatformService.OpenFileDialogAsync("All Files (*.*)|*.*", async fileToEncrypt =>
+        {
+            if (string.IsNullOrEmpty(fileToEncrypt))
+                return;
+            try
+            {
+                byte[] fileData = File.ReadAllBytes(fileToEncrypt);
+                var encryptedData = Encrypt.BeginEncryption(fileData);
+                await PlatformService.OpenSaveFileDialogAsync(
+                    Path.GetFileNameWithoutExtension(fileToEncrypt) + "_encrypted",
+                    "All Files (*.*)|*.*",
+                    async savePath =>
+                    {
+                        if (string.IsNullOrEmpty(savePath))
+                            return;
+                        File.WriteAllBytes(savePath, encryptedData);
+                        StatusBarTxt = "Encryption completed successfully.";
+                        await InvokeAsync(StateHasChanged);
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                StatusBarTxt = $"An error occurred during encryption: {ex.Message}";
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    // -------------------------
+    // Other Handlers
+    // -------------------------
+
+    private string GetItemStyle(int index)
+    {
+        string baseStyle = "padding: 0px; cursor: pointer; outline: none;";
+        if (index == SelectedIndex)
+        {
+            return baseStyle + " background-color: #292524; color: #ffffff;";
+        }
+        else
+        {
+            return baseStyle + " background-color: transparent; color: #d1d5db;";
+        }
+    }
+
+    private async Task OnRightClick(MouseEventArgs e)
+    {
+        await SaveImgOption_Click();
+    }
+
+    // Callback for ModTypeButtonGroup.
+    private void SetActiveTool(int value)
+    {
+        ActiveTool = value;
+        StateHasChanged();
+    }
+
+}
