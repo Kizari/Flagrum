@@ -62,6 +62,9 @@ jobs:
       - name: Publish Linux Build
         run: dotnet publish src/Flagrum/Flagrum.csproj -c Release -o publish-linux-x64 -r linux-x64 --self-contained true -p:UsePremiumPackageSource=true
 
+      - name: Build Launcher
+        run: dotnet publish src/Flagrum.Launcher/Flagrum.Launcher.csproj -c Release -r win-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o publish-linux-x64
+
       - name: Download Previous Release
         if: steps.setup.outputs.prerelease == 'false'
         id: download-previous

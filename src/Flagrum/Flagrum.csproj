@@ -78,7 +78,6 @@
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\Flagrum.Application\Flagrum.Application.csproj"/>
-        <ProjectReference Include="..\Flagrum.Launcher\Flagrum.Launcher.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -102,11 +101,6 @@
         <None Update="libnvtt.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.deps.json"/>
-        <_ContentIncludedByDefault Remove="Flagrum.Launcher-publish\Flagrum.Launcher.runtimeconfig.json"/>
     </ItemGroup>
 
     <ItemGroup>
