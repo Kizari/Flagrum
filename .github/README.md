@@ -89,7 +89,7 @@ If you want to support the ongoing development of Flagrum and my other XV projec
 <br/>
 <h3 align="center">Contributors</h3>
 <p align="center">
-<a href="https://github.com/AlexPlaceres">Alex Cup</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/Rinual">Rinual</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/AsteriskAmpersand">AsteriskAmpersand</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/EratoTiaTuatha">ImpatientTraveler</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/yretenai">Yretenai</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/katekittaly">Katelynn Kittaly</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/ChisaJoestar">Chisa</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/youarebritish">Sai</a>
+<a href="https://github.com/AlexPlaceres">Alex Cup</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/Rinual">Rinual</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/AsteriskAmpersand">AsteriskAmpersand</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/EratoTiaTuatha">ImpatientTraveler</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/yretenai">Yretenai</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/Surihix">Surihix</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/katekittaly">Katelynn Kittaly</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/ChisaJoestar">Chisa</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="https://github.com/youarebritish">Sai</a>
 </p>
 <br/>
 <h3 align="center">Special thanks to the current and past top-tier Patrons for their generous support!</h3>
