@@ -6,8 +6,10 @@ using Avalonia.Controls;
 using Avalonia.Platform;
 using Flagrum.Abstractions;
 using Flagrum.Components;
+using Injectio.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
 namespace Flagrum.Host.WebView;
@@ -15,6 +17,7 @@ namespace Flagrum.Host.WebView;
 /// <summary>
 /// A web view control that hosts Blazor applications.
 /// </summary>
+[RegisterTransient<BlazorWebView>]
 public sealed class BlazorWebView : NativeWebView
 {
     private readonly BlazorWebViewManager _webViewManager;
@@ -71,9 +74,22 @@ public sealed class BlazorWebView : NativeWebView
     /// </summary>
     /// <param name="url">URL to navigate the web view to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Navigate(string url)
+    public void SetUrl(string url)
     {
         Navigate(new Uri(url));
+    }
+
+    /// <summary>
+    /// Navigates the current Blazor app to the given URL.
+    /// </summary>
+    /// <param name="url">URL or path to navigate the web view to.</param>
+    public async Task NavigateAsync(string url)
+    {
+        await _webViewManager.TryDispatchAsync(services =>
+        {
+            var navigation = services.GetRequiredService<NavigationManager>();
+            navigation.NavigateTo(url);
+        });
     }
 
     /// <summary>

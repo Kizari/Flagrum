@@ -1,0 +1,123 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:navigation="clr-namespace:Flagrum.Navigation"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Flagrum.Navigation.NavigationView"
+             x:DataType="navigation:NavigationViewModel">
+
+    <!-- Two-column layout -->
+    <Grid
+        Name="Container"
+        ColumnDefinitions="195,*">
+
+        <!-- Navigation column -->
+        <Border
+            Grid.Column="0"
+            Background="{StaticResource Dark}"
+            Padding="0 0 0.5 0">
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto">
+
+                <!-- Mod Manager -->
+                <navigation:NavigationButton
+                    Grid.Row="0"
+                    Icon="Apps"
+                    Caption="{Binding Localizer[ModManager]}"
+                    TargetType="RazorComponent"
+                    Target="/"
+                    IsSelected="True" />
+
+                <!-- Asset Explorer -->
+                <navigation:NavigationButton
+                    Grid.Row="1"
+                    Icon="GamepadVariant"
+                    Caption="{Binding Localizer[AssetExplorer]}"
+                    TargetType="RazorComponent"
+                    Target="/assets" />
+
+                <!-- Workshop Mods -->
+                <navigation:NavigationButton
+                    Grid.Row="2"
+                    Icon="Steam"
+                    Caption="{Binding Localizer[WorkshopMods]}"
+                    TargetType="RazorComponent"
+                    Target="/mod"
+                    IsVisible="{Binding IsFfxvProfile}" />
+
+                <!-- Featured Mods -->
+                <navigation:NavigationButton
+                    Grid.Row="3"
+                    Icon="Star"
+                    Caption="Featured Mods"
+                    TargetType="RazorComponent"
+                    Target="/featured"
+                    IsVisible="{Binding IsFfxvProfile}" />
+
+                <!-- Visual Scripting -->
+                <navigation:NavigationButton
+                    Grid.Row="4"
+                    Icon="ShareVariant"
+                    Caption="Visual Scripting"
+                    TargetType="RazorComponent"
+                    Target="/lucent"
+                    IsVisible="{Binding ShouldShowLucentTab}" />
+
+                <!-- Row 7 is used as a spacer -->
+
+                <!-- Wiki -->
+                <navigation:NavigationButton
+                    Grid.Row="6"
+                    Icon="GraduationCap"
+                    Caption="{Binding Localizer[Wiki]}"
+                    TargetType="ExternalLink"
+                    Target="{Binding Localizer[WikiUrl]}" />
+
+                <!-- Report a Bug -->
+                <navigation:NavigationButton
+                    Grid.Row="7"
+                    Icon="BugReport"
+                    Caption="Report a Bug"
+                    TargetType="RazorComponent"
+                    Target="/bug" />
+
+                <!-- About -->
+                <navigation:NavigationButton
+                    Grid.Row="8"
+                    Icon="About"
+                    Caption="{Binding Localizer[About]}"
+                    TargetType="RazorComponent"
+                    Target="/about" />
+
+                <!-- Settings -->
+                <navigation:NavigationButton
+                    Grid.Row="9"
+                    Icon="Settings"
+                    Caption="{Binding Localizer[Settings]}"
+                    TargetType="RazorComponent"
+                    Target="/settings" />
+
+                <!-- Version text -->
+                <TextBlock
+                    Grid.Row="10"
+                    Foreground="{StaticResource Grey_500}"
+                    Text="{Binding Version}"
+                    FontSize="12"
+                    Margin="16" />
+            </Grid>
+        </Border>
+
+        <!-- Web content column (shown only if selected page is a web page) -->
+        <ContentControl
+            Grid.Column="1"
+            Content="{Binding BlazorViewModel}"
+            IsVisible="{Binding IsActivePageRazorComponent}" />
+
+        <!-- Avalonia content column (shown only if selected page is an Avalonia page) -->
+        <ContentControl
+            Grid.Column="1"
+            Content="{Binding ActiveViewModel}"
+            IsVisible="{Binding !IsActivePageRazorComponent}" />
+
+    </Grid>
+</UserControl>

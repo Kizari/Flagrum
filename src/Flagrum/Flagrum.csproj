@@ -45,7 +45,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**\*.*"/>
+        <AvaloniaResource Include="Assets\**\*"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -59,6 +59,8 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
+        <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2"/>
         <PackageReference Include="MessageBox.Avalonia" Version="12.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="6.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.8"/>
@@ -97,7 +99,6 @@
         <Content Include="Resources\earc.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <None Remove="Resources\Play-Regular.ttf"/>
         <None Update="libnvtt.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>

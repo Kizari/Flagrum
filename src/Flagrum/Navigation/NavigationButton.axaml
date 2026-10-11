@@ -1,0 +1,64 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Flagrum.Navigation"
+        xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <Design.PreviewWith>
+        <controls:NavigationButton />
+    </Design.PreviewWith>
+
+    <Style Selector="controls|NavigationButton">
+        <Setter Property="Padding" Value="16 18" />
+        <Setter Property="Foreground" Value="{StaticResource Accent1_200}" />
+        <Setter Property="Background" Value="{StaticResource Dark}" />
+
+        <Setter Property="Template">
+            <ControlTemplate>
+
+                <!-- Button container -->
+                <Border
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Padding="{TemplateBinding Padding}">
+
+                    <!-- Button layout -->
+                    <Grid
+                        ColumnDefinitions="24,*"
+                        ColumnSpacing="12"
+                        VerticalAlignment="Center">
+
+                        <!-- Button icon -->
+                        <avalonia:MaterialIcon
+                            Grid.Column="0"
+                            Kind="{TemplateBinding Icon}"
+                            Width="24"
+                            Height="24"
+                            Foreground="{TemplateBinding Foreground}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center" />
+
+                        <!-- Button caption -->
+                        <TextBlock
+                            Grid.Column="1"
+                            Text="{TemplateBinding Caption}"
+                            Foreground="{TemplateBinding Foreground}"
+                            FontFamily="{StaticResource Play}"
+                            FontSize="16"
+                            VerticalAlignment="Center"
+                            TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- Highlight when selected -->
+        <Style Selector="^:selected">
+            <Setter Property="Background" Value="{StaticResource Grey_800}" />
+        </Style>
+
+        <!-- Highlight when hovered -->
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{StaticResource Grey_700}" />
+        </Style>
+
+    </Style>
+</Styles>

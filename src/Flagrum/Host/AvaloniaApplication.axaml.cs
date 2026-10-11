@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.Application;
 using Flagrum.Application;
@@ -10,6 +12,8 @@ using Flagrum.Components;
 using Flagrum.Host.Shell;
 using Flagrum.Host.WebView;
 using Flagrum.Migrations;
+using Flagrum.Utilities;
+using Microsoft.Extensions.DependencyInjection;
 using MsBox.Avalonia.Enums;
 using Serilog;
 using Velopack;
@@ -31,6 +35,7 @@ public partial class AvaloniaApplication(
     /// <inheritdoc />
     public override void Initialize()
     {
+        DataTemplates.Add(new ViewLocator(services));
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -43,7 +48,7 @@ public partial class AvaloniaApplication(
         {
             desktop.ShutdownRequested += OnShutdown;
             ((ApplicationHost)application).AvaloniaApplication = desktop;
-            
+
             // Show the splash screen
             var splash = new SplashWindow();
             desktop.MainWindow = splash;
@@ -54,7 +59,7 @@ public partial class AvaloniaApplication(
                                          && desktop.Args[0].EndsWith(".fmod", StringComparison.OrdinalIgnoreCase)
                 ? desktop.Args[0]
                 : null;
-            
+
             scheduler.RunAsyncObserved(StartAsync);
         }
 
@@ -68,7 +73,7 @@ public partial class AvaloniaApplication(
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime {MainWindow: SplashWindow splash})
         {
-            Avalonia.Threading.Dispatcher.UIThread.Invoke(() => splash.SetText(text));
+            Dispatcher.UIThread.Invoke(() => splash.SetText(text));
         }
     }
 
@@ -78,30 +83,30 @@ public partial class AvaloniaApplication(
     private async Task StartAsync()
     {
         var start = DateTime.UtcNow;
-        
+
         // Check for updates
         if (await TryUpdateAsync())
         {
             await Log.CloseAndFlushAsync();
             return; // Application is restarting, finish here
         }
-        
+
         // Run all data migrations
         await migrations.RunMigrationsAsync();
-        
+
         // Check the application version
         if (!platform.IsVersionSupported)
         {
-            await MessageBox.ShowAsync("Error", 
+            await MessageBox.ShowAsync("Error",
                 "This version of Flagrum is no longer supported.", Icon.Error);
 
             Shutdown();
             return;
         }
-        
+
         // Start initializing the asset explorer
         appState.LoadNodes();
-        
+
         // Ensure the splash screen is displayed no less than three seconds
         var elapsed = DateTime.UtcNow - start;
         var remaining = TimeSpan.FromSeconds(3) - elapsed;
@@ -109,18 +114,27 @@ public partial class AvaloniaApplication(
         {
             await Task.Delay(remaining);
         }
-        
+
         // Launch the main window
-        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(async () =>
+        await Dispatcher.UIThread.Invoke(async () =>
         {
+            // Initialize and display the main window
             var desktop = (IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!;
             var splash = desktop.MainWindow!;
-            var mainWindow = new MainWindow(services);
+            var mainWindow = new MainWindow(services)
+            {
+                DataContext = services.GetRequiredService<MainWindowViewModel>()
+            };
+
             desktop.MainWindow = mainWindow;
             desktop.MainWindow.Show();
-            var webView = (BlazorWebView)mainWindow.MainGrid.Children[1]!;
-            await webView.SetRootComponentAsync<App>("#app");
-            webView.Navigate(BlazorWebViewManager.CreateUri("/"));
+
+            // Initialize the web view with the Blazor app
+            var webView = mainWindow.FindDescendantOfType<BlazorWebView>();
+            await webView!.SetRootComponentAsync<App>("#app");
+            webView.SetUrl(BlazorWebViewManager.CreateUri("/"));
+
+            // Close the splash screen
             splash.Close();
         });
     }
@@ -130,7 +144,7 @@ public partial class AvaloniaApplication(
     /// </summary>
     private void Shutdown()
     {
-        Avalonia.Threading.Dispatcher.UIThread
+        Dispatcher.UIThread
             .Invoke(() => ((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).Shutdown());
     }
 
@@ -141,7 +155,7 @@ public partial class AvaloniaApplication(
     {
         Log.CloseAndFlush();
     }
-    
+
     /// <summary>
     /// Attempts to update the application.
     /// </summary>

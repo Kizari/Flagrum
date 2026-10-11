@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:shell="clr-namespace:Flagrum.Host.Shell"
         xmlns:resources="clr-namespace:Flagrum.Resources"
+        xmlns:host="clr-namespace:Flagrum.Host"
         mc:Ignorable="d"
         Title="Flagrum"
         WindowStartupLocation="Manual"
@@ -13,7 +14,8 @@
         Height="1024"
         WindowDecorations="BorderOnly"
         ExtendClientAreaToDecorationsHint="True"
-        CanResize="True">
+        CanResize="True"
+        x:DataType="host:MainWindowViewModel">
 
     <!-- Window border -->
     <Border Background="#181512">
@@ -79,7 +81,10 @@
                                    Click="OnClose" />
             </Grid>
 
-            <!-- Content is added in codebehind -->
+            <!-- Navigation view (menu + content) -->
+            <ContentControl
+                Grid.Row="1"
+                Content="{Binding NavigationViewModel}" />
         </Grid>
     </Border>
 

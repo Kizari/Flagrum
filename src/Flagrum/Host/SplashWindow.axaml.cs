@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Flagrum.Host.Utilities;
+using Flagrum.Utilities;
 
 namespace Flagrum.Host;
 

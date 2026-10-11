@@ -39,7 +39,7 @@ public class BlazorWebViewManager : WebViewManager
     {
         _webView = webView;
         _scheduler = scheduler;
-        
+
         // Set the message received callback
         webView.WebMessageReceived += OnWebMessageReceived;
 
@@ -75,7 +75,7 @@ public class BlazorWebViewManager : WebViewManager
     /// <inheritdoc />
     protected override void NavigateCore(Uri absoluteUri)
     {
-        _webView.Navigate(absoluteUri.ToString());
+        _webView.SetUrl(absoluteUri.ToString());
     }
 
     /// <inheritdoc />

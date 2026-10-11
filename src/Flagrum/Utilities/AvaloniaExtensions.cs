@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Flagrum.Abstractions.Application;
 
-namespace Flagrum.Host.Utilities;
+namespace Flagrum.Utilities;
 
 /// <summary>
 /// Extension methods related to Avalonia.
@@ -24,17 +24,17 @@ public static class AvaloniaExtensions
         // Get primary screen
         var screen = window.Screens.Primary!;
         var scaling = screen.Scaling;
-        
+
         // Ensure window is not larger than the screen's working area
         var maxWidth = screen.WorkingArea.Width / scaling;
         var maxHeight = screen.WorkingArea.Height / scaling;
         window.Width = Math.Min(window.Width, maxWidth);
         window.Height = Math.Min(window.Height, maxHeight);
-        
+
         // Compute pixel dimensions
         var width = (int)Math.Round(window.Width * scaling);
         var height = (int)Math.Round(window.Height * scaling);
-        
+
         // Center the window
         window.Position = new PixelPoint(
             screen.WorkingArea.X + (screen.WorkingArea.Width - width) / 2,
@@ -42,8 +42,8 @@ public static class AvaloniaExtensions
     }
 
     /// <summary>
-    /// Converts an array of <see cref="FilePickerFileType"/> items
-    /// to their equivalent <see cref="FileDialogFileType"/> items.
+    /// Converts an array of <see cref="FilePickerFileType" /> items
+    /// to their equivalent <see cref="FileDialogFileType" /> items.
     /// </summary>
     /// <param name="filter">Items to convert.</param>
     /// <returns>Array of converted items.</returns>

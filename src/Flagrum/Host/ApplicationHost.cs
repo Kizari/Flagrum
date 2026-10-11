@@ -10,7 +10,7 @@ using Avalonia.Threading;
 using Flagrum.Abstractions;
 using Flagrum.Abstractions.Application;
 using Flagrum.Components;
-using Flagrum.Host.Utilities;
+using Flagrum.Utilities;
 using Injectio.Attributes;
 
 namespace Flagrum.Host;

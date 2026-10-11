@@ -24,9 +24,6 @@ else
     <div class="flex flex-row h-full">
         @if (Profile.IsReady)
         {
-            <CascadingValue Value="this">
-                <MainMenu @ref="Menu"/>
-            </CascadingValue>
             <div class="main-content-view flex-grow h-full bg-grey-900 overflow-auto flex flex-col">
                 @if (FileIndex.IsRegenerating)
                 {

@@ -1,18 +1,44 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:shell="clr-namespace:Flagrum.Host.Shell"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="Flagrum.Host.AvaloniaApplication"
              RequestedThemeVariant="Dark">
 
     <Application.Resources>
-        <FontFamily x:Key="Play">avares://Flagrum/Assets/Play-Regular.ttf#Play</FontFamily>
+        <!-- Fonts -->
+        <FontFamily x:Key="Play">avares://Flagrum/Assets/Fonts/Play-Regular.ttf#Play</FontFamily>
+        <FontFamily x:Key="Roboto">avares://Flagrum/Assets/Fonts/Roboto-Regular.ttf#Roboto</FontFamily>
+
+        <!-- Converters -->
         <shell:SystemIconConverter x:Key="SystemIconConverter" />
         <shell:WindowStateToSystemIconConverter x:Key="WindowStateToSystemIconConverter" />
+
+        <!-- Colors -->
+        <SolidColorBrush x:Key="Accent1_200" Color="#E1D9B7" />
+        <SolidColorBrush x:Key="Grey_500" Color="#78716C" />
+        <SolidColorBrush x:Key="Grey_700" Color="#44403C" />
+        <SolidColorBrush x:Key="Grey_800" Color="#292524" />
+        <SolidColorBrush x:Key="Grey_900" Color="#1C1917" />
+        <SolidColorBrush x:Key="Dark" Color="#181512" />
+        <SolidColorBrush x:Key="Dark_550" Color="#100F0C" />
     </Application.Resources>
 
     <Application.Styles>
+        <!-- Theme -->
         <FluentTheme />
+
+        <!-- Templated controls -->
         <StyleInclude Source="avares://Flagrum/Host/Shell/ShellButton.axaml" />
+        <StyleInclude Source="avares://Flagrum/Navigation/NavigationButton.axaml" />
+
+        <!-- Third party includes -->
+        <avalonia:MaterialIconStyles />
+
+        <!-- Global styles -->
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Roboto}" />
+        </Style>
     </Application.Styles>
 
 </Application>

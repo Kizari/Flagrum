@@ -17,13 +17,6 @@
         WindowDecorations="None"
         ShowInTaskbar="False">
 
-    <!-- Styles -->
-    <Window.Styles>
-        <Style Selector="TextBlock">
-            <Setter Property="FontFamily" Value="avares://Flagrum/Assets/Play-Regular.ttf#Play" />
-        </Style>
-    </Window.Styles>
-
     <!-- Layout -->
     <Grid>
 
@@ -55,7 +48,8 @@
                 Text="Loading"
                 TextAlignment="Center"
                 FontSize="20"
-                Foreground="#E1D9B7" />
+                Foreground="#E1D9B7"
+                FontFamily="{StaticResource Play}" />
 
             <!-- Progress bar -->
             <ProgressBar
@@ -74,7 +68,8 @@
                 HorizontalAlignment="Stretch"
                 Text="Made with ♥ by Kizari"
                 TextAlignment="Center"
-                FontSize="14" />
+                FontSize="14"
+                FontFamily="{StaticResource Play}" />
 
         </Grid>
     </Grid>
