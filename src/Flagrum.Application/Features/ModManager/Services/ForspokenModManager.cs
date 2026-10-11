@@ -6,33 +6,29 @@ using Flagrum.Abstractions;
 using Flagrum.Abstractions.Archive;
 using Flagrum.Abstractions.AssetExplorer;
 using Flagrum.Abstractions.ModManager.Project;
-using Flagrum.Core.Archive;
-using Flagrum.Core.Utilities;
-using Flagrum.Application.Features.AssetExplorer.Indexing;
 using Flagrum.Application.Features.ModManager.Instructions;
 using Flagrum.Application.Features.ModManager.Instructions.Abstractions;
 using Flagrum.Application.Features.ModManager.Mod;
+using Flagrum.Core.Archive;
+using Flagrum.Core.Utilities;
 
 namespace Flagrum.Application.Features.ModManager.Services;
 
-public class ForspokenModManager : ModManagerServiceBase
+public class ForspokenModManager(
+    IProfileService profile,
+    IFileIndex fileIndex,
+    AssetConverter assetConverter,
+    IServiceProvider provider)
+    : ModManagerServiceBase(profile, fileIndex, assetConverter, provider)
 {
-    public ForspokenModManager(
-        IProfileService profile,
-        IFileIndex fileIndex,
-        AssetConverter assetConverter,
-        IServiceProvider provider)
-        : base(profile, fileIndex, assetConverter, provider)
+    protected override Task ApplyMod(IFlagrumProject mod, EbonyArchiveManager archiveManager)
     {
         var modDirectory = Path.Combine(_profile.GameDataDirectory, "mods");
         if (!Directory.Exists(modDirectory))
         {
             Directory.CreateDirectory(modDirectory);
         }
-    }
 
-    protected override Task ApplyMod(IFlagrumProject mod, EbonyArchiveManager archiveManager)
-    {
         var c000 = Path.Combine(_profile.GameDataDirectory, "c000.earc");
         var backup = Path.Combine(_profile.GameDataDirectory, "c000.backup");
 
@@ -95,7 +91,7 @@ public class ForspokenModManager : ModManagerServiceBase
             }
 
             modArchive.WriteToFile(
-                Path.Combine(_profile.GameDataDirectory, "mods", $"{mod.Identifier}.earc"), 
+                Path.Combine(_profile.GameDataDirectory, "mods", $"{mod.Identifier}.earc"),
                 LuminousGame.Forspoken);
         }
 
